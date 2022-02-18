@@ -56,7 +56,6 @@ export function toMapSetTransform<I, O>(map: { [key: string]: Iterable<I> } | un
 
 }
 
-
 export function toMapSet<I>(map: { [key: string]: Iterable<I> } | undefined): { [key: string]: Set<I> } | undefined {
   return toMapSetTransform(map, (i) => i);
 }
