@@ -15,6 +15,10 @@
 * the list of all names of the patient, also containing the official full name information. Ordered by preference of use. First element is therefore the official name used for the patient in the application
 */
 export class PersonName {
+constructor(json: IPersonName) {
+  Object.assign(this as PersonName, json)
+}
+
     'lastName'?: string;
     'firstNames': Array<string>;
     'start'?: number;
@@ -24,6 +28,17 @@ export class PersonName {
     'text'?: string;
     'use'?: PersonNameUseEnum;
 
+}
+
+interface IPersonName {
+  'lastName'?: string;
+  'firstNames'?: Array<string>;
+  'start'?: number;
+  'end'?: number;
+  'prefix'?: Array<string>;
+  'suffix'?: Array<string>;
+  'text'?: string;
+  'use'?: PersonNameUseEnum;
 }
 
 

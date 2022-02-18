@@ -12,6 +12,10 @@
 
 
 export class TypedValueObject {
+constructor(json: ITypedValueObject) {
+  Object.assign(this as TypedValueObject, json)
+}
+
     'type'?: TypedValueObjectTypeEnum;
     'booleanValue'?: boolean;
     'integerValue'?: number;
@@ -19,6 +23,15 @@ export class TypedValueObject {
     'stringValue'?: string;
     'dateValue'?: Date;
 
+}
+
+interface ITypedValueObject {
+  'type'?: TypedValueObjectTypeEnum;
+  'booleanValue'?: boolean;
+  'integerValue'?: number;
+  'doubleValue'?: number;
+  'stringValue'?: string;
+  'dateValue'?: Date;
 }
 
 

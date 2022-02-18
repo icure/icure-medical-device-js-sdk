@@ -12,10 +12,21 @@
 
 
 export class Delegation {
+constructor(json: IDelegation) {
+  Object.assign(this as Delegation, json)
+}
+
     'tags': Array<string>;
     'owner'?: string;
     'delegatedTo'?: string;
     'key'?: string;
 
+}
+
+interface IDelegation {
+  'tags'?: Array<string>;
+  'owner'?: string;
+  'delegatedTo'?: string;
+  'key'?: string;
 }
 

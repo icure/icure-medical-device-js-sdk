@@ -18,6 +18,10 @@ import { TimeSeries } from './TimeSeries';
 * Information contained in the data sample (Measure, number, ...). Content is localized, using ISO language code as key
 */
 export class Content {
+constructor(json: IContent) {
+  Object.assign(this as Content, json)
+}
+
     'stringValue'?: string;
     'numberValue'?: number;
     'booleanValue'?: boolean;
@@ -37,5 +41,20 @@ export class Content {
     'ratio'?: Array<Measure>;
     'range'?: Array<Measure>;
 
+}
+
+interface IContent {
+  'stringValue'?: string;
+  'numberValue'?: number;
+  'booleanValue'?: boolean;
+  'instantValue'?: Date;
+  'fuzzyDateValue'?: number;
+  'binaryValue'?: string;
+  'documentId'?: string;
+  'measureValue'?: Measure;
+  'timeSeries'?: TimeSeries;
+  'compoundValue'?: Array<DataSample>;
+  'ratio'?: Array<Measure>;
+  'range'?: Array<Measure>;
 }
 

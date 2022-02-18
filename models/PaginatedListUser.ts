@@ -14,10 +14,21 @@ import { PaginatedDocumentKeyAndIdPairObject } from './PaginatedDocumentKeyAndId
 import { User } from './User';
 
 export class PaginatedListUser {
+constructor(json: IPaginatedListUser) {
+  Object.assign(this as PaginatedListUser, json)
+}
+
     'pageSize': number;
     'totalSize': number;
     'rows': Array<User>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+}
+
+interface IPaginatedListUser {
+  'pageSize'?: number;
+  'totalSize'?: number;
+  'rows'?: Array<User>;
+  'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 }
 

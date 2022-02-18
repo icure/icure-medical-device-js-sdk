@@ -12,9 +12,18 @@
 
 
 export class PropertyType {
+constructor(json: IPropertyType) {
+  Object.assign(this as PropertyType, json)
+}
+
     'identifier'?: string;
     'type'?: PropertyTypeTypeEnum;
 
+}
+
+interface IPropertyType {
+  'identifier'?: string;
+  'type'?: PropertyTypeTypeEnum;
 }
 
 

@@ -12,6 +12,10 @@
 
 
 export class Coding {
+constructor(json: ICoding) {
+  Object.assign(this as Coding, json)
+}
+
     /**
     * the Id of the coding. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -39,5 +43,16 @@ export class Coding {
     */
     'searchTerms': { [key: string]: Set<string>; };
 
+}
+
+interface ICoding {
+  'id'?: string;
+  'rev'?: string;
+  'type'?: string;
+  'code'?: string;
+  'version'?: string;
+  'description'?: { [key: string]: string; };
+  'qualifiedLinks'?: { [key: string]: Array<string>; };
+  'searchTerms'?: { [key: string]: Set<string>; };
 }
 

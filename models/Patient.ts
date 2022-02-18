@@ -20,6 +20,10 @@ import { Property } from './Property';
 import { SystemMetaDataOwnerEncrypted } from './SystemMetaDataOwnerEncrypted';
 
 export class Patient {
+constructor(json: IPatient) {
+  Object.assign(this as Patient, json)
+}
+
     /**
     * the Id of the patient. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -218,6 +222,59 @@ export class Patient {
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwnerEncrypted;
 
+}
+
+interface IPatient {
+  'id'?: string;
+  'rev'?: string;
+  'identifiers'?: Array<Identifier>;
+  'created'?: number;
+  'modified'?: number;
+  'author'?: string;
+  'responsible'?: string;
+  'labels'?: Set<CodingReference>;
+  'codes'?: Set<CodingReference>;
+  'endOfLife'?: number;
+  'deletionDate'?: number;
+  'firstName'?: string;
+  'lastName'?: string;
+  'names'?: Array<PersonName>;
+  'companyName'?: string;
+  'languages'?: Array<string>;
+  'addresses'?: Array<Address>;
+  'civility'?: string;
+  'gender'?: PatientGenderEnum;
+  'birthSex'?: PatientBirthSexEnum;
+  'mergeToPatientId'?: string;
+  'mergedIds'?: Set<string>;
+  'alias'?: string;
+  'active'?: boolean;
+  'deactivationReason'?: PatientDeactivationReasonEnum;
+  'ssin'?: string;
+  'maidenName'?: string;
+  'spouseName'?: string;
+  'partnerName'?: string;
+  'personalStatus'?: PatientPersonalStatusEnum;
+  'dateOfBirth'?: number;
+  'dateOfDeath'?: number;
+  'placeOfBirth'?: string;
+  'placeOfDeath'?: string;
+  'deceased'?: boolean;
+  'education'?: string;
+  'profession'?: string;
+  'note'?: string;
+  'administrativeNote'?: string;
+  'nationality'?: string;
+  'race'?: string;
+  'ethnicity'?: string;
+  'picture'?: string;
+  'externalId'?: string;
+  'partnerships'?: Array<Partnership>;
+  'patientHealthCareParties'?: Array<PatientHealthCareParty>;
+  'patientProfessions'?: Array<CodingReference>;
+  'parameters'?: { [key: string]: Array<string>; };
+  'properties'?: Set<Property>;
+  'systemMetaData'?: SystemMetaDataOwnerEncrypted;
 }
 
 

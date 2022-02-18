@@ -15,9 +15,18 @@
 * Links (usually for therapeutic reasons) between this patient and healthcare parties (of class PatientHealthcareParty).
 */
 export class PatientHealthCareParty {
+constructor(json: IPatientHealthCareParty) {
+  Object.assign(this as PatientHealthCareParty, json)
+}
+
     'type': PatientHealthCarePartyTypeEnum;
     'healthcarePartyId'?: string;
 
+}
+
+interface IPatientHealthCareParty {
+  'type'?: PatientHealthCarePartyTypeEnum;
+  'healthcarePartyId'?: string;
 }
 
 

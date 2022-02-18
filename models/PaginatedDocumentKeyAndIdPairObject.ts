@@ -12,8 +12,17 @@
 
 
 export class PaginatedDocumentKeyAndIdPairObject {
+constructor(json: IPaginatedDocumentKeyAndIdPairObject) {
+  Object.assign(this as PaginatedDocumentKeyAndIdPairObject, json)
+}
+
     'startKey'?: any;
     'startKeyDocId'?: string;
 
+}
+
+interface IPaginatedDocumentKeyAndIdPairObject {
+  'startKey'?: any;
+  'startKeyDocId'?: string;
 }
 

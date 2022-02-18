@@ -14,6 +14,10 @@ import { AuthenticationToken } from './AuthenticationToken';
 import { Property } from './Property';
 
 export class User {
+constructor(json: IUser) {
+  Object.assign(this as User, json)
+}
+
     /**
     * the Id of the user. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -91,5 +95,27 @@ export class User {
     */
     'authenticationTokens': { [key: string]: AuthenticationToken; };
 
+}
+
+interface IUser {
+  'id'?: string;
+  'rev'?: string;
+  'deletionDate'?: number;
+  'created'?: number;
+  'name'?: string;
+  'properties'?: Set<Property>;
+  'roles'?: Set<string>;
+  'login'?: string;
+  'passwordHash'?: string;
+  'secret'?: string;
+  'use2fa'?: boolean;
+  'groupId'?: string;
+  'healthcarePartyId'?: string;
+  'patientId'?: string;
+  'deviceId'?: string;
+  'autoDelegations'?: { [key: string]: Set<string>; };
+  'email'?: string;
+  'mobilePhone'?: string;
+  'authenticationTokens'?: { [key: string]: AuthenticationToken; };
 }
 

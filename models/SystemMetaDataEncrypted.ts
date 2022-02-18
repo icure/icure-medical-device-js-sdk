@@ -13,10 +13,21 @@
 import { Delegation } from './Delegation';
 
 export class SystemMetaDataEncrypted {
+constructor(json: ISystemMetaDataEncrypted) {
+  Object.assign(this as SystemMetaDataEncrypted, json)
+}
+
     'secretForeignKeys': Array<string>;
     'cryptedForeignKeys': { [key: string]: Set<Delegation>; };
     'delegations': { [key: string]: Set<Delegation>; };
     'encryptionKeys': { [key: string]: Set<Delegation>; };
 
+}
+
+interface ISystemMetaDataEncrypted {
+  'secretForeignKeys'?: Array<string>;
+  'cryptedForeignKeys'?: { [key: string]: Set<Delegation>; };
+  'delegations'?: { [key: string]: Set<Delegation>; };
+  'encryptionKeys'?: { [key: string]: Set<Delegation>; };
 }
 

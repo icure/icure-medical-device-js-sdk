@@ -12,7 +12,15 @@
 
 
 export class Filter {
+constructor(json: IFilter) {
+  Object.assign(this as Filter, json)
+}
+
     'description': string;
 
+}
+
+interface IFilter {
+  'description'?: string;
 }
 

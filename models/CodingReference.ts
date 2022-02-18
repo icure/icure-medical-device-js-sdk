@@ -15,10 +15,21 @@
 * Codified list of professions exercised by this patient.
 */
 export class CodingReference {
+constructor(json: ICodingReference) {
+  Object.assign(this as CodingReference, json)
+}
+
     'id'?: string;
     'type'?: string;
     'code'?: string;
     'version'?: string;
 
+}
+
+interface ICodingReference {
+  'id'?: string;
+  'type'?: string;
+  'code'?: string;
+  'version'?: string;
 }
 

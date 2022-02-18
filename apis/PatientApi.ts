@@ -1,8 +1,9 @@
-import {Filter} from '../models/Filter';
-import {PaginatedListPatient} from '../models/PaginatedListPatient';
-import {Patient} from '../models/Patient';
 
-/**
+import { Filter } from '../models/Filter';
+import { PaginatedListPatient } from '../models/PaginatedListPatient';
+import { Patient } from '../models/Patient';
+
+  /**
   * no description
   */
   export interface PatientApi {
@@ -10,13 +11,13 @@ import {Patient} from '../models/Patient';
     /**
       * When modifying a patient, you must ensure that the rev obtained when getting or creating the patient is present as the rev is used to guarantee that the patient has not been modified by a third party.
       * Create or update a [Patient]
-      * @param patient
+      * @param patient 
     */
     createOrModifyPatient(patient: Patient, ): Promise<Patient >;
     /**
       * Deletes the patient identified by the provided unique [patientId].
       * Delete a [Patient]
-      * @param patientId
+      * @param patientId 
     */
     deletePatient(patientId: string, ): Promise<string >;
     /**
@@ -30,7 +31,7 @@ import {Patient} from '../models/Patient';
     /**
       * Each patient is uniquely identified by a patient id. The patient id is a UUID. This [patientId] is the preferred method to retrieve one specific patient.
       * Get a [Patient]
-      * @param patientId
+      * @param patientId 
     */
     getPatient(patientId: string, ): Promise<Patient >;
     /**
@@ -40,4 +41,3 @@ import {Patient} from '../models/Patient';
     */
     matchPatients(filter: Filter, ): Promise<Array<string> >;
     }
-

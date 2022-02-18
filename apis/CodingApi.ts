@@ -1,8 +1,9 @@
-import {Coding} from '../models/Coding';
-import {Filter} from '../models/Filter';
-import {PaginatedListCoding} from '../models/PaginatedListCoding';
 
-/**
+import { Coding } from '../models/Coding';
+import { Filter } from '../models/Filter';
+import { PaginatedListCoding } from '../models/PaginatedListCoding';
+
+  /**
   * no description
   */
   export interface CodingApi {
@@ -10,13 +11,13 @@ import {PaginatedListCoding} from '../models/PaginatedListCoding';
     /**
       * When modifying a coding, you must ensure that the rev obtained when getting or creating the coding is present as the rev is used to guarantee that the coding has not been modified by a third party.
       * Create or update a [Coding]
-      * @param coding
+      * @param coding 
     */
     createOrModifyCoding(coding: Coding, ): Promise<Coding >;
     /**
       * When modifying codings, you must ensure that the rev obtained when getting or creating the coding is present as the rev is used to guarantee that the coding has not been modified by a third party.
       * Create or update a batch of [Coding]
-      * @param coding
+      * @param coding 
     */
     createOrModifyCodings(coding: Array<Coding>, ): Promise<Array<Coding> >;
     /**
@@ -30,7 +31,7 @@ import {PaginatedListCoding} from '../models/PaginatedListCoding';
     /**
       * Each coding is uniquely identified by a coding id. The coding id is a UUID. This [codingId] is the preferred method to retrieve one specific coding.
       * Get a [Coding]
-      * @param codingId
+      * @param codingId 
     */
     getCoding(codingId: string, ): Promise<Coding >;
     /**
@@ -40,4 +41,3 @@ import {PaginatedListCoding} from '../models/PaginatedListCoding';
     */
     matchCoding(filter: Filter, ): Promise<Array<string> >;
     }
-

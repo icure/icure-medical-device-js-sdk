@@ -12,6 +12,10 @@
 
 
 export class Document {
+constructor(json: IDocument) {
+  Object.assign(this as Document, json)
+}
+
     /**
     * The Id of the document. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -63,5 +67,25 @@ export class Document {
     */
     'attachmentId'?: string;
 
+}
+
+interface IDocument {
+  'id'?: string;
+  'rev'?: string;
+  'created'?: number;
+  'modified'?: number;
+  'author'?: string;
+  'responsible'?: string;
+  'medicalLocationId'?: string;
+  'deletionDate'?: number;
+  'objectStoreReference'?: string;
+  'mainUti'?: string;
+  'name'?: string;
+  'version'?: string;
+  'otherUtis'?: Set<string>;
+  'externalUuid'?: string;
+  'size'?: number;
+  'hash'?: string;
+  'attachmentId'?: string;
 }
 

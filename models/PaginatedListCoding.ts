@@ -14,10 +14,21 @@ import { Coding } from './Coding';
 import { PaginatedDocumentKeyAndIdPairObject } from './PaginatedDocumentKeyAndIdPairObject';
 
 export class PaginatedListCoding {
+constructor(json: IPaginatedListCoding) {
+  Object.assign(this as PaginatedListCoding, json)
+}
+
     'pageSize': number;
     'totalSize': number;
     'rows': Array<Coding>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+}
+
+interface IPaginatedListCoding {
+  'pageSize'?: number;
+  'totalSize'?: number;
+  'rows'?: Array<Coding>;
+  'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 }
 

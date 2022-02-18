@@ -1,8 +1,9 @@
-import {Filter} from '../models/Filter';
-import {MedicalDevice} from '../models/MedicalDevice';
-import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
 
-/**
+import { Filter } from '../models/Filter';
+import { MedicalDevice } from '../models/MedicalDevice';
+import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice';
+
+  /**
   * no description
   */
   export interface MedicalDeviceApi {
@@ -10,25 +11,25 @@ import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
     /**
       * When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
       * Create or update a [MedicalDevice]
-      * @param medicalDevice
+      * @param medicalDevice 
     */
     createOrModifyMedicalDevice(medicalDevice: MedicalDevice, ): Promise<MedicalDevice >;
     /**
       * When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
       * Create or update a batch of [MedicalDevice]
-      * @param medicalDevice
+      * @param medicalDevice 
     */
     createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>, ): Promise<Array<MedicalDevice> >;
     /**
       * Deletes the medical device identified by the provided unique [medicalDeviceId].
       * Delete a [MedicalDevice]
-      * @param medicalDeviceId
+      * @param medicalDeviceId 
     */
     deleteMedicalDevice(medicalDeviceId: string, ): Promise<string >;
     /**
       * Deletes the batch of medical device identified by the provided [medicalDeviceIds].
       * Delete a batch of [MedicalDevice]
-      * @param requestBody
+      * @param requestBody 
     */
     deleteMedicalDevices(requestBody: Array<string>, ): Promise<Array<string> >;
     /**
@@ -42,7 +43,7 @@ import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
     /**
       * Each medical device is uniquely identified by a device id. The device id is a UUID. This [medicalDeviceId] is the preferred method to retrieve one specific device.
       * Get a Medical Device
-      * @param medicalDeviceId
+      * @param medicalDeviceId 
     */
     getMedicalDevice(medicalDeviceId: string, ): Promise<MedicalDevice >;
     /**
@@ -52,4 +53,3 @@ import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
     */
     matchMedicalDevices(filter: Filter, ): Promise<Array<string> >;
     }
-

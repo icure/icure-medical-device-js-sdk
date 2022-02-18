@@ -16,6 +16,10 @@ import { CodingReference } from './CodingReference';
 * Typically used for business / client identifiers. An identifier should identify a patient uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
 */
 export class Identifier {
+constructor(json: IIdentifier) {
+  Object.assign(this as Identifier, json)
+}
+
     'id'?: string;
     'assigner'?: string;
     'start'?: string;
@@ -25,5 +29,16 @@ export class Identifier {
     'use'?: string;
     'value'?: string;
 
+}
+
+interface IIdentifier {
+  'id'?: string;
+  'assigner'?: string;
+  'start'?: string;
+  'end'?: string;
+  'system'?: string;
+  'type'?: CodingReference;
+  'use'?: string;
+  'value'?: string;
 }
 

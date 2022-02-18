@@ -15,6 +15,10 @@ import { Identifier } from './Identifier';
 import { SystemMetaDataEncrypted } from './SystemMetaDataEncrypted';
 
 export class HealthcareElement {
+constructor(json: IHealthcareElement) {
+  Object.assign(this as HealthcareElement, json)
+}
+
     /**
     * The Id of the healthcare element. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -59,5 +63,27 @@ export class HealthcareElement {
     'note'?: string;
     'systemMetaData'?: SystemMetaDataEncrypted;
 
+}
+
+interface IHealthcareElement {
+  'id'?: string;
+  'identifiers'?: Array<Identifier>;
+  'rev'?: string;
+  'created'?: number;
+  'modified'?: number;
+  'author'?: string;
+  'responsible'?: string;
+  'medicalLocationId'?: string;
+  'tags'?: Set<CodingReference>;
+  'codes'?: Set<CodingReference>;
+  'endOfLife'?: number;
+  'deletionDate'?: number;
+  'healthElementId'?: string;
+  'valueDate'?: number;
+  'openingDate'?: number;
+  'closingDate'?: number;
+  'description'?: string;
+  'note'?: string;
+  'systemMetaData'?: SystemMetaDataEncrypted;
 }
 

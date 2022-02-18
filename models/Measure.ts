@@ -13,6 +13,10 @@
 import { CodingReference } from './CodingReference';
 
 export class Measure {
+constructor(json: IMeasure) {
+  Object.assign(this as Measure, json)
+}
+
     'value'?: number;
     'min'?: number;
     'max'?: number;
@@ -25,5 +29,19 @@ export class Measure {
     'comment'?: string;
     'comparator'?: string;
 
+}
+
+interface IMeasure {
+  'value'?: number;
+  'min'?: number;
+  'max'?: number;
+  'ref'?: number;
+  'severity'?: number;
+  'severityCode'?: string;
+  'evolution'?: number;
+  'unit'?: string;
+  'unitCodes'?: Set<CodingReference>;
+  'comment'?: string;
+  'comparator'?: string;
 }
 

@@ -15,6 +15,10 @@
 * Encrypted and time-limited Authentication tokens used for inter-applications authentication
 */
 export class AuthenticationToken {
+constructor(json: IAuthenticationToken) {
+  Object.assign(this as AuthenticationToken, json)
+}
+
     /**
     * Encrypted token
     */
@@ -28,5 +32,11 @@ export class AuthenticationToken {
     */
     'validity': number;
 
+}
+
+interface IAuthenticationToken {
+  'token'?: string;
+  'creationTime'?: number;
+  'validity'?: number;
 }
 

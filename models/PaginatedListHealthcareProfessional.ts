@@ -14,10 +14,21 @@ import { HealthcareProfessional } from './HealthcareProfessional';
 import { PaginatedDocumentKeyAndIdPairObject } from './PaginatedDocumentKeyAndIdPairObject';
 
 export class PaginatedListHealthcareProfessional {
+constructor(json: IPaginatedListHealthcareProfessional) {
+  Object.assign(this as PaginatedListHealthcareProfessional, json)
+}
+
     'pageSize': number;
     'totalSize': number;
     'rows': Array<HealthcareProfessional>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+}
+
+interface IPaginatedListHealthcareProfessional {
+  'pageSize'?: number;
+  'totalSize'?: number;
+  'rows'?: Array<HealthcareProfessional>;
+  'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 }
 

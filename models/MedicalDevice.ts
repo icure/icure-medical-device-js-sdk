@@ -16,6 +16,10 @@ import { Property } from './Property';
 import { SystemMetaDataOwner } from './SystemMetaDataOwner';
 
 export class MedicalDevice {
+constructor(json: IMedicalDevice) {
+  Object.assign(this as MedicalDevice, json)
+}
+
     /**
     * The Id of the MedicalDevice. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -92,5 +96,29 @@ export class MedicalDevice {
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwner;
 
+}
+
+interface IMedicalDevice {
+  'id'?: string;
+  'rev'?: string;
+  'deletionDate'?: number;
+  'identifiers'?: Array<Identifier>;
+  'created'?: number;
+  'modified'?: number;
+  'author'?: string;
+  'responsible'?: string;
+  'labels'?: Set<CodingReference>;
+  'codes'?: Set<CodingReference>;
+  'endOfLife'?: number;
+  'externalId'?: string;
+  'name'?: string;
+  'type'?: string;
+  'brand'?: string;
+  'model'?: string;
+  'serialNumber'?: string;
+  'parentId'?: string;
+  'picture'?: Array<string>;
+  'properties'?: Set<Property>;
+  'systemMetaData'?: SystemMetaDataOwner;
 }
 

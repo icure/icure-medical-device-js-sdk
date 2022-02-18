@@ -12,8 +12,17 @@
 
 
 export class SystemMetaDataOwner {
+constructor(json: ISystemMetaDataOwner) {
+  Object.assign(this as SystemMetaDataOwner, json)
+}
+
     'hcPartyKeys': { [key: string]: Array<string>; };
     'privateKeyShamirPartitions': { [key: string]: string; };
 
+}
+
+interface ISystemMetaDataOwner {
+  'hcPartyKeys'?: { [key: string]: Array<string>; };
+  'privateKeyShamirPartitions'?: { [key: string]: string; };
 }
 

@@ -31,3 +31,12 @@ export function map<I, O>(arr: I[] | undefined, mapper: (obj:I) => O): O[] | und
   return arr.map(it => mapper(it));
 }
 
+export function toMapSet<I>(map:{[key:string]: Iterable<I>}): {[key:string]: Set<I>} {
+  return Object.entries(map)
+    .map(([k,v]) => [k, new Set(Array.from(v))] as [string, Set<I>])
+    .reduce((m,[k,v]) => {
+      m[k] = v;
+      return m;
+    }, {} as {[key:string]:Set<I>})
+
+}

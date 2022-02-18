@@ -13,6 +13,10 @@
 import { Delegation } from './Delegation';
 
 export class SystemMetaDataOwnerEncrypted {
+constructor(json: ISystemMetaDataOwnerEncrypted) {
+  Object.assign(this as SystemMetaDataOwnerEncrypted, json)
+}
+
     'hcPartyKeys': { [key: string]: Array<string>; };
     'privateKeyShamirPartitions': { [key: string]: string; };
     'secretForeignKeys': Array<string>;
@@ -20,5 +24,14 @@ export class SystemMetaDataOwnerEncrypted {
     'delegations': { [key: string]: Set<Delegation>; };
     'encryptionKeys': { [key: string]: Set<Delegation>; };
 
+}
+
+interface ISystemMetaDataOwnerEncrypted {
+  'hcPartyKeys'?: { [key: string]: Array<string>; };
+  'privateKeyShamirPartitions'?: { [key: string]: string; };
+  'secretForeignKeys'?: Array<string>;
+  'cryptedForeignKeys'?: { [key: string]: Set<Delegation>; };
+  'delegations'?: { [key: string]: Set<Delegation>; };
+  'encryptionKeys'?: { [key: string]: Set<Delegation>; };
 }
 

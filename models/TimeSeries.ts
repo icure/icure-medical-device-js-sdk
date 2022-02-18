@@ -15,6 +15,10 @@
 * A high frequency time-series containing the ts in ms from the start (double) and the values
 */
 export class TimeSeries {
+constructor(json: ITimeSeries) {
+  Object.assign(this as TimeSeries, json)
+}
+
     'fields': Array<string>;
     'samples': Array<Array<number>>;
     'min': Array<number>;
@@ -23,5 +27,15 @@ export class TimeSeries {
     'median': Array<number>;
     'variance': Array<number>;
 
+}
+
+interface ITimeSeries {
+  'fields'?: Array<string>;
+  'samples'?: Array<Array<number>>;
+  'min'?: Array<number>;
+  'max'?: Array<number>;
+  'mean'?: Array<number>;
+  'median'?: Array<number>;
+  'variance'?: Array<number>;
 }
 

@@ -12,10 +12,20 @@
 
 
 export class Telecom {
+constructor(json: ITelecom) {
+  Object.assign(this as Telecom, json)
+}
+
     'telecomType'?: TelecomTelecomTypeEnum;
     'telecomNumber'?: string;
     'telecomDescription'?: string;
 
+}
+
+interface ITelecom {
+  'telecomType'?: TelecomTelecomTypeEnum;
+  'telecomNumber'?: string;
+  'telecomDescription'?: string;
 }
 
 

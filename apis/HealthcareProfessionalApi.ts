@@ -1,8 +1,9 @@
-import {Filter} from '../models/Filter';
-import {HealthcareProfessional} from '../models/HealthcareProfessional';
-import {PaginatedListHealthcareProfessional} from '../models/PaginatedListHealthcareProfessional';
 
-/**
+import { Filter } from '../models/Filter';
+import { HealthcareProfessional } from '../models/HealthcareProfessional';
+import { PaginatedListHealthcareProfessional } from '../models/PaginatedListHealthcareProfessional';
+
+  /**
   * no description
   */
   export interface HealthcareProfessionalApi {
@@ -40,4 +41,3 @@ import {PaginatedListHealthcareProfessional} from '../models/PaginatedListHealth
     */
     matchHealthcareProfessionalBy(filter: Filter, ): Promise<Array<string> >;
     }
-

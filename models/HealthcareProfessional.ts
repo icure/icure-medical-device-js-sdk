@@ -17,6 +17,10 @@ import { Property } from './Property';
 import { SystemMetaDataOwner } from './SystemMetaDataOwner';
 
 export class HealthcareProfessional {
+constructor(json: IHealthcareProfessional) {
+  Object.assign(this as HealthcareProfessional, json)
+}
+
     /**
     * the Id of the healthcare party. We encourage using either a v4 UUID or a HL7 Id.
     */
@@ -92,6 +96,29 @@ export class HealthcareProfessional {
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwner;
 
+}
+
+interface IHealthcareProfessional {
+  'id'?: string;
+  'rev'?: string;
+  'created'?: number;
+  'modified'?: number;
+  'deletionDate'?: number;
+  'name'?: string;
+  'lastName'?: string;
+  'firstName'?: string;
+  'names'?: Array<PersonName>;
+  'gender'?: HealthcareProfessionalGenderEnum;
+  'civility'?: string;
+  'speciality'?: string;
+  'parentId'?: string;
+  'addresses'?: Array<Address>;
+  'languages'?: Array<string>;
+  'picture'?: string;
+  'specialityCodes'?: Set<CodingReference>;
+  'notes'?: string;
+  'properties'?: Set<Property>;
+  'systemMetaData'?: SystemMetaDataOwner;
 }
 
 

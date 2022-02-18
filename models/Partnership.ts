@@ -15,10 +15,20 @@
 * List of partners, or persons of contact (of class Partnership, see below).
 */
 export class Partnership {
+constructor(json: IPartnership) {
+  Object.assign(this as Partnership, json)
+}
+
     'type'?: PartnershipTypeEnum;
     'status'?: PartnershipStatusEnum;
     'partnerId'?: string;
 
+}
+
+interface IPartnership {
+  'type'?: PartnershipTypeEnum;
+  'status'?: PartnershipStatusEnum;
+  'partnerId'?: string;
 }
 
 

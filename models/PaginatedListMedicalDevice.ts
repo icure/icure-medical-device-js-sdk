@@ -14,10 +14,21 @@ import { MedicalDevice } from './MedicalDevice';
 import { PaginatedDocumentKeyAndIdPairObject } from './PaginatedDocumentKeyAndIdPairObject';
 
 export class PaginatedListMedicalDevice {
+constructor(json: IPaginatedListMedicalDevice) {
+  Object.assign(this as PaginatedListMedicalDevice, json)
+}
+
     'pageSize': number;
     'totalSize': number;
     'rows': Array<MedicalDevice>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+}
+
+interface IPaginatedListMedicalDevice {
+  'pageSize'?: number;
+  'totalSize'?: number;
+  'rows'?: Array<MedicalDevice>;
+  'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 }
 

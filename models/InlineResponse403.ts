@@ -12,6 +12,10 @@
 
 
 export class InlineResponse403 {
+constructor(json: IInlineResponse403) {
+  Object.assign(this as InlineResponse403, json)
+}
+
     '_short'?: number;
     '_char'?: string;
     '_int'?: number;
@@ -21,5 +25,16 @@ export class InlineResponse403 {
     'direct'?: boolean;
     'readOnly'?: boolean;
 
+}
+
+interface IInlineResponse403 {
+  '_short'?: number;
+  '_char'?: string;
+  '_int'?: number;
+  '_long'?: number;
+  '_float'?: number;
+  '_double'?: number;
+  'direct'?: boolean;
+  'readOnly'?: boolean;
 }
 

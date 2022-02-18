@@ -1,15 +1,15 @@
 import {AuthenticationToken, User as BaseUser} from "@icure/api";
 import {v4 as uuid} from 'uuid';
 import {User} from "../models/User";
-import {forceUuid, map, mapReduce, mapSet} from "./utils";
+import {forceUuid, map, mapReduce, mapSet, toMapSet} from "./utils";
 
 namespace UserMapper {
    const toUser = (dto: BaseUser) =>
       new User({
         id: dto.id,
         properties: new Set(map(dto.properties, toProperty)),
-        roles: dto.roles,
-        autoDelegations: dto.autoDelegations,
+        roles: new Set(dto.roles),
+        autoDelegations: toMapSet(dto.autoDelegations),
         rev: dto.rev,
         deletionDate: dto.deletionDate,
         created: dto.created,

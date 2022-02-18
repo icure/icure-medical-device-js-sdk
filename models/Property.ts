@@ -17,10 +17,21 @@ import { TypedValueObject } from './TypedValueObject';
 * Extra properties for the user. Those properties are typed (see class Property)
 */
 export class Property {
+constructor(json: IProperty) {
+  Object.assign(this as Property, json)
+}
+
     'id'?: string;
     'type'?: PropertyType;
     'typedValue'?: TypedValueObject;
     'deleted'?: number;
 
+}
+
+interface IProperty {
+  'id'?: string;
+  'type'?: PropertyType;
+  'typedValue'?: TypedValueObject;
+  'deleted'?: number;
 }
 

@@ -16,6 +16,10 @@ import { Telecom } from './Telecom';
 * the list of addresses (with address type).
 */
 export class Address {
+constructor(json: IAddress) {
+  Object.assign(this as Address, json)
+}
+
     'addressType'?: AddressAddressTypeEnum;
     'description'?: string;
     'street'?: string;
@@ -28,6 +32,20 @@ export class Address {
     'note'?: string;
     'telecoms': Array<Telecom>;
 
+}
+
+interface IAddress {
+  'addressType'?: AddressAddressTypeEnum;
+  'description'?: string;
+  'street'?: string;
+  'houseNumber'?: string;
+  'postboxNumber'?: string;
+  'postalCode'?: string;
+  'city'?: string;
+  'state'?: string;
+  'country'?: string;
+  'note'?: string;
+  'telecoms'?: Array<Telecom>;
 }
 
 

@@ -1,8 +1,9 @@
-import {Filter} from '../models/Filter';
-import {PaginatedListUser} from '../models/PaginatedListUser';
-import {User} from '../models/User';
 
-/**
+import { Filter } from '../models/Filter';
+import { PaginatedListUser } from '../models/PaginatedListUser';
+import { User } from '../models/User';
+
+  /**
   * no description
   */
   export interface UserApi {
@@ -58,4 +59,3 @@ import {User} from '../models/User';
     */
     matchUsers(filter: Filter, ): Promise<Array<string> >;
     }
-

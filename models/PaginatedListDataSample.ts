@@ -14,10 +14,21 @@ import { DataSample } from './DataSample';
 import { PaginatedDocumentKeyAndIdPairObject } from './PaginatedDocumentKeyAndIdPairObject';
 
 export class PaginatedListDataSample {
+constructor(json: IPaginatedListDataSample) {
+  Object.assign(this as PaginatedListDataSample, json)
+}
+
     'pageSize': number;
     'totalSize': number;
     'rows': Array<DataSample>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+}
+
+interface IPaginatedListDataSample {
+  'pageSize'?: number;
+  'totalSize'?: number;
+  'rows'?: Array<DataSample>;
+  'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 }
 
