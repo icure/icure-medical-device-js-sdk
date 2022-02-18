@@ -4,10 +4,13 @@ import {DataSample} from "../models/DataSample";
 import {Content} from "../models/Content";
 import {Measure} from "../models/Measure";
 import {TimeSeriesMapper} from "./timeSeries";
+import {CodeStubDtoMapper} from "./CodeStubCodingReference";
 
 export namespace ServiceMapper {
   import toTimeSeries = TimeSeriesMapper.toTimeSeries;
   import toTimeSeriesDto = TimeSeriesMapper.toTimeSeriesDto;
+  import toCodingReference = CodeStubDtoMapper.toCodingReference;
+  import toCodeStub = CodeStubDtoMapper.toCodeStub;
 
   export const toDataSample = (obj?: Service, batchId?: string) => obj ? new DataSample({
     id: obj.id,
@@ -15,7 +18,7 @@ export namespace ServiceMapper {
     content: mapReduce(obj.content, toContent),
     qualifiedLinks: obj.qualifiedLinks,
     codes: mapSet(new Set(obj.codes), toCodingReference),
-    labels: mapSet(new Set(), toCodingReference),
+    labels: mapSet(new Set(obj.tags), toCodingReference),
     transactionId: obj.transactionId,
     batchId: obj.contactId ?? batchId,
     healthElementsIds: obj.healthElementsIds ? new Set(obj.healthElementsIds) : undefined,
@@ -66,8 +69,8 @@ export namespace ServiceMapper {
     identifier: map(obj.identifier, toIdentifierDto),
     content: mapReduce(obj.content, toContentDto),
     qualifiedLinks: obj.qualifiedLinks,
-    codes: mapSet(obj.codes, toCodeStubDto),
-    tags: mapSet(obj.labels, toCodeStubDto),
+    codes: mapSet(obj.codes, toCodeStub),
+    tags: mapSet(obj.labels, toCodeStub),
     transactionId: obj.transactionId,
     contactId: obj.batchId,
     healthElementsIds: obj.healthElementsIds,
@@ -108,7 +111,7 @@ export namespace ServiceMapper {
     severityCode: obj.severityCode,
     evolution: obj.evolution,
     unit: obj.unit,
-    unitCodes: mapSet(obj.unitCodes, toCodeStubDto),
+    unitCodes: mapSet(obj.unitCodes, toCodeStub),
     comment: obj.comment,
     comparator: obj.comparator,
   }) : undefined;

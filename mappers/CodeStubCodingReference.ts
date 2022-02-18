@@ -1,7 +1,7 @@
 import {CodingReference} from "../models/CodingReference";
 import {CodeStub} from "@icure/api";
 
-namespace CodeStubDtoMapper {
+export namespace CodeStubDtoMapper {
   export const toCodingReference = (dto: CodeStub) => new CodingReference({
     id: dto.id ?? `${dto.type}|${dto.code}|${dto.version}`,
     type: dto.type,
