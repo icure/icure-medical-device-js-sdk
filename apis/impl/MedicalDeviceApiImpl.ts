@@ -11,19 +11,46 @@ import {
   IccHcpartyXApi,
   IccHelementXApi,
   IccPatientXApi,
-  IccUserXApi
+  IccUserXApi,
+  ListOfIds
 } from "@icure/api";
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {forceUuid} from "../../mappers/utils";
+import {MedicalDeviceMapper} from "../../mappers/medicalDevice";
 
 class MedicalDeviceApiImpl implements MedicalDeviceApi {
-    createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {
-        return Promise.resolve(undefined);
+  private deviceApi: IccDeviceApi;
+
+  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; deviceApi: IccDeviceApi; }) {
+    this.deviceApi = api.deviceApi
+  }
+
+  async createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {
+    const createdDevice = (await this.createOrModifyMedicalDevices([medicalDevice])).find(e => true);
+    if (createdDevice != undefined) {
+      return createdDevice;
+    } else {
+      throw new Error("Couldn't create medical device");
+    }
+  }
+
+  async createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
+    const medicalDevicesToCreate = medicalDevice.filter(dev => dev.rev == null);
+    const medicalDevicesToUpdate = medicalDevice.filter(dev => dev.rev != null);
+
+    if (!medicalDevicesToUpdate.every(device => device.id != null && forceUuid(device.id))) {
+      throw Error("Update id should be provided as an UUID");
     }
 
-    createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
-        return Promise.resolve(undefined);
-    }
+    const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+    const deviceToUpdate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+
+    const createdDevices = await this.deviceApi.createDevices(deviceToCreate);
+    const updatedDevices = await this.deviceApi.updateDevices(deviceToUpdate);
+    const processedDeviceIds = [...createdDevices, ...updatedDevices].map(d => d.id!);
+
+    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => MedicalDeviceMapper.toMedicalDevice(d));
+  }
 
   async deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
     const deletedDeviceRev = (await this.deviceApi.deleteDevice(medicalDeviceId)).rev
