@@ -43,15 +43,20 @@ export function map<I, O>(arr: I[] | undefined, mapper: (obj: I) => O | undefine
   return arr.map(it => mapper(it)!);
 }
 
-export function toMapSet<I>(map: { [key: string]: Iterable<I> } | undefined): { [key: string]: Set<I> } | undefined {
+export function toMapSetTransform<I, O>(map: { [key: string]: Iterable<I> } | undefined, mapper: (obj: I) => O | undefined): { [key: string]: Set<O> } | undefined {
   if (!map) {
     return undefined;
   }
   return Object.entries(map)
-    .map(([k, v]) => [k, new Set(Array.from(v))] as [string, Set<I>])
+    .map(([k, v]) => [k, new Set(Array.from(v).map(it => mapper(it)!))] as [string, Set<O>])
     .reduce((m, [k, v]) => {
       m[k] = v;
       return m;
-    }, {} as { [key: string]: Set<I> })
+    }, {} as { [key: string]: Set<O> })
 
+}
+
+
+export function toMapSet<I>(map: { [key: string]: Iterable<I> } | undefined): { [key: string]: Set<I> } | undefined {
+  return toMapSetTransform(map, (i) => i);
 }
