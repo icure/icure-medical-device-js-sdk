@@ -2,14 +2,14 @@ import {PropertyTypeStub} from "@icure/api";
 import {PropertyType} from "../models/PropertyType";
 
 export namespace PropertyTypeStubMapper {
-export const toPropertyType = (obj: PropertyTypeStub) => new PropertyType({
+export const toPropertyType = (obj?: PropertyTypeStub) => obj ? new PropertyType({
   identifier: obj.identifier,
-  type: toPropertyTypeType(obj.type),
-});
+  type: obj.type,
+}) : undefined;
 
-    export const toPropertyTypeStubDto = (obj: PropertyType) => new PropertyTypeStub({
+    export const toPropertyTypeStubDto = (obj?: PropertyType) => obj ? new PropertyTypeStub({
       identifier: obj.identifier,
-      type: toPropertyTypeStubDtoType(obj.type),
-    });
+      type: obj.type,
+    }) : undefined;
 
 }
