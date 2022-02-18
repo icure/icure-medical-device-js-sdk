@@ -5,12 +5,15 @@ import {Content} from "../models/Content";
 import {Measure} from "../models/Measure";
 import {TimeSeriesMapper} from "./timeSeries";
 import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {IdentifierDtoMapper} from "./identifier";
 
 export namespace ServiceMapper {
   import toTimeSeries = TimeSeriesMapper.toTimeSeries;
   import toTimeSeriesDto = TimeSeriesMapper.toTimeSeriesDto;
   import toCodingReference = CodeStubDtoMapper.toCodingReference;
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
+  import toIdentifier = IdentifierDtoMapper.toIdentifier;
+  import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 
   export const toDataSample = (obj?: Service, batchId?: string) => obj ? new DataSample({
     id: obj.id,

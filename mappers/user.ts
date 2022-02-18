@@ -2,10 +2,13 @@ import { User as UserDto} from "@icure/api";
 import {User} from "../models/User";
 import {forceUuid, map, mapReduce, mapSet, toMapSet} from "./utils";
 import { PropertyStubMapper } from "./property";
+import {AuthenticationTokenMapper} from "./AuthenticationToken";
 
 export namespace UserMapper {
   import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
   import toProperty = PropertyStubMapper.toProperty;
+  import toAuthenticationTokenDto = AuthenticationTokenMapper.toAuthenticationTokenDto;
+  import toAuthenticationToken = AuthenticationTokenMapper.toAuthenticationToken;
 
   export const toUser = (obj?: UserDto) => obj ?
       new User({
@@ -13,6 +16,7 @@ export namespace UserMapper {
         properties: new Set(map(obj.properties, toProperty)),
         roles: new Set(obj.roles),
         autoDelegations: toMapSet(obj.autoDelegations),
+        authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationToken),
         rev: obj.rev,
         deletionDate: obj.deletionDate,
         created: obj.created,

@@ -2,19 +2,19 @@ import {CodingReference} from "../models/CodingReference";
 import {CodeStub} from "@icure/api";
 
 export namespace CodeStubDtoMapper {
-  export const toCodingReference = (dto: CodeStub) => new CodingReference({
-    id: dto.id ?? `${dto.type}|${dto.code}|${dto.version}`,
-    type: dto.type,
-    code: dto.code,
-    version: dto.version,
-  });
+  export const toCodingReference = (obj?: CodeStub) => obj ? new CodingReference({
+    id: obj.id ?? `${obj.type}|${obj.code}|${obj.version}`,
+    type: obj.type,
+    code: obj.code,
+    version: obj.version,
+  }) : undefined;
 
-  export const toCodeStub = (obj: CodingReference) => new CodeStub({
+  export const toCodeStub = (obj?: CodingReference) => obj ?new CodeStub({
     id: obj.id,
     type: obj.type,
     code: obj.code,
     version: obj.version,
-  });
+  }) : undefined;
 
 
 }
