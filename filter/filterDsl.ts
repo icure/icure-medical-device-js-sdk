@@ -12,6 +12,33 @@ import {IntersectionFilter} from "./IntersectionFilter";
 import {AllUsersFilter} from "./user/AllUsersFilter";
 import {Identifier} from "../models/Identifier";
 
+import { addDays, format } from 'date-fns'
+import {PatientByIdsFilter} from "./patient/PatientByIdsFilter";
+import {PatientByHealthcarePartyIdentifiersFilter} from "./patient/PatientByHealthcarePartyIdentifiersFilter";
+import {
+  Delegation,
+  IccCryptoXApi,
+  PatientByHcPartyAndSsinsFilter,
+  PatientByHcPartyDateOfBirthBetweenFilter
+} from "@icure/api";
+import {PatientByHealthcarePartyGenderEducationProfessionFilter} from "./patient/PatientByHealthcarePartyGenderEducationProfessionFilter";
+import {PatientByHealthcarePartyDateOfBirthBetweenFilter} from "./patient/PatientByHealthcarePartyDateOfBirthBetweenFilter";
+import {PatientByHealthcarePartyNameContainsFuzzyFilter} from "./patient/PatientByHealthcarePartyNameContainsFuzzyFilter";
+import {PatientByHealthcarePartyFilter} from "./patient/PatientByHealthcarePartyFilter";
+import {HealthcareProfessionalByIdsFilter} from "./hcp/HealthcareProfessionalByIdsFilter";
+import {AllHealthcareProfessionalsFilter} from "./hcp/AllHealthcareProfessionalsFilter";
+import {MedicalDeviceByIdsFilter} from "./medicaldevice/MedicalDeviceByIdsFilter";
+import {AllMedicalDevicesFilter} from "./medicaldevice/AllMedicalDevicesFilter";
+import {HealthcareElementByHealthcarePartyLabelCodeFilter} from "./healthcareelement/HealthcareElementByHealthcarePartyLabelCodeFilter";
+import {HealthcareElementByIdsFilter} from "./healthcareelement/HealthcareElementByIdsFilter";
+import {HealthcareElementByHealthcarePartyIdentifiersFilter} from "./healthcareelement/HealthcareElementByHealthcarePartyIdentifiersFilter";
+import {HealthcareElementByHealthcarePartyFilter} from "./healthcareelement/HealthcareElementByHealthcarePartyFilter";
+import {HealthcareElementByHealthcarePartyPatientFilter} from "./healthcareelement/HealthcareElementByHealthcarePartyPatientFilter";
+import {CodingByRegionTypeLabelFilter} from "./coding/CodingByRegionTypeLabelFilter";
+import {CodingByIdsFilter} from "./coding/CodingByIdsFilter";
+import {AllCodingsFilter} from "./coding/AllCodingsFilter";
+import {DataSampleByHealthcarePartyLabelCodeFilter} from "./datasample/DataSampleByHealthcarePartyLabelCodeFilter";
+
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
 }
@@ -39,8 +66,8 @@ class UserFilter implements FilterBuilder<User> {
 async build(): Promise<Filter<User>> {
     const filters = [
       this._byIds && ({ids: this._byIds} as UserByIdsFilter),
-      await this._union && ({filters: this._union} as UnionFilter<User>),
-      await this._intersection && ({filters: this._union} as IntersectionFilter<User>),
+      this._union && await ({filters: this._union} as UnionFilter<User>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<User>),
     ].filter((x) => !!x) as Filter<User>[];
 
     if (!filters.length) {
@@ -57,7 +84,10 @@ async build(): Promise<Filter<User>> {
 
 class PatientFilter implements FilterBuilder<Patient> {
   _forHcp?: HealthcareProfessional
-  getHcp() { return this._forHcp }
+
+  getHcp() {
+    return this._forHcp
+  }
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
@@ -68,17 +98,17 @@ class PatientFilter implements FilterBuilder<Patient> {
   _union?: PatientFilter[]
   _intersection?: PatientFilter[]
 
- forHcp(hcp: HealthcareProfessional):   PatientFilter {
+  forHcp(hcp: HealthcareProfessional): PatientFilter {
     this._forHcp = hcp;
     return this;
   }
 
- byIds(byIds: String[]):   PatientFilter {
+  byIds(byIds: String[]): PatientFilter {
     this._byIds = byIds;
     return this;
   }
 
- byIdentifiers(identifiers: Identifier[]):   PatientFilter {
+  byIdentifiers(identifiers: Identifier[]): PatientFilter {
     this._byIdentifiers = identifiers;
     return this;
   }
@@ -88,63 +118,80 @@ class PatientFilter implements FilterBuilder<Patient> {
     return this;
   }
 
- withSsins(withSsins: String[]):   PatientFilter {
+  withSsins(withSsins: String[]): PatientFilter {
     this._withSsins = withSsins;
     return this;
   }
 
- ofAge(age: number):   PatientFilter {
-    const now = Date.now();
-    return dateOfBirthBetween(
-        DateTime(now.year - age - 1, now.month, now.day).add(Duration(days: 1)),
-        DateTime(now.year - age, now.month, now.day)
+  ofAge(age: number): PatientFilter {
+    const now = new Date();
+    return this.dateOfBirthBetween(
+      parseInt(format(addDays(new Date(now.getFullYear() - age - 1, now.getMonth(), now.getDay()), 1), 'yyyyMMdd')),
+      parseInt(format(new Date(now.getFullYear() - age, now.getMonth(), now.getDay()), 'yyyyMMdd'))
     );
   }
 
-  PatientFilter dateOfBirthBetween(DateTime from, DateTime to) {
-    this._dateOfBirthBetween = Tuple2(from, to);
+  dateOfBirthBetween(from: number, to: number): PatientFilter {
+    this._dateOfBirthBetween = [from, to];
     return this;
   }
 
- containsFuzzy(searchString: String):   PatientFilter {
+  containsFuzzy(searchString: string): PatientFilter {
     this._containsFuzzy = searchString;
     return this;
   }
 
- union(filters: PatientFilter[]):   PatientFilter {
+  union(filters: PatientFilter[]): PatientFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: PatientFilter[]):   PatientFilter {
+  intersection(filters: PatientFilter[]): PatientFilter {
     this._intersection = filters;
     return this;
   }
 
-async build(): Promise<Filter<Patient>> {
-    if (_forHcp == null) {
-      throw FormatException("Hcp must be set for patient filter.");
+  async build(): Promise<Filter<Patient>> {
+    if (this._forHcp == null) {
+      throw Error("Hcp must be set for patient filter.");
     }
-    final HealthcareProfessional hp = _forHcp!;
+    const hp = this._forHcp!;
 
     const filters = [
-      _byIds && PatientByIdsFilter(ids: v.toList())),
-      _byIdentifiers && PatientByHcPartyAndIdentifiersFilter(healthcarePartyId: hp.id!, identifiers: v.toList())),
-      _withSsins && PatientByHcPartyAndSsinsFilter(healthcarePartyId: hp.id!, ssins: v.toList())),
-      _dateOfBirthBetween && PatientByHcPartyDateOfBirthBetweenFilter(healthcarePartyId: hp.id!, minDateOfBirth: v.item1?.toFuzzy(), maxDateOfBirth: v.item2?.toFuzzy())),
-      _byGenderEducationProfession && PatientByHcPartyGenderEducationProfessionFilter(healthcarePartyId: hp.id!, gender: v.item1, education: v.item2, profession: v.item3)),
-      _containsFuzzy && PatientByHcPartyNameContainsFuzzyFilter(healthcarePartyId: hp.id!, searchString: v)),
-      await _union && UnionFilter<Patient>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList()))),
-      await _intersection && IntersectionFilter<Patient>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList())))
-    ].whereType<Filter<Patient>>().toList();
+      this._byIds && ({ids: this._byIds} as PatientByIdsFilter),
+      this._byIdentifiers && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as PatientByHealthcarePartyIdentifiersFilter),
+      this._withSsins && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as PatientByHealthcarePartyDateOfBirthBetweenFilter),
+      this._dateOfBirthBetween && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as PatientByHealthcarePartyGenderEducationProfessionFilter),
+      this._byGenderEducationProfession && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as PatientByHealthcarePartyNameContainsFuzzyFilter),
+      this._containsFuzzy && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as PatientByHealthcarePartyIdentifiersFilter),
+      this._union && await ({filters: this._union} as UnionFilter<Patient>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<Patient>),
+    ].filter((x) => !!x) as Filter<Patient>[];
 
-    if (filters.isEmpty) {
-      return PatientByHcPartyFilter(healthcarePartyId: hp.id!);
+
+    if (!filters.length) {
+      return {healthcarePartyId: hp.id!} as PatientByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({filters}) as IntersectionFilter<Patient>
     }
+
   }
 }
 
@@ -168,20 +215,19 @@ class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfession
     return this;
   }
 
-
-async build(): Promise<Filter<HealthcareProfessional>> {
+  async build(): Promise<Filter<HealthcareProfessional>> {
     const filters = [
-      _byIds && HealthcareProfessionalByIdsFilter(ids: v)),
-      await _union && UnionFilter<HealthcareProfessional>(filters:await Future.wait(v.map((f) async => await f.build()).toList()))),
-      await _intersection && IntersectionFilter<HealthcareProfessional>(filters:await Future.wait(v.map((f) async => await f.build()).toList())))
-    ].whereType<Filter<HealthcareProfessional>>().toList();
+      this._byIds && ({ids: this._byIds} as HealthcareProfessionalByIdsFilter),
+      this._union && await ({filters: this._union} as UnionFilter<HealthcareProfessional>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<HealthcareProfessional>),
+    ].filter((x) => !!x) as Filter<HealthcareProfessional>[];
 
-    if (filters.isEmpty) {
-      return AllHealthcareProfessionalsFilter();
+    if (!filters.length) {
+      return {} as AllHealthcareProfessionalsFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({ filters }) as IntersectionFilter<HealthcareProfessional>
     }
   }
 }
@@ -207,19 +253,19 @@ class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
   }
 
 
-async build(): Promise<Filter<MedicalDevice>> {
+  async build(): Promise<Filter<MedicalDevice>> {
     const filters = [
-      _byIds && MedicalDeviceByIdsFilter(ids: v)),
-      await _union && UnionFilter<MedicalDevice>(filters:await Future.wait(v.map((f) async => await f.build()).toList()))),
-      await _intersection && IntersectionFilter<MedicalDevice>(filters:await Future.wait(v.map((f) async => await f.build()).toList())))
-    ].whereType<Filter<MedicalDevice>>().toList();
+      this._byIds && ({ids: this._byIds} as MedicalDeviceByIdsFilter),
+      this._union && await ({filters: this._union} as UnionFilter<MedicalDevice>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<MedicalDevice>),
+    ].filter((x) => !!x) as Filter<MedicalDevice>[];
 
-    if (filters.isEmpty) {
-      return AllMedicalDevicesFilter();
+    if (!filters.length) {
+      return {} as AllMedicalDevicesFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({ filters }) as IntersectionFilter<MedicalDevice>
     }
   }
 }
@@ -230,9 +276,8 @@ class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
-  HealthcareElementByHcPartyTagCodeFilter? _byTagCodeFilter;
-  Tuple2<Crypto, Patient>[]? _forPatients;
-
+  _byTagCodeFilter?: HealthcareElementByHealthcarePartyLabelCodeFilter
+  _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: HealthcareElementFilter[]
   _intersection?: HealthcareElementFilter[]
 
@@ -251,18 +296,13 @@ class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
     return this;
   }
 
-  HealthcareElementFilter byTagCodeFilter({
-    String? tagType = null,
-    String? tagCode = null,
-    String? codeType = null,
-    String? codeNumber = null,
-    int? status = null}) {
-    this._byTagCodeFilter = HealthcareElementByHcPartyTagCodeFilter(tagType: tagType, tagCode: tagCode, codeType: codeType, codeNumber: codeNumber, status: status);
+  byTagCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string): HealthcareElementFilter {
+    this._byTagCodeFilter = {tagType, tagCode, codeType, codeCode} as HealthcareElementByHealthcarePartyLabelCodeFilter
     return this;
   }
 
-  HealthcareElementFilter forPatients(Crypto crypto, Patient[] patients) {
-    this._forPatients = Tuple2(crypto, patients);
+  forPatients(crypto: IccCryptoXApi, patients: Patient[]): HealthcareElementFilter  {
+    this._forPatients = [crypto, patients];
     return this;
   }
 
@@ -276,36 +316,45 @@ class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
     return this;
   }
 
-
-async build(): Promise<Filter<HealthcareElement>> {
-    if (_forHcp == null) {
-      throw FormatException("Hcp must be set for patient filter.");
+  async build(): Promise<Filter<HealthcareElement>> {
+    if (this._forHcp == null) {
+      throw Error("Hcp must be set for patient filter.");
     }
-    final HealthcareProfessional hp = _forHcp!;
-
+    const hp = this._forHcp!;
     const filters = [
-      _byIds && HealthcareElementByIdsFilter(ids: v)),
-      _byIdentifiers && HealthcareElementByHcPartyIdentifiersFilter(healthcarePartyId: hp.id!, identifiers: v.toList())),
-      _byTagCodeFilter && v.healthcarePartyId = hp.id!),
-      await _forPatients && HealthcareElementByHcPartyPatientFilter(healthcarePartyId: hp.id!, patientSecretForeignKeys: (await Future.wait(v.item2.map((p) => v.item1.decryptEncryptionKeys(hp.id!, (p.systemMetaData?.delegations ?? {}).map((k,v) => MapEntry(k, v.map((d)=> d.toDelegationDto()).toSet())))))).toSet().flatten())),
-      await _union && UnionFilter<HealthcareElement>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList()))),
-      await _intersection && IntersectionFilter<HealthcareElement>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList())))
-    ].whereType<Filter<HealthcareElement>>().toList();
+      this._byIds && ({ids: this._byIds} as HealthcareElementByIdsFilter),
+      this._byIdentifiers && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as HealthcareElementByHealthcarePartyIdentifiersFilter),
+      this._byTagCodeFilter,
+      this._forPatients && ({
+        healthcarePartyId: hp.id,
+        patientSecretForeignKeys: (await Promise.all(
+          this._forPatients[1].map(async (p) =>
+            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(hp.id!, p.id!, Object.entries(p.systemMetaData!.delegations!)
+              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
+            )).map((x) => x.extractedKeys))
+        )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
+      } as HealthcareElementByHealthcarePartyPatientFilter),
+      this._union && await ({filters: this._union} as UnionFilter<HealthcareElement>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<HealthcareElement>),
+    ].filter((x) => !!x) as Filter<HealthcareElement>[];
 
-    if (filters.isEmpty) {
-      return HealthcareElementByHcPartyFilter(hcpId: hp.id!);
+    if (!filters.length) {
+      return {healthcarePartyId: hp.id!} as HealthcareElementByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({filters}) as IntersectionFilter<HealthcareElement>
     }
+
   }
 }
 
-
 class CodingFilter implements FilterBuilder<Coding> {
   _byIds?: String[]
-  CodingByRegionTypeLabelLanguageFilter? _byRegionTypeLabelLanguageFilter;
+  _byRegionTypeLabelLanguageFilter?: CodingByRegionTypeLabelFilter;
   _union?: CodingFilter[]
   _intersection?: CodingFilter[]
 
@@ -314,12 +363,12 @@ class CodingFilter implements FilterBuilder<Coding> {
     return this;
   }
 
-  CodingFilter byRegionTypeLabelLanguage({
-      String? region = null,
-      String? type = null,
-      String? language = null,
-      String? label = null}) {
-    this._byRegionTypeLabelLanguageFilter = CodingByRegionTypeLabelLanguageFilter(region: region, type: type, language: language, label: label);
+  byRegionTypeLabelLanguage(
+      region?: string,
+      type?: string,
+      language?: string,
+      label?: string) : CodingFilter {
+    this._byRegionTypeLabelLanguageFilter = {region, type, language, label} as CodingByRegionTypeLabelFilter
     return this;
   }
 
@@ -334,20 +383,20 @@ class CodingFilter implements FilterBuilder<Coding> {
   }
 
 
-async build(): Promise<Filter<Coding>> {
+  async build(): Promise<Filter<Coding>> {
     const filters = [
-      _byIds && CodingByIdsFilter(ids: v)),
-      _byRegionTypeLabelLanguageFilter && v),
-      await _union && UnionFilter<Coding>(filters:await Future.wait(v.map((f) async => await f.build()).toList()))),
-      await _intersection && IntersectionFilter<Coding>(filters:await Future.wait(v.map((f) async => await f.build()).toList())))
-    ].whereType<Filter<Coding>>().toList();
+      this._byIds && ({ids: this._byIds} as CodingByIdsFilter),
+      this._byRegionTypeLabelLanguageFilter,
+      this._union && await ({filters: this._union} as UnionFilter<Coding>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<Coding>),
+    ].filter((x) => !!x) as Filter<Coding>[];
 
-    if (filters.isEmpty) {
-      return AllCodingsFilter();
+    if (!filters.length) {
+      return {} as AllCodingsFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({ filters }) as IntersectionFilter<Coding>
     }
   }
 }
@@ -359,8 +408,8 @@ class DataSampleFilter implements FilterBuilder<DataSample> {
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
-  DataSampleByHcPartyTagCodeDateFilter? _byTagCodeDateFilter;
-  Tuple2<Crypto, Patient>[]? _forPatients;
+  _byTagCodeDateFilter?: DataSampleByHealthcarePartyLabelCodeFilter;
+  _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
 
@@ -379,20 +428,13 @@ class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-  DataSampleFilter byTagCodeDateFilter({
-    String? tagType = null,
-    String? tagCode = null,
-    String? codeType = null,
-    String? codeCode = null,
-    int? startValueDate = null,
-    int? endValueDate = null,
-  }) {
-    this._byTagCodeDateFilter = DataSampleByHcPartyTagCodeDateFilter(tagType: tagType, tagCode: tagCode, codeType: codeType, codeCode: codeCode, startValueDate: startValueDate, endValueDate: endValueDate);
+  byTagCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string, startValueDate?: number, endValueDate?: number): DataSampleFilter {
+    this._byTagCodeDateFilter = {tagType, tagCode, codeType, codeCode, startValueDate, endValueDate} as DataSampleByHealthcarePartyLabelCodeFilter
     return this;
   }
 
-  DataSampleFilter forPatients(Crypto crypto, Patient[] patients) {
-    this._forPatients = Tuple2(crypto, patients);
+  forPatients(crypto: IccCryptoXApi, patients: Patient[]): DataSampleFilter {
+    this._forPatients = [crypto, patients];
     return this;
   }
 
@@ -406,27 +448,38 @@ class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-async build(): Promise<Filter<DataSample>> {
-    if (_forHcp == null) {
-      throw FormatException("Hcp must be set for patient filter.");
+  async build(): Promise<Filter<HealthcareElement>> {
+    if (this._forHcp == null) {
+      throw Error("Hcp must be set for patient filter.");
     }
-    final HealthcareProfessional hp = _forHcp!;
-
+    const hp = this._forHcp!;
     const filters = [
-      _byIds && DataSampleByIdsFilter(ids: v)),
-      _byIdentifiers && DataSampleByHcPartyIdentifiersFilter(healthcarePartyId: hp.id!, identifiers: v.toList())),
-      _byTagCodeDateFilter && v.healthcarePartyId = hp.id!),
-      await _forPatients && DataSampleBySecretForeignKeys(healthcarePartyId: hp.id!, patientSecretForeignKeys: (await Future.wait(v.item2.map((p) => v.item1.decryptEncryptionKeys(hp.id!, (p.systemMetaData?.delegations ?? {}).map((k,v) => MapEntry(k, v.map((d)=> d.toDelegationDto()).toSet())))))).toSet().flatten())),
-      await _union && UnionFilter<DataSample>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList()))),
-      await _intersection && IntersectionFilter<DataSample>(filters:await Future.wait(v.map((f) async => await f.forHcp(f.hcp ?? hp).build()).toList())))
-    ].whereType<Filter<DataSample>>().toList();
+      this._byIds && ({ids: this._byIds} as HealthcareElementByIdsFilter),
+      this._byIdentifiers && ({
+        healthcarePartyId: hp.id,
+        identifiers: this._byIdentifiers
+      } as HealthcareElementByHealthcarePartyIdentifiersFilter),
+      this._byTagCodeDateFilter,
+      this._forPatients && ({
+        healthcarePartyId: hp.id,
+        patientSecretForeignKeys: (await Promise.all(
+          this._forPatients[1].map(async (p) =>
+            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(hp.id!, p.id!, Object.entries(p.systemMetaData!.delegations!)
+              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
+            )).map((x) => x.extractedKeys))
+        )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
+      } as HealthcareElementByHealthcarePartyPatientFilter),
+      this._union && await ({filters: this._union} as UnionFilter<HealthcareElement>),
+      this._intersection && await ({filters: this._union} as IntersectionFilter<HealthcareElement>),
+    ].filter((x) => !!x) as Filter<HealthcareElement>[];
 
-    if (filters.isEmpty) {
-      return DataSampleByHcPartyFilter(hcpId: hp.id!);
+    if (!filters.length) {
+      return {healthcarePartyId: hp.id!} as HealthcareElementByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return IntersectionFilter(filters: filters);
+      return ({filters}) as IntersectionFilter<HealthcareElement>
     }
+
   }
 }
