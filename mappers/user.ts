@@ -31,7 +31,7 @@ export namespace UserMapper {
         deviceId: obj.deviceId,
         email: obj.email,
         mobilePhone: obj.mobilePhone,
-      }) : null;
+      }) : undefined;
 
   export const toUserDto = (obj?: User) => obj ?
       new UserDto({
@@ -54,5 +54,5 @@ export namespace UserMapper {
         deviceId: obj.deviceId,
         email: obj.email,
         mobilePhone: obj.mobilePhone,
-      }) : null;
+      }) : undefined;
 }
