@@ -92,7 +92,7 @@ constructor(json: IMedicalDevice) {
     /**
     * Picture of the device/application
     */
-    'picture'?: Array<string>;
+    'picture'?: ArrayBuffer;
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwner;
 
