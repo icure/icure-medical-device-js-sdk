@@ -1,12 +1,15 @@
 import {Patient} from "../models/Patient";
 import {Patient as PatientDto} from "@icure/api";
-import {forceUuid, map, mapReduce, mapSet} from "./utils";
+import {forceUuid, map, mapReduce, mapSet, toMapSetTransform} from "./utils";
 import {IdentifierDtoMapper} from "./identifier";
 import {CodeStubDtoMapper} from "./CodeStubCodingReference";
 import {PersonNameDtoMapper} from "./personName";
 import {PatientHealthCarePartyDtoMapper} from "./patientHealthcareParty";
 import {PropertyStubMapper} from "./property";
 import {SystemMetaDataOwnerEncrypted} from "../models/SystemMetaDataOwnerEncrypted";
+import {AddressMapper} from "./Address";
+import {DelegationMapper} from "./Delegation";
+import {PartnershipDtoMapper} from "./partnership";
 
 
 export namespace PatientDtoMapper {
@@ -19,6 +22,12 @@ export namespace PatientDtoMapper {
   import toProperty = PropertyStubMapper.toProperty;
   import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
   import toPatientHealthCarePartyDto = PatientHealthCarePartyDtoMapper.toPatientHealthCarePartyDto;
+  import toAddressDto = AddressMapper.toAddressDto;
+  import toDelegation = DelegationMapper.toDelegation;
+  import toPartnershipDto = PartnershipDtoMapper.toPartnershipDto;
+  import toDelegationDto = DelegationMapper.toDelegationDto;
+  import toPartnership = PartnershipDtoMapper.toPartnership;
+  import toAddress = AddressMapper.toAddress;
   export const toPatient = (obj?: PatientDto) => obj ? new Patient({
     id: obj.id,
     identifiers: map(obj.identifier, toIdentifier),
@@ -73,9 +82,9 @@ export namespace PatientDtoMapper {
       hcPartyKeys: obj.hcPartyKeys,
       privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
       secretForeignKeys: obj.secretForeignKeys,
-      cryptedForeignKeys: mapReduce(obj.cryptedForeignKeys, toDelegation),
-      delegations: mapReduce(obj.delegations, toDelegation),
-      encryptionKeys: mapReduce(obj.encryptionKeys, toDelegation),
+      cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
+      delegations: toMapSetTransform(obj.delegations, toDelegation),
+      encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
     })
   }) : undefined;
 
@@ -132,8 +141,8 @@ export namespace PatientDtoMapper {
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
     secretForeignKeys: obj.systemMetaData?.secretForeignKeys,
-    cryptedForeignKeys: mapReduce(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
-    delegations: mapReduce(obj.systemMetaData?.delegations, toDelegationDto),
-    encryptionKeys: mapReduce(obj.systemMetaData?.encryptionKeys, toDelegationDto),
+    cryptedForeignKeys: toMapSetTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
+    delegations: toMapSetTransform(obj.systemMetaData?.delegations, toDelegationDto),
+    encryptionKeys: toMapSetTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
   }) : undefined;
 }
