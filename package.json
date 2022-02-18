@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@icure/api": "^4.0.82",
+    "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4"
   },
   "devDependencies": {
