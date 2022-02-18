@@ -3,8 +3,8 @@ import {Address, AddressAddressTypeEnum} from "../models/Address";
 import {map} from "./utils";
 import {Telecom, TelecomTelecomTypeEnum} from "../models/Telecom";
 
-namespace AddressMapper {
-  const toAddress = (dto?: AddressDto) => dto ? new Address({
+export namespace AddressMapper {
+  export const toAddress = (dto?: AddressDto) => dto ? new Address({
       telecoms: map(dto.telecoms, toTelecom),
       addressType: dto.addressType as AddressAddressTypeEnum,
       description: dto.descr,
@@ -18,7 +18,7 @@ namespace AddressMapper {
       note: dto.note
     }) : undefined;
 
-  const toAddressDto = (obj?: Address) => obj ? new AddressDto({
+  export const toAddressDto = (obj?: Address) => obj ? new AddressDto({
     telecoms: map(obj.telecoms, toTelecomDto),
     addressType: obj.addressType as AddressDto.AddressTypeEnum,
     descr: obj.description,
