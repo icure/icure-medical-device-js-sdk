@@ -9,7 +9,7 @@ import {
   IccCodeApi,
   IccDocumentXApi,
   IccPatientXApi,
-  IccUserXApi, PaginatedListContact,
+  IccUserXApi, ListOfIds, PaginatedListContact,
   Patient as PatientDto,
   Service,
   User as UserDto
@@ -239,19 +239,29 @@ class DataSampleApiImpl implements DataSampleApi {
   async deleteServices(user: UserDto, patient: PatientDto, services: Array<Service>): Promise<Contact | undefined> {
     let currentTime = Date.now();
     let contactToDeleteServices = await this.contactApi.newInstance(user, patient, new Contact({
-        id: this.crypto.randomUuid(),
-        services: services.map((service) => new Service({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
+      id: this.crypto.randomUuid(),
+      services: services.map((service) => new Service({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
     }));
 
     return this.contactApi.createContactWithUser(user, contactToDeleteServices);
-}
+  }
 
   filterDataSample(filter: Filter): Promise<PaginatedListDataSample> {
     return Promise.resolve(new PaginatedListDataSample({}));
   }
 
-  getDataSample(dataSampleId: string): Promise<DataSample> {
-    return Promise.resolve(undefined);
+  async getDataSample(dataSampleId: string): Promise<DataSample> {
+    return Promise.resolve(DataSampleMapper.toDataSample(await this.getServiceFromICure(dataSampleId))!);
+  }
+
+  async getServiceFromICure(dataSampleId: string) : Promise<Service> {
+    let currentUser = await this.userApi.getCurrentUser();
+
+    let serviceToFind = await this.contactApi.listServices(currentUser!, ListOfIds([dataSampleId]));
+    if (serviceToFind == undefined) {
+      throw Error(`Could not find data sample ${dataSampleId}`);
+    }
+    return Promise.resolve(firstOrNull(serviceToFind)!);
   }
 
   getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
