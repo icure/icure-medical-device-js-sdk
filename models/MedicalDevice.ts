@@ -117,7 +117,7 @@ interface IMedicalDevice {
   'model'?: string;
   'serialNumber'?: string;
   'parentId'?: string;
-  'picture'?: Array<string>;
+  'picture'?: ArrayBuffer;
   'properties'?: Set<Property>;
   'systemMetaData'?: SystemMetaDataOwner;
 }
