@@ -1,3 +1,4 @@
 export interface Filter<T> {
-    description?: string 
+  description?: string
+  '$type': string
 }
