@@ -36,6 +36,13 @@ import {
   PatientByIdsFilter as PatientByIdsFilterDto,
   PatientByHcPartyNameContainsFuzzyFilter as PatientByHcPartyNameContainsFuzzyFilterDto,
   PatientByHcPartyGenderEducationProfession as PatientByHcPartyGenderEducationProfessionDto,
+  AbstractFilterService,
+  AbstractFilterCode,
+  AbstractFilterDevice,
+  AbstractFilterHealthcareParty,
+  AbstractFilterHealthElement,
+  AbstractFilterPatient,
+  AbstractFilterUser,
 } from "@icure/api";
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
@@ -78,14 +85,14 @@ import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 
 
 export namespace FilterMapper {
-  function toAbstractFilterDto<DataSample>(filter: Filter<DataSample>, input: "DataSample"): AbstractFilter<ServiceDto>
-  function toAbstractFilterDto<Coding>(filter: Filter<Coding>, input: "Coding"): AbstractFilter<CodeDto>
-  function toAbstractFilterDto<MedicalDevice>(filter: Filter<MedicalDevice>, input: "MedicalDevice"): AbstractFilter<DeviceDto>
-  function toAbstractFilterDto<HealthcareProfessional>(filter: Filter<HealthcareProfessional>, input: "HealthcareProfessional"): AbstractFilter<HealthcarePartyDto>
-  function toAbstractFilterDto<HealthcareElement>(filter: Filter<HealthcareElement>, input: "HealthcareElement"): AbstractFilter<HealthElementDto>
-  function toAbstractFilterDto<Patient>(filter: Filter<Patient>, input: "Patient"): AbstractFilter<PatientDto>
-  function toAbstractFilterDto<User>(filter: Filter<User>, input: "User"): AbstractFilter<UserDto>
-  function toAbstractFilterDto<T>(filter: Filter<T>, input: "DataSample" | "Coding" | "MedicalDevice" | "HealthcareProfessional" | "HealthcareElement" | "Patient" | "User"):
+  export function toAbstractFilterDto<DataSample>(filter: Filter<DataSample>, input: "DataSample"): AbstractFilterService
+  export function toAbstractFilterDto<Coding>(filter: Filter<Coding>, input: "Coding"): AbstractFilterCode
+  export function toAbstractFilterDto<MedicalDevice>(filter: Filter<MedicalDevice>, input: "MedicalDevice"): AbstractFilterDevice
+  export function toAbstractFilterDto<HealthcareProfessional>(filter: Filter<HealthcareProfessional>, input: "HealthcareProfessional"): AbstractFilterHealthcareParty
+  export function toAbstractFilterDto<HealthcareElement>(filter: Filter<HealthcareElement>, input: "HealthcareElement"): AbstractFilterHealthElement
+  export function toAbstractFilterDto<Patient>(filter: Filter<Patient>, input: "Patient"): AbstractFilterPatient
+  export function toAbstractFilterDto<User>(filter: Filter<User>, input: "User"): AbstractFilterUser
+  export function toAbstractFilterDto<T>(filter: Filter<T>, input: "DataSample" | "Coding" | "MedicalDevice" | "HealthcareProfessional" | "HealthcareElement" | "Patient" | "User"):
     AbstractFilter<ServiceDto | CodeDto | DeviceDto | HealthcarePartyDto | HealthElementDto | PatientDto | UserDto> {
     const res = input === "DataSample" ? toAbstractFilterServiceDto(filter) :
       input === "Coding" ? toAbstractFilterCodeDto(filter) :

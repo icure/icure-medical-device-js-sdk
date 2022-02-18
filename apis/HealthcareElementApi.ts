@@ -1,5 +1,5 @@
 
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { HealthcareElement } from '../models/HealthcareElement';
 import { PaginatedListHealthcareElement } from '../models/PaginatedListHealthcareElement';
 

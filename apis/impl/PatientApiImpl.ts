@@ -1,13 +1,18 @@
 import {Patient} from "../../models/Patient";
-import {Filter} from "../../models/Filter";
 import {PaginatedListPatient} from "../../models/PaginatedListPatient";
 import {PatientApi} from "../PatientApi";
 import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
 import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
 import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterMapper} from "../../mappers/filter";
+import {PaginatedListMapper} from "../../mappers/paginatedList";
+import {Filter} from "../../filter/Filter";
 import {PatientDtoMapper} from "../../mappers/patient";
+import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import toPaginatedListPatient = PaginatedListMapper.toPaginatedListPatient;
+import toPatientDto = PatientDtoMapper.toPatientDto;
 
 class PatientApiImpl implements PatientApi {
   userApi: IccUserXApi;
@@ -22,8 +27,8 @@ class PatientApiImpl implements PatientApi {
     let currentUser = await this.userApi.getCurrentUser();
 
     let createdOrUpdatedPatient = patient.rev
-      ? await this.patientApi.modifyPatientWithUser(currentUser, PatientDtoMapper.toPatientDto(patient))
-      : await this.patientApi.createPatientWithUser(currentUser, PatientDtoMapper.toPatientDto(patient))
+      ? await this.patientApi.modifyPatientWithUser(currentUser, toPatientDto(patient))
+      : await this.patientApi.createPatientWithUser(currentUser, toPatientDto(patient))
 
     if (createdOrUpdatedPatient) {
       return PatientDtoMapper.toPatient(createdOrUpdatedPatient)!;
@@ -55,11 +60,13 @@ class PatientApiImpl implements PatientApi {
     throw Error(`Could not find patient ${patientId} with user ${currentUser.id}`)
   }
 
-    async filterPatients(filter: Filter, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
-        return Promise.resolve(new PaginatedListPatient({}));
-    }
+  async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
+    return toPaginatedListPatient(await this.patientApi.filterPatientsBy(undefined, nextPatientId, limit, undefined, undefined, undefined, new FilterChainPatient({
+      filter: toAbstractFilterDto<Patient>(filter, 'Patient')
+    })))!
+  }
 
-    async matchPatients(filter: Filter): Promise<Array<string>> {
-        return Promise.resolve([]);
-    }
+  async matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
+    return await this.patientApi.matchPatientsBy(toAbstractFilterDto<Patient>(filter, 'Patient'));
+  }
 }

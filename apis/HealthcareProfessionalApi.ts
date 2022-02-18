@@ -1,5 +1,5 @@
 
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { HealthcareProfessional } from '../models/HealthcareProfessional';
 import { PaginatedListHealthcareProfessional } from '../models/PaginatedListHealthcareProfessional';
 

@@ -1,8 +1,8 @@
 import {User} from "../../models/User";
-import {Filter} from "../../models/Filter";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
+  FilterChainUser,
   IccAuthApi,
   IccCodeApi,
   IccContactXApi,
@@ -17,6 +17,11 @@ import {
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {UserMapper} from "../../mappers/user";
 import {forceUuid} from "../../mappers/utils";
+import {FilterMapper} from "../../mappers/filter";
+import {PaginatedListMapper} from "../../mappers/paginatedList";
+import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import toPaginatedListUser = PaginatedListMapper.toPaginatedListUser;
+import {Filter} from "../../filter/Filter";
 
 class UserApiImpl implements UserApi {
   private userApi: IccUserApi;
@@ -58,8 +63,10 @@ class UserApiImpl implements UserApi {
     throw new Error("Invalid user id");
   }
 
-  filterUsers(filter: Filter, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-    return Promise.resolve(undefined);
+  async filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
+    return toPaginatedListUser(await this.userApi.filterUsersBy(nextUserId, limit, new FilterChainUser({
+      filter: toAbstractFilterDto<User>(filter, 'User')
+    })))!
   }
 
   async getLoggedUser(): Promise<User> {
@@ -70,7 +77,7 @@ class UserApiImpl implements UserApi {
     return UserMapper.toUser(await this.userApi.getUser(userId))!;
   }
 
-  matchUsers(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve(undefined);
+  async matchUsers(filter: Filter<User>): Promise<Array<string>> {
+    return await this.userApi.matchUsersBy( toAbstractFilterDto<User>(filter, 'User'));
   }
 }

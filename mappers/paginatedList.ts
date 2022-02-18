@@ -7,7 +7,7 @@ import {PaginatedListPatient} from "../models/PaginatedListPatient"
 import {PaginatedListUser} from "../models/PaginatedListUser"
 import {map} from "./utils";
 import {PaginatedDocumentKeyAndIdPairObject} from "../models/PaginatedDocumentKeyAndIdPairObject";
-import {ServiceMapper} from "./serviceDataSample";
+import {DataSampleMapper} from "./serviceDataSample";
 import {CodingMapper} from "./CodeCoding";
 import {HealthcareElementMapper} from "./HealthcareElement";
 import {MedicalDeviceMapper} from "./medicalDevice";
@@ -26,15 +26,15 @@ import {UserMapper} from "./user";
 import {CodeStubDtoMapper} from "./CodeStubCodingReference";
 import {HealthcareProfessionalMapper} from "./healthcareProfessional";
 
-export namespace PaginatedListDeviceDtoMapper {
-    import toDataSample = ServiceMapper.toDataSample;
+export namespace PaginatedListMapper {
+    import toDataSample = DataSampleMapper.toDataSample;
   import toCoding = CodingMapper.toCoding;
   import toHealthcareElement = HealthcareElementMapper.toHealthcareElement;
   import toMedicalDevice = MedicalDeviceMapper.toMedicalDevice;
   import toPatient = PatientDtoMapper.toPatient;
   import toUser = UserMapper.toUser;
   import toDeviceDto = MedicalDeviceMapper.toDeviceDto;
-  import toServiceDto = ServiceMapper.toServiceDto;
+  import toServiceDto = DataSampleMapper.toServiceDto;
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
   import toHealthElementDto = HealthcareElementMapper.toHealthElementDto;
   import toPatientDto = PatientDtoMapper.toPatientDto;

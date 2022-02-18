@@ -1,5 +1,5 @@
 
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { MedicalDevice } from '../models/MedicalDevice';
 import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice';
 

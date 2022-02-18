@@ -1,5 +1,5 @@
 
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { PaginatedListPatient } from '../models/PaginatedListPatient';
 import { Patient } from '../models/Patient';
 
@@ -11,13 +11,13 @@ import { Patient } from '../models/Patient';
     /**
       * When modifying a patient, you must ensure that the rev obtained when getting or creating the patient is present as the rev is used to guarantee that the patient has not been modified by a third party.
       * Create or update a [Patient]
-      * @param patient 
+      * @param patient
     */
     createOrModifyPatient(patient: Patient, ): Promise<Patient >;
     /**
       * Deletes the patient identified by the provided unique [patientId].
       * Delete a [Patient]
-      * @param patientId 
+      * @param patientId
     */
     deletePatient(patientId: string, ): Promise<string >;
     /**
@@ -27,11 +27,11 @@ import { Patient } from '../models/Patient';
       * @param nextPatientId The id of the first patient in the next page
       * @param limit The number of patients to return in the queried page
     */
-    filterPatients(filter: Filter, nextPatientId?: string, limit?: number, ): Promise<PaginatedListPatient >;
+    filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number, ): Promise<PaginatedListPatient >;
     /**
       * Each patient is uniquely identified by a patient id. The patient id is a UUID. This [patientId] is the preferred method to retrieve one specific patient.
       * Get a [Patient]
-      * @param patientId 
+      * @param patientId
     */
     getPatient(patientId: string, ): Promise<Patient >;
     /**
@@ -39,5 +39,5 @@ import { Patient } from '../models/Patient';
       * Load patient ids from the database by filtering them using the provided [filter].
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    matchPatients(filter: Filter, ): Promise<Array<string> >;
+    matchPatients(filter: Filter<Patient>, ): Promise<Array<string> >;
     }

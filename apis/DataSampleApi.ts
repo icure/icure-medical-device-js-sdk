@@ -1,7 +1,7 @@
 
 import { DataSample } from '../models/DataSample';
 import { Document } from '../models/Document';
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { InlineResponse403 } from '../models/InlineResponse403';
 import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
 

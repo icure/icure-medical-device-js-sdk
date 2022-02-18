@@ -1,5 +1,5 @@
 
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { PaginatedListUser } from '../models/PaginatedListUser';
 import { User } from '../models/User';
 
@@ -40,7 +40,7 @@ import { User } from '../models/User';
       * @param nextUserId The id of the first User in the next page
       * @param limit The number of users to return in the queried page
     */
-    filterUsers(filter: Filter, nextUserId?: string, limit?: number, ): Promise<PaginatedListUser >;
+    filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number, ): Promise<PaginatedListUser >;
     /**
       * When you make a call to the server, an authentication token is used to identify you. This call returns the complete User object that corresponds to your authentication credentials.
       * Get the details of the logged User.
@@ -57,5 +57,5 @@ import { User } from '../models/User';
       * Load user ids from the database by filtering them using the provided Filter.
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    matchUsers(filter: Filter, ): Promise<Array<string> >;
+    matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
     }

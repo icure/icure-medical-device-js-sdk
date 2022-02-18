@@ -1,6 +1,6 @@
 
 import { Coding } from '../models/Coding';
-import { Filter } from '../models/Filter';
+import { Filter } from '../filter/Filter';
 import { PaginatedListCoding } from '../models/PaginatedListCoding';
 
   /**
