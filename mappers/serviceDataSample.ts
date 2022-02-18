@@ -4,7 +4,7 @@ import {DataSample} from "../models/DataSample";
 import {Content} from "../models/Content";
 import {Measure} from "../models/Measure";
 import {TimeSeriesMapper} from "./timeSeries";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {IdentifierDtoMapper} from "./identifier";
 
 export namespace ServiceMapper {

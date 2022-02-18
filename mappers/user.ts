@@ -2,7 +2,7 @@ import { User as UserDto} from "@icure/api";
 import {User} from "../models/User";
 import {forceUuid, map, mapReduce, mapSet, toMapSet} from "./utils";
 import { PropertyStubMapper } from "./property";
-import {AuthenticationTokenMapper} from "./AuthenticationToken";
+import {AuthenticationTokenMapper} from "./authenticationToken";
 
 export namespace UserMapper {
   import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
