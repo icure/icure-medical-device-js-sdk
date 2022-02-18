@@ -2,13 +2,13 @@ import {Patient} from "../models/Patient";
 import {Patient as PatientDto} from "@icure/api";
 import {forceUuid, map, mapReduce, mapSet, toMapSetTransform} from "./utils";
 import {IdentifierDtoMapper} from "./identifier";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PersonNameDtoMapper} from "./personName";
 import {PatientHealthCarePartyDtoMapper} from "./patientHealthcareParty";
 import {PropertyStubMapper} from "./property";
 import {SystemMetaDataOwnerEncrypted} from "../models/SystemMetaDataOwnerEncrypted";
-import {AddressMapper} from "./Address";
-import {DelegationMapper} from "./Delegation";
+import {AddressMapper} from "./address";
+import {DelegationMapper} from "./delegation";
 import {PartnershipDtoMapper} from "./partnership";
 
 

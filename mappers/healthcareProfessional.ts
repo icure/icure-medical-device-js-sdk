@@ -3,8 +3,8 @@ import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
 import {map, mapSet} from "./utils";
 import {PersonNameDtoMapper} from "./personName";
-import {AddressMapper} from "./Address";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {AddressMapper} from "./address";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PropertyStubMapper} from "./property";
 
 export namespace HealthcareProfessionalMapper {

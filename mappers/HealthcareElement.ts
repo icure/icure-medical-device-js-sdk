@@ -2,9 +2,9 @@ import {HealthcareElement} from "../models/HealthcareElement";
 import {HealthElement} from "@icure/api";
 import {forceUuid, map, mapSet, toMapSetTransform} from "./utils";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
-import {DelegationMapper} from "./Delegation";
+import {DelegationMapper} from "./delegation";
 import {IdentifierDtoMapper} from "./identifier";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 
 export namespace HealthcareElementMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference;
