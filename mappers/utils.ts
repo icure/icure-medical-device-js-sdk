@@ -11,6 +11,11 @@ export function forceUuid(id?: string): string {
   }
 }
 
+export function forceCodeId(id?: string) : string | undefined {
+  //TODO Make the conversion
+  return id;
+}
+
 export function mapReduce<I, O>(map: { [key: string]: I }, mapper: (obj: I) => O): { [key: string]: O } {
   return Object.entries(map)
     .map(([k, v]) => [k, mapper(v)] as [string, O])
