@@ -1,6 +1,6 @@
 import {Identifier} from "../models/Identifier";
 import {Identifier as IdentifierDto} from "@icure/api";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 
 export namespace IdentifierDtoMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference;
