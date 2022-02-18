@@ -1,4 +1,3 @@
-import {v4 as uuid} from 'uuid';
 import {DataSample} from "../../models/DataSample";
 import {Filter} from "../../models/Filter";
 import {PaginatedListDataSample} from "../../models/PaginatedListDataSample";
@@ -10,7 +9,7 @@ import {
   IccCodeApi,
   IccDocumentXApi,
   IccPatientXApi,
-  IccUserXApi,
+  IccUserXApi, PaginatedListContact,
   Patient as PatientDto,
   Service,
   User as UserDto
@@ -19,9 +18,8 @@ import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
 import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
 import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
 import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
-import {distinctBy, isNotEmpty, sumOf} from "../../utils/functionalUtils";
+import {any, distinctBy, firstOrNull, isNotEmpty, sumOf} from "../../utils/functionalUtils";
 import {CachedMap} from "../../utils/cachedMap";
-import {Promise} from "es6-promise";
 import {DataSampleMapper} from "../../mappers/serviceDataSample";
 
 class DataSampleApiImpl implements DataSampleApi {
@@ -92,7 +90,7 @@ class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact = await this.contactApi.modifyContactWithUser(currentUser, contactToModify);
 
     } else {
-      let contactToCreate = this.createContactDtoBasedOn(currentUser, existingPatient, dataSample, existingContact);
+      let contactToCreate = await this.createContactDtoBasedOn(currentUser, existingPatient, dataSample, existingContact);
       createdOrModifiedContact = await this.contactApi.createContactWithUser(currentUser, contactToCreate);
     }
 
@@ -129,14 +127,14 @@ class DataSampleApiImpl implements DataSampleApi {
       .find((key) => key != undefined);
   }
 
-  createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: Contact) : Contact {
+  async createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: Contact) : Promise<Contact> {
     let servicesToCreate = dataSamples
       .map((e) => DataSampleMapper.toServiceDto(e, e.batchId))
       .map((e) => { return {...e, modified: undefined } });
-    return this.createContactDtoUsing(currentUser, contactPatient, servicesToCreate, existingContact);
+    return await this.createContactDtoUsing(currentUser, contactPatient, servicesToCreate, existingContact);
   }
 
-  createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<Service>, existingContact? : Contact): Contact {
+  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<Service>, existingContact? : Contact): Promise<Contact> {
     let baseContact: Contact;
     if (existingContact != null) {
       baseContact = {
@@ -161,13 +159,92 @@ class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve("");
   }
 
-  deleteDataSample(dataSampleId: string): Promise<string> {
-    return Promise.resolve("");
+  async deleteDataSample(dataSampleId: string): Promise<string> {
+    let deletedDataSampleId = (await this.deleteDataSamples([dataSampleId])).pop();
+    if (deletedDataSampleId) {
+      return deletedDataSampleId;
+    }
+
+    throw Error(`Could not delete data sample ${dataSampleId}`)
   }
 
-  deleteDataSamples(requestBody: Array<string>): Promise<Array<string>> {
-    return Promise.resolve(undefined);
+  async deleteDataSamples(requestBody: Array<string>): Promise<Array<string>> {
+    let currentUser = await this.userApi.getCurrentUser();
+    let existingContact = firstOrNull(await this.findContactsForDataSampleIds(currentUser, requestBody));
+    if (existingContact == undefined) {
+      throw Error(`Could not find batch information of the data sample ${requestBody}`);
+    }
+
+    let existingServiceIds = existingContact.services?.map((e) => e.id);
+    if (existingServiceIds == undefined || any(requestBody, (element) => element !in existingServiceIds!)) {
+      throw Error(`Could not find all data samples in same batch ${existingContact.id}`);
+    }
+
+    let contactPatient = await this.getPatientOfContact(currentUser, existingContact);
+    if (contactPatient == undefined) {
+      throw Error(`Couldn't find patient related to batch of data samples ${existingContact.id}`);
+    }
+
+    let servicesToDelete = existingContact.services!.filter((element) => element.id! in requestBody);
+
+    let deletedServices = (await this.deleteServices(currentUser, contactPatient, servicesToDelete))?.services
+      ?.filter((element) => element.id! in requestBody)
+      ?.filter((element) => element.endOfLife != null)
+      ?.map((e) => e.id!);
+
+    if (deletedServices == undefined) {
+      throw Error(`Could not delete data samples ${requestBody}`);
+    }
+
+    return Promise.resolve(deletedServices);
   }
+
+  async findContactsForDataSampleIds(currentUser: UserDto, dataSampleIds: Array<string>) : Promise<Array<Contact>> {
+    let cachedContacts = this.contactsCache.getAllPresent(dataSampleIds);
+    let dataSampleIdsToSearch = dataSampleIds
+      .filter((element) => Object.keys(cachedContacts).find((key) => key == element) == undefined);
+
+    if (dataSampleIdsToSearch.length > 0) {
+      let notCachedContacts = (await this.contactApi.filterByWithUser(currentUser,
+        undefined,
+        dataSampleIdsToSearch.length,
+        undefined //FilterChainContact(ContactByServiceIdsFilter(new Set(dataSampleIdsToSearch)))
+      ) as PaginatedListContact).rows;
+
+      if (notCachedContacts == undefined) {
+        throw Error(`Couldn't find batches linked to data samples ${dataSampleIdsToSearch}`);
+      }
+
+      // Caching
+      notCachedContacts.forEach((contact) => {
+        contact.services?.filter((service) => service.id != undefined && service.id in dataSampleIdsToSearch)
+          .forEach((service) => this.contactsCache.put(service.id!, contact));
+      });
+
+      return [...Object.values(cachedContacts), ...notCachedContacts];
+    } else {
+      return Object.values(cachedContacts);
+    }
+  }
+
+  async getPatientOfContact(currentUser: UserDto, contactDto: Contact) : Promise<PatientDto | undefined> {
+    let patientId = (await this.getPatientIdOfContact(currentUser, contactDto));
+    if (patientId) {
+      return this.patientApi.getPatientWithUser(currentUser, patientId);
+    } else {
+      return undefined;
+    }
+  }
+
+  async deleteServices(user: UserDto, patient: PatientDto, services: Array<Service>): Promise<Contact | undefined> {
+    let currentTime = Date.now();
+    let contactToDeleteServices = await this.contactApi.newInstance(user, patient, new Contact({
+        id: this.crypto.randomUuid(),
+        services: services.map((service) => new Service({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
+    }));
+
+    return this.contactApi.createContactWithUser(user, contactToDeleteServices);
+}
 
   filterDataSample(filter: Filter): Promise<PaginatedListDataSample> {
     return Promise.resolve(new PaginatedListDataSample({}));
@@ -177,7 +254,7 @@ class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve(undefined);
   }
 
-  getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<HttpFile> {
+  getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
     return Promise.resolve(undefined);
   }
 
@@ -189,7 +266,7 @@ class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve([]);
   }
 
-  setDataSampleAttachment(dataSampleId: string, body: HttpFile, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string): Promise<Document> {
+  setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string): Promise<Document> {
     return Promise.resolve(undefined);
   }
 }

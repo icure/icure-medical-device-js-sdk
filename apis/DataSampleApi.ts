@@ -62,7 +62,7 @@ import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
       * @param documentId 
       * @param attachmentId 
     */
-    getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string, ): Promise<HttpFile >;
+    getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string, ): Promise<ArrayBuffer>;
     /**
       * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the document metadata information of an attachment
       * Get document metadata of a DataSample attachment
@@ -86,5 +86,5 @@ import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
       * @param documentExternalUuid 
       * @param documentLanguage 
     */
-    setDataSampleAttachment(dataSampleId: string, body: HttpFile, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string, ): Promise<Document >;
+    setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string, ): Promise<Document >;
     }

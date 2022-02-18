@@ -8,6 +8,22 @@ export function distinctBy<T, K>(elements: Array<T>, selector: (obj: T) => K) : 
   return set;
 }
 
+export function any<T>(elements: Array<T>, check: (obj: T) => boolean) : boolean {
+  for (const elem of elements) {
+    if (check(elem)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function firstOrNull<T>(elements: Array<T>): T | undefined {
+  if (elements.length == 0) {
+    return undefined;
+  } else {
+    return elements[0];
+  }
+}
 
 export function isNotEmpty<T>(elements?: Array<T>) : Boolean {
   return elements?.length != undefined && elements?.length > 0
