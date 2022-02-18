@@ -25,12 +25,16 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
         return Promise.resolve(undefined);
     }
 
-  deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
-    return Promise.resolve("");
+  async deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
+    const deletedDeviceRev = (await this.deviceApi.deleteDevice(medicalDeviceId)).rev
+    if (deletedDeviceRev != undefined) {
+      return deletedDeviceRev;
+    }
+    throw Error("Invalid medical device id")
   }
 
-  deleteMedicalDevices(requestBody: Array<string>): Promise<Array<string>> {
-    return Promise.resolve(undefined);
+  async deleteMedicalDevices(requestBody: Array<string>): Promise<Array<string>> {
+    return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => d.rev != undefined).map(d => d.rev!);
   }
 
   filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
