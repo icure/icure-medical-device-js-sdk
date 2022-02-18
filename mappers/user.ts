@@ -1,10 +1,13 @@
-import {AuthenticationToken, User as UserDto} from "@icure/api";
-import {v4 as uuid} from 'uuid';
+import { User as UserDto} from "@icure/api";
 import {User} from "../models/User";
 import {forceUuid, map, mapReduce, mapSet, toMapSet} from "./utils";
+import { PropertyStubMapper } from "./property";
 
-namespace UserMapper {
-   const toUser = (dto: UserDto) =>
+export namespace UserMapper {
+  import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
+  import toProperty = PropertyStubMapper.toProperty;
+
+  export const toUser = (dto: UserDto) =>
       new User({
         id: dto.id,
         properties: new Set(map(dto.properties, toProperty)),
@@ -26,7 +29,7 @@ namespace UserMapper {
         mobilePhone: dto.mobilePhone,
       });
 
-  const toUserDto = (obj: User) =>
+  export const toUserDto = (obj: User) =>
       new UserDto({
         id: forceUuid(obj.id),
         properties: mapSet(obj.properties, toPropertyStubDto),
