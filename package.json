@@ -17,7 +17,8 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@icure/api": "^4.0.82",
+    "@icure/api": "^4.0.85",
+
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4"
   },
