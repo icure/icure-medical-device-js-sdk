@@ -67,6 +67,7 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
 
   async filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
     //return (await this.deviceApi.filterDevicesBy(nextDeviceId, limit,));
+    return Promise.resolve(new PaginatedListMedicalDevice({}));
   }
 
   async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
@@ -74,6 +75,6 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async matchMedicalDevices(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve(undefined);
+    return Promise.resolve([]);
   }
 }
