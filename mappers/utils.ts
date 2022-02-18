@@ -20,8 +20,14 @@ export function mapReduce<I, O>(map:{[key:string]: I}, mapper: (obj:I) => O): {[
     }, {} as {[key:string]:O})
 }
 
-export function mapSet<I, O>(set: Set<I>, mapper: (obj:I) => O): Set<O> {
+export function mapSet<I, O>(set: Set<I> | undefined, mapper: (obj:I) => O): Set<O> | undefined {
+  if (!set) { return undefined; }
   const arr: I[] = Array.from(set);
   return new Set(arr.map(it => mapper(it)));
+}
+
+export function map<I, O>(arr: I[] | undefined, mapper: (obj:I) => O): O[] | undefined {
+  if (!arr) { return undefined; }
+  return arr.map(it => mapper(it));
 }
 
