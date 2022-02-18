@@ -84,7 +84,7 @@ constructor(json: IHealthcareProfessional) {
     /**
     * A picture usually saved in JPEG format.
     */
-    'picture'?: string;
+    'picture'?: ArrayBuffer;
     /**
     * Medical specialty of the healthcare party codified using FHIR or Kmehr codificaiton scheme
     */
@@ -114,7 +114,7 @@ interface IHealthcareProfessional {
   'parentId'?: string;
   'addresses'?: Array<Address>;
   'languages'?: Array<string>;
-  'picture'?: string;
+  'picture'?: ArrayBuffer;
   'specialityCodes'?: Set<CodingReference>;
   'notes'?: string;
   'properties'?: Set<Property>;
