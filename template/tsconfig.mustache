@@ -2,8 +2,8 @@
   "compilerOptions": {
     "strict": true,
     /* Basic Options */
-    "target": "es5",
-    "module": "commonjs",
+    "target": "{{#supportsES6}}es6{{/supportsES6}}{{^supportsES6}}es5{{/supportsES6}}",
+    "module": "{{#supportsES6}}es6{{/supportsES6}}{{^supportsES6}}commonjs{{/supportsES6}}",
     "moduleResolution": "node",
     "declaration": true,
 
@@ -17,7 +17,17 @@
     "sourceMap": true,
     "outDir": "./dist",
     "noLib": false,
-    "lib": [ "es2017", "dom" ],
+    {{#platforms}}
+    {{#node}}
+    "lib": [ "es6" ],
+    {{/node}}
+    {{#browser}}
+    "lib": [ "es6", "dom" ],
+    {{/browser}}
+    {{/platforms}}
+    {{#useInversify}}
+    "experimentalDecorators": true,
+    {{/useInversify}}
   },
   "exclude": [
     "dist",

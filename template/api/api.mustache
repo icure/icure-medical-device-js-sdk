@@ -1,0 +1,27 @@
+
+{{#imports}}
+import { {{classname}} } from '..{{filename}}';
+{{/imports}}
+{{#operations}}
+
+  /**
+  * {{{description}}}{{^description}}no description{{/description}}
+  */
+  export interface {{classname}} {
+
+  {{#operation}}
+    /**
+    {{#notes}}
+      * {{&notes}}
+    {{/notes}}
+    {{#summary}}
+      * {{&summary}}
+    {{/summary}}
+    {{#allParams}}
+      * @param {{paramName}} {{description}}
+    {{/allParams}}
+    */
+    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Promise<{{{returnType}}} {{^returnType}}void{{/returnType}}>;
+  {{/operation}}
+    }
+{{/operations}}

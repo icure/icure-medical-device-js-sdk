@@ -1,7 +1,0 @@
-export * from "./api/MdCodingApi"
-export * from "./api/MdDataSampleApi"
-export * from "./api/MdDeviceApi"
-export * from "./api/MdHealthcareElementApi"
-export * from "./api/MdHealthcareProfessionalApi"
-export * from "./api/MdPatientApi"
-export * from "./api/MdUserApi"

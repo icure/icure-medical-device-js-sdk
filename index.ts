@@ -1,3 +1,11 @@
-export * from "./MdApi"
-export * from "./model/models"
-export { XHR } from "./api/XHR"
+export * from "./http/http";
+export * from "./auth/auth";
+export * from "./models/all";
+export { createConfiguration } from "./configuration"
+export { Configuration } from "./configuration"
+export * from "./apis/exception";
+export * from "./servers";
+
+export { PromiseMiddleware as Middleware } from './middleware';
+export { PromiseCodingApi as CodingApi,  PromiseDataSampleApi as DataSampleApi,  PromiseHealthcareElementApi as HealthcareElementApi,  PromiseHealthcareProfessionalApi as HealthcareProfessionalApi,  PromiseMedicalDeviceApi as MedicalDeviceApi,  PromisePatientApi as PatientApi,  PromiseUserApi as UserApi } from './types/PromiseAPI';
+
