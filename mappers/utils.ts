@@ -33,11 +33,11 @@ export function mapSet<I, O>(set: Set<I> | undefined, mapper: (obj: I) => O): Se
   return new Set(arr.map(it => mapper(it)));
 }
 
-export function map<I, O>(arr: I[] | undefined, mapper: (obj: I) => O): O[] | undefined {
+export function map<I, O>(arr: I[] | undefined, mapper: (obj: I) => O | undefined): O[] | undefined {
   if (!arr) {
     return undefined;
   }
-  return arr.map(it => mapper(it));
+  return arr.map(it => mapper(it)!);
 }
 
 export function toMapSet<I>(map: { [key: string]: Iterable<I> } | undefined): { [key: string]: Set<I> } | undefined {
