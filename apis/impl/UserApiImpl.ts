@@ -16,6 +16,7 @@ import {
 } from "@icure/api";
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {UserMapper} from "../../mappers/user";
+import {forceUuid} from "../../mappers/utils";
 
 class UserApiImpl implements UserApi {
   private userApi: IccUserApi;
@@ -45,27 +46,31 @@ class UserApiImpl implements UserApi {
     throw new Error("Couldn't update user")
   }
 
-  createToken(userId: string): Promise<string> {
-    return Promise.resolve("");
+  async createToken(userId: string): Promise<string> {
+    return await this.userApi.getToken(userId, forceUuid(), 3600 * 24 * 30);
   }
 
-  deleteUser(userId: string): Promise<string> {
-    return Promise.resolve("");
+  async deleteUser(userId: string): Promise<string> {
+    const deletedUserRev = await this.userApi.deleteUser(userId);
+    if (deletedUserRev != undefined) {
+      return deletedUserRev!.rev!;
+    }
+    throw new Error("Invalid user id");
   }
 
-    filterUsers(filter: Filter, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-        return Promise.resolve(undefined);
-    }
+  filterUsers(filter: Filter, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
+    return Promise.resolve(undefined);
+  }
 
-    getLoggedUser(): Promise<User> {
-        return Promise.resolve(undefined);
-    }
+  async getLoggedUser(): Promise<User> {
+    return UserMapper.toUser(await this.userApi.getCurrentUser()!)!
+  }
 
-    getUser(userId: string): Promise<User> {
-        return Promise.resolve(undefined);
-    }
+  async getUser(userId: string): Promise<User> {
+    return UserMapper.toUser(await this.userApi.getUser(userId))!;
+  }
 
-    matchUsers(filter: Filter): Promise<Array<string>> {
-        return Promise.resolve(undefined);
-    }
+  matchUsers(filter: Filter): Promise<Array<string>> {
+    return Promise.resolve(undefined);
+  }
 }
