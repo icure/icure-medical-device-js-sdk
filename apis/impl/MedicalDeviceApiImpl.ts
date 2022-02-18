@@ -64,12 +64,12 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
     return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => d.rev != undefined).map(d => d.rev!);
   }
 
-  filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    return Promise.resolve(undefined);
+  async filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
+    return (await this.deviceApi.filterDevicesBy(nextDeviceId, limit,));
   }
 
-  getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
-    return Promise.resolve(undefined);
+  async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
+    return MedicalDeviceMapper.toMedicalDevice(await this.deviceApi.getDevice(medicalDeviceId));
   }
 
   matchMedicalDevices(filter: Filter): Promise<Array<string>> {
