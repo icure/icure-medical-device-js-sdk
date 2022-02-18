@@ -35,6 +35,7 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
+    const {toMedicalDevice, toDeviceDto} = MedicalDeviceMapper;
     const medicalDevicesToCreate = medicalDevice.filter(dev => dev.rev == null);
     const medicalDevicesToUpdate = medicalDevice.filter(dev => dev.rev != null);
 
@@ -42,14 +43,14 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
       throw Error("Update id should be provided as an UUID");
     }
 
-    const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
-    const deviceToUpdate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+    const deviceToCreate = medicalDevicesToCreate.map(d => toDeviceDto(d));
+    const deviceToUpdate = medicalDevicesToCreate.map(d => toDeviceDto(d));
 
     const createdDevices = await this.deviceApi.createDevices(deviceToCreate);
     const updatedDevices = await this.deviceApi.updateDevices(deviceToUpdate);
     const processedDeviceIds = [...createdDevices, ...updatedDevices].map(d => d.id!);
 
-    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => MedicalDeviceMapper.toMedicalDevice(d));
+    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => toMedicalDevice(d));
   }
 
   async deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
@@ -65,14 +66,14 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    return (await this.deviceApi.filterDevicesBy(nextDeviceId, limit,));
+    //return (await this.deviceApi.filterDevicesBy(nextDeviceId, limit,));
   }
 
   async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
     return MedicalDeviceMapper.toMedicalDevice(await this.deviceApi.getDevice(medicalDeviceId));
   }
 
-  matchMedicalDevices(filter: Filter): Promise<Array<string>> {
+  async matchMedicalDevices(filter: Filter): Promise<Array<string>> {
     return Promise.resolve(undefined);
   }
 }
