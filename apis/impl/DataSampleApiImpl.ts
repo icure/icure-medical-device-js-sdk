@@ -1,17 +1,17 @@
-import {DataSample} from "../models/DataSample";
-import {Filter} from "../models/Filter";
-import {PaginatedListDataSample} from "../models/PaginatedListDataSample";
-import {Document} from "../models/Document";
-import {DataSampleApi} from "./DataSampleApi";
+import {DataSample} from "../../models/DataSample";
+import {Filter} from "../../models/Filter";
+import {PaginatedListDataSample} from "../../models/PaginatedListDataSample";
+import {Document} from "../../models/Document";
+import {DataSampleApi} from "../DataSampleApi";
 
 class DataSampleApiImpl implements DataSampleApi {
-    createOrModifyDataSampleFor(patientId: string, dataSample: DataSample): Promise<DataSample> {
-        return Promise.resolve(undefined);
-    }
+  createOrModifyDataSampleFor(patientId: string, dataSample: DataSample): Promise<DataSample> {
+    return Promise.resolve(undefined);
+  }
 
-    createOrModifyDataSamplesFor(patientId: string, dataSample: Array<DataSample>): Promise<Array<DataSample>> {
-        return Promise.resolve(undefined);
-    }
+  createOrModifyDataSamplesFor(patientId: string, dataSample: Array<DataSample>): Promise<Array<DataSample>> {
+    return Promise.resolve(undefined);
+  }
 
     deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
         return Promise.resolve("");
