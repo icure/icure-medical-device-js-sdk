@@ -7,7 +7,7 @@ import {TimeSeriesMapper} from "./timeSeries";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {IdentifierDtoMapper} from "./identifier";
 
-export namespace ServiceMapper {
+export namespace DataSampleMapper {
   import toTimeSeries = TimeSeriesMapper.toTimeSeries;
   import toTimeSeriesDto = TimeSeriesMapper.toTimeSeriesDto;
   import toCodingReference = CodeStubDtoMapper.toCodingReference;
