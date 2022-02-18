@@ -11,6 +11,11 @@ export function forceUuid(id?: string): string {
   }
 }
 
+export function forceCodeId(id?: string) : string | undefined {
+  //TODO Make the conversion
+  return id;
+}
+
 export function mapReduce<I, O>(map: { [key: string]: I } | undefined, mapper: (obj: I) => O | undefined): { [key: string]: O } | undefined {
   if (!map) {
     return undefined;
