@@ -22,11 +22,11 @@ import {FilterMapper} from "../../mappers/filter";
 import {Filter} from "../../filter/Filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
-class MedicalDeviceApiImpl implements MedicalDeviceApi {
+export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private deviceApi: IccDeviceApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; deviceApi: IccDeviceApi; }) {
-    this.deviceApi = api.deviceApi
+  constructor(deviceApi: IccDeviceApi) {
+    this.deviceApi = deviceApi
   }
 
   async createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {

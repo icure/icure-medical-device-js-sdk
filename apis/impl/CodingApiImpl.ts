@@ -5,7 +5,7 @@ import {CodingApi} from "../CodingApi";
 import {
   FilterChainCode,
   IccAuthApi,
-  IccCodeApi,
+  IccCodeApi, IccCodeXApi,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
@@ -20,11 +20,11 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
-class CodingApiImpl implements CodingApi {
+export class CodingApiImpl implements CodingApi {
   private codeApi: IccCodeApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
-    this.codeApi = api.codeApi
+  constructor(codeApi: IccCodeXApi) {
+    this.codeApi = codeApi
   }
 
   async createOrModifyCoding(coding: Coding): Promise<Coding> {

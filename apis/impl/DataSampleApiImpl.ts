@@ -28,7 +28,7 @@ import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
 
-class DataSampleApiImpl implements DataSampleApi {
+export class DataSampleApiImpl implements DataSampleApi {
   private crypto: IccCryptoXApi;
   private userApi: IccUserXApi;
   private patientApi: IccPatientXApi;
@@ -37,7 +37,7 @@ class DataSampleApiImpl implements DataSampleApi {
 
   private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }) {
     this.crypto = api.cryptoApi;
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
