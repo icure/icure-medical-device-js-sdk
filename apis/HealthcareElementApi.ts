@@ -11,13 +11,13 @@ export interface HealthcareElementApi {
    * Create a Healthcare Element
    * @param healthcareElement
    */
-  createOrModifyHealthcareElement(healthcareElement: HealthcareElement,): Promise<HealthcareElement>;
+  createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement>;
 
   /**
    * Create a Healthcare Element
    * @param healthcareElement
    */
-  createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>,): Promise<Array<HealthcareElement>>;
+  createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>>;
 
   /**
    * Delete a Healthcare Element

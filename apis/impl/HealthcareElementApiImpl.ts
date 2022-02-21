@@ -19,16 +19,24 @@ import toPaginatedListHealthcareElement = PaginatedListMapper.toPaginatedListHea
 class HealthcareElementApiImpl implements HealthcareElementApi {
   userApi: IccUserXApi;
   heApi: IccHelementXApi;
+  patientApi: IccPatientXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
     this.userApi = api.userApi;
     this.heApi = api.healthcareElementApi;
+    this.patientApi = api.patientApi;
   }
 
-  async createOrModifyHealthcareElement(healthcareElement: HealthcareElement): Promise<HealthcareElement> {
-    let createdOrUpdateHealthElement = healthcareElement.rev
-      ? await this.heApi.modifyHealthElement(toHealthElementDto(healthcareElement))
-      : await this.heApi.createHealthElement(toHealthElementDto(healthcareElement))
+  async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
+    const currentUser = await this.userApi.getCurrentUser();
+    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId!) : undefined
+
+    let createdOrUpdateHealthElement;
+    if (healthcareElement.rev) {
+      createdOrUpdateHealthElement = await this.heApi.modifyHealthElement(toHealthElementDto(healthcareElement))
+    } else if (patient) {
+      createdOrUpdateHealthElement = await this.heApi.createHealthElement(toHealthElementDto(await this.heApi.newInstance(currentUser, patient, healthcareElement, true)))
+    }
 
     if (createdOrUpdateHealthElement) {
       return toHealthcareElement(createdOrUpdateHealthElement)!;
@@ -37,15 +45,21 @@ class HealthcareElementApiImpl implements HealthcareElementApi {
     throw Error(`Could not create / modify healthElement ${healthcareElement.id}`)
   }
 
-  async createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>): Promise<Array<HealthcareElement>> {
+  async createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
     const heToCreate = healthcareElement.filter(he => he.rev == null)
     const heToUpdate = healthcareElement.filter(he => he != null)
+    const currentUser = await this.userApi.getCurrentUser();
+    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId!) : undefined
 
     if (!heToUpdate.every(he => he.id != null && forceUuid(he.id))) {
       throw Error("Update id should be provided as an UUID");
     }
 
-    const hesCreated = await this.heApi.createHealthElements(heToCreate.map(he => toHealthElementDto(he)))
+    if (!patient && heToCreate.length > 0) {
+      throw Error("patientId is required when creating a new healthcare element");
+    }
+
+    const hesCreated = await this.heApi.createHealthElements(await Promise.all(heToCreate.map(async he => toHealthElementDto(await this.heApi.newInstance(currentUser, patient, healthcareElement, true)))))
     const hesUpdated = await this.heApi.modifyHealthElements(heToUpdate.map(he => toHealthElementDto(he)))
 
     return [...hesCreated, ...hesUpdated].map(he => toHealthcareElement(he))
