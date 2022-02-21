@@ -2,6 +2,7 @@
 import { Filter } from '../filter/Filter';
 import { MedicalDevice } from '../models/MedicalDevice';
 import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice';
+import {AbstractFilter} from "@icure/api";
 
   /**
   * no description
@@ -11,25 +12,25 @@ import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice
     /**
       * When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
       * Create or update a [MedicalDevice]
-      * @param medicalDevice 
+      * @param medicalDevice
     */
     createOrModifyMedicalDevice(medicalDevice: MedicalDevice, ): Promise<MedicalDevice >;
     /**
       * When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
       * Create or update a batch of [MedicalDevice]
-      * @param medicalDevice 
+      * @param medicalDevice
     */
     createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>, ): Promise<Array<MedicalDevice> >;
     /**
       * Deletes the medical device identified by the provided unique [medicalDeviceId].
       * Delete a [MedicalDevice]
-      * @param medicalDeviceId 
+      * @param medicalDeviceId
     */
     deleteMedicalDevice(medicalDeviceId: string, ): Promise<string >;
     /**
       * Deletes the batch of medical device identified by the provided [medicalDeviceIds].
       * Delete a batch of [MedicalDevice]
-      * @param requestBody 
+      * @param requestBody
     */
     deleteMedicalDevices(requestBody: Array<string>, ): Promise<Array<string> >;
     /**
@@ -39,11 +40,11 @@ import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice
       * @param nextDeviceId The id of the first device in the next page
       * @param limit The number of devices to return in the queried page
     */
-    filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number, ): Promise<PaginatedListMedicalDevice >;
+    filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number, ): Promise<PaginatedListMedicalDevice >;
     /**
       * Each medical device is uniquely identified by a device id. The device id is a UUID. This [medicalDeviceId] is the preferred method to retrieve one specific device.
       * Get a Medical Device
-      * @param medicalDeviceId 
+      * @param medicalDeviceId
     */
     getMedicalDevice(medicalDeviceId: string, ): Promise<MedicalDevice >;
     /**
@@ -51,5 +52,5 @@ import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice
       * Load medical device ids from the database by filtering them using the provided Filter.
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    matchMedicalDevices(filter: Filter, ): Promise<Array<string> >;
+    matchMedicalDevices(filter: Filter<MedicalDevice>, ): Promise<Array<string> >;
     }
