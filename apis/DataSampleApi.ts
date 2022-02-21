@@ -2,7 +2,6 @@
 import { DataSample } from '../models/DataSample';
 import { Document } from '../models/Document';
 import { Filter } from '../filter/Filter';
-import { InlineResponse403 } from '../models/InlineResponse403';
 import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
 
   /**
@@ -48,7 +47,7 @@ import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
       * Find data samples using the provided [filter].
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    filterDataSample(filter: Filter, ): Promise<PaginatedListDataSample >;
+    filterDataSample(filter: Filter<DataSample>, ): Promise<PaginatedListDataSample >;
     /**
       * Each data sample is uniquely identified by a data sample id which is a UUID. This [dataSampleId] is the preferred method to retrieve one specific data sample.
       * Get a [DataSample] by its id
@@ -75,7 +74,7 @@ import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
       * Find data samples ids using the provided Filter.
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    matchDataSample(filter: Filter, ): Promise<Array<string> >;
+    matchDataSample(filter: Filter<DataSample>, ): Promise<Array<string> >;
     /**
       * Link an attachment or update the attachment of a data sample
       * Add or update the attachment of a DataSample
