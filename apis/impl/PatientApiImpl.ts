@@ -9,10 +9,7 @@ import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientX
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
-import {PatientDtoMapper} from "../../mappers/patient";
-import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
-import toPaginatedListPatient = PaginatedListMapper.toPaginatedListPatient;
-import toPatientDto = PatientDtoMapper.toPatientDto;
+import {PatientMapper} from "../../mappers/patient";
 
 class PatientApiImpl implements PatientApi {
   userApi: IccUserXApi;
@@ -27,11 +24,11 @@ class PatientApiImpl implements PatientApi {
     let currentUser = await this.userApi.getCurrentUser();
 
     let createdOrUpdatedPatient = patient.rev
-      ? await this.patientApi.modifyPatientWithUser(currentUser, toPatientDto(patient))
-      : await this.patientApi.createPatientWithUser(currentUser, toPatientDto(patient))
+      ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
+      : await this.patientApi.createPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
 
     if (createdOrUpdatedPatient) {
-      return PatientDtoMapper.toPatient(createdOrUpdatedPatient)!;
+      return PatientMapper.toPatient(createdOrUpdatedPatient)!;
     }
 
     throw Error(`Could not create / modify patient ${patient.id} with user ${currentUser.id}`)
@@ -54,19 +51,19 @@ class PatientApiImpl implements PatientApi {
     let foundPatient = await this.patientApi.getPatientWithUser(currentUser, patientId);
 
     if (foundPatient) {
-      return PatientDtoMapper.toPatient(foundPatient)!;
+      return PatientMapper.toPatient(foundPatient)!;
     }
 
     throw Error(`Could not find patient ${patientId} with user ${currentUser.id}`)
   }
 
   async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
-    return toPaginatedListPatient(await this.patientApi.filterPatientsBy(undefined, nextPatientId, limit, undefined, undefined, undefined, new FilterChainPatient({
-      filter: toAbstractFilterDto<Patient>(filter, 'Patient')
+    return PaginatedListMapper.toPaginatedListPatient(await this.patientApi.filterPatientsBy(undefined, nextPatientId, limit, undefined, undefined, undefined, new FilterChainPatient({
+      filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')
     })))!
   }
 
   async matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
-    return await this.patientApi.matchPatientsBy(toAbstractFilterDto<Patient>(filter, 'Patient'));
+    return await this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'));
   }
 }

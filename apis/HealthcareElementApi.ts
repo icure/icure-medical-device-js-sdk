@@ -28,6 +28,8 @@ export interface HealthcareElementApi {
   /**
    * Find Healthcare Elements using a filter
    * @param filter
+   * @param nextHealthElementId
+   * @param limit
    */
   filterHealthcareElement(filter: Filter<HealthcareElement>, nextHealthElementId?: string, limit?: number,): Promise<PaginatedListHealthcareElement>;
 

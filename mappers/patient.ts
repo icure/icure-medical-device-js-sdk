@@ -12,7 +12,7 @@ import {DelegationMapper} from "./delegation";
 import {PartnershipDtoMapper} from "./partnership";
 
 
-export namespace PatientDtoMapper {
+export namespace PatientMapper {
   import toIdentifier = IdentifierDtoMapper.toIdentifier;
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
   import toPersonNameDto = PersonNameDtoMapper.toPersonNameDto;

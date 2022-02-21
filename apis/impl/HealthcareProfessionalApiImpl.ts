@@ -17,10 +17,7 @@ import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
-import toHealthcareProfessional = HealthcareProfessionalMapper.toHealthcareProfessional;
-import toHealthcarePartyDto = HealthcareProfessionalMapper.toHealthcarePartyDto;
-import toPaginatedListHealthcareProfessional = PaginatedListMapper.toPaginatedListHealthcareProfessional;
-import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import {firstOrNull} from "../../utils/functionalUtils";
 
 class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   userApi: IccUserXApi;
@@ -33,18 +30,18 @@ class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
 
   async createOrModifyHealthcareProfessional(healthcareProfessional: HealthcareProfessional): Promise<HealthcareProfessional> {
     let createdOrModifyHealthcareParty = healthcareProfessional.rev
-      ? await this.hcpApi.modifyHealthcareParty(toHealthcarePartyDto(healthcareProfessional))
-      : await this.hcpApi.createHealthcareParty(toHealthcarePartyDto(healthcareProfessional))
+      ? await this.hcpApi.modifyHealthcareParty(HealthcareProfessionalMapper.toHealthcarePartyDto(healthcareProfessional))
+      : await this.hcpApi.createHealthcareParty(HealthcareProfessionalMapper.toHealthcarePartyDto(healthcareProfessional))
 
     if (createdOrModifyHealthcareParty) {
-      return toHealthcareProfessional(createdOrModifyHealthcareParty)!;
+      return HealthcareProfessionalMapper.toHealthcareProfessional(createdOrModifyHealthcareParty)!;
     }
 
     throw Error(`Could not create / modify healthcare professional ${healthcareProfessional.id}`)
   }
 
   async deleteHealthcareProfessional(hcpId: string): Promise<string> {
-    const deletedHcpRev = (await this.hcpApi.deleteHealthcareParties(hcpId)).find(e => true)?.rev
+    const deletedHcpRev = firstOrNull(await this.hcpApi.deleteHealthcareParties(hcpId))?.rev
     if (deletedHcpRev) {
       return deletedHcpRev
     }
@@ -52,16 +49,16 @@ class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   }
 
   async filterHealthcareProfessionalBy(filter: Filter<HealthcareProfessional>, nextHcpId?: string, limit?: number): Promise<PaginatedListHealthcareProfessional> {
-    return toPaginatedListHealthcareProfessional(await this.hcpApi.filterHealthPartiesBy(nextHcpId, limit, new FilterChainHealthcareParty({
-      filter: toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional')
+    return PaginatedListMapper.toPaginatedListHealthcareProfessional(await this.hcpApi.filterHealthPartiesBy(nextHcpId, limit, new FilterChainHealthcareParty({
+      filter: FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional')
     })))!
   }
 
   async getHealthcareProfessional(hcpId: string): Promise<HealthcareProfessional> {
-    return toHealthcareProfessional(await this.hcpApi.getHealthcareParty(hcpId, false))
+    return HealthcareProfessionalMapper.toHealthcareProfessional(await this.hcpApi.getHealthcareParty(hcpId, false))
   }
 
   async matchHealthcareProfessionalBy(filter: Filter<HealthcareProfessional>): Promise<Array<string>> {
-    return await this.hcpApi.matchHealthcarePartiesBy(toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'));
+    return await this.hcpApi.matchHealthcarePartiesBy(FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'));
   }
 }

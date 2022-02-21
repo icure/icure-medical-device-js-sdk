@@ -252,12 +252,12 @@ class DataSampleApiImpl implements DataSampleApi {
     return this.contactApi.createContactWithUser(user, contactToDeleteServices);
   }
 
-  async filterDataSample(filter: Filter<DataSample>): Promise<PaginatedListDataSample> {
+  async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
     let currentUser = await this.userApi.getCurrentUser();
     let hcpId = (currentUser.healthcarePartyId || currentUser.patientId || currentUser.deviceId)!;
 
     let paginatedListService = await this.contactApi
-      .filterServicesBy(undefined, undefined, new FilterChainService({filter: filter}))
+      .filterServicesBy(nextDataSampleId, limit, new FilterChainService({filter: filter}))
       .then((paginatedServices) =>
         this.contactApi.decryptServices(hcpId, paginatedServices.rows!).then((decryptedRows) => Object.assign(paginatedServices, { rows: decryptedRows }))
       )

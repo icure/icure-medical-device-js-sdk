@@ -18,10 +18,9 @@ import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {forceUuid} from "../../mappers/utils";
 import {MedicalDeviceMapper} from "../../mappers/medicalDevice";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
-import toPaginatedListMedicalDevice = PaginatedListMapper.toPaginatedListMedicalDevice;
 import {FilterMapper} from "../../mappers/filter";
-import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
 import {Filter} from "../../filter/Filter";
+import {firstOrNull} from "../../utils/functionalUtils";
 
 class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private deviceApi: IccDeviceApi;
@@ -31,7 +30,7 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {
-    const createdDevice = (await this.createOrModifyMedicalDevices([medicalDevice])).find(e => true);
+    const createdDevice = firstOrNull(await this.createOrModifyMedicalDevices([medicalDevice]));
     if (createdDevice != undefined) {
       return createdDevice;
     } else {
@@ -40,7 +39,6 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
-    const {toMedicalDevice, toDeviceDto} = MedicalDeviceMapper;
     const medicalDevicesToCreate = medicalDevice.filter(dev => dev.rev == null);
     const medicalDevicesToUpdate = medicalDevice.filter(dev => dev.rev != null);
 
@@ -48,14 +46,14 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
       throw Error("Update id should be provided as an UUID");
     }
 
-    const deviceToCreate = medicalDevicesToCreate.map(d => toDeviceDto(d));
-    const deviceToUpdate = medicalDevicesToCreate.map(d => toDeviceDto(d));
+    const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+    const deviceToUpdate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
 
     const createdDevices = await this.deviceApi.createDevices(deviceToCreate);
     const updatedDevices = await this.deviceApi.updateDevices(deviceToUpdate);
     const processedDeviceIds = [...createdDevices, ...updatedDevices].map(d => d.id!);
 
-    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => toMedicalDevice(d));
+    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => MedicalDeviceMapper.toMedicalDevice(d));
   }
 
   async deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
@@ -71,8 +69,8 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    return toPaginatedListMedicalDevice(await this.deviceApi.filterDevicesBy(nextDeviceId, limit, new FilterChainDevice({
-      filter: toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice')
+    return PaginatedListMapper.toPaginatedListMedicalDevice(await this.deviceApi.filterDevicesBy(nextDeviceId, limit, new FilterChainDevice({
+      filter: FilterMapper.toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice')
     })))!
   }
 
@@ -81,6 +79,6 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async matchMedicalDevices(filter: Filter<MedicalDevice>): Promise<Array<string>> {
-    return await this.deviceApi.matchDevicesBy( toAbstractFilterDto<MedicalDevice>(filter, 'User'));
+    return await this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User'));
   }
 }
