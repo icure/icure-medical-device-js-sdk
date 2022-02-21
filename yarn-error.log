@@ -1,25 +1,25 @@
 Arguments: 
-  /Users/aduchate/.nvm/versions/node/v15.14.0/bin/node /Users/aduchate/.nvm/versions/node/v15.14.0/bin/yarn
+  /Users/lisatr/.nvm/versions/node/v10.24.1/bin/node /usr/local/lib/node_modules/yarn/bin/yarn.js config get npmScopes --json
 
 PATH: 
-  /Users/aduchate/.sdkman/candidates/groovy/current/bin:/Users/aduchate/.pyenv/shims:/opt/gcloud/google-cloud-sdk/bin:/Users/aduchate/.nvm/versions/node/v15.14.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/VMware Fusion.app/Contents/Public:/usr/local/go/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Applications/Wireshark.app/Contents/MacOS
+  /Users/lisatr/google-cloud-sdk/bin:/Users/lisatr/_WORK/_Flutter/flutter/bin:/Users/lisatr/.nvm/versions/node/v10.24.1/bin:/Library/Frameworks/Python.framework/Versions/3.8/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Users/lisatr/bin/
 
 Yarn version: 
-  1.22.11
+  1.22.4
 
 Node version: 
-  15.14.0
+  10.24.1
 
 Platform: 
   darwin x64
 
 Trace: 
-  SyntaxError: /Users/aduchate/Sources/icure/icure-medical-device-js-sdk/package.json: Unexpected token } in JSON at position 457
+  SyntaxError: /Users/lisatr/_WORK/icure/medtech/icure-medical-device-js-sdk/package.json: Unexpected token } in JSON at position 492
       at JSON.parse (<anonymous>)
-      at /Users/aduchate/.nvm/versions/node/v15.14.0/lib/node_modules/yarn/lib/cli.js:1625:59
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:1625:59
       at Generator.next (<anonymous>)
-      at step (/Users/aduchate/.nvm/versions/node/v15.14.0/lib/node_modules/yarn/lib/cli.js:310:30)
-      at /Users/aduchate/.nvm/versions/node/v15.14.0/lib/node_modules/yarn/lib/cli.js:321:13
+      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:321:13
 
 npm manifest: 
   {
@@ -41,8 +41,11 @@ npm manifest:
       "prepare": "npm run build"
     },
     "dependencies": {
-      "@icure/api": "^4.0.82",
+      "@icure/api": "^4.0.87",
+  
+      "date-fns": "^2.28.0",
       "es6-promise": "^4.2.4",
+      ""
     },
     "devDependencies": {
       "typescript": "^4.5.5"
@@ -57,10 +60,10 @@ Lockfile:
   # yarn lockfile v1
   
   
-  "@icure/api@^4.0.82":
-    version "4.0.82"
-    resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.0.82.tgz#e75c73a40cbad1095b50cf203d4c381fefc15730"
-    integrity sha512-uvHLzMsAtylBxmpx4XHbkdzWwhQT5OulrsRO9d8D/8QJTMhTe0kcUflzMqWt6HtjpOZBlTWZ4ZGZLPih8bti0Q==
+  "@icure/api@^4.0.87":
+    version "4.0.87"
+    resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.0.87.tgz#74d227a86c210c118adaad2fc8f2bb6c9576d9e7"
+    integrity sha512-rYFaRsqSYXslyl6cNchfGQstC9QjcfYVHMOhmD0rFM/QHGjvYN3IFynF4QNgkEIz4GpH/nbpVjmgo9vnuB8NdQ==
     dependencies:
       date-fns "^2.23.0"
       libphonenumber-js "^1.7.18"
@@ -74,7 +77,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
     integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
   
-  date-fns@^2.23.0:
+  date-fns@^2.23.0, date-fns@^2.28.0:
     version "2.28.0"
     resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.28.0.tgz#9570d656f5fc13143e50c975a3b6bbeb46cd08b2"
     integrity sha512-8d35hViGYx/QH0icHYCeLmsLmMUheMmTyV9Fcm6gvNwdw31yXXH+O85sOBJ+OLnLQMKZowvpKb6FgMIQjcpvQw==
@@ -99,33 +102,15 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
     integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
   
-  querystringify@^2.1.1:
-    version "2.2.0"
-    resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.2.0.tgz#3345941b4153cb9d082d8eee4cda2016a9aef7f6"
-    integrity sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==
-  
-  requires-port@^1.0.0:
-    version "1.0.0"
-    resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
-    integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
-  
   text-encoding@^0.7.0:
     version "0.7.0"
     resolved "https://registry.yarnpkg.com/text-encoding/-/text-encoding-0.7.0.tgz#f895e836e45990624086601798ea98e8f36ee643"
     integrity sha512-oJQ3f1hrOnbRLOcwKz0Liq2IcrvDeZRHXhd9RgLrsT+DjWY/nty1Hi7v3dtkaEYbPYe0mUoOfzRrMwfXXwgPUA==
   
-  typescript@^3.9.3:
-    version "3.9.10"
-    resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.10.tgz#70f3910ac7a51ed6bef79da7800690b19bf778b8"
-    integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
-  
-  url-parse@^1.4.3:
-    version "1.5.7"
-    resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.7.tgz#00780f60dbdae90181f51ed85fb24109422c932a"
-    integrity sha512-HxWkieX+STA38EDk7CE9MEryFeHCKzgagxlGvsdS7WBImq9Mk+PGwiT56w82WI3aicwJA8REp42Cxo98c8FZMA==
-    dependencies:
-      querystringify "^2.1.1"
-      requires-port "^1.0.0"
+  typescript@^4.5.5:
+    version "4.5.5"
+    resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.5.5.tgz#d8c953832d28924a9e3d37c73d729c846c5896f3"
+    integrity sha512-TCTIul70LyWe6IJWT8QSYeA54WQe8EjQFU4wY52Fasj5UKx88LNYKCgBEHcOMOrFF1rKGbD8v/xcNWVUq9SymA==
   
   uuid-encoder@^1.1.0:
     version "1.2.0"
@@ -133,8 +118,3 @@ Lockfile:
     integrity sha512-uL/aXk+EFP0wxDjOuPulXo5LV8y6jqFX3yCGxm0qN041bJZ1jfOgqagkkOzZ4h5atYdezhyQuw6CWt6+og0pmQ==
     dependencies:
       big-integer "^1.6.46"
-  
-  whatwg-fetch@^3.0.0:
-    version "3.6.2"
-    resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.6.2.tgz#dced24f37f2624ed0281725d51d0e2e3fe677f8c"
-    integrity sha512-bJlen0FcuU/0EMLrdbJ7zOnW6ITZLrZMIarMUVmdKtsGvZna8vxKYaexICWPfZ8qwf9fzNq+UEIZrnSaApt6RA==
