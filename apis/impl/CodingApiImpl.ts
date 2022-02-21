@@ -1,8 +1,9 @@
 import {Coding} from "../../models/Coding";
-import {Filter} from "../../models/Filter";
+import {Filter} from "../../filter/Filter";
 import {PaginatedListCoding} from "../../models/PaginatedListCoding";
 import {CodingApi} from "../CodingApi";
 import {
+  FilterChainCode,
   IccAuthApi,
   IccCodeApi,
   IccContactXApi,
@@ -15,6 +16,10 @@ import {
 } from "@icure/api";
 import {forceUuid} from "../../mappers/utils";
 import {CodingMapper} from "../../mappers/codeCoding";
+import {PaginatedListMapper} from "../../mappers/paginatedList";
+import toPaginatedListCoding = PaginatedListMapper.toPaginatedListCoding;
+import {FilterMapper} from "../../mappers/filter";
+import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
 
 class CodingApiImpl implements CodingApi {
   private codeApi: IccCodeApi;
@@ -49,15 +54,17 @@ class CodingApiImpl implements CodingApi {
     return [...createdCodes, ...updatedCodes].map(c => toCoding(c));
   }
 
-  async filterCoding(filter: Filter, nextCodingId?: string, limit?: number): Promise<PaginatedListCoding> {
-    return Promise.resolve(new PaginatedListCoding({}));
+  async filterCoding(filter: Filter<Coding>, nextCodingId?: string, limit?: number): Promise<PaginatedListCoding> {
+    return toPaginatedListCoding(await this.codeApi.filterCodesBy(undefined, nextCodingId, limit, undefined, undefined, undefined, new FilterChainCode({
+      filter: toAbstractFilterDto<Coding>(filter, 'Coding')
+    })))!
   }
 
   async getCoding(codingId: string): Promise<Coding> {
     return CodingMapper.toCoding(await this.codeApi.getCode(codingId));
   }
 
-  async matchCoding(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve([]);
+  async matchCoding(filter: Filter<Coding>): Promise<Array<string>> {
+    return await this.codeApi.matchCodesBy(toAbstractFilterDto<Coding>(filter, 'Coding'));
   }
 }

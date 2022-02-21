@@ -1,8 +1,8 @@
 import {MedicalDevice} from '../../models/MedicalDevice';
-import {Filter} from "../../models/Filter";
 import {PaginatedListMedicalDevice} from "../../models/PaginatedListMedicalDevice";
 import {MedicalDeviceApi} from "../MedicalDeviceApi";
 import {
+  Device as DeviceDto, FilterChainDevice,
   IccAuthApi,
   IccCodeApi,
   IccContactXApi,
@@ -17,6 +17,11 @@ import {
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {forceUuid} from "../../mappers/utils";
 import {MedicalDeviceMapper} from "../../mappers/medicalDevice";
+import {PaginatedListMapper} from "../../mappers/paginatedList";
+import toPaginatedListMedicalDevice = PaginatedListMapper.toPaginatedListMedicalDevice;
+import {FilterMapper} from "../../mappers/filter";
+import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import {Filter} from "../../filter/Filter";
 
 class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private deviceApi: IccDeviceApi;
@@ -65,16 +70,17 @@ class MedicalDeviceApiImpl implements MedicalDeviceApi {
     return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => d.rev != undefined).map(d => d.rev!);
   }
 
-  async filterMedicalDevices(filter: Filter, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    //return (await this.deviceApi.filterDevicesBy(nextDeviceId, limit,));
-    return Promise.resolve(new PaginatedListMedicalDevice({}));
+  async filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
+    return toPaginatedListMedicalDevice(await this.deviceApi.filterDevicesBy(nextDeviceId, limit, new FilterChainDevice({
+      filter: toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice')
+    })))!
   }
 
   async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
     return MedicalDeviceMapper.toMedicalDevice(await this.deviceApi.getDevice(medicalDeviceId));
   }
 
-  async matchMedicalDevices(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve([]);
+  async matchMedicalDevices(filter: Filter<MedicalDevice>): Promise<Array<string>> {
+    return await this.deviceApi.matchDevicesBy( toAbstractFilterDto<MedicalDevice>(filter, 'User'));
   }
 }
