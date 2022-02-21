@@ -27,7 +27,7 @@ import { PaginatedListHealthcareProfessional } from '../models/PaginatedListHeal
       * @param nextHcpId The id of the first Healthcare professional in the next page
       * @param limit The number of healthcare professionals to return in the queried page
     */
-    filterHealthcareProfessionalBy(filter: Filter, nextHcpId?: string, limit?: number, ): Promise<PaginatedListHealthcareProfessional >;
+    filterHealthcareProfessionalBy(filter: Filter<HealthcareProfessional>, nextHcpId?: string, limit?: number, ): Promise<PaginatedListHealthcareProfessional >;
     /**
       * Eachhealthcare professional is uniquely identified by ahealthcare professional id. Thehealthcare professional id is a UUID. This hcpId is the preferred method to retrieve one specific healthcare professional.
       * Get a Healthcare professional by id.
@@ -39,5 +39,5 @@ import { PaginatedListHealthcareProfessional } from '../models/PaginatedListHeal
       * Loadhealthcare professional ids from the database by filtering them using the provided Filter.
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
-    matchHealthcareProfessionalBy(filter: Filter, ): Promise<Array<string> >;
+    matchHealthcareProfessionalBy(filter: Filter<HealthcareProfessional>, ): Promise<Array<string> >;
     }
