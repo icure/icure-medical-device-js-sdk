@@ -11,11 +11,11 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
 import {PatientMapper} from "../../mappers/patient";
 
-class PatientApiImpl implements PatientApi {
+export class PatientApiImpl implements PatientApi {
   userApi: IccUserXApi;
   patientApi: IccPatientXApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }) {
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
   }

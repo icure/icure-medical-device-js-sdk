@@ -19,11 +19,11 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
-class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
+export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   userApi: IccUserXApi;
   hcpApi: IccHcpartyXApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
     this.hcpApi = api.healthcarePartyApi;
   }

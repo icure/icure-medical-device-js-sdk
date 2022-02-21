@@ -2,7 +2,7 @@ import {HealthcareElement} from "../../models/HealthcareElement";
 import {Filter} from "../../filter/Filter";
 import {PaginatedListHealthcareElement} from "../../models/PaginatedListHealthcareElement";
 import {HealthcareElementApi} from "../HealthcareElementApi";
-import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
 import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
 import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
 import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
@@ -13,12 +13,12 @@ import {FilterMapper} from "../../mappers/filter";
 import {HealthcareElementMapper} from "../../mappers/HealthcareElement";
 import {firstOrNull} from "../../utils/functionalUtils";
 
-class HealthcareElementApiImpl implements HealthcareElementApi {
+export class HealthcareElementApiImpl implements HealthcareElementApi {
   userApi: IccUserXApi;
   heApi: IccHelementXApi;
   patientApi: IccPatientXApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
     this.heApi = api.healthcareElementApi;
     this.patientApi = api.patientApi;
