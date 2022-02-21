@@ -1,8 +1,8 @@
 import {HealthcareElement} from "../../models/HealthcareElement";
-import {Filter} from "../../models/Filter";
+import {Filter} from "../../filter/Filter";
 import {PaginatedListHealthcareElement} from "../../models/PaginatedListHealthcareElement";
 import {HealthcareElementApi} from "../HealthcareElementApi";
-import {IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
 import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
 import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
 import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
@@ -10,8 +10,11 @@ import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {HealthcareElementMapper} from "../../dist/mappers/HealthcareElement";
 import {forceUuid} from "../../mappers/utils";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
+import {FilterMapper} from "../../mappers/filter";
 import toHealthcareElement = HealthcareElementMapper.toHealthcareElement;
 import toHealthElementDto = HealthcareElementMapper.toHealthElementDto;
+import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import toPaginatedListHealthcareElement = PaginatedListMapper.toPaginatedListHealthcareElement;
 
 class HealthcareElementApiImpl implements HealthcareElementApi {
   userApi: IccUserXApi;
@@ -56,15 +59,17 @@ class HealthcareElementApiImpl implements HealthcareElementApi {
     throw Error(`Could not delete healthcare element ${id}`)
   }
 
-  filterHealthcareElement(filter: Filter): Promise<PaginatedListHealthcareElement> {
-    return Promise.resolve(new PaginatedListHealthcareElement({}))
+  async filterHealthcareElement(filter: Filter<HealthcareElement>, nextHealthElementId?: string, limit?: number): Promise<PaginatedListHealthcareElement> {
+    return toPaginatedListHealthcareElement(await this.heApi.filterHealthElementsBy(nextHealthElementId, limit, new FilterChainPatient({
+      filter: toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')
+    })))!
   }
 
   async getHealthcareElement(id: string): Promise<HealthcareElement> {
     return toHealthcareElement(await this.heApi.getHealthElement(id))
   }
 
-  matchHealthcareElement(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve([])
+  async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
+    return await this.heApi.matchHealthElementsBy(toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'));
   }
 }
