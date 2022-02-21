@@ -17,9 +17,8 @@ import {
 import {forceUuid} from "../../mappers/utils";
 import {CodingMapper} from "../../mappers/codeCoding";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
-import toPaginatedListCoding = PaginatedListMapper.toPaginatedListCoding;
 import {FilterMapper} from "../../mappers/filter";
-import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
+import {firstOrNull} from "../../utils/functionalUtils";
 
 class CodingApiImpl implements CodingApi {
   private codeApi: IccCodeApi;
@@ -29,7 +28,7 @@ class CodingApiImpl implements CodingApi {
   }
 
   async createOrModifyCoding(coding: Coding): Promise<Coding> {
-    const processedCoding = (await this.createOrModifyCodings([coding])).find(e => true);
+    const processedCoding = firstOrNull(await this.createOrModifyCodings([coding]));
     if (processedCoding != undefined) {
       return processedCoding;
     } else {
@@ -38,7 +37,6 @@ class CodingApiImpl implements CodingApi {
   }
 
   async createOrModifyCodings(coding: Array<Coding>): Promise<Array<Coding>> {
-    const {toCoding, toCode} = CodingMapper;
     const codingsToCreate = coding.filter(dev => dev.rev == null);
     const codingsToUpdate = coding.filter(dev => dev.rev != null);
 
@@ -46,17 +44,17 @@ class CodingApiImpl implements CodingApi {
       throw Error("Update id should be provided as an UUID");
     }
 
-    const codesToCreate = codingsToCreate.map(d => toCode(d));
-    const codesToUpdate = codingsToCreate.map(d => toCode(d));
+    const codesToCreate = codingsToCreate.map(d => CodingMapper.toCode(d));
+    const codesToUpdate = codingsToCreate.map(d => CodingMapper.toCode(d));
 
     const createdCodes = await Promise.all(codesToCreate.map(c => this.codeApi.createCode(c)));
     const updatedCodes = await Promise.all(codesToUpdate.map(c => this.codeApi.modifyCode(c)));
-    return [...createdCodes, ...updatedCodes].map(c => toCoding(c));
+    return [...createdCodes, ...updatedCodes].map(c => CodingMapper.toCoding(c));
   }
 
   async filterCoding(filter: Filter<Coding>, nextCodingId?: string, limit?: number): Promise<PaginatedListCoding> {
-    return toPaginatedListCoding(await this.codeApi.filterCodesBy(undefined, nextCodingId, limit, undefined, undefined, undefined, new FilterChainCode({
-      filter: toAbstractFilterDto<Coding>(filter, 'Coding')
+    return PaginatedListMapper.toPaginatedListCoding(await this.codeApi.filterCodesBy(undefined, nextCodingId, limit, undefined, undefined, undefined, new FilterChainCode({
+      filter: FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding')
     })))!
   }
 
@@ -65,6 +63,6 @@ class CodingApiImpl implements CodingApi {
   }
 
   async matchCoding(filter: Filter<Coding>): Promise<Array<string>> {
-    return await this.codeApi.matchCodesBy(toAbstractFilterDto<Coding>(filter, 'Coding'));
+    return await this.codeApi.matchCodesBy(FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding'));
   }
 }

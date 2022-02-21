@@ -1,17 +1,19 @@
+import {Content} from "../../models/Content";
 import {DataSample} from "../../models/DataSample";
-import {Filter} from "../../models/Filter";
+import {Filter} from "../../filter/Filter";
 import {PaginatedListDataSample} from "../../models/PaginatedListDataSample";
 import {Document} from "../../models/Document";
 import {DataSampleApi} from "../DataSampleApi";
 import {
-  Contact,
+  Contact as ContactDto,
+  Document as DocumentDto, FilterChainService,
   IccAuthApi,
   IccCodeApi,
   IccDocumentXApi,
   IccPatientXApi,
   IccUserXApi, ListOfIds, PaginatedListContact,
   Patient as PatientDto,
-  Service,
+  Service as ServiceDto,
   User as UserDto
 } from "@icure/api";
 import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
@@ -21,6 +23,10 @@ import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {any, distinctBy, firstOrNull, isNotEmpty, sumOf} from "../../utils/functionalUtils";
 import {CachedMap} from "../../utils/cachedMap";
 import {DataSampleMapper} from "../../mappers/serviceDataSample";
+import {DocumentMapper} from "../../mappers/document";
+import {FilterMapper} from "../../mappers/filter";
+import {PaginatedListMapper} from "../../mappers/paginatedList";
+import {UtiDetector} from "../../utils/utiDetector";
 
 class DataSampleApiImpl implements DataSampleApi {
   private crypto: IccCryptoXApi;
@@ -29,7 +35,7 @@ class DataSampleApiImpl implements DataSampleApi {
   private contactApi: IccContactXApi;
   private documentApi: IccDocumentXApi;
 
-  private contactsCache: CachedMap<Contact> = new CachedMap<Contact>(5 * 60, 10000);
+  private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
 
   constructor(api: { cryptoApi: IccCryptoXApi; codeApi: IccCodeApi, authApi: IccAuthApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; }) {
     this.crypto = api.cryptoApi;
@@ -76,7 +82,7 @@ class DataSampleApiImpl implements DataSampleApi {
     }
 
     let existingPatient = await this.patientApi.getPatientWithUser(currentUser, patientId);
-    let createdOrModifiedContact: Contact;
+    let createdOrModifiedContact: ContactDto;
 
     if (contactCached && existingContact != null) {
       let servicesToModify = dataSample.map((e) => DataSampleMapper.toServiceDto(e, e.batchId)!);
@@ -110,32 +116,32 @@ class DataSampleApiImpl implements DataSampleApi {
     return this.countHierarchyOfDataSamples(currentCount + dataSampleCount, dataSampleIndex + 1, dataSamples);
   }
 
-  async getContactOfDataSample(currentUser: UserDto, dataSample: DataSample) : Promise<[boolean, Contact?]> {
+  async getContactOfDataSample(currentUser: UserDto, dataSample: DataSample) : Promise<[boolean, ContactDto?]> {
     let cachedContact = dataSample.id ? this.contactsCache.getIfPresent(dataSample.id) : undefined;
     if (cachedContact) {
       return [true, cachedContact];
     } else {
-      let contact: Contact = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined;
+      let contact: ContactDto = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined;
       return [false, contact];
     }
   }
 
-  async getPatientIdOfContact(currentUser: UserDto, contactDto: Contact): Promise<string | undefined> {
+  async getPatientIdOfContact(currentUser: UserDto, contactDto: ContactDto): Promise<string | undefined> {
     let keysFromDeleg = await this.crypto.extractKeysHierarchyFromDelegationLikes(currentUser.healthcarePartyId!, contactDto.id!, contactDto.cryptedForeignKeys!);
     return keysFromDeleg
       .map((key) => key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)
       .find((key) => key != undefined);
   }
 
-  async createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: Contact) : Promise<Contact> {
+  async createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: ContactDto) : Promise<ContactDto> {
     let servicesToCreate = dataSamples
       .map((e) => DataSampleMapper.toServiceDto(e, e.batchId))
       .map((e) => { return {...e, modified: undefined } });
     return await this.createContactDtoUsing(currentUser, contactPatient, servicesToCreate, existingContact);
   }
 
-  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<Service>, existingContact? : Contact): Promise<Contact> {
-    let baseContact: Contact;
+  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<ServiceDto>, existingContact? : ContactDto): Promise<ContactDto> {
+    let baseContact: ContactDto;
     if (existingContact != null) {
       baseContact = {
         ...existingContact,
@@ -144,7 +150,7 @@ class DataSampleApiImpl implements DataSampleApi {
         modified: Date.now()
       };
     } else {
-      baseContact = await this.contactApi.newInstance(currentUser, contactPatient, new Contact({id: this.crypto.randomUuid()}));
+      baseContact = await this.contactApi.newInstance(currentUser, contactPatient, new ContactDto({id: this.crypto.randomUuid()}));
     }
 
     return {
@@ -199,7 +205,7 @@ class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve(deletedServices);
   }
 
-  async findContactsForDataSampleIds(currentUser: UserDto, dataSampleIds: Array<string>) : Promise<Array<Contact>> {
+  async findContactsForDataSampleIds(currentUser: UserDto, dataSampleIds: Array<string>) : Promise<Array<ContactDto>> {
     let cachedContacts = this.contactsCache.getAllPresent(dataSampleIds);
     let dataSampleIdsToSearch = dataSampleIds
       .filter((element) => Object.keys(cachedContacts).find((key) => key == element) == undefined);
@@ -227,7 +233,7 @@ class DataSampleApiImpl implements DataSampleApi {
     }
   }
 
-  async getPatientOfContact(currentUser: UserDto, contactDto: Contact) : Promise<PatientDto | undefined> {
+  async getPatientOfContact(currentUser: UserDto, contactDto: ContactDto) : Promise<PatientDto | undefined> {
     let patientId = (await this.getPatientIdOfContact(currentUser, contactDto));
     if (patientId) {
       return this.patientApi.getPatientWithUser(currentUser, patientId);
@@ -236,47 +242,113 @@ class DataSampleApiImpl implements DataSampleApi {
     }
   }
 
-  async deleteServices(user: UserDto, patient: PatientDto, services: Array<Service>): Promise<Contact | undefined> {
+  async deleteServices(user: UserDto, patient: PatientDto, services: Array<ServiceDto>): Promise<ContactDto | undefined> {
     let currentTime = Date.now();
-    let contactToDeleteServices = await this.contactApi.newInstance(user, patient, new Contact({
+    let contactToDeleteServices = await this.contactApi.newInstance(user, patient, new ContactDto({
       id: this.crypto.randomUuid(),
-      services: services.map((service) => new Service({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
+      services: services.map((service) => new ServiceDto({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
     }));
 
     return this.contactApi.createContactWithUser(user, contactToDeleteServices);
   }
 
-  filterDataSample(filter: Filter): Promise<PaginatedListDataSample> {
-    return Promise.resolve(new PaginatedListDataSample({}));
+  async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
+    let currentUser = await this.userApi.getCurrentUser();
+    let hcpId = (currentUser.healthcarePartyId || currentUser.patientId || currentUser.deviceId)!;
+
+    let paginatedListService = await this.contactApi
+      .filterServicesBy(nextDataSampleId, limit, new FilterChainService({filter: filter}))
+      .then((paginatedServices) =>
+        this.contactApi.decryptServices(hcpId, paginatedServices.rows!).then((decryptedRows) => Object.assign(paginatedServices, { rows: decryptedRows }))
+      )
+    return PaginatedListMapper.toPaginatedListDataSample(paginatedListService)!;
   }
 
   async getDataSample(dataSampleId: string): Promise<DataSample> {
     return Promise.resolve(DataSampleMapper.toDataSample(await this.getServiceFromICure(dataSampleId))!);
   }
 
-  async getServiceFromICure(dataSampleId: string) : Promise<Service> {
+  async getServiceFromICure(dataSampleId: string) : Promise<ServiceDto> {
     let currentUser = await this.userApi.getCurrentUser();
 
-    let serviceToFind = await this.contactApi.listServices(currentUser!, ListOfIds([dataSampleId]));
+    let serviceToFind = await this.contactApi.listServicesWithUser(currentUser!, new ListOfIds([dataSampleId]));
     if (serviceToFind == undefined) {
       throw Error(`Could not find data sample ${dataSampleId}`);
     }
     return Promise.resolve(firstOrNull(serviceToFind)!);
   }
 
-  getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
-    return Promise.resolve(undefined);
+  async getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
+    let currentUser = await this.userApi.getCurrentUser();
+    let documentOfAttachment = await this.getDataSampleAttachmentDocumentFromICure(currentUser!, dataSampleId, documentId);
+    let docEncKeys = await this.getDocumentEncryptionKeys(currentUser, documentOfAttachment).then((keys) => keys.join(","));
+
+    return this.documentApi.getDocumentAttachment(documentId, attachmentId, docEncKeys);
   }
 
-  getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
-    return Promise.resolve(undefined);
+  async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
+    let currentUser = await this.userApi.getCurrentUser();
+
+    return DocumentMapper.toDocument(await this.getDataSampleAttachmentDocumentFromICure(currentUser!, dataSampleId, documentId));
   }
 
-  matchDataSample(filter: Filter): Promise<Array<string>> {
-    return Promise.resolve([]);
+  async getDataSampleAttachmentDocumentFromICure(currentUser: UserDto, dataSampleId: string, documentId: string) : Promise<DocumentDto> {
+    let existingDataSample = await this.getDataSample(dataSampleId);
+    if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
+      throw Error(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`);
+    }
+
+    return this.documentApi.getDocument(documentId);
   }
 
-  setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string): Promise<Document> {
-    return Promise.resolve(undefined);
+  async getDocumentEncryptionKeys(currentUser: UserDto, documentDto: DocumentDto) : Promise<Array<string>> {
+    let keysFromDeleg = await this.crypto.extractKeysHierarchyFromDelegationLikes(currentUser.healthcarePartyId!, documentDto.id!, documentDto.encryptionKeys!);
+    return keysFromDeleg
+      .map((key) => key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)
+      .filter((key) => key != undefined)
+      .map((key) => key!);
+  }
+
+  matchDataSample(filter: Filter<DataSample>): Promise<Array<string>> {
+    return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, "DataSample"));
+  }
+
+  async setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string): Promise<Document> {
+    let currentUser = await this.userApi.getCurrentUser();
+    let existingDataSample = await this.getDataSample(dataSampleId);
+
+    let [, batchOfDataSample] = await this.getContactOfDataSample(currentUser, existingDataSample);
+    if (batchOfDataSample == undefined) {
+      throw Error(`Could not find batch information of the data sample ${dataSampleId}`);
+    }
+
+    let patientIdOfBatch = await this.getPatientIdOfContact(currentUser, batchOfDataSample);
+    if (patientIdOfBatch == undefined) {
+      throw Error(`Can not set an attachment to a data sample not linked to a patient`);
+    }
+
+    let documentToCreate = new DocumentDto({
+      id: this.crypto.randomUuid(),
+      name: documentName,
+      version: documentVersion,
+      externalUuid: documentExternalUuid,
+      hash: this.crypto.sha256(body),
+      mainUti: UtiDetector.getUtiFor(documentName)
+    });
+
+    let createdDocument = await this.documentApi.createDocument(documentToCreate);
+
+    // Update data sample with documentId
+    let contentIso = documentLanguage ?? "en";
+    let newDSContent = {...existingDataSample.content,
+      [contentIso]: new Content({documentId: createdDocument.id})
+    };
+    await this.createOrModifyDataSampleFor(patientIdOfBatch!, {...existingDataSample, content: newDSContent});
+
+    // Add attachment to document
+    let docEncKey = firstOrNull(await this.getDocumentEncryptionKeys(currentUser, createdDocument));
+    let docWithAttachment = await this.documentApi.setDocumentAttachment(createdDocument.id!, docEncKey, body);
+
+    return Promise.resolve(DocumentMapper.toDocument(docWithAttachment));
   }
 }

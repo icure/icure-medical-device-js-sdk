@@ -21,7 +21,7 @@ import {
   PaginatedListPatient as PaginatedListPatientDto,
   PaginatedListUser as PaginatedListUserDto, PaginatedDocumentKeyIdPairObject
 } from "@icure/api";
-import {PatientDtoMapper} from "./patient";
+import {PatientMapper} from "./patient";
 import {UserMapper} from "./user";
 import {CodeStubDtoMapper} from "./CodeStubCodingReference";
 import {HealthcareProfessionalMapper} from "./healthcareProfessional";
@@ -31,13 +31,13 @@ export namespace PaginatedListMapper {
   import toCoding = CodingMapper.toCoding;
   import toHealthcareElement = HealthcareElementMapper.toHealthcareElement;
   import toMedicalDevice = MedicalDeviceMapper.toMedicalDevice;
-  import toPatient = PatientDtoMapper.toPatient;
+  import toPatient = PatientMapper.toPatient;
   import toUser = UserMapper.toUser;
   import toDeviceDto = MedicalDeviceMapper.toDeviceDto;
   import toServiceDto = DataSampleMapper.toServiceDto;
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
   import toHealthElementDto = HealthcareElementMapper.toHealthElementDto;
-  import toPatientDto = PatientDtoMapper.toPatientDto;
+  import toPatientDto = PatientMapper.toPatientDto;
   import toUserDto = UserMapper.toUserDto;
   import toHealthcareProfessional = HealthcareProfessionalMapper.toHealthcareProfessional;
   import toHealthcarePartyDto = HealthcareProfessionalMapper.toHealthcarePartyDto;

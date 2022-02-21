@@ -3,7 +3,7 @@ import {Document} from "../models/Document";
 import {forceUuid, mapSet} from "./utils";
 
 export namespace DocumentMapper {
-  const toDocument = (dto: DocumentDto) => new Document({
+  export const toDocument = (dto: DocumentDto) => new Document({
     id: dto.id,
     otherUtis: new Set(dto.otherUtis),
     rev: dto.rev,
@@ -23,7 +23,7 @@ export namespace DocumentMapper {
     attachmentId: dto.attachmentId,
   });
 
-  const toDocumentDto = (obj: Document) => new DocumentDto({
+  export const toDocumentDto = (obj: Document) => new DocumentDto({
     id: forceUuid(obj.id),
     otherUtis: new Set(obj.otherUtis),
     rev: obj.rev,

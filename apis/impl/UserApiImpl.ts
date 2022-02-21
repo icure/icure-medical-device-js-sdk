@@ -19,8 +19,6 @@ import {UserMapper} from "../../mappers/user";
 import {forceUuid} from "../../mappers/utils";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
-import toAbstractFilterDto = FilterMapper.toAbstractFilterDto;
-import toPaginatedListUser = PaginatedListMapper.toPaginatedListUser;
 import {Filter} from "../../filter/Filter";
 
 class UserApiImpl implements UserApi {
@@ -35,18 +33,17 @@ class UserApiImpl implements UserApi {
   }
 
   async createOrModifyUser(user: User): Promise<User> {
-    const {toUserDto, toUser} = UserMapper;
     if (user.rev != null) {
-      const createdUser = await this.userApi.createUser(toUserDto(user));
+      const createdUser = await this.userApi.createUser(UserMapper.toUserDto(user));
       if (createdUser != undefined) {
-        return toUser(createdUser)!;
+        return UserMapper.toUser(createdUser)!;
       }
       throw new Error("Couldn't create user")
     }
 
-    const updatedUser = await this.userApi.modifyUser(toUserDto(user));
+    const updatedUser = await this.userApi.modifyUser(UserMapper.toUserDto(user));
     if (updatedUser != undefined) {
-      return toUser(updatedUser)!
+      return UserMapper.toUser(updatedUser)!
     }
     throw new Error("Couldn't update user")
   }
@@ -64,13 +61,13 @@ class UserApiImpl implements UserApi {
   }
 
   async filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-    return toPaginatedListUser(await this.userApi.filterUsersBy(nextUserId, limit, new FilterChainUser({
-      filter: toAbstractFilterDto<User>(filter, 'User')
+    return PaginatedListMapper.toPaginatedListUser(await this.userApi.filterUsersBy(nextUserId, limit, new FilterChainUser({
+      filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User')
     })))!
   }
 
   async getLoggedUser(): Promise<User> {
-    return UserMapper.toUser(await this.userApi.getCurrentUser()!)!
+    return UserMapper.toUser(await this.userApi.getCurrentUser())!
   }
 
   async getUser(userId: string): Promise<User> {
@@ -78,6 +75,6 @@ class UserApiImpl implements UserApi {
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
-    return await this.userApi.matchUsersBy( toAbstractFilterDto<User>(filter, 'User'));
+    return await this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
 }
