@@ -77,7 +77,7 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
           } : undefined
         },
         metadata: encodeCompositeMetadata([
-          [MESSAGE_RSOCKET_ROUTING, encodeRoute('notification.subscribe')],
+          [MESSAGE_RSOCKET_ROUTING, encodeRoute('v2.notification.subscribe')],
           [MESSAGE_RSOCKET_AUTHENTICATION, auth]
         ])
       }).subscribe((payload) => {
