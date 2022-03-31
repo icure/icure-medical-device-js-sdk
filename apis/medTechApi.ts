@@ -28,7 +28,7 @@ import {UserApiImpl} from "./impl/UserApiImpl";
 import {HealthcareElementApiImpl} from "./impl/HealthcareElementApiImpl";
 import {HealthcareProfessionalApiImpl} from "./impl/HealthcareProfessionalApiImpl";
 
-class MedTechApi {
+export class MedTechApi {
   private readonly _codingApi: CodingApi;
   private readonly _userApi: UserApi;
   private readonly _patientApi: PatientApi;
@@ -108,3 +108,5 @@ class MedTechApiBuilder {
     return new MedTechApi(api, this.userName, this.password);
   }
 }
+
+export const medTechApi = () => new MedTechApiBuilder()
