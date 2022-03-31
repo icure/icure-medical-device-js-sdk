@@ -43,7 +43,7 @@ interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
 }
 
-class UserFilter implements FilterBuilder<User> {
+export class UserFilter implements FilterBuilder<User> {
   _byIds?: String[]
   _union?: UserFilter[]
   _intersection?: UserFilter[]
@@ -80,9 +80,7 @@ async build(): Promise<Filter<User>> {
   }
 }
 
-
-
-class PatientFilter implements FilterBuilder<Patient> {
+export class PatientFilter implements FilterBuilder<Patient> {
   _forHcp?: HealthcareProfessional
 
   getHcp() {
@@ -195,7 +193,7 @@ class PatientFilter implements FilterBuilder<Patient> {
   }
 }
 
-class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfessional> {
+export class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfessional> {
   _byIds?: String[]
   _union?: HealthcareProfessionalFilter[]
   _intersection?: HealthcareProfessionalFilter[]
@@ -232,7 +230,7 @@ class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfession
   }
 }
 
-class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
+export class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
   _byIds?: String[]
   _union?: MedicalDeviceFilter[]
   _intersection?: MedicalDeviceFilter[]
@@ -270,7 +268,7 @@ class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
   }
 }
 
-class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
+export class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
   _forHcp?: HealthcareProfessional
   getHcp() { return this._forHcp}
 
@@ -352,7 +350,7 @@ class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
   }
 }
 
-class CodingFilter implements FilterBuilder<Coding> {
+export class CodingFilter implements FilterBuilder<Coding> {
   _byIds?: String[]
   _byRegionTypeLabelLanguageFilter?: CodingByRegionTypeLabelFilter;
   _union?: CodingFilter[]
@@ -401,8 +399,7 @@ class CodingFilter implements FilterBuilder<Coding> {
   }
 }
 
-
-class DataSampleFilter implements FilterBuilder<DataSample> {
+export class DataSampleFilter implements FilterBuilder<DataSample> {
   _forHcp?: HealthcareProfessional
   getHcp() { return this._forHcp}
 
