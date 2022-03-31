@@ -1,7 +1,7 @@
 import {Filter} from "../Filter";
 import {DataSample} from "../../models/DataSample";
 
-export interface DataSampleByHealthcarePartyLabelCodeFilter extends Filter<DataSample> {
+export interface DataSampleByHealthcarePartyTagCodeDateFilter extends Filter<DataSample> {
   description?: string
   healthcarePartyId?: string
   patientSecretForeignKey?: string
@@ -12,4 +12,5 @@ export interface DataSampleByHealthcarePartyLabelCodeFilter extends Filter<DataS
   codeType?: string
   startValueDate?: number
   endValueDate?: number
+  '$type': 'DataSampleByHealthcarePartyTagCodeDateFilter'
 }

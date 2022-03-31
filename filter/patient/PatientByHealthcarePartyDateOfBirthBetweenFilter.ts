@@ -6,4 +6,5 @@ export interface PatientByHealthcarePartyDateOfBirthBetweenFilter extends Filter
     healthcarePartyId?: string
     minDateOfBirth?: number
     maxDateOfBirth?: number
+  '$type': 'PatientByHealthcarePartyDateOfBirthBetweenFilter'
 }

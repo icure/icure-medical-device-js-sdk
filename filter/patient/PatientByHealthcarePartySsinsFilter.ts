@@ -5,4 +5,5 @@ export interface PatientByHealthcarePartySsinsFilter extends Filter<Patient> {
     description?: string
     healthcarePartyId?: string
     ssins: string[]
+  '$type': 'PatientByHealthcarePartySsinsFilter'
 }

@@ -53,7 +53,7 @@ import {CodingByIdsFilter} from "../filter/coding/CodingByIdsFilter";
 import {CodingByRegionTypeLabelFilter} from "../filter/coding/CodingByRegionTypeLabelFilter";
 import {DataSample} from "../models/DataSample";
 import {DataSampleByIdsFilter} from "../filter/datasample/DataSampleByIdsFilter";
-import {DataSampleByHealthcarePartyLabelCodeFilter} from "../filter/datasample/DataSampleByHealthcarePartyLabelCodeFilter";
+import {DataSampleByHealthcarePartyTagCodeDateFilter} from "../filter/datasample/DataSampleByHealthcarePartyTagCodeDateFilter";
 import {DataSampleByHealthcarePartyFilter} from "../filter/datasample/DataSampleByHealthcarePartyFilter";
 import {DataSampleByHealthcarePartyIdentifiersFilter} from "../filter/datasample/DataSampleByHealthcarePartyIdentifiersFilter";
 import {DataSampleByHealthcarePartyPatientFilter} from "../filter/datasample/DataSampleByHealthcarePartyPatientFilter";
@@ -126,7 +126,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'CodingByRegionTypeLabelLanguageFilter') {
       return toCodeByRegionTypeLabelLanguageFilterDto(filter as CodingByRegionTypeLabelFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toAllCodesFilterDto = () => new AllCodesFilterDto({});
@@ -173,7 +173,7 @@ export namespace FilterMapper {
       return toServiceByHcPartyIdentifiersFilterDto(filter as DataSampleByHealthcarePartyIdentifiersFilter);
     }
     if (filter['$type'] === 'DataSampleByHealthcarePartyTagCodeDateFilter') {
-      return toServiceByHcPartyTagCodeDateFilterDto(filter as DataSampleByHealthcarePartyLabelCodeFilter);
+      return toServiceByHcPartyTagCodeDateFilterDto(filter as DataSampleByHealthcarePartyTagCodeDateFilter);
     }
     if (filter['$type'] === 'DataSampleByIdsFilter') {
       return toServiceByIdsFilterDto(filter as DataSampleByIdsFilter);
@@ -181,7 +181,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'DataSampleByHealthcarePartyPatientFilter') {
       return toServiceBySecretForeignKeysDto(filter as DataSampleByHealthcarePartyPatientFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterServiceDto = (filter: ComplementFilter<DataSample>) =>
@@ -207,7 +207,7 @@ export namespace FilterMapper {
       identifiers: filter.identifiers.map((it) => toIdentifierDto(it))
     })
 
-  const toServiceByHcPartyTagCodeDateFilterDto = (filter: DataSampleByHealthcarePartyLabelCodeFilter) =>
+  const toServiceByHcPartyTagCodeDateFilterDto = (filter: DataSampleByHealthcarePartyTagCodeDateFilter) =>
     new ServiceByHcPartyTagCodeDateFilterDto({
       desc: filter.description,
       healthcarePartyId: filter.healthcarePartyId,
@@ -248,7 +248,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'MedicalDeviceByIdsFilter') {
       return toDeviceByIdsFilterDto(filter as MedicalDeviceByIdsFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterDeviceDto = (filter: ComplementFilter<MedicalDevice>) =>
@@ -281,7 +281,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'HealthcareProfessionalByIdsFilter') {
       return toHealthcarePartyByIdsFilterDto(filter as HealthcareProfessionalByIdsFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterHealthcarePartyDto = (filter: ComplementFilter<HealthcareProfessional>) =>
@@ -324,7 +324,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'HealthcareElementByIdsFilter') {
       return toHealthElementByIdsFilterDto(filter as HealthcareElementByIdsFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterHealthElementDto = (filter: ComplementFilter<HealthcareElement>) =>
@@ -383,7 +383,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'UserByIdsFilter') {
       return toUserByIdsFilterDto(filter as UserByIdsFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterUserDto = (filter: ComplementFilter<User>) =>
@@ -434,7 +434,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'PatientByIdsFilter') {
       return toPatientByIdsFilterDto(filter as PatientByIdsFilter);
     }
-    throw Error("No mapper for ${this}");
+    throw Error(`No mapper for ${filter['$type']}`);
   }
 
   const toComplementFilterPatientDto = (filter: ComplementFilter<Patient>) =>

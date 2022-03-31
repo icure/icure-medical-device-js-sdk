@@ -37,7 +37,11 @@ import {HealthcareElementByHealthcarePartyPatientFilter} from "./healthcareeleme
 import {CodingByRegionTypeLabelFilter} from "./coding/CodingByRegionTypeLabelFilter";
 import {CodingByIdsFilter} from "./coding/CodingByIdsFilter";
 import {AllCodingsFilter} from "./coding/AllCodingsFilter";
-import {DataSampleByHealthcarePartyLabelCodeFilter} from "./datasample/DataSampleByHealthcarePartyLabelCodeFilter";
+import {DataSampleByHealthcarePartyTagCodeDateFilter} from "./datasample/DataSampleByHealthcarePartyTagCodeDateFilter";
+import {DataSampleByIdsFilter} from "./datasample/DataSampleByIdsFilter";
+import {DataSampleByHealthcarePartyIdentifiersFilter} from "./datasample/DataSampleByHealthcarePartyIdentifiersFilter";
+import {DataSampleByHealthcarePartyPatientFilter} from "./datasample/DataSampleByHealthcarePartyPatientFilter";
+import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealthcarePartyFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -405,7 +409,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
-  _byTagCodeDateFilter?: DataSampleByHealthcarePartyLabelCodeFilter;
+  _byTagCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
   _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
@@ -426,7 +430,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   }
 
   byTagCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string, startValueDate?: number, endValueDate?: number): DataSampleFilter {
-    this._byTagCodeDateFilter = {tagType, tagCode, codeType, codeCode, startValueDate, endValueDate, '$type':'DataSampleByHealthcarePartyLabelCodeFilter'} as DataSampleByHealthcarePartyLabelCodeFilter
+    this._byTagCodeDateFilter = {tagType, tagCode, codeType, codeCode, startValueDate, endValueDate, '$type':'DataSampleByHealthcarePartyTagCodeDateFilter'} as DataSampleByHealthcarePartyTagCodeDateFilter
     return this;
   }
 
@@ -453,11 +457,11 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     this._byTagCodeDateFilter && (this._byTagCodeDateFilter.healthcarePartyId = hp.id)
 
     const filters = [
-      this._byIds && ({ids: this._byIds, '$type':'HealthcareElementByIdsFilter'} as HealthcareElementByIdsFilter),
+      this._byIds && ({ids: this._byIds, '$type':'DataSampleByIdsFilter'} as DataSampleByIdsFilter),
       this._byIdentifiers && ({
         healthcarePartyId: hp.id,
         identifiers: this._byIdentifiers
-      , '$type':'HealthcareElementByHealthcarePartyIdentifiersFilter'} as HealthcareElementByHealthcarePartyIdentifiersFilter),
+      , '$type':'DataSampleByHealthcarePartyIdentifiersFilter'} as DataSampleByHealthcarePartyIdentifiersFilter),
       this._byTagCodeDateFilter,
       this._forPatients && ({
         healthcarePartyId: hp.id,
@@ -467,13 +471,13 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
               .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
             )).map((x) => x.extractedKeys))
         )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
-      , '$type':'HealthcareElementByHealthcarePartyPatientFilter'} as HealthcareElementByHealthcarePartyPatientFilter),
-      this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<HealthcareElement>),
-      this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<HealthcareElement>),
-    ].filter((x) => !!x) as Filter<HealthcareElement>[];
+      , '$type':'DataSampleByHealthcarePartyPatientFilter'} as DataSampleByHealthcarePartyPatientFilter),
+      this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<DataSample>),
+      this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<DataSample>),
+    ].filter((x) => !!x) as Filter<DataSample>[];
 
     if (!filters.length) {
-      return {healthcarePartyId: hp.id!, '$type':'HealthcareElementByHealthcarePartyFilter'} as HealthcareElementByHealthcarePartyFilter;
+      return {hcpId: hp.id!, '$type':'DataSampleByHealthcarePartyFilter'} as DataSampleByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {

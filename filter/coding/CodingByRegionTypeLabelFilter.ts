@@ -7,4 +7,5 @@ export interface CodingByRegionTypeLabelFilter extends Filter<Coding> {
     language?: string
     region?: string
     type?: string
+  '$type': 'CodingByRegionTypeLabelFilter'
 }

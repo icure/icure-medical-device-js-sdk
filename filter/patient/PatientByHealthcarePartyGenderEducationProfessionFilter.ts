@@ -7,4 +7,5 @@ export interface PatientByHealthcarePartyGenderEducationProfessionFilter extends
     gender?: PatientGenderEnum
     education?: string
     profession?: string
+  '$type': 'PatientByHealthcarePartyGenderEducationProfessionFilter'
 }

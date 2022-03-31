@@ -364,7 +364,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve(DocumentMapper.toDocument(docWithAttachment));
   }
 
-  async subscribeToDataSampleEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<DataSample>, eventFired: (patient: DataSample) => void): Promise<Connection> {
+  async subscribeToDataSampleEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<DataSample> | undefined, eventFired: (patient: DataSample) => void): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
     return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0])
   }

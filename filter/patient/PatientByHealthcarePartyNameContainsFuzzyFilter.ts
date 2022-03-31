@@ -5,4 +5,5 @@ export interface PatientByHealthcarePartyNameContainsFuzzyFilter extends Filter<
     description?: string
     healthcarePartyId: string
     searchString?: string
+  '$type': 'PatientByHealthcarePartyNameContainsFuzzyFilter'
 }

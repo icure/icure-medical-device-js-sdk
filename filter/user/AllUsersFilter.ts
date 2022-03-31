@@ -3,4 +3,5 @@ import {Filter} from "../Filter";
 
 export interface AllUsersFilter extends Filter<User> {
     description?: string
+  '$type': 'AllUsersFilter'
 }

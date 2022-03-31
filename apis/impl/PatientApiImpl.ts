@@ -78,7 +78,7 @@ export class PatientApiImpl implements PatientApi {
     return await this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'));
   }
 
-  async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient>, eventFired: (patient: Patient) => void): Promise<Connection> {
+  async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient> | undefined, eventFired: (patient: Patient) => void): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
     return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0])
   }
