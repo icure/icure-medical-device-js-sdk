@@ -36,6 +36,7 @@ export class MedTechApi {
   private readonly _medicalDeviceApi: MedicalDeviceApi;
   private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
   private readonly _dataSampleApi: DataSampleApi;
+  private readonly _cryptoApi: IccCryptoXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi }, username: string | undefined, password: string | undefined) {
     this._dataSampleApi = new DataSampleApiImpl(api, username, password);
@@ -45,6 +46,7 @@ export class MedTechApi {
     this._userApi = new UserApiImpl(api, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
+    this._cryptoApi = api.cryptoApi;
   }
 
   get codingApi(): CodingApi {
@@ -74,6 +76,11 @@ export class MedTechApi {
   get dataSampleApi(): DataSampleApi {
     return this._dataSampleApi;
   }
+
+  get cryptoApi(): IccCryptoXApi {
+    return this._cryptoApi;
+  }
+
 }
 
 class MedTechApiBuilder {
