@@ -81,14 +81,18 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
           [MESSAGE_RSOCKET_AUTHENTICATION, auth]
         ])
       }).subscribe((payload) => {
-        if (entityClass === 'User') {
-          eventFired(UserMapper.toUser(payload.data as UserDto)! as O)
-        }
-        if (entityClass === 'Patient') {
-          decryptor!(payload.data as PatientDto as T).then(p => eventFired(PatientMapper.toPatient(p)! as O))
-        }
-        if (entityClass === 'DataSample') {
-          decryptor!(payload.data as Service as T).then(ds => eventFired(DataSampleMapper.toDataSample(ds)! as O))
+        try {
+          if (entityClass === 'User') {
+            eventFired(UserMapper.toUser(payload.data as UserDto)! as O)
+          }
+          if (entityClass === 'Patient') {
+            decryptor!(payload.data as PatientDto as T).then(p => eventFired(PatientMapper.toPatient(p)! as O)).catch(e => console.error(e))
+          }
+          if (entityClass === 'DataSample') {
+            decryptor!(payload.data as Service as T).then(ds => eventFired(DataSampleMapper.toDataSample(ds)! as O)).catch(e => console.error(e))
+          }
+        } catch (e) {
+          console.error(e)
         }
       })
 
