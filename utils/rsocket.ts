@@ -37,7 +37,7 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
     metadataMimeType: MESSAGE_RSOCKET_COMPOSITE_METADATA.string,
   };
   const transport = new RSocketWebSocketClient({
-    url: `${basePath.startsWith('https:')?'wss':'ws'}://${basePath.replace(/https?:\/\/([^\/]+)(\/rest\/v[123])?\/?/,'$1')}/rsocket'`,
+    url: `${basePath.startsWith('https:')?'wss':'ws'}://${basePath.replace(/https?:\/\/([^\/]+)(\/rest\/v[123])?\/?/,'$1')}/rsocket`,
     debug: true,
     wsCreator: (url) => {
       return new WebSocket(url) as any;
