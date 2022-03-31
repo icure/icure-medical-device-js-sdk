@@ -445,11 +445,13 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-  async build(): Promise<Filter<HealthcareElement>> {
+  async build(): Promise<Filter<DataSample>> {
     if (this._forHcp == null) {
       throw Error("Hcp must be set for patient filter.");
     }
     const hp = this._forHcp!;
+    this._byTagCodeDateFilter && (this._byTagCodeDateFilter.healthcarePartyId = hp.id)
+
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'HealthcareElementByIdsFilter'} as HealthcareElementByIdsFilter),
       this._byIdentifiers && ({
