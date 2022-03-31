@@ -10,12 +10,18 @@ import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
 import {PatientMapper} from "../../mappers/patient";
+import { Connection } from "../../models/Connection";
+import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class PatientApiImpl implements PatientApi {
   userApi: IccUserXApi;
   patientApi: IccPatientXApi;
+  private username?: string;
+  private password?: string;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }, username: string | undefined, password: string | undefined) {
+    this.username = username;
+    this.password = password;
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
   }
@@ -65,5 +71,10 @@ export class PatientApiImpl implements PatientApi {
 
   async matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
     return await this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'));
+  }
+
+  async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient>, eventFired: (patient: Patient) => void): Promise<Connection> {
+    let currentUser = await this.userApi.getCurrentUser();
+    return await subscribeToEntityEvents(this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0])
   }
 }

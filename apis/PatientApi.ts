@@ -2,6 +2,8 @@
 import { Filter } from '../filter/Filter';
 import { PaginatedListPatient } from '../models/PaginatedListPatient';
 import { Patient } from '../models/Patient';
+import {User} from "../models/User";
+import {Connection} from "../models/Connection";
 
   /**
   * no description
@@ -40,4 +42,7 @@ import { Patient } from '../models/Patient';
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
     matchPatients(filter: Filter<Patient>, ): Promise<Array<string> >;
-    }
+
+    subscribeToPatientEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<Patient>, eventFired: (patient:Patient) => void): Promise<Connection>;
+
+  }

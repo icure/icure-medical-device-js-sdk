@@ -27,6 +27,9 @@ import {DocumentMapper} from "../../mappers/document";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
+import {Patient} from "../../models/Patient";
+import {Connection} from "../../models/Connection";
+import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class DataSampleApiImpl implements DataSampleApi {
   private crypto: IccCryptoXApi;
@@ -36,8 +39,12 @@ export class DataSampleApiImpl implements DataSampleApi {
   private documentApi: IccDocumentXApi;
 
   private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
+  private username: string | undefined;
+  private password: string | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi }, username: string | undefined, password: string | undefined) {
+    this.username = username;
+    this.password = password;
     this.crypto = api.cryptoApi;
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
@@ -350,5 +357,10 @@ export class DataSampleApiImpl implements DataSampleApi {
     let docWithAttachment = await this.documentApi.setDocumentAttachment(createdDocument.id!, docEncKey, body);
 
     return Promise.resolve(DocumentMapper.toDocument(docWithAttachment));
+  }
+
+  async subscribeToDataSampleEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<DataSample>, eventFired: (patient: DataSample) => void): Promise<Connection> {
+    let currentUser = await this.userApi.getCurrentUser();
+    return await subscribeToEntityEvents(this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0])
   }
 }

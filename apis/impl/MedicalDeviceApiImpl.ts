@@ -25,8 +25,8 @@ import {firstOrNull} from "../../utils/functionalUtils";
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private deviceApi: IccDeviceApi;
 
-  constructor(deviceApi: IccDeviceApi) {
-    this.deviceApi = deviceApi
+  constructor(api: { deviceApi: IccDeviceApi}) {
+    this.deviceApi = api.deviceApi
   }
 
   async createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {

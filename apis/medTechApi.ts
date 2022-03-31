@@ -37,32 +37,12 @@ class MedTechApi {
   private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
   private readonly _dataSampleApi: DataSampleApi;
 
-  constructor(api: {
-    cryptoApi: IccCryptoXApi;
-    authApi: IccAuthApi;
-    userApi: IccUserXApi;
-    patientApi: IccPatientXApi;
-    healthcarePartyApi: IccHcpartyXApi;
-    accessLogApi: IccAccesslogXApi;
-    contactApi: IccContactXApi;
-    healthcareElementApi: IccHelementXApi;
-    documentApi: IccDocumentXApi;
-    formApi: IccFormXApi;
-    invoiceApi: IccInvoiceXApi;
-    insuranceApi: IccInsuranceApi;
-    messageApi: IccMessageXApi;
-    entityReferenceApi: IccEntityrefApi;
-    receiptApi: IccReceiptXApi;
-    calendarItemApi: IccCalendarItemXApi;
-    classificationApi: IccClassificationXApi;
-    timetableApi: IccTimeTableXApi;
-    groupApi: IccGroupApi;
-  }, iccDeviceApi: IccDeviceApi, iccCodeApi: IccCodeXApi) {
-    this._dataSampleApi = new DataSampleApiImpl(api);
-    this._codingApi = new CodingApiImpl(iccCodeApi);
-    this._medicalDeviceApi = new MedicalDeviceApiImpl(iccDeviceApi);
-    this._patientApi = new PatientApiImpl(api);
-    this._userApi = new UserApiImpl(api);
+  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi }, username: string | undefined, password: string | undefined) {
+    this._dataSampleApi = new DataSampleApiImpl(api, username, password);
+    this._codingApi = new CodingApiImpl(api);
+    this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
+    this._patientApi = new PatientApiImpl(api, username, password);
+    this._userApi = new UserApiImpl(api, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
   }
@@ -124,11 +104,7 @@ class MedTechApiBuilder {
 
   build() : MedTechApi {
     const api = Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto!);
-    const headers = apiHeaders(this.userName!, this.password!)
 
-    return new MedTechApi(api,
-      new IccDeviceApi(this.iCureBasePath!, headers),
-      new IccCodeXApi(this.iCureBasePath!, headers)
-    );
+    return new MedTechApi(api, this.userName, this.password);
   }
 }

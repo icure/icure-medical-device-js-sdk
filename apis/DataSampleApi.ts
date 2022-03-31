@@ -3,6 +3,8 @@ import { DataSample } from '../models/DataSample';
 import { Document } from '../models/Document';
 import { Filter } from '../filter/Filter';
 import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
+import {Patient} from "../models/Patient";
+import {Connection} from "../models/Connection";
 
 /**
  * no description
@@ -88,4 +90,6 @@ export interface DataSampleApi {
    * @param documentLanguage
    */
   setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string, ): Promise<Document >;
+
+  subscribeToDataSampleEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => void): Promise<Connection>;
 }

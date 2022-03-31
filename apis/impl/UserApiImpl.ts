@@ -20,11 +20,18 @@ import {forceUuid} from "../../mappers/utils";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
+import {Patient} from "../../models/Patient";
+import {Connection} from "../../models/Connection";
+import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class UserApiImpl implements UserApi {
   private userApi: IccUserApi;
+  private username: string | undefined;
+  private password: string | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi }, username: string | undefined, password: string | undefined) {
+    this.username = username;
+    this.password = password;
     this.userApi = api.userApi
   }
 
@@ -77,4 +84,9 @@ export class UserApiImpl implements UserApi {
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
     return await this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
+
+  subscribeToUserEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<User>, eventFired: (patient: User) => void): Promise<Connection> {
+    return subscribeToEntityEvents(this.username!, this.password!, "User", eventTypes, filter, eventFired)
+  }
+
 }

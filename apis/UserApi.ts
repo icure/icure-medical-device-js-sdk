@@ -2,6 +2,7 @@
 import { Filter } from '../filter/Filter';
 import { PaginatedListUser } from '../models/PaginatedListUser';
 import { User } from '../models/User';
+import {Connection} from "../models/Connection";
 
   /**
   * no description
@@ -58,4 +59,6 @@ import { User } from '../models/User';
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
-    }
+
+    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => void): Promise<Connection>;
+  }

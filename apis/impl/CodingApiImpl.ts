@@ -23,8 +23,8 @@ import {firstOrNull} from "../../utils/functionalUtils";
 export class CodingApiImpl implements CodingApi {
   private codeApi: IccCodeApi;
 
-  constructor(codeApi: IccCodeXApi) {
-    this.codeApi = codeApi
+  constructor(api: { codeApi: IccCodeXApi}) {
+    this.codeApi = api.codeApi
   }
 
   async createOrModifyCoding(coding: Coding): Promise<Coding> {
