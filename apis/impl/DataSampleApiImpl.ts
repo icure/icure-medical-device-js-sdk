@@ -39,10 +39,15 @@ export class DataSampleApiImpl implements DataSampleApi {
   private documentApi: IccDocumentXApi;
 
   private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
+  private basePath: string;
   private username: string | undefined;
   private password: string | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi }, username: string | undefined, password: string | undefined) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+              basePath: string,
+              username: string | undefined,
+              password: string | undefined) {
+    this.basePath = basePath;
     this.username = username;
     this.password = password;
     this.crypto = api.cryptoApi;
@@ -361,6 +366,6 @@ export class DataSampleApiImpl implements DataSampleApi {
 
   async subscribeToDataSampleEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<DataSample>, eventFired: (patient: DataSample) => void): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
-    return await subscribeToEntityEvents(this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0])
+    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0])
   }
 }

@@ -16,10 +16,15 @@ import {subscribeToEntityEvents} from "../../utils/rsocket";
 export class PatientApiImpl implements PatientApi {
   userApi: IccUserXApi;
   patientApi: IccPatientXApi;
+  private basePath: string;
   private username?: string;
   private password?: string;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; }, username: string | undefined, password: string | undefined) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; },
+              basePath: string,
+              username: string | undefined,
+              password: string | undefined) {
+    this.basePath = basePath;
     this.username = username;
     this.password = password;
     this.userApi = api.userApi;
@@ -75,6 +80,6 @@ export class PatientApiImpl implements PatientApi {
 
   async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient>, eventFired: (patient: Patient) => void): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
-    return await subscribeToEntityEvents(this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0])
+    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0])
   }
 }

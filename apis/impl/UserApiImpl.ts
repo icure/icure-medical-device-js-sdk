@@ -27,9 +27,14 @@ import {subscribeToEntityEvents} from "../../utils/rsocket";
 export class UserApiImpl implements UserApi {
   private userApi: IccUserApi;
   private username: string | undefined;
+  private basePath: string;
   private password: string | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi }, username: string | undefined, password: string | undefined) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+              basePath: string,
+              username: string | undefined,
+              password: string | undefined) {
+    this.basePath = basePath;
     this.username = username;
     this.password = password;
     this.userApi = api.userApi
@@ -86,7 +91,7 @@ export class UserApiImpl implements UserApi {
   }
 
   subscribeToUserEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<User>, eventFired: (patient: User) => void): Promise<Connection> {
-    return subscribeToEntityEvents(this.username!, this.password!, "User", eventTypes, filter, eventFired)
+    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired)
   }
 
 }
