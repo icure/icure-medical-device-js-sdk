@@ -8,8 +8,8 @@ import {PaginatedListUser} from "../models/PaginatedListUser"
 import {map} from "./utils";
 import {PaginatedDocumentKeyAndIdPairObject} from "../models/PaginatedDocumentKeyAndIdPairObject";
 import {DataSampleMapper} from "./serviceDataSample";
-import {CodingMapper} from "./CodeCoding";
-import {HealthcareElementMapper} from "./HealthcareElement";
+import {CodingMapper} from "./codeCoding";
+import {HealthcareElementMapper} from "./healthcareElement";
 import {MedicalDeviceMapper} from "./medicalDevice";
 
 import {
@@ -23,7 +23,7 @@ import {
 } from "@icure/api";
 import {PatientMapper} from "./patient";
 import {UserMapper} from "./user";
-import {CodeStubDtoMapper} from "./CodeStubCodingReference";
+import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {HealthcareProfessionalMapper} from "./healthcareProfessional";
 
 export namespace PaginatedListMapper {

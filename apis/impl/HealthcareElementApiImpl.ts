@@ -10,7 +10,7 @@ import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {forceUuid} from "../../mappers/utils";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
-import {HealthcareElementMapper} from "../../mappers/HealthcareElement";
+import {HealthcareElementMapper} from "../../mappers/healthcareElement";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
