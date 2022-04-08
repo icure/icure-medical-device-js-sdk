@@ -3,24 +3,18 @@ import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
   FilterChainUser,
-  IccAuthApi,
-  IccCodeApi,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
-  IccHcpartyXApi,
-  IccHelementXApi,
   IccPatientXApi,
   IccUserApi,
   IccUserXApi
 } from "@icure/api";
-import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {UserMapper} from "../../mappers/user";
 import {forceUuid} from "../../mappers/utils";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
-import {Patient} from "../../models/Patient";
 import {Connection} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
@@ -41,11 +35,11 @@ export class UserApiImpl implements UserApi {
   }
 
   async checkTokenValidity(userId: string, token: string): Promise<boolean> {
-    return await this.userApi.checkTokenValidity(userId, token)
+    return this.userApi.checkTokenValidity(userId, token)
   }
 
   async createOrModifyUser(user: User): Promise<User> {
-    if (user.rev != null) {
+    if (!user.rev) {
       const createdUser = await this.userApi.createUser(UserMapper.toUserDto(user));
       if (createdUser != undefined) {
         return UserMapper.toUser(createdUser)!;
@@ -61,13 +55,13 @@ export class UserApiImpl implements UserApi {
   }
 
   async createToken(userId: string): Promise<string> {
-    return await this.userApi.getToken(userId, forceUuid(), 3600 * 24 * 30);
+    return this.userApi.getToken(userId, forceUuid(), 3600 * 24 * 30);
   }
 
   async deleteUser(userId: string): Promise<string> {
     const deletedUserRev = await this.userApi.deleteUser(userId);
-    if (deletedUserRev != undefined) {
-      return deletedUserRev!.rev!;
+    if (deletedUserRev) {
+      return deletedUserRev.rev!;
     }
     throw new Error("Invalid user id");
   }
@@ -87,7 +81,7 @@ export class UserApiImpl implements UserApi {
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
-    return await this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
+    return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
 
   subscribeToUserEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<User> | undefined, eventFired: (patient: User) => void): Promise<Connection> {

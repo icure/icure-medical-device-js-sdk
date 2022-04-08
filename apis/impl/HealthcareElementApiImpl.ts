@@ -26,7 +26,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
     const currentUser = await this.userApi.getCurrentUser();
-    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId!) : undefined
+    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
     let createdOrUpdateHealthElement;
     if (healthcareElement.rev) {
@@ -43,10 +43,10 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
-    const heToCreate = healthcareElement.filter(he => he.rev == null)
-    const heToUpdate = healthcareElement.filter(he => he != null)
+    const heToCreate = healthcareElement.filter(he => !he.rev)
+    const heToUpdate = healthcareElement.filter(he => !!he.rev)
     const currentUser = await this.userApi.getCurrentUser();
-    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId!) : undefined
+    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
     if (!heToUpdate.every(he => he.id != null && forceUuid(he.id))) {
       throw Error("Update id should be provided as an UUID");
@@ -81,6 +81,6 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return await this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'));
+    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'));
   }
 }

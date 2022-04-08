@@ -25,6 +25,7 @@ export namespace MedicalDeviceMapper {
       model: dto.model,
       serialNumber: dto.serialNumber,
       systemMetaData: new SystemMetaDataOwner({
+        publicKey: dto.publicKey,
         hcPartyKeys: dto.hcPartyKeys,
         privateKeyShamirPartitions: dto.privateKeyShamirPartitions,
       })
@@ -45,6 +46,7 @@ export namespace MedicalDeviceMapper {
     brand: obj.brand,
     model: obj.model,
     serialNumber: obj.serialNumber,
+    publicKey: obj.systemMetaData?.publicKey,
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions
   });

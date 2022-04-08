@@ -1,6 +1,6 @@
 import {Patient} from "../models/Patient";
 import {Patient as PatientDto} from "@icure/api";
-import {forceUuid, map, mapReduce, mapSet, toMapSetTransform} from "./utils";
+import {forceUuid, map, mapSet, toMapSetTransform} from "./utils";
 import {IdentifierDtoMapper} from "./identifier";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PersonNameDtoMapper} from "./personName";
@@ -79,6 +79,7 @@ export namespace PatientMapper {
     picture: obj.picture,
     externalId: obj.externalId,
     systemMetaData: new SystemMetaDataOwnerEncrypted({
+      publicKey: obj.publicKey,
       hcPartyKeys: obj.hcPartyKeys,
       privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
       secretForeignKeys: obj.secretForeignKeys,
@@ -138,6 +139,7 @@ export namespace PatientMapper {
     ethnicity: obj.ethnicity,
     picture: obj.picture,
     externalId: obj.externalId,
+    publicKey: obj.systemMetaData?.publicKey,
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
     secretForeignKeys: obj.systemMetaData?.secretForeignKeys,

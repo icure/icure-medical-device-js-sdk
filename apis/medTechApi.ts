@@ -1,4 +1,4 @@
-import {Api, apiHeaders, IccAuthApi, IccCodeXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {Api, IccAuthApi, IccCodeXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
 import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
@@ -86,7 +86,7 @@ export class MedTechApi {
 
 }
 
-class MedTechApiBuilder {
+export class MedTechApiBuilder {
   private iCureBasePath?: string;
   private userName?: string;
   private password?: string;
@@ -113,7 +113,7 @@ class MedTechApiBuilder {
   }
 
   build() : MedTechApi {
-    const api = Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto!);
+    const api = Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto);
 
     return new MedTechApi(api, this.iCureBasePath!, this.userName, this.password);
   }

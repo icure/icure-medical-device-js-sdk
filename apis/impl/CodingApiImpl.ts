@@ -4,15 +4,7 @@ import {PaginatedListCoding} from "../../models/PaginatedListCoding";
 import {CodingApi} from "../CodingApi";
 import {
   FilterChainCode,
-  IccAuthApi,
   IccCodeApi, IccCodeXApi,
-  IccContactXApi,
-  IccCryptoXApi,
-  IccDocumentXApi,
-  IccHcpartyXApi,
-  IccHelementXApi,
-  IccPatientXApi,
-  IccUserXApi
 } from "@icure/api";
 import {forceUuid} from "../../mappers/utils";
 import {CodingMapper} from "../../mappers/codeCoding";
@@ -37,10 +29,10 @@ export class CodingApiImpl implements CodingApi {
   }
 
   async createOrModifyCodings(coding: Array<Coding>): Promise<Array<Coding>> {
-    const codingsToCreate = coding.filter(dev => dev.rev == null);
-    const codingsToUpdate = coding.filter(dev => dev.rev != null);
+    const codingsToCreate = coding.filter(dev => !dev.rev);
+    const codingsToUpdate = coding.filter(dev => !!dev.rev);
 
-    if (!codingsToUpdate.every(coding => coding.id != null && forceUuid(coding.id))) {
+    if (!codingsToUpdate.every(c => c.id != null && forceUuid(c.id))) {
       throw Error("Update id should be provided as an UUID");
     }
 
@@ -63,6 +55,6 @@ export class CodingApiImpl implements CodingApi {
   }
 
   async matchCoding(filter: Filter<Coding>): Promise<Array<string>> {
-    return await this.codeApi.matchCodesBy(FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding'));
+    return this.codeApi.matchCodesBy(FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding'));
   }
 }

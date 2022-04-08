@@ -3,15 +3,6 @@ import {PaginatedListMedicalDevice} from "../../models/PaginatedListMedicalDevic
 import {MedicalDeviceApi} from "../MedicalDeviceApi";
 import {
   Device as DeviceDto, FilterChainDevice,
-  IccAuthApi,
-  IccCodeApi,
-  IccContactXApi,
-  IccCryptoXApi,
-  IccDocumentXApi,
-  IccHcpartyXApi,
-  IccHelementXApi,
-  IccPatientXApi,
-  IccUserXApi,
   ListOfIds
 } from "@icure/api";
 import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
@@ -39,8 +30,8 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
-    const medicalDevicesToCreate = medicalDevice.filter(dev => dev.rev == null);
-    const medicalDevicesToUpdate = medicalDevice.filter(dev => dev.rev != null);
+    const medicalDevicesToCreate = medicalDevice.filter(dev => !dev.rev);
+    const medicalDevicesToUpdate = medicalDevice.filter(dev => !!dev.rev);
 
     if (!medicalDevicesToUpdate.every(device => device.id != null && forceUuid(device.id))) {
       throw Error("Update id should be provided as an UUID");
@@ -65,7 +56,7 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async deleteMedicalDevices(requestBody: Array<string>): Promise<Array<string>> {
-    return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => d.rev != undefined).map(d => d.rev!);
+    return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => !!d.rev).map(d => d.rev!);
   }
 
   async filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
@@ -79,6 +70,6 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async matchMedicalDevices(filter: Filter<MedicalDevice>): Promise<Array<string>> {
-    return await this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User'));
+    return this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User'));
   }
 }

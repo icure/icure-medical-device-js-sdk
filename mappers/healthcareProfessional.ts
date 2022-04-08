@@ -1,7 +1,7 @@
 import {HealthcareParty} from "@icure/api";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
-import {map, mapSet} from "./utils";
+import {forceUuid, map, mapSet} from "./utils";
 import {PersonNameDtoMapper} from "./personName";
 import {AddressMapper} from "./address";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
@@ -33,13 +33,14 @@ export namespace HealthcareProfessionalMapper {
       picture: obj.picture,
       notes: obj.notes,
       systemMetaData: new SystemMetaDataOwner({
+        publicKey: obj.publicKey,
         hcPartyKeys: obj.hcPartyKeys,
         privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
       })
   });
 
   export const toHealthcarePartyDto = (obj: HealthcareProfessional) => new HealthcareParty({
-    id: obj.id,
+    id: forceUuid(obj.id),
     names: map(obj.names, toPersonName),
     addresses: map(obj.addresses, toAddress),
     languages: obj.languages,
@@ -56,6 +57,7 @@ export namespace HealthcareProfessionalMapper {
     parentId: obj.parentId,
     picture: obj.picture,
     notes: obj.notes,
+    publicKey: obj.systemMetaData?.publicKey,
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions
   });
