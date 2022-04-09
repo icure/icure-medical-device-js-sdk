@@ -18,8 +18,6 @@ import {PatientByHealthcarePartyIdentifiersFilter} from "./patient/PatientByHeal
 import {
   Delegation,
   IccCryptoXApi,
-  PatientByHcPartyAndSsinsFilter,
-  PatientByHcPartyDateOfBirthBetweenFilter
 } from "@icure/api";
 import {PatientByHealthcarePartyGenderEducationProfessionFilter} from "./patient/PatientByHealthcarePartyGenderEducationProfessionFilter";
 import {PatientByHealthcarePartyDateOfBirthBetweenFilter} from "./patient/PatientByHealthcarePartyDateOfBirthBetweenFilter";
@@ -85,10 +83,10 @@ async build(): Promise<Filter<User>> {
 }
 
 export class PatientFilter implements FilterBuilder<Patient> {
-  _forHcp?: HealthcareProfessional
+  _forDataOwner?: string
 
-  getHcp() {
-    return this._forHcp
+  getDataOwner() {
+    return this._forDataOwner
   }
 
   _byIds?: String[]
@@ -100,8 +98,8 @@ export class PatientFilter implements FilterBuilder<Patient> {
   _union?: PatientFilter[]
   _intersection?: PatientFilter[]
 
-  forHcp(hcp: HealthcareProfessional): PatientFilter {
-    this._forHcp = hcp;
+  forDataOwner(dataOwnerId: string): PatientFilter {
+    this._forDataOwner = dataOwnerId;
     return this;
   }
 
@@ -154,31 +152,31 @@ export class PatientFilter implements FilterBuilder<Patient> {
   }
 
   async build(): Promise<Filter<Patient>> {
-    if (this._forHcp == null) {
-      throw Error("Hcp must be set for patient filter.");
+    if (this._forDataOwner == null) {
+      throw Error("Data Owner must be set for patient filter.");
     }
-    const hp = this._forHcp!;
+    const dataOwnerId = this._forDataOwner!;
 
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'PatientByIdsFilter'} as PatientByIdsFilter),
       this._byIdentifiers && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
       this._withSsins && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'PatientByHealthcarePartyDateOfBirthBetweenFilter'} as PatientByHealthcarePartyDateOfBirthBetweenFilter),
       this._dateOfBirthBetween && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'PatientByHealthcarePartyGenderEducationProfessionFilter'} as PatientByHealthcarePartyGenderEducationProfessionFilter),
       this._byGenderEducationProfession && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'PatientByHealthcarePartyNameContainsFuzzyFilter'} as PatientByHealthcarePartyNameContainsFuzzyFilter),
       this._containsFuzzy && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Patient>),
@@ -187,7 +185,7 @@ export class PatientFilter implements FilterBuilder<Patient> {
 
 
     if (!filters.length) {
-      return {healthcarePartyId: hp.id!, '$type':'PatientByHealthcarePartyFilter'} as PatientByHealthcarePartyFilter;
+      return {healthcarePartyId: dataOwnerId, '$type':'PatientByHealthcarePartyFilter'} as PatientByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
@@ -273,8 +271,8 @@ export class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
 }
 
 export class HealthcareElementFilter implements FilterBuilder<HealthcareElement> {
-  _forHcp?: HealthcareProfessional
-  getHcp() { return this._forHcp}
+  _forDataOwner?: string
+  getDataOwner() { return this._forDataOwner}
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
@@ -283,8 +281,8 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
   _union?: HealthcareElementFilter[]
   _intersection?: HealthcareElementFilter[]
 
- forHcp(hcp: HealthcareProfessional):   HealthcareElementFilter {
-    this._forHcp = hcp;
+ forDataOwner(dataOwnerId: string):   HealthcareElementFilter {
+    this._forDataOwner = dataOwnerId;
     return this;
   }
 
@@ -319,22 +317,22 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
   }
 
   async build(): Promise<Filter<HealthcareElement>> {
-    if (this._forHcp == null) {
+    if (this._forDataOwner == null) {
       throw Error("Hcp must be set for patient filter.");
     }
-    const hp = this._forHcp!;
+    const dataOwnerId = this._forDataOwner!;
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'HealthcareElementByIdsFilter'} as HealthcareElementByIdsFilter),
       this._byIdentifiers && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
       , '$type':'HealthcareElementByHealthcarePartyIdentifiersFilter'} as HealthcareElementByHealthcarePartyIdentifiersFilter),
       this._byTagCodeFilter,
       this._forPatients && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: dataOwnerId,
         patientSecretForeignKeys: (await Promise.all(
           this._forPatients[1].map(async (p) =>
-            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(hp.id!, p.id!, Object.entries(p.systemMetaData!.delegations!)
+            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(dataOwnerId, p.id!, Object.entries(p.systemMetaData!.delegations!)
               .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
             )).map((x) => x.extractedKeys))
         )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
@@ -344,7 +342,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     ].filter((x) => !!x) as Filter<HealthcareElement>[];
 
     if (!filters.length) {
-      return {healthcarePartyId: hp.id!, '$type':'HealthcareElementByHealthcarePartyFilter'} as HealthcareElementByHealthcarePartyFilter;
+      return {healthcarePartyId: dataOwnerId, '$type':'HealthcareElementByHealthcarePartyFilter'} as HealthcareElementByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
@@ -404,8 +402,8 @@ export class CodingFilter implements FilterBuilder<Coding> {
 }
 
 export class DataSampleFilter implements FilterBuilder<DataSample> {
-  _forHcp?: HealthcareProfessional
-  getHcp() { return this._forHcp}
+  _forDataOwner?: string
+  getDataOwner() { return this._forDataOwner}
 
   _byIds?: String[]
   _byIdentifiers?: Identifier[]
@@ -414,8 +412,8 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
 
- forHcp(hcp: HealthcareProfessional):   DataSampleFilter {
-    this._forHcp = hcp;
+ forDataOwner(dataOwnerId: string):   DataSampleFilter {
+    this._forDataOwner = dataOwnerId;
     return this;
   }
 
@@ -450,24 +448,24 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   }
 
   async build(): Promise<Filter<DataSample>> {
-    if (this._forHcp == null) {
+    if (this._forDataOwner == null) {
       throw Error("Hcp must be set for patient filter.");
     }
-    const hp = this._forHcp!;
-    this._byTagCodeDateFilter && (this._byTagCodeDateFilter.healthcarePartyId = hp.id)
+    const doId = this._forDataOwner!;
+    this._byTagCodeDateFilter && (this._byTagCodeDateFilter.healthcarePartyId = doId)
 
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'DataSampleByIdsFilter'} as DataSampleByIdsFilter),
       this._byIdentifiers && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: doId,
         identifiers: this._byIdentifiers
       , '$type':'DataSampleByHealthcarePartyIdentifiersFilter'} as DataSampleByHealthcarePartyIdentifiersFilter),
       this._byTagCodeDateFilter,
       this._forPatients && ({
-        healthcarePartyId: hp.id,
+        healthcarePartyId: doId,
         patientSecretForeignKeys: (await Promise.all(
           this._forPatients[1].map(async (p) =>
-            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(hp.id!, p.id!, Object.entries(p.systemMetaData!.delegations!)
+            (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(doId, p.id!, Object.entries(p.systemMetaData!.delegations!)
               .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
             )).map((x) => x.extractedKeys))
         )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
@@ -477,11 +475,11 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     ].filter((x) => !!x) as Filter<DataSample>[];
 
     if (!filters.length) {
-      return {hcpId: hp.id!, '$type':'DataSampleByHealthcarePartyFilter'} as DataSampleByHealthcarePartyFilter;
+      return {hcpId: doId, '$type':'DataSampleByHealthcarePartyFilter'} as DataSampleByHealthcarePartyFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return ({filters}) as IntersectionFilter<HealthcareElement>
+      return ({filters}) as IntersectionFilter<DataSample>
     }
 
   }
