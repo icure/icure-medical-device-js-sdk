@@ -15,6 +15,8 @@ console.log('Saving keys in ' + tmp)
 ;(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024)
 ;(global as any).Storage = ''
 
+const API_KEY = process.env.RAPID_API_KEY!
+
 const delay = (delay: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), delay))
 
 describe('Healthcare professional', () => {
@@ -31,7 +33,7 @@ describe('Healthcare professional', () => {
         url: 'https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/',
         headers: {
           'X-RapidAPI-Host': 'privatix-temp-mail-v1.p.rapidapi.com',
-          'X-RapidAPI-Key': '7688c2772emsh4df8c929b1c06d1p1803a3jsn479c34578d1d'
+          'X-RapidAPI-Key': API_KEY
         }
       };
 
@@ -52,7 +54,7 @@ describe('Healthcare professional', () => {
           url: `https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/${emailMd5}/`,
         headers: {
         'X-RapidAPI-Host': 'privatix-temp-mail-v1.p.rapidapi.com',
-          'X-RapidAPI-Key': '7688c2772emsh4df8c929b1c06d1p1803a3jsn479c34578d1d'
+          'X-RapidAPI-Key': API_KEY
       }
       };
       const {data: emails} = await axios.request(emailOptions)
