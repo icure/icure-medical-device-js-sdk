@@ -54,8 +54,8 @@ export class UserApiImpl implements UserApi {
     throw new Error("Couldn't update user")
   }
 
-  async createToken(userId: string): Promise<string> {
-    return this.userApi.getToken(userId, forceUuid(), 3600 * 24 * 30);
+  async createToken(userId: string, durationInSeconds?: number): Promise<string> {
+    return this.userApi.getToken(userId, forceUuid(), durationInSeconds ?? 3600 * 24 * 30);
   }
 
   async deleteUser(userId: string): Promise<string> {
