@@ -27,7 +27,7 @@ import {Connection} from "../models/Connection";
       * Create a token for a user.
       * @param userId The UUID that identifies the user uniquely
     */
-    createToken(userId: string, ): Promise<string >;
+    createToken(userId: string, durationInSeconds?: number): Promise<string >;
     /**
       * Deletes the user identified by the provided unique userId.
       * Delete an existing user.
