@@ -8,7 +8,8 @@ import {
   IccDocumentXApi,
   IccPatientXApi,
   IccUserApi,
-  IccUserXApi
+  IccUserXApi,
+  User as IccUser
 } from "@icure/api";
 import {UserMapper} from "../../mappers/user";
 import {forceUuid} from "../../mappers/utils";
@@ -88,4 +89,20 @@ export class UserApiImpl implements UserApi {
     return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired)
   }
 
+}
+
+//TODO Put in the other SDK
+export class ExtendedUser extends IccUser {
+
+  dataOwnerId(): string {
+    let dataOwnerId = this.healthcarePartyId
+      ?? this.patientId
+      ?? this.deviceId
+
+      if (dataOwnerId == undefined) {
+        throw new Error(`User ${this.id} is not a valid data owner`);
+      }
+
+      return dataOwnerId
+  }
 }

@@ -2,10 +2,10 @@ import {MedicalDevice} from '../../models/MedicalDevice';
 import {PaginatedListMedicalDevice} from "../../models/PaginatedListMedicalDevice";
 import {MedicalDeviceApi} from "../MedicalDeviceApi";
 import {
+  IccDeviceApi,
   Device as DeviceDto, FilterChainDevice,
   ListOfIds
 } from "@icure/api";
-import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {forceUuid} from "../../mappers/utils";
 import {MedicalDeviceMapper} from "../../mappers/medicalDevice";
 import {PaginatedListMapper} from "../../mappers/paginatedList";

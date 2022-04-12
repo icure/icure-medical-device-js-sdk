@@ -1,11 +1,7 @@
 import {Patient} from "../../models/Patient";
 import {PaginatedListPatient} from "../../models/PaginatedListPatient";
 import {PatientApi} from "../PatientApi";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi, IccContactXApi, IccCryptoXApi} from "@icure/api";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";

@@ -4,16 +4,14 @@ import {PaginatedListHealthcareProfessional} from "../../models/PaginatedListHea
 import {HealthcareProfessionalApi} from "../HealthcareProfessionalApi";
 import {
   FilterChainHealthcareParty,
-  IccAuthApi,
-  IccCodeApi,
   IccDocumentXApi,
   IccPatientXApi,
-  IccUserXApi
+  IccUserXApi,
+  IccCryptoXApi,
+  IccHcpartyXApi,
+  IccContactXApi,
+  IccHelementXApi
 } from "@icure/api";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";

@@ -7,19 +7,15 @@ import {DataSampleApi} from "../DataSampleApi";
 import {
   Contact as ContactDto,
   Document as DocumentDto, FilterChainService,
-  IccAuthApi,
-  IccCodeApi,
   IccDocumentXApi,
   IccPatientXApi,
+  IccCryptoXApi,
+  IccContactXApi,
   IccUserXApi, ListOfIds, PaginatedListContact,
   Patient as PatientDto,
   Service as ServiceDto,
   User as UserDto
 } from "@icure/api";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
 import {any, distinctBy, firstOrNull, isNotEmpty, sumOf} from "../../utils/functionalUtils";
 import {CachedMap} from "../../utils/cachedMap";
 import {DataSampleMapper} from "../../mappers/serviceDataSample";
@@ -27,7 +23,6 @@ import {DocumentMapper} from "../../mappers/document";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
-import {Patient} from "../../models/Patient";
 import {Connection} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
@@ -39,9 +34,9 @@ export class DataSampleApiImpl implements DataSampleApi {
   private documentApi: IccDocumentXApi;
 
   private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
-  private basePath: string;
-  private username: string | undefined;
-  private password: string | undefined;
+  private readonly basePath: string;
+  private readonly username: string | undefined;
+  private readonly password: string | undefined;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
               basePath: string,
@@ -269,7 +264,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     let hcpId = (currentUser.healthcarePartyId || currentUser.patientId || currentUser.deviceId)!;
 
     let paginatedListService = await this.contactApi
-      .filterServicesBy(nextDataSampleId, limit, new FilterChainService({filter: filter}))
+      .filterServicesBy(nextDataSampleId, limit, new FilterChainService({filter: FilterMapper.toAbstractFilterDto(filter, 'DataSample')}))
       .then((paginatedServices) =>
         this.contactApi.decryptServices(hcpId, paginatedServices.rows!).then((decryptedRows) => Object.assign(paginatedServices, { rows: decryptedRows }))
       )

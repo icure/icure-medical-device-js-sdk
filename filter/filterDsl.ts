@@ -50,22 +50,22 @@ export class UserFilter implements FilterBuilder<User> {
   _union?: UserFilter[]
   _intersection?: UserFilter[]
 
- byIds(byIds: String[]):   UserFilter {
+  byIds(byIds: String[]):   UserFilter {
     this._byIds = byIds;
     return this;
   }
 
- union(filters: UserFilter[]):   UserFilter {
+  union(filters: UserFilter[]):   UserFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: UserFilter[]):   UserFilter {
+  intersection(filters: UserFilter[]):   UserFilter {
     this._intersection = filters;
     return this;
   }
 
-async build(): Promise<Filter<User>> {
+  async build(): Promise<Filter<User>> {
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'UserByIdsFilter'} as UserByIdsFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<User>),
@@ -75,7 +75,7 @@ async build(): Promise<Filter<User>> {
     if (!filters.length) {
       return {'$type':'AllUsersFilter'} as AllUsersFilter;
     } else if (filters.length == 1) {
-        return filters[0];
+      return filters[0];
     } else {
       return ({ filters }) as IntersectionFilter<User>
     }
@@ -162,23 +162,23 @@ export class PatientFilter implements FilterBuilder<Patient> {
       this._byIdentifiers && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
+        , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
       this._withSsins && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'PatientByHealthcarePartyDateOfBirthBetweenFilter'} as PatientByHealthcarePartyDateOfBirthBetweenFilter),
+        , '$type':'PatientByHealthcarePartyDateOfBirthBetweenFilter'} as PatientByHealthcarePartyDateOfBirthBetweenFilter),
       this._dateOfBirthBetween && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'PatientByHealthcarePartyGenderEducationProfessionFilter'} as PatientByHealthcarePartyGenderEducationProfessionFilter),
+        , '$type':'PatientByHealthcarePartyGenderEducationProfessionFilter'} as PatientByHealthcarePartyGenderEducationProfessionFilter),
       this._byGenderEducationProfession && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'PatientByHealthcarePartyNameContainsFuzzyFilter'} as PatientByHealthcarePartyNameContainsFuzzyFilter),
+        , '$type':'PatientByHealthcarePartyNameContainsFuzzyFilter'} as PatientByHealthcarePartyNameContainsFuzzyFilter),
       this._containsFuzzy && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
+        , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Patient>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<Patient>),
     ].filter((x) => !!x) as Filter<Patient>[];
@@ -200,17 +200,17 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
   _union?: HealthcareProfessionalFilter[]
   _intersection?: HealthcareProfessionalFilter[]
 
- byIds(byIds: String[]):   HealthcareProfessionalFilter {
+  byIds(byIds: String[]):   HealthcareProfessionalFilter {
     this._byIds = byIds;
     return this;
   }
 
- union(filters: HealthcareProfessionalFilter[]):   HealthcareProfessionalFilter {
+  union(filters: HealthcareProfessionalFilter[]):   HealthcareProfessionalFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: HealthcareProfessionalFilter[]):   HealthcareProfessionalFilter {
+  intersection(filters: HealthcareProfessionalFilter[]):   HealthcareProfessionalFilter {
     this._intersection = filters;
     return this;
   }
@@ -237,17 +237,17 @@ export class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
   _union?: MedicalDeviceFilter[]
   _intersection?: MedicalDeviceFilter[]
 
- byIds(byIds: String[]):   MedicalDeviceFilter {
+  byIds(byIds: String[]):   MedicalDeviceFilter {
     this._byIds = byIds;
     return this;
   }
 
- union(filters: MedicalDeviceFilter[]):   MedicalDeviceFilter {
+  union(filters: MedicalDeviceFilter[]):   MedicalDeviceFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: MedicalDeviceFilter[]):   MedicalDeviceFilter {
+  intersection(filters: MedicalDeviceFilter[]):   MedicalDeviceFilter {
     this._intersection = filters;
     return this;
   }
@@ -281,17 +281,17 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
   _union?: HealthcareElementFilter[]
   _intersection?: HealthcareElementFilter[]
 
- forDataOwner(dataOwnerId: string):   HealthcareElementFilter {
+  forDataOwner(dataOwnerId: string):   HealthcareElementFilter {
     this._forDataOwner = dataOwnerId;
     return this;
   }
 
- byIds(byIds: String[]):   HealthcareElementFilter {
+  byIds(byIds: String[]):   HealthcareElementFilter {
     this._byIds = byIds;
     return this;
   }
 
- byIdentifiers(identifiers: Identifier[]):   HealthcareElementFilter {
+  byIdentifiers(identifiers: Identifier[]):   HealthcareElementFilter {
     this._byIdentifiers = identifiers;
     return this;
   }
@@ -306,12 +306,12 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     return this;
   }
 
- union(filters: HealthcareElementFilter[]):   HealthcareElementFilter {
+  union(filters: HealthcareElementFilter[]):   HealthcareElementFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: HealthcareElementFilter[]):   HealthcareElementFilter {
+  intersection(filters: HealthcareElementFilter[]):   HealthcareElementFilter {
     this._intersection = filters;
     return this;
   }
@@ -326,7 +326,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
       this._byIdentifiers && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-      , '$type':'HealthcareElementByHealthcarePartyIdentifiersFilter'} as HealthcareElementByHealthcarePartyIdentifiersFilter),
+        , '$type':'HealthcareElementByHealthcarePartyIdentifiersFilter'} as HealthcareElementByHealthcarePartyIdentifiersFilter),
       this._byTagCodeFilter,
       this._forPatients && ({
         healthcarePartyId: dataOwnerId,
@@ -336,7 +336,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
               .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
             )).map((x) => x.extractedKeys))
         )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
-      , '$type':'HealthcareElementByHealthcarePartyPatientFilter'} as HealthcareElementByHealthcarePartyPatientFilter),
+        , '$type':'HealthcareElementByHealthcarePartyPatientFilter'} as HealthcareElementByHealthcarePartyPatientFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<HealthcareElement>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<HealthcareElement>),
     ].filter((x) => !!x) as Filter<HealthcareElement>[];
@@ -358,26 +358,26 @@ export class CodingFilter implements FilterBuilder<Coding> {
   _union?: CodingFilter[]
   _intersection?: CodingFilter[]
 
- byIds(byIds: String[]):   CodingFilter {
+  byIds(byIds: String[]):   CodingFilter {
     this._byIds = byIds;
     return this;
   }
 
   byRegionTypeLabelLanguage(
-      region?: string,
-      type?: string,
-      language?: string,
-      label?: string) : CodingFilter {
+    region?: string,
+    type?: string,
+    language?: string,
+    label?: string) : CodingFilter {
     this._byRegionTypeLabelLanguageFilter = {region, type, language, label, '$type':'CodingByRegionTypeLabelFilter'} as CodingByRegionTypeLabelFilter
     return this;
   }
 
- union(filters: CodingFilter[]):   CodingFilter {
+  union(filters: CodingFilter[]):   CodingFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: CodingFilter[]):   CodingFilter {
+  intersection(filters: CodingFilter[]):   CodingFilter {
     this._intersection = filters;
     return this;
   }
@@ -412,17 +412,17 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
 
- forDataOwner(dataOwnerId: string):   DataSampleFilter {
+  forDataOwner(dataOwnerId: string):   DataSampleFilter {
     this._forDataOwner = dataOwnerId;
     return this;
   }
 
- byIds(byIds: String[]):   DataSampleFilter {
+  byIds(byIds: String[]):   DataSampleFilter {
     this._byIds = byIds;
     return this;
   }
 
- byIdentifiers(identifiers: Identifier[]):   DataSampleFilter {
+  byIdentifiers(identifiers: Identifier[]):   DataSampleFilter {
     this._byIdentifiers = identifiers;
     return this;
   }
@@ -437,12 +437,12 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
- union(filters: DataSampleFilter[]):   DataSampleFilter {
+  union(filters: DataSampleFilter[]):   DataSampleFilter {
     this._union = filters;
     return this;
   }
 
- intersection(filters: DataSampleFilter[]):   DataSampleFilter {
+  intersection(filters: DataSampleFilter[]):   DataSampleFilter {
     this._intersection = filters;
     return this;
   }
@@ -459,17 +459,25 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
       this._byIdentifiers && ({
         healthcarePartyId: doId,
         identifiers: this._byIdentifiers
-      , '$type':'DataSampleByHealthcarePartyIdentifiersFilter'} as DataSampleByHealthcarePartyIdentifiersFilter),
+        , '$type':'DataSampleByHealthcarePartyIdentifiersFilter'} as DataSampleByHealthcarePartyIdentifiersFilter),
       this._byTagCodeDateFilter,
+
       this._forPatients && ({
         healthcarePartyId: doId,
         patientSecretForeignKeys: (await Promise.all(
           this._forPatients[1].map(async (p) =>
             (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(doId, p.id!, Object.entries(p.systemMetaData!.delegations!)
-              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
-            )).map((x) => x.extractedKeys))
-        )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
-      , '$type':'DataSampleByHealthcarePartyPatientFilter'} as DataSampleByHealthcarePartyPatientFilter),
+              .map(([hcpId, delegations]) => ([hcpId, Array.from(delegations)] as [string, Delegation[]]))
+              .reduce((delegationsToDecrypt, [hcpId, delegations]) => {
+                delegationsToDecrypt[hcpId] = delegations;
+                return delegationsToDecrypt
+              }, {} as { [key: string]: Delegation[] })
+            )).map((decryptedDelegations) => decryptedDelegations.extractedKeys))
+        )).reduce((patientSecretForeignKeys,extractedKeys) =>
+          patientSecretForeignKeys.concat(extractedKeys[0]),[] as string[]
+        )
+        , '$type':'DataSampleByHealthcarePartyPatientFilter'} as DataSampleByHealthcarePartyPatientFilter),
+
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<DataSample>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<DataSample>),
     ].filter((x) => !!x) as Filter<DataSample>[];
