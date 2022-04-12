@@ -8,6 +8,7 @@ import {DataSampleFilter} from "../filter";
 
 import { LocalStorage } from 'node-localstorage'
 import * as os from 'os'
+import {assert} from "chai";
 const tmp = os.tmpdir()
 console.log('Saving keys in ' + tmp)
 ;(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024)
@@ -33,9 +34,6 @@ describe('Data Samples API', () => {
 
     const hcp = await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId!)
     const patient = await medtechApi.patientApi.getPatient("b6edbf7e-3e16-43c2-9638-0bd7faef66f3")
-    //const dataSample = await medtechApi.dataSampleApi.getDataSample("940ccf60-46bb-4f34-b590-a2ec79e404b3")
-
-    //console.log(`DataSample : ${dataSample}`)
 
     const filter = await new DataSampleFilter()
       .forDataOwner(hcp.id!)
@@ -43,7 +41,9 @@ describe('Data Samples API', () => {
       .build()
 
     const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(filter)
+    assert(filteredDataSamples.rows.length > 0)
 
-    console.log(`Filtered data samples : ${filteredDataSamples}`)
+    const dataSample = await medtechApi.dataSampleApi.getDataSample(filteredDataSamples.rows[0].id!)
+    assert(dataSample != undefined)
   })
 })

@@ -278,7 +278,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   async getServiceFromICure(dataSampleId: string) : Promise<ServiceDto> {
     let currentUser = await this.userApi.getCurrentUser();
 
-    let serviceToFind = await this.contactApi.listServicesWithUser(currentUser!, new ListOfIds([dataSampleId]));
+    let serviceToFind = await this.contactApi.listServicesWithUser(currentUser!, new ListOfIds({ ids: [dataSampleId] }));
     if (serviceToFind == undefined) {
       throw Error(`Could not find data sample ${dataSampleId}`);
     }
