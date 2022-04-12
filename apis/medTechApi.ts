@@ -1,7 +1,27 @@
-import {Api, hex2ua, IccAuthApi, IccCodeXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
-import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
+import {
+  Api,
+  hex2ua,
+  IccAgendaApi,
+  IccAuthApi,
+  IccCodeXApi,
+  IccDocumentXApi,
+  IccPatientXApi,
+  IccUserXApi,
+  IccCryptoXApi,
+  IccContactXApi,
+  IccHcpartyXApi,
+  IccAccesslogXApi,
+  IccHelementXApi,
+  IccFormXApi,
+  IccInvoiceXApi,
+  IccEntityrefApi,
+  IccMessageXApi,
+  IccTimeTableXApi,
+  IccReceiptXApi,
+  IccCalendarItemXApi,
+  IccDeviceApi,
+  IccClassificationXApi, IccInsuranceApi, IccGroupApi
+} from "@icure/api";
 import {DataSampleApi} from "./DataSampleApi";
 import {HealthcareProfessionalApi} from "./HealthcareProfessionalApi";
 import {MedicalDeviceApi} from "./MedicalDeviceApi";
@@ -9,17 +29,6 @@ import {HealthcareElementApi} from "./HealthcareElementApi";
 import {PatientApi} from "./PatientApi";
 import {UserApi} from "./UserApi";
 import {CodingApi} from "./CodingApi";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {IccAccesslogXApi} from "@icure/api/icc-x-api/icc-accesslog-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
-import {IccFormXApi} from "@icure/api/icc-x-api/icc-form-x-api";
-import {IccInvoiceXApi} from "@icure/api/icc-x-api/icc-invoice-x-api";
-import {IccEntityrefApi, IccGroupApi, IccInsuranceApi} from "@icure/api/icc-api";
-import {IccMessageXApi} from "@icure/api/icc-x-api/icc-message-x-api";
-import {IccReceiptXApi} from "@icure/api/icc-x-api/icc-receipt-x-api";
-import {IccCalendarItemXApi} from "@icure/api/icc-x-api/icc-calendar-item-x-api";
-import {IccClassificationXApi} from "@icure/api/icc-x-api/icc-classification-x-api";
-import {IccTimeTableXApi} from "@icure/api/icc-x-api/icc-time-table-x-api";
 import {DataSampleApiImpl} from "./impl/DataSampleApiImpl";
 import {CodingApiImpl} from "./impl/CodingApiImpl";
 import {MedicalDeviceApiImpl} from "./impl/MedicalDeviceApiImpl";
@@ -47,13 +56,13 @@ export class MedTechApi {
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi };
 
-  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi },
+  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi },
               basePath: string,
               username: string | undefined,
               password: string | undefined,
               authServerUrl: string | undefined = undefined,
               authProcessId: string | undefined = undefined,
-              ) {
+  ) {
     this._basePath = basePath;
     this._username = username;
     this._password = password;
