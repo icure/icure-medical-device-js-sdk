@@ -10,9 +10,9 @@ import {HealthcareElementMapper} from "../../mappers/healthcareElement";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
-  userApi: IccUserXApi;
-  heApi: IccHelementXApi;
-  patientApi: IccPatientXApi;
+  private readonly userApi: IccUserXApi;
+  private readonly heApi: IccHelementXApi;
+  private readonly patientApi: IccPatientXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
@@ -28,7 +28,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     if (healthcareElement.rev) {
       createdOrUpdateHealthElement = await this.heApi.modifyHealthElement(HealthcareElementMapper.toHealthElementDto(healthcareElement))
     } else if (patient) {
-      createdOrUpdateHealthElement = await this.heApi.createHealthElement(HealthcareElementMapper.toHealthElementDto(await this.heApi.newInstance(currentUser, patient, healthcareElement, true)))
+      createdOrUpdateHealthElement = await this.heApi.createHealthElement(await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true))
     }
 
     if (createdOrUpdateHealthElement) {

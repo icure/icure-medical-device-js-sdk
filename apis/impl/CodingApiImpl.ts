@@ -13,7 +13,7 @@ import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class CodingApiImpl implements CodingApi {
-  private codeApi: IccCodeApi;
+  private readonly codeApi: IccCodeApi;
 
   constructor(api: { codeApi: IccCodeXApi}) {
     this.codeApi = api.codeApi

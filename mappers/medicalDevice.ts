@@ -28,6 +28,9 @@ export namespace MedicalDeviceMapper {
         publicKey: dto.publicKey,
         hcPartyKeys: dto.hcPartyKeys,
         privateKeyShamirPartitions: dto.privateKeyShamirPartitions,
+        aesExchangeKeys: dto.aesExchangeKeys,
+        transferKeys: dto.transferKeys,
+        lostHcPartyKeys: dto.lostHcPartyKeys
       })
   });
 
@@ -48,6 +51,9 @@ export namespace MedicalDeviceMapper {
     serialNumber: obj.serialNumber,
     publicKey: obj.systemMetaData?.publicKey,
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
-    privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions
+    privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
+    aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
+    transferKeys: obj.systemMetaData?.transferKeys,
+    lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,
   });
 }
