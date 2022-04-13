@@ -18,8 +18,8 @@ import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
-  userApi: IccUserXApi;
-  hcpApi: IccHcpartyXApi;
+  private readonly userApi: IccUserXApi;
+  private readonly hcpApi: IccHcpartyXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;

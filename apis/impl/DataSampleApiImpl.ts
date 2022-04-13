@@ -27,13 +27,13 @@ import {Connection} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class DataSampleApiImpl implements DataSampleApi {
-  private crypto: IccCryptoXApi;
-  private userApi: IccUserXApi;
-  private patientApi: IccPatientXApi;
-  private contactApi: IccContactXApi;
-  private documentApi: IccDocumentXApi;
+  private readonly crypto: IccCryptoXApi;
+  private readonly userApi: IccUserXApi;
+  private readonly patientApi: IccPatientXApi;
+  private readonly contactApi: IccContactXApi;
+  private readonly documentApi: IccDocumentXApi;
 
-  private contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
+  private readonly contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
   private readonly basePath: string;
   private readonly username: string | undefined;
   private readonly password: string | undefined;
@@ -157,7 +157,7 @@ export class DataSampleApiImpl implements DataSampleApi {
         modified: Date.now()
       };
     } else {
-      baseContact = await this.contactApi.newInstance(currentUser, contactPatient, new ContactDto({id: this.crypto.randomUuid()}));
+      baseContact = await this.contactApi.newInstance(currentUser, contactPatient, new ContactDto({id: this.crypto.randomUuid()}), true);
     }
 
     return {

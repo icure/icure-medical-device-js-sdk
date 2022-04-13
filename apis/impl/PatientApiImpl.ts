@@ -10,11 +10,12 @@ import { Connection } from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class PatientApiImpl implements PatientApi {
-  userApi: IccUserXApi;
-  patientApi: IccPatientXApi;
-  private basePath: string;
-  private username?: string;
-  private password?: string;
+  private readonly userApi: IccUserXApi;
+  private readonly patientApi: IccPatientXApi;
+
+  private readonly basePath: string;
+  private readonly username?: string;
+  private readonly password?: string;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; },
               basePath: string,
@@ -32,7 +33,7 @@ export class PatientApiImpl implements PatientApi {
 
     let createdOrUpdatedPatient = patient.rev
       ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
-      : await this.patientApi.createPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
+      : await this.patientApi.createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, PatientMapper.toPatientDto(patient)))
 
     if (createdOrUpdatedPatient) {
       return PatientMapper.toPatient(createdOrUpdatedPatient)!;

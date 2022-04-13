@@ -14,7 +14,7 @@ import {Filter} from "../../filter/Filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
-  private deviceApi: IccDeviceApi;
+  private readonly deviceApi: IccDeviceApi;
 
   constructor(api: { deviceApi: IccDeviceApi}) {
     this.deviceApi = api.deviceApi

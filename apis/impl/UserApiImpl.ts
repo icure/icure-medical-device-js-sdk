@@ -8,8 +8,7 @@ import {
   IccDocumentXApi,
   IccPatientXApi,
   IccUserApi,
-  IccUserXApi,
-  User as IccUser
+  IccUserXApi
 } from "@icure/api";
 import {UserMapper} from "../../mappers/user";
 import {forceUuid} from "../../mappers/utils";
@@ -20,10 +19,10 @@ import {Connection} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class UserApiImpl implements UserApi {
-  private userApi: IccUserApi;
-  private username: string | undefined;
-  private basePath: string;
-  private password: string | undefined;
+  private readonly userApi: IccUserApi;
+  private readonly username: string | undefined;
+  private readonly basePath: string;
+  private readonly password: string | undefined;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
               basePath: string,
@@ -89,20 +88,4 @@ export class UserApiImpl implements UserApi {
     return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired)
   }
 
-}
-
-//TODO Put in the other SDK
-export class ExtendedUser extends IccUser {
-
-  dataOwnerId(): string {
-    let dataOwnerId = this.healthcarePartyId
-      ?? this.patientId
-      ?? this.deviceId
-
-      if (dataOwnerId == undefined) {
-        throw new Error(`User ${this.id} is not a valid data owner`);
-      }
-
-      return dataOwnerId
-  }
 }

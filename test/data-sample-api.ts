@@ -14,9 +14,9 @@ console.log('Saving keys in ' + tmp)
 ;(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024)
 ;(global as any).Storage = ''
 
-const userName = process.env.ADMIN!
-const password = process.env.PASS!
-const privKey = process.env.PRIV_KEY!
+const userName = process.env.ICURE_TS_TEST_USER!
+const password = process.env.ICURE_TS_TEST_PWD!
+const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
 describe('Data Samples API', () => {
   it('Filter Data Samples', async () => {
@@ -33,7 +33,7 @@ describe('Data Samples API', () => {
     )
 
     const hcp = await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId!)
-    const patient = await medtechApi.patientApi.getPatient("b6edbf7e-3e16-43c2-9638-0bd7faef66f3")
+    const patient = await medtechApi.patientApi.getPatient("4cd4ff91-d07f-4c23-b409-6a8fc5b07ebd")
 
     const filter = await new DataSampleFilter()
       .forDataOwner(hcp.id!)
