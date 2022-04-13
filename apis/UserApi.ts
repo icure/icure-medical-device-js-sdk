@@ -53,6 +53,16 @@ import {Connection} from "../models/Connection";
       * @param userId The UUID that identifies the user uniquely
     */
     getUser(userId: string, ): Promise<User >;
+
+    /**
+     * Get a User by email.
+     *
+     * Each user is uniquely identified by an email
+     *
+     * @param email The email that identifies the user uniquely
+     */
+    getUserByEmail(email: string): Promise<User>;
+
     /**
       * Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for Users are AllUsersFilter and UsersByIdsFilter. This method returns the list of the ids of the users matching the filter.
       * Load user ids from the database by filtering them using the provided Filter.
