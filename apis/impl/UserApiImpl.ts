@@ -80,6 +80,10 @@ export class UserApiImpl implements UserApi {
     return UserMapper.toUser(await this.userApi.getUser(userId))!;
   }
 
+  async getUserByEmail(email:string): Promise<User> {
+    return UserMapper.toUser(await this.userApi.getUserByEmail(email))!;
+  }
+
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
     return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
