@@ -5,6 +5,7 @@ import 'isomorphic-fetch'
 import { webcrypto } from 'crypto'
 import {User} from "../models/User";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
+import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
 
 const userName = process.env.ADMIN!
 const password = process.env.PASS!
@@ -22,11 +23,11 @@ describe('Healthcare professional', () => {
 
     const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'Kino Connect',
-      systemMetaData: {
+      systemMetaData: new SystemMetaDataOwner({
         publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
         hcPartyKeys:{},
         privateKeyShamirPartitions:{}
-      }
+      })
     }))
 
     assert(hcp)
