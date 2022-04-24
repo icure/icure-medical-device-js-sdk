@@ -13,11 +13,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi;
   private readonly heApi: IccHelementXApi;
   private readonly patientApi: IccPatientXApi;
+  private readonly cryptoApi: IccCryptoXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
     this.heApi = api.healthcareElementApi;
     this.patientApi = api.patientApi;
+    this.cryptoApi = api.cryptoApi;
   }
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
@@ -38,9 +40,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     throw Error(`Could not create / modify healthElement ${healthcareElement.id}`)
   }
 
-  async createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
-    const heToCreate = healthcareElement.filter(he => !he.rev)
-    const heToUpdate = healthcareElement.filter(he => !!he.rev)
+  async createOrModifyHealthcareElements(healthcareElements: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
+    const heToCreate = healthcareElements.filter(he => !he.rev)
+    const heToUpdate = healthcareElements.filter(he => !!he.rev)
     const currentUser = await this.userApi.getCurrentUser();
     const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
@@ -52,8 +54,12 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       throw Error("patientId is required when creating a new healthcare element");
     }
 
-    const hesCreated = await this.heApi.createHealthElements(await Promise.all(heToCreate.map(async he => HealthcareElementMapper.toHealthElementDto(await this.heApi.newInstance(currentUser, patient, healthcareElement, true)))))
-    const hesUpdated = await this.heApi.modifyHealthElements(heToUpdate.map(he => HealthcareElementMapper.toHealthElementDto(he)))
+    const hesCreated = await Promise.all(heToCreate
+      .map((he) => HealthcareElementMapper.toHealthElementDto(he))
+      .map((he) => this.heApi.newInstance(currentUser, patient, he, true))
+    )
+      .then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
+    const hesUpdated = await this.heApi.modifyHealthElementsWithUser(currentUser, heToUpdate.map(he => HealthcareElementMapper.toHealthElementDto(he)))
 
     return [...hesCreated, ...hesUpdated].map(he => HealthcareElementMapper.toHealthcareElement(he))
   }
@@ -78,5 +84,41 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
     return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'));
+  }
+
+  async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
+    const currentUser = await this.userApi.getCurrentUser()
+    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
+
+    if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[delegatedTo].length == 0) {
+      throw Error(`User ${currentUser.id} may not access health element information`)
+    }
+
+    return await this.cryptoApi.extractPreferredSfk(healthElementToModify, dataOwnerId, true)
+      .then((secretKey) => {
+        if (!secretKey) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
+        }
+        return secretKey
+      })
+      .then((secretKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, healthElementToModify, dataOwnerId, delegatedTo, secretKey, null))
+      .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
+      .then((encKeys) => {
+        if (encKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
+        }
+
+        return encKeys.extractedKeys.shift()!
+      })
+      .then((encKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, healthElementToModify, dataOwnerId, delegatedTo, null, encKey))
+      .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
+      .then((updatedHealthElement) => {
+        if (!updatedHealthElement) {
+          throw Error(`Impossible to give access to ${delegatedTo} to health element ${healthElementToModify.id} information`)
+        }
+
+        return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
+      })
   }
 }
