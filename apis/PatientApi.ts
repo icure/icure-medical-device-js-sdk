@@ -43,6 +43,15 @@ import {Connection} from "../models/Connection";
     */
     matchPatients(filter: Filter<Patient>, ): Promise<Array<string> >;
 
+    /**
+     * Service where current user gives access to the patient information to another dataOwner (HCP, patient or device).
+     * For this, the current user data owner should be able to access the patient provided in argument in order to provide access to another data owner.
+
+     * @param patient Patient the current data owner would like to share with another data owner
+     * @param delegatedTo ID of the data owner to which current user would like to give access
+     */
+    giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>;
+
     subscribeToPatientEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<Patient>, eventFired: (patient:Patient) => void): Promise<Connection>;
 
   }

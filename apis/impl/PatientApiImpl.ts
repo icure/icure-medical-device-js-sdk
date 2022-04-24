@@ -1,17 +1,18 @@
-import {Patient} from "../../models/Patient";
-import {PaginatedListPatient} from "../../models/PaginatedListPatient";
-import {PatientApi} from "../PatientApi";
-import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi, IccContactXApi, IccCryptoXApi} from "@icure/api";
-import {FilterMapper} from "../../mappers/filter";
-import {PaginatedListMapper} from "../../mappers/paginatedList";
-import {Filter} from "../../filter/Filter";
-import {PatientMapper} from "../../mappers/patient";
-import { Connection } from "../../models/Connection";
-import {subscribeToEntityEvents} from "../../utils/rsocket";
+import {Patient} from '../../models/Patient';
+import {PaginatedListPatient} from '../../models/PaginatedListPatient';
+import {PatientApi} from '../PatientApi';
+import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi, IccContactXApi, IccCryptoXApi} from '@icure/api';
+import {FilterMapper} from '../../mappers/filter';
+import {PaginatedListMapper} from '../../mappers/paginatedList';
+import {Filter} from '../../filter/Filter';
+import {PatientMapper} from '../../mappers/patient';
+import { Connection } from '../../models/Connection';
+import {subscribeToEntityEvents} from '../../utils/rsocket';
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi;
   private readonly patientApi: IccPatientXApi;
+  private readonly cryptoApi: IccCryptoXApi;
 
   private readonly basePath: string;
   private readonly username?: string;
@@ -26,6 +27,7 @@ export class PatientApiImpl implements PatientApi {
     this.password = password;
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
+    this.cryptoApi = api.cryptoApi;
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
@@ -73,6 +75,42 @@ export class PatientApiImpl implements PatientApi {
 
   async matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
     return await this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'));
+  }
+
+  async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
+    const currentUser = await this.userApi.getCurrentUser()
+    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const patientToModify = PatientMapper.toPatientDto(patient)!
+
+    if (patientToModify.delegations == undefined || patientToModify.delegations[delegatedTo].length == 0) {
+      throw Error(`User ${currentUser.id} may not access patient information`)
+    }
+
+    return await this.cryptoApi.extractPreferredSfk(patientToModify, dataOwnerId, true)
+      .then((secretKey) => {
+        if (!secretKey) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of patient ${patientToModify.id}`)
+        }
+        return secretKey
+      })
+      .then((secretKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, secretKey, null))
+      .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
+      .then((encKeys) => {
+        if (encKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of patient ${patientToModify.id}`)
+        }
+
+        return encKeys.extractedKeys.shift()!
+      })
+      .then((encKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, null, encKey))
+      .then((patientWithUpdatedAccesses) => this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses))
+      .then((updatedPatient) => {
+        if (!updatedPatient) {
+          throw Error(`Impossible to givve access to ${delegatedTo} to patient ${patientToModify.id} information`)
+        }
+
+        return PatientMapper.toPatient(updatedPatient)!
+      })
   }
 
   async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient> | undefined, eventFired: (patient: Patient) => void): Promise<Connection> {
