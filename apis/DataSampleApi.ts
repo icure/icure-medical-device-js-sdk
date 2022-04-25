@@ -91,5 +91,5 @@ export interface DataSampleApi {
    */
   setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string, ): Promise<Document >;
 
-  subscribeToDataSampleEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => void): Promise<Connection>;
+  subscribeToDataSampleEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => Promise<void>): Promise<Connection>;
 }

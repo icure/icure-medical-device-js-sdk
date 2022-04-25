@@ -60,5 +60,5 @@ import {Connection} from "../models/Connection";
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
 
-    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => void): Promise<Connection>;
+    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => Promise<void>): Promise<Connection>;
   }
