@@ -23,7 +23,7 @@ import {DocumentMapper} from "../../mappers/document";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
-import {Connection} from "../../models/Connection";
+import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class DataSampleApiImpl implements DataSampleApi {
@@ -361,6 +361,6 @@ export class DataSampleApiImpl implements DataSampleApi {
 
   async subscribeToDataSampleEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<DataSample> | undefined, eventFired: (patient: DataSample) => Promise<void>): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
-    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0])
+    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "DataSample", eventTypes, filter, eventFired, async encrypted => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0]).then((rs) => new ConnectionImpl(rs))
   }
 }
