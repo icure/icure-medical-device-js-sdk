@@ -14,10 +14,10 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@icure/api@^4.1.14":
-  version "4.1.14"
-  resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.1.14.tgz#f26b8ef91e99222df247e1d031ca15c064a7acef"
-  integrity sha512-U3AatEeFaaQcSFyyxNi8clAyzA2zlf53cWBz5shUfUSoHOwnkz3uczzg8DhOjpdRVE12sKWb/cpBxLLBhQUhqQ==
+"@icure/api@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.2.1.tgz#afc7f1c142c10f545a208ed1caa1b0b13e1df1ce"
+  integrity sha512-ENgQMKtngbsW4VkASu1MiOsWBVG3xYpuC2i01zswOqpVT+20HpqRbd+tvgdYfyTuvkK+F0ttdKlxbuP4GLQ0Ew==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
