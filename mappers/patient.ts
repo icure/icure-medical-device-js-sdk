@@ -11,23 +11,24 @@ import {AddressMapper} from "./address";
 import {DelegationMapper} from "./delegation";
 import {PartnershipDtoMapper} from "./partnership";
 
+import toIdentifier = IdentifierDtoMapper.toIdentifier;
+import toCodeStub = CodeStubDtoMapper.toCodeStub;
+import toPersonNameDto = PersonNameDtoMapper.toPersonNameDto;
+import toCodingReference = CodeStubDtoMapper.toCodingReference;
+import toPersonName = PersonNameDtoMapper.toPersonName;
+import toPatientHealthCareParty = PatientHealthCarePartyDtoMapper.toPatientHealthCareParty;
+import toProperty = PropertyStubMapper.toProperty;
+import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
+import toPatientHealthCarePartyDto = PatientHealthCarePartyDtoMapper.toPatientHealthCarePartyDto;
+import toAddressDto = AddressMapper.toAddressDto;
+import toDelegation = DelegationMapper.toDelegation;
+import toPartnershipDto = PartnershipDtoMapper.toPartnershipDto;
+import toDelegationDto = DelegationMapper.toDelegationDto;
+import toPartnership = PartnershipDtoMapper.toPartnership;
+import toAddress = AddressMapper.toAddress;
 
 export namespace PatientMapper {
-  import toIdentifier = IdentifierDtoMapper.toIdentifier;
-  import toCodeStub = CodeStubDtoMapper.toCodeStub;
-  import toPersonNameDto = PersonNameDtoMapper.toPersonNameDto;
-  import toCodingReference = CodeStubDtoMapper.toCodingReference;
-  import toPersonName = PersonNameDtoMapper.toPersonName;
-  import toPatientHealthCareParty = PatientHealthCarePartyDtoMapper.toPatientHealthCareParty;
-  import toProperty = PropertyStubMapper.toProperty;
-  import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
-  import toPatientHealthCarePartyDto = PatientHealthCarePartyDtoMapper.toPatientHealthCarePartyDto;
-  import toAddressDto = AddressMapper.toAddressDto;
-  import toDelegation = DelegationMapper.toDelegation;
-  import toPartnershipDto = PartnershipDtoMapper.toPartnershipDto;
-  import toDelegationDto = DelegationMapper.toDelegationDto;
-  import toPartnership = PartnershipDtoMapper.toPartnership;
-  import toAddress = AddressMapper.toAddress;
+
   export const toPatient = (obj?: PatientDto) => obj ? new Patient({
     id: obj.id,
     identifiers: map(obj.identifier, toIdentifier),
@@ -86,6 +87,9 @@ export namespace PatientMapper {
       cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
       delegations: toMapSetTransform(obj.delegations, toDelegation),
       encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
+      aesExchangeKeys: obj.aesExchangeKeys,
+      transferKeys: obj.transferKeys,
+      lostHcPartyKeys: obj.lostHcPartyKeys
     })
   }) : undefined;
 
@@ -146,5 +150,8 @@ export namespace PatientMapper {
     cryptedForeignKeys: toMapSetTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
     delegations: toMapSetTransform(obj.systemMetaData?.delegations, toDelegationDto),
     encryptionKeys: toMapSetTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
+    aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
+    transferKeys: obj.systemMetaData?.transferKeys,
+    lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,
   }) : undefined;
 }

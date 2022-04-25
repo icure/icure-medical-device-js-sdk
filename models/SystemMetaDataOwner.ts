@@ -19,12 +19,17 @@ constructor(json: ISystemMetaDataOwner) {
     'publicKey': string;
     'hcPartyKeys': { [key: string]: Array<string>; };
     'privateKeyShamirPartitions': { [key: string]: string; };
-
+    'aesExchangeKeys' : { [key: string]: { [key: string]: Array<string>; }; };
+    'transferKeys' : { [key: string]: { [key: string]: string; }; };
+    'lostHcPartyKeys' : Array<string>;
 }
 
 interface ISystemMetaDataOwner {
   'publicKey'?: string;
   'hcPartyKeys'?: { [key: string]: Array<string>; };
   'privateKeyShamirPartitions'?: { [key: string]: string; };
+  'aesExchangeKeys'?: { [key: string]: { [key: string]: Array<string>; }; };
+  'transferKeys'?: { [key: string]: { [key: string]: string; }; };
+  'lostHcPartyKeys'?: Array<string>;
 }
 

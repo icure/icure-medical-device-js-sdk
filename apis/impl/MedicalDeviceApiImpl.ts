@@ -2,10 +2,10 @@ import {MedicalDevice} from '../../models/MedicalDevice';
 import {PaginatedListMedicalDevice} from "../../models/PaginatedListMedicalDevice";
 import {MedicalDeviceApi} from "../MedicalDeviceApi";
 import {
+  IccDeviceApi,
   Device as DeviceDto, FilterChainDevice,
   ListOfIds
 } from "@icure/api";
-import {IccDeviceApi} from "@icure/api/icc-api/api/IccDeviceApi";
 import {forceUuid} from "../../mappers/utils";
 import {MedicalDeviceMapper} from "../../mappers/medicalDevice";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
@@ -14,7 +14,7 @@ import {Filter} from "../../filter/Filter";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
-  private deviceApi: IccDeviceApi;
+  private readonly deviceApi: IccDeviceApi;
 
   constructor(api: { deviceApi: IccDeviceApi}) {
     this.deviceApi = api.deviceApi
