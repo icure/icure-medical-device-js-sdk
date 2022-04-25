@@ -1,11 +1,7 @@
 import {Patient} from "../../models/Patient";
 import {PaginatedListPatient} from "../../models/PaginatedListPatient";
 import {PatientApi} from "../PatientApi";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {FilterChainPatient, IccAuthApi, IccCodeApi, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
+import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi, IccContactXApi, IccCryptoXApi} from "@icure/api";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
@@ -14,11 +10,12 @@ import { Connection } from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class PatientApiImpl implements PatientApi {
-  userApi: IccUserXApi;
-  patientApi: IccPatientXApi;
-  private basePath: string;
-  private username?: string;
-  private password?: string;
+  private readonly userApi: IccUserXApi;
+  private readonly patientApi: IccPatientXApi;
+
+  private readonly basePath: string;
+  private readonly username?: string;
+  private readonly password?: string;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; },
               basePath: string,
@@ -36,7 +33,7 @@ export class PatientApiImpl implements PatientApi {
 
     let createdOrUpdatedPatient = patient.rev
       ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
-      : await this.patientApi.createPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
+      : await this.patientApi.createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, PatientMapper.toPatientDto(patient)))
 
     if (createdOrUpdatedPatient) {
       return PatientMapper.toPatient(createdOrUpdatedPatient)!;

@@ -2,11 +2,7 @@ import {HealthcareElement} from "../../models/HealthcareElement";
 import {Filter} from "../../filter/Filter";
 import {PaginatedListHealthcareElement} from "../../models/PaginatedListHealthcareElement";
 import {HealthcareElementApi} from "../HealthcareElementApi";
-import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi} from "@icure/api";
-import {IccHcpartyXApi} from "@icure/api/icc-x-api/icc-hcparty-x-api";
-import {IccCryptoXApi} from "@icure/api/icc-x-api/icc-crypto-x-api";
-import {IccContactXApi} from "@icure/api/icc-x-api/icc-contact-x-api";
-import {IccHelementXApi} from "@icure/api/icc-x-api/icc-helement-x-api";
+import {FilterChainPatient, IccDocumentXApi, IccPatientXApi, IccUserXApi, IccHcpartyXApi, IccCryptoXApi, IccContactXApi, IccHelementXApi} from "@icure/api";
 import {forceUuid} from "../../mappers/utils";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
@@ -14,9 +10,9 @@ import {HealthcareElementMapper} from "../../mappers/healthcareElement";
 import {firstOrNull} from "../../utils/functionalUtils";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
-  userApi: IccUserXApi;
-  heApi: IccHelementXApi;
-  patientApi: IccPatientXApi;
+  private readonly userApi: IccUserXApi;
+  private readonly heApi: IccHelementXApi;
+  private readonly patientApi: IccPatientXApi;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
@@ -32,7 +28,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     if (healthcareElement.rev) {
       createdOrUpdateHealthElement = await this.heApi.modifyHealthElement(HealthcareElementMapper.toHealthElementDto(healthcareElement))
     } else if (patient) {
-      createdOrUpdateHealthElement = await this.heApi.createHealthElement(HealthcareElementMapper.toHealthElementDto(await this.heApi.newInstance(currentUser, patient, healthcareElement, true)))
+      createdOrUpdateHealthElement = await this.heApi.createHealthElement(await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true))
     }
 
     if (createdOrUpdateHealthElement) {

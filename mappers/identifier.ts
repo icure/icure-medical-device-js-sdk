@@ -13,6 +13,7 @@ export namespace IdentifierDtoMapper {
         system: obj.system,
         type: toCodingReference(obj.type),
         use: obj.use,
+        value: obj.value
   }) : undefined;
 
   export const toIdentifierDto = (obj?: Identifier) => obj ? new IdentifierDto({
@@ -23,5 +24,6 @@ export namespace IdentifierDtoMapper {
         system: obj.system,
         type: toCodeStub(obj.type),
         use: obj.use,
+    value: obj.value
   }) : undefined;
 }

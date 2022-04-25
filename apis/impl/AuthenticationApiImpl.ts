@@ -33,10 +33,10 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   }
 
 
-  private fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
-  private iCureBasePath: string;
-  private authServerUrl: string;
-  private authProcessId: string;
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+  private readonly iCureBasePath: string;
+  private readonly authServerUrl: string;
+  private readonly authProcessId: string;
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
     const requestId = uuid()

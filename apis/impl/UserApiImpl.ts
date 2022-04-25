@@ -19,10 +19,10 @@ import {Connection} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class UserApiImpl implements UserApi {
-  private userApi: IccUserApi;
-  private username: string | undefined;
-  private basePath: string;
-  private password: string | undefined;
+  private readonly userApi: IccUserApi;
+  private readonly username: string | undefined;
+  private readonly basePath: string;
+  private readonly password: string | undefined;
 
   constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
               basePath: string,
@@ -78,6 +78,10 @@ export class UserApiImpl implements UserApi {
 
   async getUser(userId: string): Promise<User> {
     return UserMapper.toUser(await this.userApi.getUser(userId))!;
+  }
+
+  async getUserByEmail(email:string): Promise<User> {
+    return UserMapper.toUser(await this.userApi.getUserByEmail(email))!;
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
