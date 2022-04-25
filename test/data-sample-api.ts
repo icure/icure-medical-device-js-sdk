@@ -20,23 +20,25 @@ const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
 describe('Data Samples API', () => {
   it('Filter Data Samples', async () => {
-    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v2')
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
       .build()
 
     const loggedUser = await medtechApi.userApi.getLoggedUser()
+
     await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     )
 
     const hcp = await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId!)
-    const patient = await medtechApi.patientApi.getPatient("4cd4ff91-d07f-4c23-b409-6a8fc5b07ebd")
+    const patient = await medtechApi.patientApi.getPatient("33350ca9-c6d6-4f2d-a91b-daaa6333105a")
 
     const filter = await new DataSampleFilter()
       .forDataOwner(hcp.id!)
+      .byTagCodeFilter("HK-KINO", "RECORD")
       .forPatients(medtechApi.cryptoApi, [patient])
       .build()
 

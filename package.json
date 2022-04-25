@@ -19,7 +19,7 @@
     "precommit": "pretty-quick --staged"
   },
   "dependencies": {
-    "@icure/api": "^4.1.14",
+    "@icure/api": "^4.2.1",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
     "rsocket-core": "^0.0.27",
