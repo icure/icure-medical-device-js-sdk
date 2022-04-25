@@ -10,6 +10,7 @@ import { LocalStorage } from 'node-localstorage'
 import * as os from 'os'
 import {assert} from "chai";
 import {DataSample} from "../models/DataSample";
+import {CodingReference} from "../models/CodingReference";
 const tmp = os.tmpdir()
 console.log('Saving keys in ' + tmp)
 ;(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024)
@@ -21,7 +22,7 @@ const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
 describe('Subscription API', () => {
   it('Can subscribe to Data Samples', async () => {
-    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v2')
+    const medtechApi = medTechApi().withICureBasePath('http://127.0.0.1:16043/rest/v1')
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -44,11 +45,13 @@ describe('Subscription API', () => {
 
     const patient = await medtechApi.patientApi.getPatient("4cd4ff91-d07f-4c23-b409-6a8fc5b07ebd")
     await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
-      labels: new Set([{ type: 'IC-TEST', code: 'TEST'}]),
+      labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }}
     }))
 
-    sleep(1000)
+    sleep(800)
+    connection.close()
+    sleep(800)
 
     assert(events.length === 1, 'The events have not been recorded')
     assert(statuses.length === 2, 'The statuses have not been recorded')
