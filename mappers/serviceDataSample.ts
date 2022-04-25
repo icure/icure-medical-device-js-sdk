@@ -1,4 +1,4 @@
-import {forceUuid, map, mapReduce, mapSet} from "./utils";
+import {forceUuid, map, mapReduce, mapSet, mapSetToArray} from "./utils";
 import {Content as ContentDto, Measure as MeasureDto, Service} from "@icure/api";
 import {DataSample} from "../models/DataSample";
 import {Content} from "../models/Content";
@@ -72,8 +72,8 @@ export namespace DataSampleMapper {
     identifier: map(obj.identifier, toIdentifierDto),
     content: mapReduce(obj.content, toContentDto),
     qualifiedLinks: obj.qualifiedLinks,
-    codes: mapSet(obj.codes, toCodeStub),
-    tags: mapSet(obj.labels, toCodeStub),
+    codes: mapSetToArray(obj.codes, toCodeStub),
+    tags: mapSetToArray(obj.labels, toCodeStub),
     transactionId: obj.transactionId,
     contactId: obj.batchId,
     healthElementsIds: obj.healthElementsIds,
@@ -114,7 +114,7 @@ export namespace DataSampleMapper {
     severityCode: obj.severityCode,
     evolution: obj.evolution,
     unit: obj.unit,
-    unitCodes: mapSet(obj.unitCodes, toCodeStub),
+    unitCodes: mapSetToArray(obj.unitCodes, toCodeStub),
     comment: obj.comment,
     comparator: obj.comparator,
   }) : undefined;

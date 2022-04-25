@@ -1,7 +1,7 @@
 import {HealthcareParty} from "@icure/api";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
-import {forceUuid, map, mapSet} from "./utils";
+import {forceUuid, map, mapSet, mapSetToArray} from "./utils";
 import {PersonNameDtoMapper} from "./personName";
 import {AddressMapper} from "./address";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
@@ -47,8 +47,8 @@ export namespace HealthcareProfessionalMapper {
     names: map(obj.names, toPersonName),
     addresses: map(obj.addresses, toAddress),
     languages: obj.languages,
-    specialityCodes: mapSet(obj.specialityCodes, toCodingReference),
-    properties: mapSet(obj.properties, toProperty),
+    specialityCodes: mapSetToArray(obj.specialityCodes, toCodingReference),
+    properties: mapSetToArray(obj.properties, toProperty),
     rev: obj.rev,
     deletionDate: obj.deletionDate,
     name: obj.name,

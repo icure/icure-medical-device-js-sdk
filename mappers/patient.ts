@@ -1,6 +1,6 @@
 import {Patient} from "../models/Patient";
 import {Patient as PatientDto} from "@icure/api";
-import {forceUuid, map, mapSet, toMapSetTransform} from "./utils";
+import {forceUuid, map, mapSet, mapSetToArray, toMapSetTransform} from "./utils";
 import {IdentifierDtoMapper} from "./identifier";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PersonNameDtoMapper} from "./personName";
@@ -96,8 +96,8 @@ export namespace PatientMapper {
   export const toPatientDto = (obj?: Patient) => obj ? new PatientDto({
     id: forceUuid(obj.id),
     identifier: obj.identifiers,
-    tags: mapSet(obj.labels, toCodeStub),
-    codes: mapSet(obj.codes, toCodeStub),
+    tags: mapSetToArray(obj.labels, toCodeStub),
+    codes: mapSetToArray(obj.codes, toCodeStub),
     names: map(obj.names, toPersonNameDto),
     languages: obj.languages,
     addresses: map(obj.addresses, toAddressDto),
@@ -108,7 +108,7 @@ export namespace PatientMapper {
     patientHealthCareParties: map(obj.patientHealthCareParties, toPatientHealthCarePartyDto),
     patientProfessions: map(obj.patientProfessions, toCodeStub),
     parameters: obj.parameters,
-    properties: mapSet(obj.properties, toPropertyStubDto),
+    properties: mapSetToArray(obj.properties, toPropertyStubDto),
     rev: obj.rev,
     created: obj.created,
     modified: obj.modified,
