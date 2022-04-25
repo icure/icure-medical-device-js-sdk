@@ -1,6 +1,6 @@
 import { User as UserDto} from "@icure/api";
 import {User} from "../models/User";
-import {forceUuid, map, mapReduce, mapSet, toMapSet} from "./utils";
+import {forceUuid, map, mapReduce, mapSet, mapSetToArray, toMapSet} from "./utils";
 import { PropertyStubMapper } from "./property";
 import {AuthenticationTokenMapper} from "./authenticationToken";
 
@@ -36,7 +36,7 @@ export namespace UserMapper {
   export const toUserDto = (obj?: User) => obj ?
       new UserDto({
         id: forceUuid(obj.id),
-        properties: mapSet(obj.properties, toPropertyStubDto),
+        properties: mapSetToArray(obj.properties, toPropertyStubDto),
         roles: obj.roles,
         autoDelegations: obj.autoDelegations,
         authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationTokenDto),

@@ -1,6 +1,6 @@
 import {HealthcareElement} from "../models/HealthcareElement";
 import {HealthElement} from "@icure/api";
-import {forceUuid, map, mapSet, toMapSetTransform} from "./utils";
+import {forceUuid, map, mapSet, mapSetToArray, toMapSetTransform} from "./utils";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
 import {DelegationMapper} from "./delegation";
 import {IdentifierDtoMapper} from "./identifier";
@@ -46,8 +46,8 @@ export namespace HealthcareElementMapper {
     new HealthElement({
       id: forceUuid(obj.id),
       identifiers: map(obj.identifiers, toIdentifierDto),
-      tags: mapSet(obj.tags, toCodeStub),
-      codes: mapSet(obj.codes, toCodeStub),
+      tags: mapSetToArray(obj.tags, toCodeStub),
+      codes: mapSetToArray(obj.codes, toCodeStub),
       rev: obj.rev,
       created: obj.created,
       modified: obj.modified,

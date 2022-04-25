@@ -52,6 +52,6 @@ import {Connection} from "../models/Connection";
      */
     giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>;
 
-    subscribeToPatientEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<Patient>, eventFired: (patient:Patient) => void): Promise<Connection>;
+    subscribeToPatientEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<Patient>, eventFired: (patient:Patient) => Promise<void>): Promise<Connection>;
 
   }
