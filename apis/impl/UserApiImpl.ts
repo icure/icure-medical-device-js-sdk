@@ -15,7 +15,7 @@ import {forceUuid} from "../../mappers/utils";
 import {FilterMapper} from "../../mappers/filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
-import {Connection} from "../../models/Connection";
+import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class UserApiImpl implements UserApi {
@@ -89,7 +89,7 @@ export class UserApiImpl implements UserApi {
   }
 
   subscribeToUserEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<User> | undefined, eventFired: (patient: User) => Promise<void>): Promise<Connection> {
-    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired)
+    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired).then((rs) => new ConnectionImpl(rs))
   }
 
 }
