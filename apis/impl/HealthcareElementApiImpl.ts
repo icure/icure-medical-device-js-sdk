@@ -28,9 +28,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
     let createdOrUpdateHealthElement;
     if (healthcareElement.rev) {
-      createdOrUpdateHealthElement = await this.heApi.modifyHealthElement(HealthcareElementMapper.toHealthElementDto(healthcareElement))
+      createdOrUpdateHealthElement = await this.heApi.modifyHealthElementWithUser(currentUser, HealthcareElementMapper.toHealthElementDto(healthcareElement));
     } else if (patient) {
-      createdOrUpdateHealthElement = await this.heApi.createHealthElement(await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true))
+      createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(currentUser, await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true));
     }
 
     if (createdOrUpdateHealthElement) {

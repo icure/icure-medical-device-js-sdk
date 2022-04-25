@@ -66,5 +66,5 @@ describe('Healthcare professional', () => {
     } catch(e) {
       console.error('An error occured', e)
     }
-  })
+  }).timeout(60000)
 })

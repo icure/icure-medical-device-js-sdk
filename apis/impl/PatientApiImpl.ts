@@ -6,7 +6,7 @@ import {FilterMapper} from '../../mappers/filter';
 import {PaginatedListMapper} from '../../mappers/paginatedList';
 import {Filter} from '../../filter/Filter';
 import {PatientMapper} from '../../mappers/patient';
-import { Connection } from '../../models/Connection';
+import { Connection, ConnectionImpl } from '../../models/Connection';
 import {subscribeToEntityEvents} from '../../utils/rsocket';
 
 export class PatientApiImpl implements PatientApi {
@@ -113,8 +113,8 @@ export class PatientApiImpl implements PatientApi {
       })
   }
 
-  async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient> | undefined, eventFired: (patient: Patient) => void): Promise<Connection> {
+  async subscribeToPatientEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<Patient> | undefined, eventFired: (patient: Patient) => Promise<void>): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
-    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0])
+    return await subscribeToEntityEvents(this.basePath, this.username!, this.password!, "Patient", eventTypes, filter, eventFired, async encrypted => (await this.patientApi.decrypt(currentUser, [encrypted]))[0]).then((rs) => new ConnectionImpl(rs))
   }
 }

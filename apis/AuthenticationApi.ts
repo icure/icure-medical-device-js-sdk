@@ -17,7 +17,12 @@ export interface AuthenticationApi {
    * @return The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
    */
   startAuthentication(
-    healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string
+    healthcareProfessionalId: string | undefined,
+    firstName: string,
+    lastName: string,
+    email: string,
+    recaptcha: string,
+    mobilePhone?: string
   ): Promise<AuthenticationProcess|null>
 
   /**
@@ -33,7 +38,10 @@ export interface AuthenticationApi {
    * user.
    */
   completeAuthentication(
-    process: AuthenticationProcess, validationCode: string, userKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
+    process: AuthenticationProcess,
+    validationCode: string,
+    userKeyPair: [string, string] | undefined,
+    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
   ): Promise<AuthenticationResult|null>
 
 }

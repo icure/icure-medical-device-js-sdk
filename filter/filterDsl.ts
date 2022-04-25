@@ -487,7 +487,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     } else if (filters.length == 1) {
       return filters[0];
     } else {
-      return ({filters}) as IntersectionFilter<DataSample>
+      return ({filters: filters, '$type': 'IntersectionFilter'}) as IntersectionFilter<DataSample>
     }
 
   }

@@ -36,6 +36,14 @@ export function mapSet<I, O>(set: Set<I> | undefined, mapper: (obj: I) => O | un
   return new Set(arr.map(it => mapper(it)!));
 }
 
+export function mapSetToArray<I, O>(set: Set<I> | undefined, mapper: (obj: I) => O | undefined): Array<O> | undefined {
+  if (!set) {
+    return undefined;
+  }
+  const arr: I[] = Array.from(set);
+  return arr.map(it => mapper(it)!);
+}
+
 export function map<I, O>(arr: I[] | undefined, mapper: (obj: I) => O | undefined): O[] | undefined {
   if (!arr) {
     return undefined;
