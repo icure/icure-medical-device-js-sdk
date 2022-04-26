@@ -95,9 +95,11 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     if (contactCached && existingContact != null) {
       let servicesToModify = dataSamples.map((e) => DataSampleMapper.toServiceDto(e, e.batchId)!);
+      let subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser);
 
       let contactToModify = {...existingContact,
         services: servicesToModify,
+        subContacts: subContacts,
         openingDate: Math.min(...servicesToModify.filter((element) => element.openingDate != null || element.valueDate != null).map((e) => e.openingDate ?? e.valueDate!)),
         closingDate: Math.max(...servicesToModify.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!))
       };
@@ -105,7 +107,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact = await this.contactApi.modifyContactWithUser(currentUser, contactToModify);
 
     } else {
-      let contactToCreate = await this.createContactDtoBasedOn(currentUser, existingPatient, dataSamples, existingContact);
+      let contactToCreate = await this.createContactDtoUsing(currentUser, existingPatient, dataSamples, existingContact);
       createdOrModifiedContact = await this.contactApi.createContactWithUser(currentUser, contactToCreate);
     }
 
@@ -142,17 +144,14 @@ export class DataSampleApiImpl implements DataSampleApi {
       .find((key) => key != undefined);
   }
 
-  async createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: ContactDto) : Promise<ContactDto> {
+  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact? : ContactDto): Promise<ContactDto> {
     let servicesToCreate = dataSamples
       .map((e) => DataSampleMapper.toServiceDto(e, e.batchId))
       .map((e) => { return {...e, modified: undefined } });
-    return await this.createContactDtoUsing(currentUser, contactPatient, servicesToCreate, existingContact);
-  }
 
-  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<ServiceDto>, existingContact? : ContactDto): Promise<ContactDto> {
     let baseContact: ContactDto;
 
-    const subContacts = await this._createPotentialSubContactsForHealthElements(servicesToCreate, currentUser)
+    const subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser)
 
     if (existingContact != null) {
       baseContact = {
@@ -174,19 +173,19 @@ export class DataSampleApiImpl implements DataSampleApi {
     };
   }
 
-  private _createPotentialSubContactsForHealthElements(servicesToCreate: Array<ServiceDto>, currentUser: UserDto): Promise<SubContact[]> {
-    return Promise.all(servicesToCreate
-      .filter((serviceToCreate) => serviceToCreate.healthElementsIds != undefined && serviceToCreate.healthElementsIds.length > 0)
-    ).then((servicesWithHe) => {
-      return servicesWithHe.length > 0 ? this._checkAndRetrieveProvidedHealthElements(servicesWithHe.flatMap((service) => service.healthElementsIds!), currentUser)
+  private _createPotentialSubContactsForHealthElements(dataSamples: Array<DataSample>, currentUser: UserDto): Promise<SubContact[]> {
+    return Promise.all(dataSamples
+      .filter((dataSample) => dataSample.healthElementsIds != undefined && dataSample.healthElementsIds.size > 0)
+    ).then((dataSamplesWithHe) => {
+      return dataSamplesWithHe.length > 0 ? this._checkAndRetrieveProvidedHealthElements(dataSamplesWithHe.flatMap((service) => Array.from(service.healthElementsIds!.values())), currentUser)
         .then((heIds) => {
           return heIds
             .map((heId) => {
               return {
                 healthElement: heId,
-                services: servicesWithHe
-                  .filter((s) => s.healthElementsIds!.find((servHeId) => servHeId == heId))
-                  .map((s) => new ServiceLink({serviceId: s.id!}))
+                services: dataSamplesWithHe
+                  .filter((ds) => ds.healthElementsIds!.has(heId))
+                  .map((ds) => new ServiceLink({serviceId: ds.id!}))
               }
             })
             .map(({healthElement, services}) => new SubContact({
