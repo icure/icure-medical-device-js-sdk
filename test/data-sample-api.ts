@@ -1,5 +1,5 @@
 import 'mocha'
-import {medTechApi} from '../apis/medTechApi';
+import {MedTechApi, medTechApi} from '../apis/medTechApi';
 import 'isomorphic-fetch'
 import { webcrypto } from 'crypto'
 
@@ -22,8 +22,21 @@ const userName = process.env.ICURE_TS_TEST_USER!
 const password = process.env.ICURE_TS_TEST_PWD!
 const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
-describe('Data Samples API', () => {
+async function createPatient(medtechApi: MedTechApi): Promise<Patient> {
+  return medtechApi.patientApi.createOrModifyPatient(new Patient({
+    firstName: 'John',
+    lastName: 'Snow',
+    note: 'Winter is coming'
+  }));
+}
 
+async function createHealthElement(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
+  return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(new HealthcareElement({
+    note: 'Hero Syndrome'
+  }), patient!.id!);
+}
+
+describe('Data Samples API', () => {
   it('Create Data Sample - Success', async () => {
     // Given
     const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
@@ -33,18 +46,12 @@ describe('Data Samples API', () => {
       .build()
 
     const loggedUser = await medtechApi.userApi.getLoggedUser()
-
     await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     )
 
-    const patient = await medtechApi.patientApi.createOrModifyPatient(new Patient({
-      firstName: 'John',
-      lastName: 'Snow',
-      note: 'Winter is coming'
-    }))
-
+    const patient = await createPatient(medtechApi)
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }}
@@ -67,35 +74,88 @@ describe('Data Samples API', () => {
       .build()
 
     const loggedUser = await medtechApi.userApi.getLoggedUser()
-
     await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     )
 
-    const patient = await medtechApi.patientApi.createOrModifyPatient(new Patient({
-      firstName: 'John',
-      lastName: 'Snow',
-      note: 'Winter is coming'
-    }))
-
-    const healthElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(new HealthcareElement({
-      note: 'Hero Syndrome'
-    }), patient!.id!)
-
+    const patient = await createPatient(medtechApi)
+    const healthElement = await createHealthElement(medtechApi, patient)
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }},
       healthElementsIds: new Set([healthElement!.id!])
     })
 
-    // When
+    // When creating a data sample, linked to this healthcare element
     const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, dataSampleToCreate)
 
     // Then
     assert(createdDataSample != undefined)
     assert(createdDataSample.id != undefined)
     assert(createdDataSample.healthElementsIds?.has(healthElement.id!) == true)
+  })
+
+  it('Create Data Sample and modify it to link it to HealthElement - Success', async () => {
+    // Given
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
+      .withUserName(userName)
+      .withPassword(password)
+      .withCrypto(webcrypto as any)
+      .build()
+
+    const loggedUser = await medtechApi.userApi.getLoggedUser()
+    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+      loggedUser.healthcarePartyId!,
+      hex2ua(privKey)
+    )
+
+    const patient = await createPatient(medtechApi)
+    const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
+      labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
+      content: { 'en': { stringValue: 'Hello world' }},
+    }))
+    const healthElement = await createHealthElement(medtechApi, patient)
+
+    // When
+    const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, {...createdDataSample,
+      healthElementsIds: new Set([healthElement!.id!])
+    })
+
+    // Then
+    assert(modifiedDataSample != undefined)
+    assert(modifiedDataSample.id == createdDataSample.id)
+    assert(modifiedDataSample.healthElementsIds?.has(healthElement.id!) == true)
+  })
+
+  it('Can not create Data Sample with invalid healthElementId', async () => {
+    // Given
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
+      .withUserName(userName)
+      .withPassword(password)
+      .withCrypto(webcrypto as any)
+      .build()
+
+    const loggedUser = await medtechApi.userApi.getLoggedUser()
+    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+      loggedUser.healthcarePartyId!,
+      hex2ua(privKey)
+    )
+
+    const patient = await createPatient(medtechApi)
+
+    // When
+    const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
+      labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
+      content: { 'en': { stringValue: 'Hello world' }},
+      healthElementsIds: new Set(["I-DO-NOT-EXIST"])
+    }))
+      .catch((e) => {
+        assert((e as Error).message == `Health elements I-DO-NOT-EXIST do not exist or user ${loggedUser.id} may not access them`)
+      })
+
+    // Then
+    assert(createdDataSample == undefined)
   })
 
   it('Filter Data Samples', async () => {

@@ -76,8 +76,6 @@ export namespace DataSampleMapper {
     tags: mapSetToArray(obj.labels, toCodeStub),
     transactionId: obj.transactionId,
     contactId: obj.batchId,
-    healthElementsIds: mapSetToArray(obj.healthElementsIds, (id) => id),
-    formIds: mapSetToArray(obj.canvasesIds, (id) => id),
     index: obj.index,
     valueDate: obj.valueDate,
     openingDate: obj.openingDate,
