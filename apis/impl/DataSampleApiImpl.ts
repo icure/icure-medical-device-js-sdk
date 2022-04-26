@@ -14,7 +14,7 @@ import {
   IccUserXApi, ListOfIds, PaginatedListContact,
   Patient as PatientDto,
   Service as ServiceDto,
-  User as UserDto
+  User as UserDto, IccHelementXApi, SubContact, ServiceLink
 } from "@icure/api";
 import {any, distinctBy, firstOrNull, isNotEmpty, sumOf} from "../../utils/functionalUtils";
 import {CachedMap} from "../../utils/cachedMap";
@@ -32,13 +32,14 @@ export class DataSampleApiImpl implements DataSampleApi {
   private readonly patientApi: IccPatientXApi;
   private readonly contactApi: IccContactXApi;
   private readonly documentApi: IccDocumentXApi;
+  private readonly healthcareElementApi: IccHelementXApi;
 
   private readonly contactsCache: CachedMap<ContactDto> = new CachedMap<ContactDto>(5 * 60, 10000);
   private readonly basePath: string;
   private readonly username: string | undefined;
   private readonly password: string | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi, healthcareElementApi: IccHelementXApi },
               basePath: string,
               username: string | undefined,
               password: string | undefined) {
@@ -50,6 +51,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     this.patientApi = api.patientApi;
     this.contactApi = api.contactApi;
     this.documentApi = api.documentApi;
+    this.healthcareElementApi = api.healthcareElementApi;
   }
 
   async createOrModifyDataSampleFor(patientId: string, dataSample: DataSample): Promise<DataSample> {
@@ -61,22 +63,22 @@ export class DataSampleApiImpl implements DataSampleApi {
     throw Error(`Could not create / modify data sample ${dataSample.id} for patient ${patientId}`)
   }
 
-  async createOrModifyDataSamplesFor(patientId: string, dataSample: Array<DataSample>): Promise<Array<DataSample>> {
-    if (dataSample.length == 0) {
+  async createOrModifyDataSamplesFor(patientId: string, dataSamples: Array<DataSample>): Promise<Array<DataSample>> {
+    if (dataSamples.length == 0) {
       return Promise.resolve([]);
     }
 
-    if (distinctBy(dataSample, (ds) => ds.batchId).size > 1) {
+    if (distinctBy(dataSamples, (ds) => ds.batchId).size > 1) {
       throw Error("Only data samples of a same batch can be processed together")
     }
 
     // Arbitrary : 1 service = 1K
-    if (this.countHierarchyOfDataSamples(0, 0, dataSample) > 1000) {
+    if (this.countHierarchyOfDataSamples(0, 0, dataSamples) > 1000) {
       throw Error("Can't process more than 1000 data samples in the same batch");
     }
 
     let currentUser = await this.userApi.getCurrentUser();
-    let [contactCached, existingContact] = await this.getContactOfDataSample(currentUser, dataSample[0]);
+    let [contactCached, existingContact] = await this.getContactOfDataSample(currentUser, dataSamples[0]);
 
     let contactPatientId = existingContact ? await this.getPatientIdOfContact(currentUser, existingContact) : undefined;
 
@@ -92,10 +94,12 @@ export class DataSampleApiImpl implements DataSampleApi {
     let createdOrModifiedContact: ContactDto;
 
     if (contactCached && existingContact != null) {
-      let servicesToModify = dataSample.map((e) => DataSampleMapper.toServiceDto(e, e.batchId)!);
+      let servicesToModify = dataSamples.map((e) => DataSampleMapper.toServiceDto(e, e.batchId)!);
+      let subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser);
 
       let contactToModify = {...existingContact,
         services: servicesToModify,
+        subContacts: subContacts,
         openingDate: Math.min(...servicesToModify.filter((element) => element.openingDate != null || element.valueDate != null).map((e) => e.openingDate ?? e.valueDate!)),
         closingDate: Math.max(...servicesToModify.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!))
       };
@@ -103,7 +107,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact = await this.contactApi.modifyContactWithUser(currentUser, contactToModify);
 
     } else {
-      let contactToCreate = await this.createContactDtoBasedOn(currentUser, existingPatient, dataSample, existingContact);
+      let contactToCreate = await this.createContactDtoUsing(currentUser, existingPatient, dataSamples, existingContact);
       createdOrModifiedContact = await this.contactApi.createContactWithUser(currentUser, contactToCreate);
     }
 
@@ -140,15 +144,15 @@ export class DataSampleApiImpl implements DataSampleApi {
       .find((key) => key != undefined);
   }
 
-  async createContactDtoBasedOn(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact?: ContactDto) : Promise<ContactDto> {
+  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, dataSamples: Array<DataSample>, existingContact? : ContactDto): Promise<ContactDto> {
     let servicesToCreate = dataSamples
       .map((e) => DataSampleMapper.toServiceDto(e, e.batchId))
       .map((e) => { return {...e, modified: undefined } });
-    return await this.createContactDtoUsing(currentUser, contactPatient, servicesToCreate, existingContact);
-  }
 
-  async createContactDtoUsing(currentUser: UserDto, contactPatient: PatientDto, servicesToCreate: Array<ServiceDto>, existingContact? : ContactDto): Promise<ContactDto> {
     let baseContact: ContactDto;
+
+    const subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser)
+
     if (existingContact != null) {
       baseContact = {
         ...existingContact,
@@ -163,9 +167,53 @@ export class DataSampleApiImpl implements DataSampleApi {
     return {
       ...baseContact,
       services: servicesToCreate,
+      subContacts: subContacts,
       openingDate: Math.min(...servicesToCreate.filter((element) => element.openingDate != null || element.valueDate != null).map((e) => e.openingDate ?? e.valueDate!)),
       closingDate: Math.max(...servicesToCreate.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!))
     };
+  }
+
+  private _createPotentialSubContactsForHealthElements(dataSamples: Array<DataSample>, currentUser: UserDto): Promise<SubContact[]> {
+    return Promise.all(dataSamples
+      .filter((dataSample) => dataSample.healthElementsIds != undefined && dataSample.healthElementsIds.size > 0)
+    ).then((dataSamplesWithHe) => {
+      return dataSamplesWithHe.length > 0 ? this._checkAndRetrieveProvidedHealthElements(dataSamplesWithHe.flatMap((service) => Array.from(service.healthElementsIds!.values())), currentUser)
+        .then((heIds) => {
+          return heIds
+            .map((heId) => {
+              return {
+                healthElement: heId,
+                services: dataSamplesWithHe
+                  .filter((ds) => ds.healthElementsIds!.has(heId))
+                  .map((ds) => new ServiceLink({serviceId: ds.id!}))
+              }
+            })
+            .map(({healthElement, services}) => new SubContact({
+              healthElementId: healthElement,
+              services: services
+            }))
+        }) : []
+    });
+  }
+
+  private async _checkAndRetrieveProvidedHealthElements(healthElementIds: Array<string>, currentUser: UserDto): Promise<Array<string>> {
+    if (healthElementIds.length == 0) {
+      return []
+    }
+
+    const distinctIds = Array.from(new Set(healthElementIds).values())
+    return await this.healthcareElementApi.getHealthElementsWithUser(currentUser, new ListOfIds({ids: distinctIds}))
+      .then((healthElements) => {
+        const foundIds = (healthElements ?? []).map((he) => he.id!)
+        if (healthElements.length < distinctIds.length) {
+          const missingIds = Array.from(distinctIds.values())
+            .filter((id) => foundIds.find((fId) => fId == id) == undefined)
+
+          throw Error(`Health elements ${missingIds.join(",")} do not exist or user ${currentUser.id} may not access them`)
+        }
+
+        return foundIds
+      })
   }
 
   deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
