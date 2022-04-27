@@ -1,5 +1,5 @@
 import {forceUuid, map, mapReduce, mapSet, mapSetToArray} from "./utils";
-import {Content as ContentDto, Measure as MeasureDto, Service} from "@icure/api";
+import {Content as ContentDto, Measure as MeasureDto, Service, SubContact} from "@icure/api";
 import {DataSample} from "../models/DataSample";
 import {Content} from "../models/Content";
 import {Measure} from "../models/Measure";
@@ -15,7 +15,7 @@ export namespace DataSampleMapper {
   import toIdentifier = IdentifierDtoMapper.toIdentifier;
   import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 
-  export const toDataSample = (obj?: Service, batchId?: string) => obj ? new DataSample({
+  export const toDataSample = (obj?: Service, batchId?: string, subContacts?: SubContact[]) => obj ? new DataSample({
     id: obj.id,
     identifier: map(obj.identifier, toIdentifier),
     content: mapReduce(obj.content, toContent),
@@ -24,8 +24,17 @@ export namespace DataSampleMapper {
     labels: mapSet(new Set(obj.tags), toCodingReference),
     transactionId: obj.transactionId,
     batchId: obj.contactId ?? batchId,
-    healthElementsIds: obj.healthElementsIds ? new Set(obj.healthElementsIds) : undefined,
-    canvasesIds: obj.formIds ? new Set(obj.formIds) : undefined,
+    healthElementsIds: mapSet(new Set(obj.healthElementsIds
+      ? obj.healthElementsIds
+      : subContacts
+        ?.filter((subContact) => subContact.healthElementId)
+        ?.map((subContact) => subContact.healthElementId!)
+      ), (id) => id),
+    canvasesIds: mapSet(new Set(subContacts
+      ? subContacts
+        .filter((subContact) => subContact.formId)
+        .map((subContact) => subContact.formId!)
+      : obj.formIds), (id) => id),
     index: obj.index,
     valueDate: obj.valueDate,
     openingDate: obj.openingDate,
@@ -74,6 +83,8 @@ export namespace DataSampleMapper {
     qualifiedLinks: obj.qualifiedLinks,
     codes: mapSetToArray(obj.codes, toCodeStub),
     tags: mapSetToArray(obj.labels, toCodeStub),
+    healthElementsIds: mapSetToArray(obj.healthElementsIds, (id) => id),
+    formIds: mapSetToArray(obj.canvasesIds, (id) => id),
     transactionId: obj.transactionId,
     contactId: obj.batchId,
     index: obj.index,
