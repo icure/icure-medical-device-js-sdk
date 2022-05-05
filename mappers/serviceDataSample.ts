@@ -24,7 +24,7 @@ export namespace DataSampleMapper {
     labels: mapSet(new Set(obj.tags), toCodingReference),
     transactionId: obj.transactionId,
     batchId: obj.contactId ?? batchId,
-    healthElementsIds: mapSet(new Set(obj.healthElementsIds
+    healthcareElementIds: mapSet(new Set(obj.healthElementsIds
       ? obj.healthElementsIds
       : subContacts
         ?.filter((subContact) => subContact.healthElementId)
@@ -83,7 +83,7 @@ export namespace DataSampleMapper {
     qualifiedLinks: obj.qualifiedLinks,
     codes: mapSetToArray(obj.codes, toCodeStub),
     tags: mapSetToArray(obj.labels, toCodeStub),
-    healthElementsIds: mapSetToArray(obj.healthElementsIds, (id) => id),
+    healthElementsIds: mapSetToArray(obj.healthcareElementIds, (id) => id),
     formIds: mapSetToArray(obj.canvasesIds, (id) => id),
     transactionId: obj.transactionId,
     contactId: obj.batchId,
