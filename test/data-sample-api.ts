@@ -84,7 +84,7 @@ describe('Data Samples API', () => {
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }},
-      healthElementsIds: new Set([healthElement!.id!])
+      healthcareElementIds: new Set([healthElement!.id!])
     })
 
     // When creating a data sample, linked to this healthcare element
@@ -93,7 +93,7 @@ describe('Data Samples API', () => {
     // Then
     assert(createdDataSample != undefined)
     assert(createdDataSample.id != undefined)
-    assert(createdDataSample.healthElementsIds?.has(healthElement.id!) == true)
+    assert(createdDataSample.healthcareElementIds?.has(healthElement.id!) == true)
   })
 
   it('Create Data Sample and modify it to link it to HealthElement - Success', async () => {
@@ -119,13 +119,13 @@ describe('Data Samples API', () => {
 
     // When
     const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, {...createdDataSample,
-      healthElementsIds: new Set([healthElement!.id!])
+      healthcareElementIds: new Set([healthElement!.id!])
     })
 
     // Then
     assert(modifiedDataSample != undefined)
     assert(modifiedDataSample.id == createdDataSample.id)
-    assert(modifiedDataSample.healthElementsIds?.has(healthElement.id!) == true)
+    assert(modifiedDataSample.healthcareElementIds?.has(healthElement.id!) == true)
   })
 
   it('Can not create Data Sample with invalid healthElementId', async () => {
@@ -148,7 +148,7 @@ describe('Data Samples API', () => {
     const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }},
-      healthElementsIds: new Set(["I-DO-NOT-EXIST"])
+      healthcareElementIds: new Set(["I-DO-NOT-EXIST"])
     }))
       .catch((e) => {
         assert((e as Error).message == `Health elements I-DO-NOT-EXIST do not exist or user ${loggedUser.id} may not access them`)
@@ -207,7 +207,7 @@ describe('Data Samples API', () => {
     const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
       content: { 'en': { stringValue: 'Hello world' }},
-      healthElementsIds: new Set([healthElement!.id!])
+      healthcareElementIds: new Set([healthElement!.id!])
     }))
 
     const filter = await new DataSampleFilter()
@@ -218,7 +218,7 @@ describe('Data Samples API', () => {
     const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(filter)
     assert(filteredDataSamples.rows.length == 1)
     assert(filteredDataSamples.rows[0].id == createdDataSample!.id!)
-    assert(filteredDataSamples.rows[0].healthElementsIds!.has(healthElement.id!))
+    assert(filteredDataSamples.rows[0].healthcareElementIds!.has(healthElement.id!))
   })
 
 })
