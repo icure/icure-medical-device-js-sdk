@@ -187,4 +187,38 @@ describe('Data Samples API', () => {
     const dataSample = await medtechApi.dataSampleApi.getDataSample(filteredDataSamples.rows[0].id!)
     assert(dataSample != undefined)
   })
+
+  it('Filter data samples by HealthElementIds - Success', async () => {
+    // Given
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
+      .withUserName(userName)
+      .withPassword(password)
+      .withCrypto(webcrypto as any)
+      .build()
+
+    const loggedUser = await medtechApi.userApi.getLoggedUser()
+    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+      loggedUser.healthcarePartyId!,
+      hex2ua(privKey)
+    )
+
+    const patient = await createPatient(medtechApi)
+    const healthElement = await createHealthElement(medtechApi, patient)
+    const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
+      labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST'})]),
+      content: { 'en': { stringValue: 'Hello world' }},
+      healthElementsIds: new Set([healthElement!.id!])
+    }))
+
+    const filter = await new DataSampleFilter()
+      .forDataOwner(loggedUser.healthcarePartyId!)
+      .byHealthElementIds([healthElement!.id!])
+      .build()
+
+    const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(filter)
+    assert(filteredDataSamples.rows.length == 1)
+    assert(filteredDataSamples.rows[0].id == createdDataSample!.id!)
+    assert(filteredDataSamples.rows[0].healthElementsIds!.has(healthElement.id!))
+  })
+
 })

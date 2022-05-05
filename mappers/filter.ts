@@ -42,7 +42,7 @@ import {
   AbstractFilterHealthcareParty,
   AbstractFilterHealthElement,
   AbstractFilterPatient,
-  AbstractFilterUser,
+  AbstractFilterUser, ServiceByHcPartyHealthElementIdsFilter, ServiceByIdsFilter,
 } from "@icure/api";
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
@@ -82,6 +82,9 @@ import {PatientByHealthcarePartyNameContainsFuzzyFilter} from "../filter/patient
 import {PatientByHealthcarePartyGenderEducationProfessionFilter} from "../filter/patient/PatientByHealthcarePartyGenderEducationProfessionFilter";
 import {PatientByIdsFilter} from "../filter/patient/PatientByIdsFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+import {
+  DataSampleByHealthcarePartyHealthElementIdsFilter
+} from "../filter/datasample/DataSampleByHealthcarePartyHealthElementIdsFilter";
 
 
 export namespace FilterMapper {
@@ -172,6 +175,9 @@ export namespace FilterMapper {
     if (filter['$type'] === 'DataSampleByHealthcarePartyIdentifiersFilter') {
       return toServiceByHcPartyIdentifiersFilterDto(filter as DataSampleByHealthcarePartyIdentifiersFilter);
     }
+    if (filter['$type'] === 'DataSampleByHealthcarePartyHealthElementIdsFilter') {
+      return toServiceByHcPartyHealthElementIdsFilterDto(filter as DataSampleByHealthcarePartyHealthElementIdsFilter);
+    }
     if (filter['$type'] === 'DataSampleByHealthcarePartyTagCodeDateFilter') {
       return toServiceByHcPartyTagCodeDateFilterDto(filter as DataSampleByHealthcarePartyTagCodeDateFilter);
     }
@@ -195,9 +201,16 @@ export namespace FilterMapper {
 
 
   const toServiceByIdsFilterDto = (filter: DataSampleByIdsFilter) =>
-    new ServiceByHcPartyIdentifiersFilterDto({
+    new ServiceByIdsFilter({
       desc: filter.description,
-      identifiers: filter.ids
+      ids: filter.ids
+    })
+
+  const toServiceByHcPartyHealthElementIdsFilterDto = (filter: DataSampleByHealthcarePartyHealthElementIdsFilter) =>
+    new ServiceByHcPartyHealthElementIdsFilter({
+      desc: filter.description,
+      healthcarePartyId: filter.healthcarePartyId,
+      healthElementIds: filter.healthElementIds
     })
 
   const toServiceByHcPartyIdentifiersFilterDto = (filter: DataSampleByHealthcarePartyIdentifiersFilter) =>

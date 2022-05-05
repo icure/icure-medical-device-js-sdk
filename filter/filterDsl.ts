@@ -40,6 +40,9 @@ import {DataSampleByIdsFilter} from "./datasample/DataSampleByIdsFilter";
 import {DataSampleByHealthcarePartyIdentifiersFilter} from "./datasample/DataSampleByHealthcarePartyIdentifiersFilter";
 import {DataSampleByHealthcarePartyPatientFilter} from "./datasample/DataSampleByHealthcarePartyPatientFilter";
 import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealthcarePartyFilter";
+import {
+  DataSampleByHealthcarePartyHealthElementIdsFilter
+} from "./datasample/DataSampleByHealthcarePartyHealthElementIdsFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -406,23 +409,24 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   getDataOwner() { return this._forDataOwner}
 
   _byIds?: String[]
+  _byHealthElementIds?: String[]
   _byIdentifiers?: Identifier[]
   _byTagCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
   _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
 
-  forDataOwner(dataOwnerId: string):   DataSampleFilter {
+  forDataOwner(dataOwnerId: string): DataSampleFilter {
     this._forDataOwner = dataOwnerId;
     return this;
   }
 
-  byIds(byIds: String[]):   DataSampleFilter {
+  byIds(byIds: String[]): DataSampleFilter {
     this._byIds = byIds;
     return this;
   }
 
-  byIdentifiers(identifiers: Identifier[]):   DataSampleFilter {
+  byIdentifiers(identifiers: Identifier[]): DataSampleFilter {
     this._byIdentifiers = identifiers;
     return this;
   }
@@ -434,6 +438,11 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
 
   forPatients(crypto: IccCryptoXApi, patients: Patient[]): DataSampleFilter {
     this._forPatients = [crypto, patients];
+    return this;
+  }
+
+  byHealthElementIds(byHealthElementIds: String[]): DataSampleFilter {
+    this._byHealthElementIds = byHealthElementIds;
     return this;
   }
 
@@ -456,6 +465,10 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
 
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'DataSampleByIdsFilter'} as DataSampleByIdsFilter),
+      this._byHealthElementIds && ({
+        healthcarePartyId: doId,
+        healthElementIds: this._byHealthElementIds,
+        '$type':'DataSampleByHealthcarePartyHealthElementIdsFilter'} as DataSampleByHealthcarePartyHealthElementIdsFilter),
       this._byIdentifiers && ({
         healthcarePartyId: doId,
         identifiers: this._byIdentifiers
