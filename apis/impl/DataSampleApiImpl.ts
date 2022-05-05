@@ -25,6 +25,7 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
+import undefinedError = Mocha.utils.undefinedError;
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -95,10 +96,10 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     if (contactCached && existingContact != null) {
       let servicesToModify = dataSamples.map((e) => DataSampleMapper.toServiceDto(e, e.batchId)!);
-      let subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser);
+      let subContacts = await this._createPotentialSubContactsForHealthElements(servicesToModify, currentUser);
 
       let contactToModify = {...existingContact,
-        services: servicesToModify,
+        services: servicesToModify.map((service) => { return {...service, formIds: undefined, healthElementsIds: undefined}}),
         subContacts: subContacts,
         openingDate: Math.min(...servicesToModify.filter((element) => element.openingDate != null || element.valueDate != null).map((e) => e.openingDate ?? e.valueDate!)),
         closingDate: Math.max(...servicesToModify.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!))
@@ -112,7 +113,9 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
 
     createdOrModifiedContact.services!.forEach((service) => this.contactsCache.put(service.id!, createdOrModifiedContact));
-    return Promise.resolve(createdOrModifiedContact.services!.map((service) => DataSampleMapper.toDataSample(service, createdOrModifiedContact.id)!));
+    return Promise.resolve(createdOrModifiedContact.services!.map((service) => DataSampleMapper.toDataSample(service,
+      createdOrModifiedContact.id,
+      createdOrModifiedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == service.id)))!));
   }
 
   countHierarchyOfDataSamples(currentCount: number, dataSampleIndex: number, dataSamples: Array<DataSample>) : number {
@@ -151,7 +154,7 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     let baseContact: ContactDto;
 
-    const subContacts = await this._createPotentialSubContactsForHealthElements(dataSamples, currentUser)
+    const subContacts = await this._createPotentialSubContactsForHealthElements(servicesToCreate, currentUser)
 
     if (existingContact != null) {
       baseContact = {
@@ -166,26 +169,26 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     return {
       ...baseContact,
-      services: servicesToCreate,
       subContacts: subContacts,
+      services: servicesToCreate.map((service) => { return {...service, formIds: undefined, healthElementsIds: undefined}}),
       openingDate: Math.min(...servicesToCreate.filter((element) => element.openingDate != null || element.valueDate != null).map((e) => e.openingDate ?? e.valueDate!)),
       closingDate: Math.max(...servicesToCreate.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!))
     };
   }
 
-  private _createPotentialSubContactsForHealthElements(dataSamples: Array<DataSample>, currentUser: UserDto): Promise<SubContact[]> {
-    return Promise.all(dataSamples
-      .filter((dataSample) => dataSample.healthElementsIds != undefined && dataSample.healthElementsIds.size > 0)
-    ).then((dataSamplesWithHe) => {
-      return dataSamplesWithHe.length > 0 ? this._checkAndRetrieveProvidedHealthElements(dataSamplesWithHe.flatMap((service) => Array.from(service.healthElementsIds!.values())), currentUser)
+  private _createPotentialSubContactsForHealthElements(services: Array<ServiceDto>, currentUser: UserDto): Promise<SubContact[]> {
+    return Promise.all(services
+      .filter((service) => service.healthElementsIds != undefined && service.healthElementsIds.length > 0)
+    ).then((servicesWithHe) => {
+      return servicesWithHe.length > 0 ? this._checkAndRetrieveProvidedHealthElements(servicesWithHe.flatMap((service) => Array.from(service.healthElementsIds!.values())), currentUser)
         .then((heIds) => {
           return heIds
             .map((heId) => {
               return {
                 healthElement: heId,
-                services: dataSamplesWithHe
-                  .filter((ds) => ds.healthElementsIds!.has(heId))
-                  .map((ds) => new ServiceLink({serviceId: ds.id!}))
+                services: servicesWithHe
+                  .filter((s) => s.healthElementsIds!.find((servHeId) => servHeId == heId))
+                  .map((s) => new ServiceLink({serviceId: s.id!}))
               }
             })
             .map(({healthElement, services}) => new SubContact({
