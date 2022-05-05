@@ -41,8 +41,8 @@ import {DataSampleByHealthcarePartyIdentifiersFilter} from "./datasample/DataSam
 import {DataSampleByHealthcarePartyPatientFilter} from "./datasample/DataSampleByHealthcarePartyPatientFilter";
 import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealthcarePartyFilter";
 import {
-  DataSampleByHealthcarePartyHealthElementIdsFilter
-} from "./datasample/DataSampleByHealthcarePartyHealthElementIdsFilter";
+  DataSampleByHealthcarePartyHealthcareElementIdsFilter
+} from "./datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -409,7 +409,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   getDataOwner() { return this._forDataOwner}
 
   _byIds?: String[]
-  _byHealthElementIds?: String[]
+  _byHealthcareElementIds?: String[]
   _byIdentifiers?: Identifier[]
   _byTagCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
   _forPatients?: [IccCryptoXApi, Patient[]]
@@ -442,7 +442,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   }
 
   byHealthElementIds(byHealthElementIds: String[]): DataSampleFilter {
-    this._byHealthElementIds = byHealthElementIds;
+    this._byHealthcareElementIds = byHealthElementIds;
     return this;
   }
 
@@ -465,10 +465,10 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
 
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'DataSampleByIdsFilter'} as DataSampleByIdsFilter),
-      this._byHealthElementIds && ({
+      this._byHealthcareElementIds && ({
         healthcarePartyId: doId,
-        healthElementIds: this._byHealthElementIds,
-        '$type':'DataSampleByHealthcarePartyHealthElementIdsFilter'} as DataSampleByHealthcarePartyHealthElementIdsFilter),
+        healthcareElementIds: this._byHealthcareElementIds,
+        '$type':'DataSampleByHealthcarePartyHealthcareElementIdsFilter'} as DataSampleByHealthcarePartyHealthcareElementIdsFilter),
       this._byIdentifiers && ({
         healthcarePartyId: doId,
         identifiers: this._byIdentifiers

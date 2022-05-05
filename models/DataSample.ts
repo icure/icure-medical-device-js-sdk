@@ -41,7 +41,7 @@ constructor(json: IDataSample) {
     /**
     * List of IDs of all healthcare elements for which the data sample is provided. Only used when the Data sample is emitted outside of its batch
     */
-    'healthElementsIds'?: Set<string>;
+    'healthcareElementIds'?: Set<string>;
     /**
     * List of Ids of all canvases linked to the Data sample. Only used when the Data sample is emitted outside of its batch.
     */
@@ -110,7 +110,7 @@ interface IDataSample {
   'transactionId'?: string;
   'identifier'?: Array<Identifier>;
   'batchId'?: string;
-  'healthElementsIds'?: Set<string>;
+  'healthcareElementIds'?: Set<string>;
   'canvasesIds'?: Set<string>;
   'index'?: number;
   'content'?: { [key: string]: Content; };

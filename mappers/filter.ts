@@ -83,8 +83,8 @@ import {PatientByHealthcarePartyGenderEducationProfessionFilter} from "../filter
 import {PatientByIdsFilter} from "../filter/patient/PatientByIdsFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 import {
-  DataSampleByHealthcarePartyHealthElementIdsFilter
-} from "../filter/datasample/DataSampleByHealthcarePartyHealthElementIdsFilter";
+  DataSampleByHealthcarePartyHealthcareElementIdsFilter
+} from "../filter/datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
 
 
 export namespace FilterMapper {
@@ -175,8 +175,8 @@ export namespace FilterMapper {
     if (filter['$type'] === 'DataSampleByHealthcarePartyIdentifiersFilter') {
       return toServiceByHcPartyIdentifiersFilterDto(filter as DataSampleByHealthcarePartyIdentifiersFilter);
     }
-    if (filter['$type'] === 'DataSampleByHealthcarePartyHealthElementIdsFilter') {
-      return toServiceByHcPartyHealthElementIdsFilterDto(filter as DataSampleByHealthcarePartyHealthElementIdsFilter);
+    if (filter['$type'] === 'DataSampleByHealthcarePartyHealthcareElementIdsFilter') {
+      return toServiceByHcPartyHealthElementIdsFilterDto(filter as DataSampleByHealthcarePartyHealthcareElementIdsFilter);
     }
     if (filter['$type'] === 'DataSampleByHealthcarePartyTagCodeDateFilter') {
       return toServiceByHcPartyTagCodeDateFilterDto(filter as DataSampleByHealthcarePartyTagCodeDateFilter);
@@ -206,11 +206,11 @@ export namespace FilterMapper {
       ids: filter.ids
     })
 
-  const toServiceByHcPartyHealthElementIdsFilterDto = (filter: DataSampleByHealthcarePartyHealthElementIdsFilter) =>
+  const toServiceByHcPartyHealthElementIdsFilterDto = (filter: DataSampleByHealthcarePartyHealthcareElementIdsFilter) =>
     new ServiceByHcPartyHealthElementIdsFilter({
       desc: filter.description,
       healthcarePartyId: filter.healthcarePartyId,
-      healthElementIds: filter.healthElementIds
+      healthElementIds: filter.healthcareElementIds
     })
 
   const toServiceByHcPartyIdentifiersFilterDto = (filter: DataSampleByHealthcarePartyIdentifiersFilter) =>
