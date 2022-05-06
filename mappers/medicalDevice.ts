@@ -1,7 +1,7 @@
 import {Device} from "@icure/api";
 import {MedicalDevice} from "../models/MedicalDevice";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
-import {forceUuid, map, mapSet, mapSetToArray} from "./utils";
+import {forceUuid, map, mapSetToArray} from "./utils";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PropertyStubMapper} from "./property";
 

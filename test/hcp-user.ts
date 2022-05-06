@@ -7,8 +7,8 @@ import {User} from "../models/User";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
 
-const userName = process.env.ADMIN!
-const password = process.env.PASS!
+const userName = process.env.ICURE_TS_TEST_USER!
+const password = process.env.ICURE_TS_TEST_PWD!
 
 describe('Healthcare professional', () => {
   it('should be capable of creating a healthcare professional from scratch', async () => {

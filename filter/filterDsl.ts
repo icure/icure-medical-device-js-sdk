@@ -49,11 +49,11 @@ interface FilterBuilder<T> {
 }
 
 export class UserFilter implements FilterBuilder<User> {
-  _byIds?: String[]
+  _byIds?: string[]
   _union?: UserFilter[]
   _intersection?: UserFilter[]
 
-  byIds(byIds: String[]):   UserFilter {
+  byIds(byIds: string[]):   UserFilter {
     this._byIds = byIds;
     return this;
   }
@@ -92,11 +92,11 @@ export class PatientFilter implements FilterBuilder<Patient> {
     return this._forDataOwner
   }
 
-  _byIds?: String[]
+  _byIds?: string[]
   _byIdentifiers?: Identifier[]
-  _withSsins?: String[]
+  _withSsins?: string[]
   _dateOfBirthBetween?: [number, number];
-  _byGenderEducationProfession?: [PatientGenderEnum, String | undefined, String | undefined];
+  _byGenderEducationProfession?: [PatientGenderEnum, string | undefined, string | undefined];
   _containsFuzzy?: string;
   _union?: PatientFilter[]
   _intersection?: PatientFilter[]
@@ -106,7 +106,7 @@ export class PatientFilter implements FilterBuilder<Patient> {
     return this;
   }
 
-  byIds(byIds: String[]): PatientFilter {
+  byIds(byIds: string[]): PatientFilter {
     this._byIds = byIds;
     return this;
   }
@@ -121,7 +121,7 @@ export class PatientFilter implements FilterBuilder<Patient> {
     return this;
   }
 
-  withSsins(withSsins: String[]): PatientFilter {
+  withSsins(withSsins: string[]): PatientFilter {
     this._withSsins = withSsins;
     return this;
   }
@@ -199,11 +199,11 @@ export class PatientFilter implements FilterBuilder<Patient> {
 }
 
 export class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfessional> {
-  _byIds?: String[]
+  _byIds?: string[]
   _union?: HealthcareProfessionalFilter[]
   _intersection?: HealthcareProfessionalFilter[]
 
-  byIds(byIds: String[]):   HealthcareProfessionalFilter {
+  byIds(byIds: string[]):   HealthcareProfessionalFilter {
     this._byIds = byIds;
     return this;
   }
@@ -236,11 +236,11 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
 }
 
 export class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
-  _byIds?: String[]
+  _byIds?: string[]
   _union?: MedicalDeviceFilter[]
   _intersection?: MedicalDeviceFilter[]
 
-  byIds(byIds: String[]):   MedicalDeviceFilter {
+  byIds(byIds: string[]):   MedicalDeviceFilter {
     this._byIds = byIds;
     return this;
   }
@@ -277,7 +277,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
   _forDataOwner?: string
   getDataOwner() { return this._forDataOwner}
 
-  _byIds?: String[]
+  _byIds?: string[]
   _byIdentifiers?: Identifier[]
   _byTagCodeFilter?: HealthcareElementByHealthcarePartyLabelCodeFilter
   _forPatients?: [IccCryptoXApi, Patient[]]
@@ -289,7 +289,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     return this;
   }
 
-  byIds(byIds: String[]):   HealthcareElementFilter {
+  byIds(byIds: string[]):   HealthcareElementFilter {
     this._byIds = byIds;
     return this;
   }
@@ -356,12 +356,12 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
 }
 
 export class CodingFilter implements FilterBuilder<Coding> {
-  _byIds?: String[]
+  _byIds?: string[]
   _byRegionTypeLabelLanguageFilter?: CodingByRegionTypeLabelFilter;
   _union?: CodingFilter[]
   _intersection?: CodingFilter[]
 
-  byIds(byIds: String[]):   CodingFilter {
+  byIds(byIds: string[]):   CodingFilter {
     this._byIds = byIds;
     return this;
   }
@@ -408,8 +408,8 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   _forDataOwner?: string
   getDataOwner() { return this._forDataOwner}
 
-  _byIds?: String[]
-  _byHealthcareElementIds?: String[]
+  _byIds?: string[]
+  _byHealthcareElementIds?: string[]
   _byIdentifiers?: Identifier[]
   _byTagCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
   _forPatients?: [IccCryptoXApi, Patient[]]
@@ -421,7 +421,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-  byIds(byIds: String[]): DataSampleFilter {
+  byIds(byIds: string[]): DataSampleFilter {
     this._byIds = byIds;
     return this;
   }
@@ -441,7 +441,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-  byHealthElementIds(byHealthElementIds: String[]): DataSampleFilter {
+  byHealthElementIds(byHealthElementIds: string[]): DataSampleFilter {
     this._byHealthcareElementIds = byHealthElementIds;
     return this;
   }

@@ -11,9 +11,16 @@ export function forceUuid(id?: string): string {
   }
 }
 
-export function forceCodeId(id?: string) : string | undefined {
-  //TODO Make the conversion
-  return id;
+export function isCodeId(id?: string) : boolean {
+  const codeRegex = new RegExp(`[a-zA-Z0-9]*\\|[a-zA-Z0-9.-]*\\|[a-zA-Z0-9.]+`)
+  return id != undefined && codeRegex.test(id)
+}
+
+export function toMap<V>(entries: [key: string, value: V][]): { [key: string]: V }  {
+  return entries.reduce((m, [k, v]) => {
+    m[k] = v;
+    return m;
+  }, {} as { [key: string]: V })
 }
 
 export function mapReduce<I, O>(map: { [key: string]: I } | undefined, mapper: (obj: I) => O | undefined): { [key: string]: O } | undefined {

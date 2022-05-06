@@ -25,7 +25,7 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
-import undefinedError = Mocha.utils.undefinedError;
+import {toMap} from "../../mappers/utils";
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -219,8 +219,39 @@ export class DataSampleApiImpl implements DataSampleApi {
       })
   }
 
-  deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
-    return Promise.resolve("");
+  async deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
+    const currentUser = await this.userApi.getCurrentUser()
+
+    const existingContact = (await this.findContactsForDataSampleIds(currentUser, [dataSampleId]))[0]
+    if (existingContact == undefined) {
+      throw Error(`Could not find batch information of the data sample ${dataSampleId}`)
+    }
+
+    const existingService = existingContact!.services!.find((s) => s.id == dataSampleId)
+    if (existingService == undefined || existingService.content == undefined) {
+      throw Error(`Could not find data sample ${dataSampleId} or its data`)
+    }
+
+    const contactPatientId = (await this.getPatientIdOfContact(currentUser, existingContact!))
+    if (contactPatientId == undefined) {
+      throw Error(`Can not set an attachment to a data sample not linked to a patient`)
+    }
+
+    const contentToDelete = Object.entries(existingService.content!)
+      .find(([_, content]) => content.documentId == documentId)?.[0]
+
+    if (contentToDelete == undefined) {
+      throw Error(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`)
+    }
+
+    const updatedContent = toMap(Object.entries(existingService.content!)
+      .filter(([key, _]) => key != contentToDelete!))
+
+    await this.createOrModifyDataSampleFor(contactPatientId,
+      DataSampleMapper.toDataSample({...existingService, content: updatedContent})!
+    )
+
+    return documentId
   }
 
   async deleteDataSample(dataSampleId: string): Promise<string> {
@@ -249,10 +280,10 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw Error(`Couldn't find patient related to batch of data samples ${existingContact.id}`);
     }
 
-    let servicesToDelete = existingContact.services!.filter((element) => element.id! in requestBody);
+    let servicesToDelete = existingContact.services!.filter((element) => requestBody.includes(element.id!));
 
     let deletedServices = (await this.deleteServices(currentUser, contactPatient, servicesToDelete))?.services
-      ?.filter((element) => element.id! in requestBody)
+      ?.filter((element) => requestBody.includes(element.id!))
       ?.filter((element) => element.endOfLife != null)
       ?.map((e) => e.id!);
 
@@ -272,7 +303,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       let notCachedContacts = (await this.contactApi.filterByWithUser(currentUser,
         undefined,
         dataSampleIdsToSearch.length,
-        undefined //FilterChainContact(ContactByServiceIdsFilter(new Set(dataSampleIdsToSearch)))
+        undefined
       ) as PaginatedListContact).rows;
 
       if (notCachedContacts == undefined) {
@@ -281,7 +312,7 @@ export class DataSampleApiImpl implements DataSampleApi {
 
       // Caching
       notCachedContacts.forEach((contact) => {
-        contact.services?.filter((service) => service.id != undefined && service.id in dataSampleIdsToSearch)
+        contact.services?.filter((service) => service.id != undefined && dataSampleIdsToSearch.includes(service.id))
           .forEach((service) => this.contactsCache.put(service.id!, contact));
       });
 
@@ -304,7 +335,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     let currentTime = Date.now();
     let contactToDeleteServices = await this.contactApi.newInstance(user, patient, new ContactDto({
       id: this.crypto.randomUuid(),
-      services: services.map((service) => new ServiceDto({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
+      serviceLinks: services.map((service) => new ServiceDto({id: service.id, created: service.created, modified: currentTime, endOfLife: currentTime}))
     }));
 
     return this.contactApi.createContactWithUser(user, contactToDeleteServices);
@@ -329,7 +360,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   async getServiceFromICure(dataSampleId: string) : Promise<ServiceDto> {
     let currentUser = await this.userApi.getCurrentUser();
 
-    let serviceToFind = await this.contactApi.listServicesWithUser(currentUser!, new ListOfIds({ ids: [dataSampleId] }));
+    let serviceToFind = await this.contactApi.listServicesWithUser(currentUser, new ListOfIds({ ids: [dataSampleId] }));
     if (serviceToFind == undefined) {
       throw Error(`Could not find data sample ${dataSampleId}`);
     }
@@ -338,19 +369,17 @@ export class DataSampleApiImpl implements DataSampleApi {
 
   async getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
     let currentUser = await this.userApi.getCurrentUser();
-    let documentOfAttachment = await this.getDataSampleAttachmentDocumentFromICure(currentUser!, dataSampleId, documentId);
+    let documentOfAttachment = await this.getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId);
     let docEncKeys = await this.getDocumentEncryptionKeys(currentUser, documentOfAttachment).then((keys) => keys.join(","));
 
     return this.documentApi.getDocumentAttachment(documentId, attachmentId, docEncKeys);
   }
 
   async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
-    let currentUser = await this.userApi.getCurrentUser();
-
-    return DocumentMapper.toDocument(await this.getDataSampleAttachmentDocumentFromICure(currentUser!, dataSampleId, documentId));
+    return DocumentMapper.toDocument(await this.getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId));
   }
 
-  async getDataSampleAttachmentDocumentFromICure(currentUser: UserDto, dataSampleId: string, documentId: string) : Promise<DocumentDto> {
+  async getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string) : Promise<DocumentDto> {
     let existingDataSample = await this.getDataSample(dataSampleId);
     if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
       throw Error(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`);

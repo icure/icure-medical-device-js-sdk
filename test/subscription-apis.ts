@@ -22,7 +22,7 @@ const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
 describe('Subscription API', () => {
   it('Can subscribe to Data Samples', async () => {
-    const medtechApi = medTechApi().withICureBasePath('http://127.0.0.1:16043/rest/v1')
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)

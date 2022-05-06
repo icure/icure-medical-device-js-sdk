@@ -1,7 +1,7 @@
 import {HealthcareParty} from "@icure/api";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
-import {forceUuid, map, mapSet, mapSetToArray} from "./utils";
+import {forceUuid, map, mapSetToArray} from "./utils";
 import {PersonNameDtoMapper} from "./personName";
 import {AddressMapper} from "./address";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
