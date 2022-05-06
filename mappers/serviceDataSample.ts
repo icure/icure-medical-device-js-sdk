@@ -86,7 +86,7 @@ export namespace DataSampleMapper {
     healthElementsIds: mapSetToArray(obj.healthcareElementIds, (id) => id),
     formIds: mapSetToArray(obj.canvasesIds, (id) => id),
     transactionId: obj.transactionId,
-    contactId: obj.batchId,
+    contactId: obj.batchId ?? batchId,
     index: obj.index,
     valueDate: obj.valueDate,
     openingDate: obj.openingDate,

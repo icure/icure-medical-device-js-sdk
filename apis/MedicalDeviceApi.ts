@@ -2,7 +2,6 @@
 import { Filter } from '../filter/Filter';
 import { MedicalDevice } from '../models/MedicalDevice';
 import { PaginatedListMedicalDevice } from '../models/PaginatedListMedicalDevice';
-import {AbstractFilter} from "@icure/api";
 
   /**
   * no description

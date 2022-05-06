@@ -2,7 +2,6 @@
 import { Filter } from '../filter/Filter';
 import { PaginatedListPatient } from '../models/PaginatedListPatient';
 import { Patient } from '../models/Patient';
-import {User} from "../models/User";
 import {Connection} from "../models/Connection";
 
   /**

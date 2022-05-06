@@ -1,7 +1,7 @@
 
 export function distinctBy<T, K>(elements: Array<T>, selector: (obj: T) => K) : Set<K> {
   let set = new Set<K>();
-  elements.filter((elem) => {
+  elements.forEach((elem) => {
     let newElem = selector(elem);
     set.add(newElem);
   });

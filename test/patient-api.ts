@@ -21,7 +21,7 @@ const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!
 
 describe('Patient API', () => {
   it('Can create a patient and a related Healthcare Element', async () => {
-    const medtechApi = medTechApi().withICureBasePath('http://localhost:16043/rest/v1')
+    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v1')
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)

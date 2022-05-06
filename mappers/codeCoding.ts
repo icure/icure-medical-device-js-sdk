@@ -1,6 +1,6 @@
 import {Code} from "@icure/api";
 import {Coding} from "../models/Coding";
-import {forceCodeId, toMapSet} from "./utils";
+import {isCodeId, toMapSet} from "./utils";
 
 export namespace CodingMapper {
   export const toCoding = (dto: Code) =>
@@ -17,7 +17,7 @@ export namespace CodingMapper {
 
   export const toCode = (obj: Coding) =>
     new Code({
-      id: forceCodeId(obj.id),
+      id: isCodeId(obj.id) ? obj.id : `${obj.type}|${obj.code}|${obj.version}`,
       qualifiedLinks: obj.qualifiedLinks,
       searchTerms: toMapSet(obj.searchTerms),
       rev: obj.rev,

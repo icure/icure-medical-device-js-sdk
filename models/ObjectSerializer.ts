@@ -35,7 +35,7 @@ export * from './TimeSeries';
 export * from './TypedValueObject';
 export * from './User';
 
-import { Address, AddressAddressTypeEnum             } from './Address';
+import { Address } from './Address';
 import { AuthenticationToken } from './AuthenticationToken';
 import { Coding } from './Coding';
 import { CodingReference } from './CodingReference';
@@ -45,7 +45,7 @@ import { Delegation } from './Delegation';
 import { Document } from './Document';
 import { Filter } from './Filter';
 import { HealthcareElement } from './HealthcareElement';
-import { HealthcareProfessional         , HealthcareProfessionalGenderEnum             } from './HealthcareProfessional';
+import { HealthcareProfessional } from './HealthcareProfessional';
 import { Identifier } from './Identifier';
 import { InlineResponse403 } from './InlineResponse403';
 import { Measure } from './Measure';
@@ -58,18 +58,18 @@ import { PaginatedListHealthcareProfessional } from './PaginatedListHealthcarePr
 import { PaginatedListMedicalDevice } from './PaginatedListMedicalDevice';
 import { PaginatedListPatient } from './PaginatedListPatient';
 import { PaginatedListUser } from './PaginatedListUser';
-import { Partnership, PartnershipTypeEnum  , PartnershipStatusEnum    } from './Partnership';
-import { Patient                  , PatientGenderEnum  , PatientBirthSexEnum      , PatientDeactivationReasonEnum      , PatientPersonalStatusEnum                       } from './Patient';
-import { PatientHealthCareParty, PatientHealthCarePartyTypeEnum    } from './PatientHealthCareParty';
-import { PersonName       , PersonNameUseEnum   } from './PersonName';
+import { Partnership,  } from './Partnership';
+import { Patient } from './Patient';
+import { PatientHealthCareParty } from './PatientHealthCareParty';
+import { PersonName } from './PersonName';
 import { Property } from './Property';
-import { PropertyType , PropertyTypeTypeEnum   } from './PropertyType';
+import { PropertyType } from './PropertyType';
 import { SystemMetaDataEncrypted } from './SystemMetaDataEncrypted';
 import { SystemMetaDataOwner } from './SystemMetaDataOwner';
 import { SystemMetaDataOwnerEncrypted } from './SystemMetaDataOwnerEncrypted';
-import { Telecom, TelecomTelecomTypeEnum     } from './Telecom';
+import { Telecom } from './Telecom';
 import { TimeSeries } from './TimeSeries';
-import { TypedValueObject, TypedValueObjectTypeEnum        } from './TypedValueObject';
+import { TypedValueObject } from './TypedValueObject';
 import { User } from './User';
 
 /* tslint:disable:no-unused-variable */

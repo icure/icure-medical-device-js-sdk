@@ -2,7 +2,7 @@ import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
 import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
-import {Patient, retry, User, XHR} from "@icure/api";
+import {Device, HealthcareParty, Patient, retry, User, XHR} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import Header = XHR.Header;
 
@@ -122,7 +122,6 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
   async initUserCrypto(api: MedTechApi, token: string, user: User, patientKeyPair: [string, string]): Promise<MedTechApi> {
     const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
-
     if (!dataOwnerId) {
       throw Error("Invalid user, no data owner id")
     }
@@ -139,17 +138,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     }
 
     if (dataOwner.dataOwner.publicKey == null) {
-      dataOwner.dataOwner.publicKey = patientKeyPair[1];
-      const modifiedDataOwner = dataOwner.type === 'patient' ?
-        await authenticatedApi.baseApi.patientApi.modifyPatientRaw(dataOwner.dataOwner) :
-        'hcp' ?
-          await authenticatedApi.baseApi.healthcarePartyApi.modifyHealthcareParty(dataOwner.dataOwner) :
-          'device' ?
-            await authenticatedApi.baseApi.deviceApi.updateDevice(dataOwner.dataOwner) : dataOwner.dataOwner
-
-      if (user.patientId != null) {
-        await this.initPatientDelegationsAndSave(authenticatedApi, modifiedDataOwner as Patient, user);
-      }
+      await this.updateUserToAddNewlyCreatedPublicKey(dataOwner.type, dataOwner.dataOwner, patientKeyPair, authenticatedApi, user);
     } else if (dataOwner.dataOwner.publicKey != patientKeyPair[1]) {
       //TODO User lost his key
     }
@@ -157,7 +146,18 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     return authenticatedApi;
   }
 
-  async initPatientDelegationsAndSave(apiWithNewKeyPair: MedTechApi, modPat: Patient, user: User) {
+  private async updateUserToAddNewlyCreatedPublicKey(dataOwnerType: string, dataOwner: Patient | Device | HealthcareParty, patientKeyPair: [string, string], authenticatedApi: MedTechApi, user: User) {
+    dataOwner.publicKey = patientKeyPair[1];
+    dataOwnerType === 'patient' ? await authenticatedApi.baseApi.patientApi.modifyPatientRaw(dataOwner)
+      : 'hcp' ? await authenticatedApi.baseApi.healthcarePartyApi.modifyHealthcareParty(dataOwner)
+        : 'device' ? await authenticatedApi.baseApi.deviceApi.updateDevice(dataOwner) : dataOwner
+
+    if (user.patientId != null) {
+      await this.initPatientDelegationsAndSave(authenticatedApi, user);
+    }
+  }
+
+  async initPatientDelegationsAndSave(apiWithNewKeyPair: MedTechApi, user: User) {
     await apiWithNewKeyPair.baseApi.patientApi.modifyPatientWithUser(
       user,
       await apiWithNewKeyPair.baseApi.cryptoApi.addDelegationsAndEncryptionKeys(

@@ -1,6 +1,6 @@
 import {Document as DocumentDto} from "@icure/api";
 import {Document} from "../models/Document";
-import {forceUuid, mapSet} from "./utils";
+import {forceUuid} from "./utils";
 
 export namespace DocumentMapper {
   export const toDocument = (dto: DocumentDto) => new Document({

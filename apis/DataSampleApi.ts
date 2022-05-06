@@ -3,7 +3,6 @@ import { DataSample } from '../models/DataSample';
 import { Document } from '../models/Document';
 import { Filter } from '../filter/Filter';
 import { PaginatedListDataSample } from '../models/PaginatedListDataSample';
-import {Patient} from "../models/Patient";
 import {Connection} from "../models/Connection";
 
 /**
