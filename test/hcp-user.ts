@@ -1,44 +1,61 @@
-import {assert, expect, use} from 'chai'
-import 'mocha'
+import {assert} from "chai";
+import "mocha";
 import {medTechApi} from "../apis/medTechApi";
-import 'isomorphic-fetch'
-import { webcrypto } from 'crypto'
+import "isomorphic-fetch";
+import {webcrypto} from "crypto";
 import {User} from "../models/User";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
 
-const userName = process.env.ICURE_TS_TEST_USER!
-const password = process.env.ICURE_TS_TEST_PWD!
+const iCureUrl =
+  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
+const userName = process.env.ICURE_TS_TEST_USER!;
+const password = process.env.ICURE_TS_TEST_PWD!;
 
-describe('Healthcare professional', () => {
-  it('should be capable of creating a healthcare professional from scratch', async () => {
-    const medtechApi = medTechApi().withICureBasePath('https://kraken.icure.dev/rest/v2')
+describe("Healthcare professional", () => {
+  it("should be capable of creating a healthcare professional from scratch", async () => {
+    const medtechApi = medTechApi()
+      .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
-      .build()
+      .build();
 
-    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.RSA.generateKeyPair();
-    const keyPair = await medtechApi.cryptoApi.RSA.exportKeys(rawKeyPair as {publicKey: CryptoKey, privateKey: CryptoKey}, 'jwk', 'jwk')
+    const rawKeyPair: CryptoKeyPair =
+      await medtechApi.cryptoApi.RSA.generateKeyPair();
+    const keyPair = await medtechApi.cryptoApi.RSA.exportKeys(
+      rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey },
+      "jwk",
+      "jwk"
+    );
 
-    const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
-      name: 'Kino Connect',
-      systemMetaData: new SystemMetaDataOwner({
-        publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
-        hcPartyKeys:{},
-        privateKeyShamirPartitions:{}
+    const hcp =
+      await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(
+        new HealthcareProfessional({
+          name: "HCP TS MedTech Test",
+          systemMetaData: new SystemMetaDataOwner({
+            publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
+            hcPartyKeys: {},
+            privateKeyShamirPartitions: {},
+          }),
+        })
+      );
+
+    assert(hcp);
+
+    const user = await medtechApi.userApi.createOrModifyUser(
+      new User({
+        login: "test@icure.com",
+        passwordHash: "d8119326-cf9e-11ec-a673-fbb45f6bb7f2",
+        email: "test@icure.com",
+        healthcarePartyId: hcp.id,
       })
-    }))
+    );
 
-    assert(hcp)
-
-    const user = await medtechApi.userApi.createOrModifyUser(new User({
-      login: 'kinoconnect@heartkinetics.be',
-      passwordHash: 'qwy0qnTBXF6w5qCBf2',
-      email: 'kinoconnect@heartkinetics.be',
-      healthcarePartyId: hcp.id
-    }))
-
-    console.log(medtechApi.cryptoApi.utils.jwk2pkcs8(keyPair.privateKey))
-  })
-})
+    assert(user.id != null);
+    assert(user.login == "test@icure.com");
+    assert(user.passwordHash != "d8119326-cf9e-11ec-a673-fbb45f6bb7f2");
+    assert(user.email == "test@icure.com");
+    assert(user.healthcarePartyId == hcp.id);
+  });
+});
