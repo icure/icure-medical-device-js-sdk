@@ -1,6 +1,6 @@
-import {AuthenticationApi} from "./AuthenticationApi";
-import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
-import {Api, IccCryptoXApi} from "@icure/api";
+import {AuthenticationApi} from './AuthenticationApi';
+import {AuthenticationApiImpl} from './impl/AuthenticationApiImpl';
+import {Api, IccCryptoXApi} from '@icure/api';
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
@@ -34,8 +34,8 @@ export class AnonymousMedTechApiBuilder {
   private crypto?: Crypto;
 
   constructor() {
-    this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
-    this.authServerUrl = "https://msg-gw.icure.cloud/km";
+    this.iCureUrlPath = 'https://kraken.icure.dev/rest/v2';
+    this.authServerUrl = 'https://msg-gw.icure.cloud/km';
     this.authProcessId = undefined;
   }
 

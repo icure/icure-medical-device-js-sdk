@@ -4,19 +4,19 @@ import 'mocha'
 import 'isomorphic-fetch'
 import {webcrypto} from 'crypto'
 import {v4 as uuid} from 'uuid'
-import {ua2hex} from "@icure/api";
+import {ua2hex} from '@icure/api';
 import * as md5 from 'md5'
 
 import {LocalStorage} from 'node-localstorage'
 import * as os from 'os'
-import {AnonymousMedTechApiBuilder} from "../apis/AnonymousMedTechApi";
+import {AnonymousMedTechApiBuilder} from '../apis/AnonymousMedTechApi';
 
 const tmp = os.tmpdir()
 console.log('Saving keys in ' + tmp)
 ;(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024)
 ;(global as any).Storage = ''
 
-const API_KEY = process.env.RAPID_API_KEY!
+const API_KEY = process.env.ICURE_TS_TEST_RAPID_API_KEY!
 
 const delay = (delay: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), delay))
 
@@ -27,7 +27,6 @@ describe('Healthcare professional', () => {
       .withAuthProcessId('abced6c6-d7cb-4f78-841e-2674ad09621e')
       .build()
 
-    try {
       const domainOptions = {
         method: 'GET' as Method,
         url: 'https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/',
@@ -63,8 +62,5 @@ describe('Healthcare professional', () => {
       const result = await anonymousMedTechApi.authenticationApi?.completeAuthentication(process!, subjectCode, [privateKeyHex, publicKeyHex], () => undefined)
 
       assert(result)
-    } catch (e) {
-      console.error('An error occured', e)
-    }
   }).timeout(60000)
 })
