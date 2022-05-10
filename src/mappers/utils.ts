@@ -12,7 +12,7 @@ export function forceUuid(id?: string): string {
 }
 
 export function isCodeId(id?: string) : boolean {
-  const codeRegex = new RegExp(`[a-zA-Z0-9]*\\|[a-zA-Z0-9.-]*\\|[a-zA-Z0-9.]+`)
+  const codeRegex = new RegExp(`[a-zA-Z0-9]{0,80}\\|[a-zA-Z0-9.-]{0,80}\\|[a-zA-Z0-9.]{0,80}`)
   return id != undefined && codeRegex.test(id)
 }
 
