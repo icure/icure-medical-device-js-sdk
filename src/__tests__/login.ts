@@ -9,7 +9,7 @@ import * as md5 from "md5";
 
 import {LocalStorage} from "node-localstorage";
 import * as os from "os";
-import {AnonymousMedTechApiBuilder} from "../src/apis/AnonymousMedTechApi";
+import {AnonymousMedTechApiBuilder} from "../apis/AnonymousMedTechApi";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);

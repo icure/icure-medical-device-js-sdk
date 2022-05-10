@@ -1,17 +1,17 @@
 import "mocha";
-import {medTechApi} from "../src/apis/medTechApi";
+import {medTechApi} from "../apis/medTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
 
 import {hex2ua, sleep} from "@icure/api";
-import {DataSampleFilter} from "../src/filter";
+import {DataSampleFilter} from "../filter";
 
 import {LocalStorage} from "node-localstorage";
 import * as os from "os";
 import {assert} from "chai";
-import {DataSample} from "../src/models/DataSample";
-import {CodingReference} from "../src/models/CodingReference";
-import {Patient} from "../src/models/Patient";
+import {DataSample} from "../models/DataSample";
+import {CodingReference} from "../models/CodingReference";
+import {Patient} from "../models/Patient";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
