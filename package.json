@@ -33,7 +33,8 @@
       "**/*.d.ts"
     ],
     "reporter": [
-      "html"
+      "html",
+      "lcov"
     ],
     "all": true
   },
