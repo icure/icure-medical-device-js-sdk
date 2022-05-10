@@ -1,7 +1,0 @@
-{
-  "all": true,
-  "include": [
-    "__tests__/**/*.ts"
-  ],
-  "exclude": []
-}

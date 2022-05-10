@@ -25,7 +25,7 @@ jobs:
           ICURE_TS_TEST_USER: ${{ secrets.TEST_HCP_USER }}
           ICURE_TS_TEST_PWD: ${{ secrets.TEST_HCP_PWD }}
           ICURE_TS_TEST_PRIV_KEY: ${{ secrets.TEST_HCP_PRIV_KEY }}
-        run: yarn coverage
+        run: yarn test
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

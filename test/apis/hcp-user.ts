@@ -1,12 +1,12 @@
 import {assert} from "chai";
 import {v4 as uuid} from "uuid";
 import "mocha";
-import {medTechApi} from "../apis/medTechApi";
+import {medTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
-import {User} from "../models/User";
-import {HealthcareProfessional} from "../models/HealthcareProfessional";
-import {SystemMetaDataOwner} from "../models/SystemMetaDataOwner";
+import {User} from "../../src/models/User";
+import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
+import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
