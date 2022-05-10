@@ -43,8 +43,8 @@ describe("Subscription API", () => {
       await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
-    const events = [];
-    const statuses = [];
+    const events: DataSample[] = [];
+    const statuses: string[] = [];
     const connection = (
       await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
         ["CREATE"],
@@ -77,9 +77,12 @@ describe("Subscription API", () => {
       })
     );
 
-    sleep(2000);
+    await sleep(2000);
     connection.close();
-    sleep(1000);
+    await sleep(1000);
+
+    events?.forEach((event) => console.log(`Event : ${event}`))
+    statuses?.forEach((event) => console.log(`Status : ${event}`))
 
     assert(events.length === 1, "The events have not been recorded");
     assert(statuses.length === 2, "The statuses have not been recorded");
