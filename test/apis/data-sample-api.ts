@@ -13,6 +13,7 @@ import {Patient} from "../../src/models/Patient";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
+import {User} from "../../src/models/User";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
@@ -25,31 +26,13 @@ const userName = process.env.ICURE_TS_TEST_USER!;
 const password = process.env.ICURE_TS_TEST_PWD!;
 const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!;
 
-async function createPatient(medtechApi: MedTechApi): Promise<Patient> {
-  return medtechApi.patientApi.createOrModifyPatient(
-    new Patient({
-      firstName: "John",
-      lastName: "Snow",
-      note: "Winter is coming",
-    })
-  );
-}
+let api: MedTechApi | undefined;
+let loggedUser: User | undefined;
+let patient: Patient | undefined;
+let healthElement: HealthcareElement | undefined;
 
-async function createHealthElement(
-  medtechApi: MedTechApi,
-  patient: Patient
-): Promise<HealthcareElement> {
-  return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
-    new HealthcareElement({
-      note: "Hero Syndrome",
-    }),
-    patient!.id!
-  );
-}
-
-describe("Data Samples API", () => {
-  it("Create Data Sample - Success", async () => {
-    // Given
+async function getOrCreateMedTechApiAndLoggedUser(): Promise<{api: MedTechApi, user: User}> {
+  if (api == undefined && loggedUser == undefined) {
     const medtechApi = medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
@@ -57,13 +40,54 @@ describe("Data Samples API", () => {
       .withCrypto(webcrypto as any)
       .build();
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
+    const foundUser = await medtechApi.userApi.getLoggedUser();
     await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
+      foundUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
-    const patient = await createPatient(medtechApi);
+    api = medtechApi;
+    loggedUser = foundUser;
+  }
+
+  return {api: api!, user: loggedUser!};
+}
+
+async function getOrCreatePatient(medtechApi: MedTechApi): Promise<Patient> {
+  if (patient == undefined) {
+    patient = await medtechApi.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: "John",
+        lastName: "Snow",
+        note: "Winter is coming",
+      })
+    );
+  }
+  return patient!
+}
+
+async function getOrCreateHealthElement(
+  medtechApi: MedTechApi,
+  patient: Patient
+): Promise<HealthcareElement> {
+  if (healthElement == undefined) {
+    healthElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+      new HealthcareElement({
+        note: "Hero Syndrome",
+      }),
+      patient!.id!
+    );
+  }
+  return healthElement;
+}
+
+describe("Data Samples API", () => {
+  it("Create Data Sample - Success", async () => {
+    // Given
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
+
+    const patient = await getOrCreatePatient(medtechApi);
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: "IC-TEST", code: "TEST" })]),
       content: { en: { stringValue: "Hello world" } },
@@ -83,21 +107,11 @@ describe("Data Samples API", () => {
 
   it("Create Data Sample linked to HealthElement - Success", async () => {
     // Given
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const patient = await createPatient(medtechApi);
-    const healthElement = await createHealthElement(medtechApi, patient);
+    const patient = await getOrCreatePatient(medtechApi);
+    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: "IC-TEST", code: "TEST" })]),
       content: { en: { stringValue: "Hello world" } },
@@ -121,22 +135,11 @@ describe("Data Samples API", () => {
 
   it("Create Data Sample and modify it to link it to HealthElement - Success", async () => {
     // Given
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const patient = await createPatient(medtechApi);
-    const createdDataSample =
-      await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+    const patient = await getOrCreatePatient(medtechApi);
+    const createdDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
         patient.id!,
         new DataSample({
           labels: new Set([
@@ -145,7 +148,7 @@ describe("Data Samples API", () => {
           content: { en: { stringValue: "Hello world" } },
         })
       );
-    const healthElement = await createHealthElement(medtechApi, patient);
+    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
 
     // When
     const modifiedDataSample =
@@ -164,20 +167,10 @@ describe("Data Samples API", () => {
 
   it("Can not create Data Sample with invalid healthElementId", async () => {
     // Given
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
-
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const patient = await createPatient(medtechApi);
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
+    const loggedUser = apiAndUser.user;
+    const patient = await getOrCreatePatient(medtechApi);
 
     // When
     const createdDataSample = await medtechApi.dataSampleApi
@@ -203,24 +196,15 @@ describe("Data Samples API", () => {
   });
 
   it("Filter Data Samples", async () => {
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
-
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
+    const loggedUser = apiAndUser.user;
 
     const hcp =
       await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
-    const patient = await createPatient(medtechApi);
+    const patient = await getOrCreatePatient(medtechApi);
     const createdDataSample =
       await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
         patient.id!,
@@ -241,27 +225,17 @@ describe("Data Samples API", () => {
     const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(
       filter
     );
-    assert(filteredDataSamples.rows.length == 1);
-    assert(filteredDataSamples.rows[0].id! == createdDataSample.id!);
+    assert(filteredDataSamples.rows.find((ds) => ds.id == createdDataSample.id));
   });
 
   it("Filter data samples by HealthElementIds - Success", async () => {
     // Given
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
+    const apiAndUser = await getOrCreateMedTechApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
+    const loggedUser = apiAndUser.user;
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const patient = await createPatient(medtechApi);
-    const healthElement = await createHealthElement(medtechApi, patient);
+    const patient = await getOrCreatePatient(medtechApi);
+    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
     const createdDataSample =
       await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
         patient.id!,
@@ -282,10 +256,9 @@ describe("Data Samples API", () => {
     const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(
       filter
     );
-    assert(filteredDataSamples.rows.length == 1);
-    assert(filteredDataSamples.rows[0].id == createdDataSample!.id!);
-    assert(
-      filteredDataSamples.rows[0].healthcareElementIds!.has(healthElement.id!)
-    );
+
+    const testedDataSample = filteredDataSamples.rows.find((ds) => ds.id == createdDataSample.id);
+    assert(testedDataSample != undefined)
+    assert(testedDataSample!.healthcareElementIds!.has(healthElement.id!));
   });
 });
