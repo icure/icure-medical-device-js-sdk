@@ -1,4 +1,5 @@
 import {assert} from "chai";
+import {v4 as uuid} from "uuid";
 import "mocha";
 import {medTechApi} from "../apis/medTechApi";
 import "isomorphic-fetch";
@@ -32,7 +33,7 @@ describe("Healthcare professional", () => {
     const hcp =
       await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(
         new HealthcareProfessional({
-          name: "HCP TS MedTech Test",
+          name: `Med-ts-ic-test-${uuid()}`,
           systemMetaData: new SystemMetaDataOwner({
             publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
             hcPartyKeys: {},
@@ -43,19 +44,21 @@ describe("Healthcare professional", () => {
 
     assert(hcp);
 
+    let userEmail = `${uuid()}@med-ts-ic-test.com`;
+    let userPwd = `${uuid()}`;
     const user = await medtechApi.userApi.createOrModifyUser(
       new User({
-        login: "test@icure.com",
-        passwordHash: "d8119326-cf9e-11ec-a673-fbb45f6bb7f2",
-        email: "test@icure.com",
+        login: userEmail,
+        passwordHash: userPwd,
+        email: userEmail,
         healthcarePartyId: hcp.id,
       })
     );
 
     assert(user.id != null);
-    assert(user.login == "test@icure.com");
-    assert(user.passwordHash != "d8119326-cf9e-11ec-a673-fbb45f6bb7f2");
-    assert(user.email == "test@icure.com");
+    assert(user.login == userEmail);
+    assert(user.email == userEmail);
     assert(user.healthcarePartyId == hcp.id);
+    assert(user.passwordHash != userPwd);
   });
 });
