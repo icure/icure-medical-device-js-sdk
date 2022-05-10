@@ -77,9 +77,9 @@ describe("Subscription API", () => {
       })
     );
 
-    sleep(800);
+    sleep(2000);
     connection.close();
-    sleep(800);
+    sleep(1000);
 
     assert(events.length === 1, "The events have not been recorded");
     assert(statuses.length === 2, "The statuses have not been recorded");
