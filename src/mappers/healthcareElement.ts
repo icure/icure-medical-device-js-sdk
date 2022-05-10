@@ -1,6 +1,6 @@
 import {HealthcareElement} from "../models/HealthcareElement";
 import {HealthElement} from "@icure/api";
-import {forceUuid, map, mapSet, mapSetToArray, toMapSetTransform} from "./utils";
+import {forceUuid, map, mapSet, mapSetToArray, toMapArrayTransform, toMapSetTransform} from "./utils";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
 import {DelegationMapper} from "./delegation";
 import {IdentifierDtoMapper} from "./identifier";
@@ -65,8 +65,8 @@ export namespace HealthcareElementMapper {
       relevant: true,
       status: 0,
       secretForeignKeys: obj.systemMetaData?.secretForeignKeys,
-      cryptedForeignKeys: toMapSetTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
-      delegations: toMapSetTransform(obj.systemMetaData?.delegations, toDelegationDto),
-      encryptionKeys: toMapSetTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
+      cryptedForeignKeys: toMapArrayTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
+      delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
+      encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
     });
 }
