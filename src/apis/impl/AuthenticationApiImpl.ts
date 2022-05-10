@@ -148,9 +148,16 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
   private async updateUserToAddNewlyCreatedPublicKey(dataOwnerType: string, dataOwner: Patient | Device | HealthcareParty, patientKeyPair: [string, string], authenticatedApi: MedTechApi, user: User) {
     dataOwner.publicKey = patientKeyPair[1];
-    dataOwnerType === 'patient' ? await authenticatedApi.baseApi.patientApi.modifyPatientRaw(dataOwner)
-      : 'hcp' ? await authenticatedApi.baseApi.healthcarePartyApi.modifyHealthcareParty(dataOwner)
-        : 'device' ? await authenticatedApi.baseApi.deviceApi.updateDevice(dataOwner) : dataOwner
+
+    if (dataOwnerType === 'patient') {
+      await authenticatedApi.baseApi.patientApi.modifyPatientRaw(dataOwner)
+    } else if (dataOwnerType === 'hcp') {
+      await authenticatedApi.baseApi.healthcarePartyApi.modifyHealthcareParty(dataOwner)
+    } else if (dataOwnerType === 'device') {
+      await authenticatedApi.baseApi.deviceApi.updateDevice(dataOwner)
+    } else {
+      console.log(`Could not update user ${dataOwner.id} because it is not a data owner (and so, is not authorized to access protected data)`);
+    }
 
     if (user.patientId != null) {
       await this.initPatientDelegationsAndSave(authenticatedApi, user);
