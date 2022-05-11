@@ -31,24 +31,24 @@ const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
 const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
 const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
 
-let hcpApi: MedTechApi | undefined;
-let hcpLoggedUser: User | undefined;
-let defaultPatient: Patient | undefined;
-let defaultHealthcareElement: HealthcareElement | undefined;
+let cachedHcpApi: MedTechApi | undefined;
+let cachedHcpLoggedUser: User | undefined;
+let cachedPatient: Patient | undefined;
+let cachedHealthcareElement: HealthcareElement | undefined;
 
 async function getOrCreateHcpApiAndLoggedUser(): Promise<{api: MedTechApi, user: User}> {
-  if (hcpApi == undefined && hcpLoggedUser == undefined) {
+  if (cachedHcpApi == undefined && cachedHcpLoggedUser == undefined) {
     const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
-    hcpApi = apiAndUser.api;
-    hcpLoggedUser = apiAndUser.user;
+    cachedHcpApi = apiAndUser.api;
+    cachedHcpLoggedUser = apiAndUser.user;
   }
 
-  return {api: hcpApi!, user: hcpLoggedUser!};
+  return {api: cachedHcpApi!, user: cachedHcpLoggedUser!};
 }
 
 async function getOrCreatePatient(medtechApi: MedTechApi): Promise<Patient> {
-  if (defaultPatient == undefined) {
-    defaultPatient = await medtechApi.patientApi.createOrModifyPatient(
+  if (cachedPatient == undefined) {
+    cachedPatient = await medtechApi.patientApi.createOrModifyPatient(
       new Patient({
         firstName: "John",
         lastName: "Snow",
@@ -56,26 +56,26 @@ async function getOrCreatePatient(medtechApi: MedTechApi): Promise<Patient> {
       })
     );
   }
-  return defaultPatient!
+  return cachedPatient
 }
 
 async function getOrCreateHealthElement(
   medtechApi: MedTechApi,
   patient: Patient
 ): Promise<HealthcareElement> {
-  if (defaultHealthcareElement == undefined) {
-    defaultHealthcareElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+  if (cachedHealthcareElement == undefined) {
+    cachedHealthcareElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         note: "Hero Syndrome",
       }),
       patient!.id!
     );
   }
-  return defaultHealthcareElement;
+  return cachedHealthcareElement;
 }
 
-async function createDataSampleForPatient(medtechApi: MedTechApi, patient: Patient) {
-  return await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+function createDataSampleForPatient(medtechApi: MedTechApi, patient: Patient) {
+  return medtechApi.dataSampleApi.createOrModifyDataSampleFor(
     patient.id!,
     new DataSample({
       labels: new Set([
@@ -320,4 +320,41 @@ describe("Data Samples API", () => {
     assert(hcpDataSample != null);
     assert(hcpDataSample.id == sharedDataSample.id);
   }).timeout(20000);
+
+  it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+
+    const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
+    const createdDataSample = await createDataSampleForPatient(patApiAndUser.api, patient);
+
+    // When
+    const sharedDataSample = await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcp1ApiAndUser.user.healthcarePartyId!)
+
+    // Then
+    assert(createdDataSample === sharedDataSample);
+  });
+
+  it('Delegator may not share info of Data Sample', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcp2Api = hcp2ApiAndUser.api;
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patUser = patApiAndUser.user;
+
+    const patient = await TestUtils.createDefaultPatient(hcp1Api);
+    const createdDataSample = await createDataSampleForPatient(hcp1Api, patient);
+
+    // When
+    await hcp2Api.dataSampleApi.giveAccessTo(createdDataSample, patUser.patientId!)
+      .then(
+        () => {
+          throw Error(`HCP ${hcp2ApiAndUser.user.id} should not be able to access info of data sample !!`)
+        },
+        (e) => assert(e != undefined)
+      );
+  });
 });

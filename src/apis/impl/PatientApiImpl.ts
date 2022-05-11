@@ -91,8 +91,8 @@ export class PatientApiImpl implements PatientApi {
     )!
   }
 
-  async matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
-    return await this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'))
+  matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
+    return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'))
   }
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
@@ -104,7 +104,11 @@ export class PatientApiImpl implements PatientApi {
       throw Error(`User ${currentUser.id} may not access patient information`)
     }
 
-    return await this.cryptoApi
+    if (patientToModify.delegations[delegatedTo] != undefined) {
+      return patient;
+    }
+
+    return this.cryptoApi
       .extractDelegationsSFKs(patientToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
@@ -146,7 +150,7 @@ export class PatientApiImpl implements PatientApi {
     eventFired: (patient: Patient) => Promise<void>
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser()
-    return await subscribeToEntityEvents(
+    return subscribeToEntityEvents(
       this.basePath,
       this.username!,
       this.password!,

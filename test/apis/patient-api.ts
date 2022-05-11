@@ -147,4 +147,39 @@ describe('Patient API', () => {
     assert(hcp2Patient != null);
     assert(hcp2Patient.id == sharedPatient.id);
   }).timeout(20000);
+
+  it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+
+    const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
+
+    // When
+    const sharedPatient = await patApiAndUser.api.patientApi.giveAccessTo(patient, hcp1ApiAndUser.user.healthcarePartyId!)
+
+    // Then
+    assert(patient === sharedPatient);
+  });
+
+  it('Delegator may not share info of Patient', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcp2Api = hcp2ApiAndUser.api;
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patUser = patApiAndUser.user;
+
+    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api);
+
+    // When
+    await hcp2Api.patientApi.giveAccessTo(createdPatient, patUser.patientId!)
+      .then(
+        () => {
+          throw Error(`HCP ${hcp2ApiAndUser.user.id} should not be able to access info of patient !!`)
+        },
+        (e) => assert(e != undefined)
+      );
+  });
 });

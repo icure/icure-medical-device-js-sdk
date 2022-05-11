@@ -814,7 +814,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw Error(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
     }
 
-    return await this.crypto
+    return this.crypto
       .extractDelegationsSFKs(contactOfDataSample, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
@@ -863,7 +863,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     eventFired: (patient: DataSample) => Promise<void>
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
-    return await subscribeToEntityEvents(
+    return subscribeToEntityEvents(
       this.basePath,
       this.username!,
       this.password!,
