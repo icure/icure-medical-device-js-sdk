@@ -275,7 +275,7 @@ describe("Data Samples API", () => {
     const hcpDataSample = await hcpApi.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(hcpDataSample != null);
     assert(hcpDataSample.id == sharedDataSample.id);
-  });
+  }).timeout(20000);
 
   it('HCP sharing data sample with patient', async () => {
     // Given
@@ -296,7 +296,7 @@ describe("Data Samples API", () => {
     const patDataSample = await patApi.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(patDataSample != null);
     assert(patDataSample.id == sharedDataSample.id);
-  });
+  }).timeout(20000);
 
   it('HCP sharing data sample with another HCP', async () => {
     // Given
@@ -319,5 +319,5 @@ describe("Data Samples API", () => {
     const hcpDataSample = await hcp2Api.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(hcpDataSample != null);
     assert(hcpDataSample.id == sharedDataSample.id);
-  });
+  }).timeout(20000);
 });
