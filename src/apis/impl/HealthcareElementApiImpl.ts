@@ -159,7 +159,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
     if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
-      throw Error(`User ${currentUser.id} may not access health element information`)
+      throw Error(`User ${currentUser.id} may not access healthcare element information`)
     }
 
     if (healthElementToModify.delegations[delegatedTo] != undefined) {
@@ -175,7 +175,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
+          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
         }
         return delKeys.extractedKeys.shift()!
       })
@@ -195,7 +195,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       })
       .then(({he, encKeys}) => {
         if (encKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
+          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
         }
 
         return {he: he, encKey: encKeys.extractedKeys.shift()!}
@@ -204,7 +204,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
       .then((updatedHealthElement) => {
         if (!updatedHealthElement) {
-          throw Error(`Impossible to give access to ${delegatedTo} to health element ${healthElementToModify.id} information`)
+          throw Error(`Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`)
         }
 
         return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!

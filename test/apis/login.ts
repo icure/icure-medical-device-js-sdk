@@ -29,8 +29,8 @@ const hcpId = process.env.ICURE_TS_TEST_HCP_ID!;
 const delay = (delay: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
 
-describe("Healthcare professional", () => {
-  it("should be capable of logging in / sign up using email", async () => {
+describe("Login / Sign-Up", () => {
+  it("HCP should be capable of logging in / sign up using email", async () => {
     const anonymousMedTechApi = new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
