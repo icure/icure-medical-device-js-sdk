@@ -109,13 +109,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
 
     let currentUser = await this.userApi.getCurrentUser();
-    let [contactCached, existingContact] = await this.getContactOfDataSample(
+    let [contactCached, existingContact] = await this._getContactOfDataSample(
       currentUser,
       dataSamples[0]
     );
 
     let contactPatientId = existingContact
-      ? await this.getPatientIdOfContact(currentUser, existingContact)
+      ? await this._getPatientIdOfContact(currentUser, existingContact)
       : undefined;
 
     if (existingContact != null && contactPatientId == null) {
@@ -231,7 +231,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     );
   }
 
-  async getContactOfDataSample(
+  async _getContactOfDataSample(
     currentUser: UserDto,
     dataSample: DataSample
   ): Promise<[boolean, ContactDto?]> {
@@ -251,13 +251,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
   }
 
-  async getPatientIdOfContact(
+  async _getPatientIdOfContact(
     currentUser: UserDto,
     contactDto: ContactDto
   ): Promise<string | undefined> {
     let keysFromDeleg =
       await this.crypto.extractKeysHierarchyFromDelegationLikes(
-        currentUser.healthcarePartyId!,
+        this.userApi.getDataOwnerOf(currentUser),
         contactDto.id!,
         contactDto.cryptedForeignKeys!
       );
@@ -423,7 +423,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw Error(`Could not find data sample ${dataSampleId} or its data`);
     }
 
-    const contactPatientId = await this.getPatientIdOfContact(
+    const contactPatientId = await this._getPatientIdOfContact(
       currentUser,
       existingContact!
     );
@@ -492,7 +492,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       );
     }
 
-    let contactPatient = await this.getPatientOfContact(
+    let contactPatient = await this._getPatientOfContact(
       currentUser,
       existingContact
     );
@@ -563,11 +563,11 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
   }
 
-  async getPatientOfContact(
+  async _getPatientOfContact(
     currentUser: UserDto,
     contactDto: ContactDto
   ): Promise<PatientDto | undefined> {
-    let patientId = await this.getPatientIdOfContact(currentUser, contactDto);
+    let patientId = await this._getPatientIdOfContact(currentUser, contactDto);
     if (patientId) {
       return this.patientApi.getPatientWithUser(currentUser, patientId);
     } else {
@@ -738,7 +738,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     let currentUser = await this.userApi.getCurrentUser();
     let existingDataSample = await this.getDataSample(dataSampleId);
 
-    let [, batchOfDataSample] = await this.getContactOfDataSample(
+    let [, batchOfDataSample] = await this._getContactOfDataSample(
       currentUser,
       existingDataSample
     );
@@ -748,7 +748,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       );
     }
 
-    let patientIdOfBatch = await this.getPatientIdOfContact(
+    let patientIdOfBatch = await this._getPatientIdOfContact(
       currentUser,
       batchOfDataSample
     );
@@ -793,6 +793,68 @@ export class DataSampleApiImpl implements DataSampleApi {
     );
 
     return Promise.resolve(DocumentMapper.toDocument(docWithAttachment));
+  }
+
+  async giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample> {
+    const currentUser = await this.userApi.getCurrentUser()
+    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const contactOfDataSample = (await this._getContactOfDataSample(currentUser, dataSample))[1]
+
+    if (contactOfDataSample == undefined) {
+      throw Error(`Couldn't find the batch containing data sample ${dataSample.id}`)
+    }
+
+    // Does contact already have related delegations
+    if (contactOfDataSample.delegations != undefined && contactOfDataSample.delegations[delegatedTo] != undefined) {
+      return dataSample;
+    }
+
+    const contactPatient = await this._getPatientOfContact(currentUser, contactOfDataSample)
+    if (contactPatient == undefined) {
+      throw Error(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
+    }
+
+    return await this.crypto
+      .extractDelegationsSFKs(contactOfDataSample, dataOwnerId)
+      .then((delKeys) => {
+        if (delKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of data sample ${dataSample.id}`)
+        }
+        return delKeys.extractedKeys.shift()!
+      })
+      .then(async (secretKey) => {
+        const newKeys = await this.crypto.extendedDelegationsAndCryptedForeignKeys(contactOfDataSample, contactPatient, dataOwnerId, delegatedTo, secretKey);
+        return new ContactDto({
+          ...contactOfDataSample,
+          delegations: newKeys.delegations,
+          cryptedForeignKeys: newKeys.cryptedForeignKeys
+        })
+      })
+      .then(async (contactWithNewDelegationsAndCryptedFKeys) => {
+        return {
+          contact: contactWithNewDelegationsAndCryptedFKeys,
+          encKeys: await this.crypto.extractEncryptionsSKs(contactWithNewDelegationsAndCryptedFKeys, dataOwnerId)
+        }
+      })
+      .then(({contact, encKeys}) => {
+        if (encKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of data sample ${dataSample.id}`)
+        }
+
+        return {contact: contact, encKey: encKeys.extractedKeys.shift()!}
+      })
+      .then(({contact, encKey}) => this.crypto.addDelegationsAndEncryptionKeys(null, contact, dataOwnerId, delegatedTo, null, encKey))
+      .then((contactWithUpdatedAccessRights) => this.contactApi.modifyContactWithUser(currentUser, contactWithUpdatedAccessRights))
+      .then((updatedContact: ContactDto) => {
+        if (updatedContact == undefined || updatedContact.services == undefined) {
+          throw Error(`Impossible to give access to ${delegatedTo} to data sample ${dataSample.id} information`)
+        }
+
+        return DataSampleMapper.toDataSample(
+          updatedContact.services.find((service) => service.id == dataSample.id),
+          updatedContact.id,
+          updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined))!
+      })
   }
 
   async subscribeToDataSampleEvents(

@@ -52,6 +52,7 @@ describe('Healthcare Element API', () => {
 
     assert(sharedHealthcareElement.systemMetaData!.delegations[currentHcp.id!] != undefined);
     assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentHcp.id!] != undefined);
+    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentHcp.id!] != undefined);
 
     const hcpHealthcareElement = await hcpApi.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(hcpHealthcareElement != null);
@@ -72,6 +73,7 @@ describe('Healthcare Element API', () => {
 
     assert(sharedHealthcareElement.systemMetaData!.delegations[currentPatient.id!] != undefined);
     assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentPatient.id!] != undefined);
+    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentPatient.id!] != undefined);
 
     const patHealthcareElement = await patApi.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(patHealthcareElement != null);
@@ -94,6 +96,7 @@ describe('Healthcare Element API', () => {
 
     assert(sharedHealthcareElement.systemMetaData!.delegations[currentHcp2.id!] != undefined);
     assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentHcp2.id!] != undefined);
+    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentHcp2.id!] != undefined);
 
     const hcp2HealthcareElement = await hcp2Api.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(hcp2HealthcareElement != null);
