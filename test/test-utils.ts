@@ -40,7 +40,7 @@ export class TestUtils {
       hex2ua(dataOwnerKey)
     );
 
-    return {api: medtechApi!, user: foundUser!};
+    return {api: medtechApi, user: foundUser};
   }
 
   static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authProcessId: string, hcpId: string): Promise<{api: MedTechApi, user: User}> {
@@ -75,10 +75,10 @@ export class TestUtils {
     const { publicKey, privateKey } =
       await anonymousMedTechApi.cryptoApi.RSA.generateKeyPair();
     const publicKeyHex = ua2hex(
-      await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey!, 'spki')
+      await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey, 'spki')
     );
     const privateKeyHex = ua2hex(
-      await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8')
+      await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8')
     );
 
     await delay(10000);
@@ -93,7 +93,7 @@ export class TestUtils {
     };
     const { data: emails } = await axios.request(emailOptions);
 
-    const subjectCode = emails[0].mail_subject!.replace(/.*?([0-9]+).*/, '$1');
+    const subjectCode = emails[0].mail_subject!.replace(/.*?(\d+).*/, '$1');
     const result =
       await anonymousMedTechApi.authenticationApi.completeAuthentication(
         process!,
@@ -114,6 +114,6 @@ export class TestUtils {
     assert(result!.token != null);
     assert(result!.userId != null);
 
-    return {api: result.medTechApi!, user: foundUser!};
+    return {api: result.medTechApi, user: foundUser};
   }
 }
