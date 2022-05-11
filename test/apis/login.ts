@@ -59,5 +59,5 @@ describe("Login / Sign-Up", () => {
     assert(currentPatient);
     assert(currentPatient.firstName == "Antoine");
     assert(currentPatient.lastName == "Duchâteau");
-  });
+  }).timeout(60000);
 });
