@@ -127,7 +127,7 @@ describe('Patient API', () => {
         }, 
         (e) => assert(e != undefined)
       );
-  });
+  }).timeout(20000);
 
   it('HCP sharing healthcare element with another HCP', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
@@ -146,5 +146,5 @@ describe('Patient API', () => {
     const hcp2Patient = await hcp2Api.patientApi.getPatient(sharedPatient.id!);
     assert(hcp2Patient != null);
     assert(hcp2Patient.id == sharedPatient.id);
-  });
+  }).timeout(20000);
 });
