@@ -26,12 +26,12 @@ const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
 const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
 const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
 
-async function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
-  return await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
+  return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
     new HealthcareElement({
       note: "Hero Syndrome",
     }),
-    patient!.id!
+    patient.id
   );
 }
 
@@ -102,4 +102,41 @@ describe('Healthcare Element API', () => {
     assert(hcp2HealthcareElement != null);
     assert(hcp2HealthcareElement.id == sharedHealthcareElement.id);
   }).timeout(20000);
+
+  it('Optimization - No delegation sharing if delegated already has access to HE', async () => {
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+
+    const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
+    const createdHealthcareElement = await createHealthcareElementForPatient(patApiAndUser.api, patient);
+
+    // When
+    const sharedHealthcareElement = await patApiAndUser.api.healthcareElementApi.giveAccessTo(createdHealthcareElement, hcp1ApiAndUser.user.healthcarePartyId!)
+
+    // Then
+    assert(createdHealthcareElement === sharedHealthcareElement);
+  });
+
+  it('Delegator may not share info of Healthcare element', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcp2Api = hcp2ApiAndUser.api;
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patUser = patApiAndUser.user;
+
+    const patient = await TestUtils.createDefaultPatient(hcp1Api);
+    const createdHealthcareElement = await createHealthcareElementForPatient(hcp1Api, patient);
+
+    // When
+    await hcp2Api.healthcareElementApi.giveAccessTo(createdHealthcareElement, patUser.patientId!)
+      .then(
+        () => {
+          throw Error(`HCP ${hcp2ApiAndUser.user.id} should not be able to access info of healthcare element !!`)
+        },
+        (e) => assert(e != undefined)
+      );
+  });
 });

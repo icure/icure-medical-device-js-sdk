@@ -171,7 +171,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       throw Error(`User ${currentUser.id} may not access patient identifier of healthcare element ${healthElementToModify.id}`)
     }
 
-    return await this.cryptoApi
+    return this.cryptoApi
       .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {

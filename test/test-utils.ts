@@ -7,6 +7,7 @@ import axios, {Method} from 'axios';
 import {v4 as uuid} from 'uuid';
 import * as md5 from 'md5';
 import {Patient} from '../src/models/Patient';
+import {assert} from "chai";
 
 const apiKey = process.env.ICURE_TS_TEST_RAPID_API_KEY!;
 
@@ -109,6 +110,9 @@ export class TestUtils {
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
       hex2ua(privateKeyHex)
     );
+    assert(result);
+    assert(result!.token != null);
+    assert(result!.userId != null);
 
     return {api: result.medTechApi!, user: foundUser!};
   }
