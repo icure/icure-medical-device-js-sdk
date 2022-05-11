@@ -42,7 +42,7 @@ describe("Login / Sign-Up", () => {
 
   it("Patient should be able to login / sign up through email", async () => {
     // Given
-    const patAuthProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
+    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
 
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, patAuthProcessId, authProcessHcpId);

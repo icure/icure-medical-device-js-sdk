@@ -17,7 +17,7 @@
     "prepare": "rimraf dist && npm run build && jq '{name:.name, version:.version, description:.description, main:\"index.js\", types:\"index.d.ts\", dependencies:.dependencies, author:.author, license:.license, bugs:.bugs, homepage:.homepage}' < package.json > dist/package.json",
     "publish": "yarn version && yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` && cd ..",
     "precommit": "pretty-quick --staged",
-    "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=10000 --recursive"
+    "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=15000 --recursive"
   },
   "prettier": {
     "semi": false,
