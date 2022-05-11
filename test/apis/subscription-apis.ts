@@ -20,9 +20,9 @@ console.log("Saving keys in " + tmp);
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v2";
-const userName = process.env.ICURE_TS_TEST_USER!;
-const password = process.env.ICURE_TS_TEST_PWD!;
-const privKey = process.env.ICURE_TS_TEST_PRIV_KEY!;
+const userName = process.env.ICURE_TS_TEST_HCP_USER!;
+const password = process.env.ICURE_TS_TEST_HCP_PWD!;
+const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
 
 describe("Subscription API", () => {
   it("Can subscribe to Data Samples", async () => {

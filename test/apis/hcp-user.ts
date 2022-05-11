@@ -10,8 +10,8 @@ import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
-const userName = process.env.ICURE_TS_TEST_USER!;
-const password = process.env.ICURE_TS_TEST_PWD!;
+const userName = process.env.ICURE_TS_TEST_HCP_USER!;
+const password = process.env.ICURE_TS_TEST_HCP_PWD!;
 
 describe("Healthcare professional", () => {
   it("should be capable of creating a healthcare professional from scratch", async () => {
