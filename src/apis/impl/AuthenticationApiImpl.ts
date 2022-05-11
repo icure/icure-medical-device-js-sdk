@@ -99,6 +99,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withPassword(validationCode)
       .withAuthServerUrl(this.authServerUrl)
       .withAuthProcessId(this.authProcessId)
+      .withCrypto(require('crypto').webcrypto)
       .build();
 
     try {
@@ -132,12 +133,12 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     await authenticatedApi.addKeyPair(dataOwnerId, {privateKey: patientKeyPair[0], publicKey: patientKeyPair[1]})
 
-    const dataOwner = await api.baseApi.cryptoApi.getDataOwner(dataOwnerId);
+    const dataOwner = await authenticatedApi.baseApi.cryptoApi.getDataOwner(dataOwnerId);
     if (dataOwner == null) {
       throw Error("Your user is not a data owner");
     }
 
-    if (dataOwner.dataOwner.publicKey == null) {
+    if (dataOwner.dataOwner.publicKey == undefined) {
       await this.updateUserToAddNewlyCreatedPublicKey(dataOwner.type, dataOwner.dataOwner, patientKeyPair, authenticatedApi, user);
     } else if (dataOwner.dataOwner.publicKey != patientKeyPair[1]) {
       //TODO User lost his key
@@ -159,22 +160,23 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       console.log(`Could not update user ${dataOwner.id} because it is not a data owner (and so, is not authorized to access protected data)`);
     }
 
+    authenticatedApi.baseApi.cryptoApi.emptyHcpCache(dataOwner.id!)
+
     if (user.patientId != null) {
       await this.initPatientDelegationsAndSave(authenticatedApi, user);
     }
   }
 
   async initPatientDelegationsAndSave(apiWithNewKeyPair: MedTechApi, user: User) {
-    await apiWithNewKeyPair.baseApi.patientApi.modifyPatientWithUser(
-      user,
-      await apiWithNewKeyPair.baseApi.cryptoApi.addDelegationsAndEncryptionKeys(
-        null,
-        {...(await apiWithNewKeyPair.baseApi.patientApi.getPatientWithUser(user, user.patientId!))},
-        user.patientId!,
-        user.patientId!,
-        null,
-        null
-      )
-    )
+    const patientToUpdate = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
+      .then((patient) => apiWithNewKeyPair.baseApi.patientApi.initDelegations(patient, user))
+      .then(async (patientWithDelegations) => {
+        const currentPatient = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
+        return new Patient({...currentPatient, delegations: patientWithDelegations.delegations});
+      })
+      .then((patientWithDelegations) => apiWithNewKeyPair.baseApi.patientApi.initEncryptionKeys(user, patientWithDelegations))
+
+    await apiWithNewKeyPair.baseApi.patientApi.modifyPatientWithUser(user, patientToUpdate)
+    apiWithNewKeyPair.baseApi.cryptoApi.emptyHcpCache(patientToUpdate.id!)
   }
 }

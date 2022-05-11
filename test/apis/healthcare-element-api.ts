@@ -7,7 +7,7 @@ import * as os from "os";
 import {assert} from "chai";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
-import {TestUtils} from "../utils";
+import {TestUtils} from "../test-utils";
 
 const tmp = os.tmpdir();
 console.log('Saving keys in ' + tmp);
@@ -42,7 +42,7 @@ describe('Healthcare Element API', () => {
     const patUser = patApiAndUser.user;
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
     const hcpApi = hcpApiAndUser.api;
     const hcpUser = hcpApiAndUser.user;
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!);
@@ -59,7 +59,7 @@ describe('Healthcare Element API', () => {
   });
 
   it('HCP sharing healthcare element with patient', async () => {
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
     const hcpApi = hcpApiAndUser.api;
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
@@ -87,13 +87,7 @@ describe('Healthcare Element API', () => {
     const hcp2User = hcp2ApiAndUser.user;
     const currentHcp2 = await hcp2Api.healthcareProfessionalApi.getHealthcareProfessional(hcp2User.healthcarePartyId!);
 
-    const patient = await hcp1Api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
+    const patient = await TestUtils.createDefaultPatient(hcp1Api);
 
     const createdHealthcareElement = await createHealthcareElementForPatient(hcp1Api, patient);
     const sharedHealthcareElement = await hcp1Api.healthcareElementApi.giveAccessTo(createdHealthcareElement, currentHcp2.id!);

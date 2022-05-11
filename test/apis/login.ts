@@ -21,7 +21,7 @@ const iCureUrl =
 const msgGtwUrl =
   process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
 const authProcessId =
-  process.env.ICURE_TS_TEST_AUTH_PROCESS_ID ??
+  process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
   "6a355458dbfa392cb5624403190c6a19";
 const apiKey = process.env.ICURE_TS_TEST_RAPID_API_KEY!;
 const hcpId = process.env.ICURE_TS_TEST_HCP_ID!;
@@ -30,7 +30,7 @@ const delay = (delay: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
 
 describe("Healthcare professional", () => {
-  it("should be capable of logging in using email", async () => {
+  it("should be capable of logging in / sign up using email", async () => {
     const anonymousMedTechApi = new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
