@@ -4,6 +4,7 @@ import {PaginatedListHealthcareElement} from '../../models/PaginatedListHealthca
 import {HealthcareElementApi} from '../HealthcareElementApi'
 import {
   FilterChainPatient,
+  HealthElement,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
@@ -11,6 +12,8 @@ import {
   IccHelementXApi,
   IccPatientXApi,
   IccUserXApi,
+  Patient as PatientDto,
+  User as UserDto,
 } from '@icure/api'
 import {forceUuid} from '../../mappers/utils'
 import {PaginatedListMapper} from '../../mappers/paginatedList'
@@ -121,6 +124,35 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'))
   }
 
+  async _getPatientOfHealthElement(
+    currentUser: UserDto,
+    healthElementDto: HealthElement
+  ): Promise<PatientDto | undefined> {
+    let patientId = await this._getPatientIdOfHealthElement(currentUser, healthElementDto);
+    if (patientId) {
+      return this.patientApi.getPatientWithUser(currentUser, patientId);
+    } else {
+      return undefined;
+    }
+  }
+
+  async _getPatientIdOfHealthElement(
+    currentUser: UserDto,
+    healthElement: HealthElement
+  ): Promise<string | undefined> {
+    let keysFromDeleg =
+      await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
+        this.userApi.getDataOwnerOf(currentUser),
+        healthElement.id!,
+        healthElement.cryptedForeignKeys!
+      );
+    return keysFromDeleg
+      .map((key) =>
+        key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined
+      )
+      .find((key) => key != undefined);
+  }
+
   async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
     const currentUser = await this.userApi.getCurrentUser()
     const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
@@ -130,25 +162,45 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       throw Error(`User ${currentUser.id} may not access health element information`)
     }
 
+    if (healthElementToModify.delegations[delegatedTo] != undefined) {
+      return healthcareElement;
+    }
+
+    const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
+    if (healthcareElementPatient == undefined) {
+      throw Error(`User ${currentUser.id} may not access patient identifier of healthcare element ${healthElementToModify.id}`)
+    }
+
     return await this.cryptoApi
       .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
           throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
         }
-
         return delKeys.extractedKeys.shift()!
       })
-      .then((secretKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, healthElementToModify, dataOwnerId, delegatedTo, secretKey, null))
-      .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
-      .then((encKeys) => {
+      .then(async (secretKey) => {
+        const newKeys = await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(healthElementToModify, healthcareElementPatient, dataOwnerId, delegatedTo, secretKey);
+        return new HealthElement({
+          ...healthElementToModify,
+          delegations: newKeys.delegations,
+          cryptedForeignKeys: newKeys.cryptedForeignKeys
+        })
+      })
+      .then(async (heWithNewDelegationsAndCryptedFKeys) => {
+        return {
+          he: heWithNewDelegationsAndCryptedFKeys,
+          encKeys: await this.cryptoApi.extractEncryptionsSKs(heWithNewDelegationsAndCryptedFKeys, dataOwnerId)
+        }
+      })
+      .then(({he, encKeys}) => {
         if (encKeys.extractedKeys.length == 0) {
           throw Error(`User ${currentUser.id} could not decrypt secret info of health element ${healthElementToModify.id}`)
         }
 
-        return encKeys.extractedKeys.shift()!
+        return {he: he, encKey: encKeys.extractedKeys.shift()!}
       })
-      .then((encKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, healthElementToModify, dataOwnerId, delegatedTo, null, encKey))
+      .then(({he, encKey}) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
       .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
       .then((updatedHealthElement) => {
         if (!updatedHealthElement) {
