@@ -1,76 +1,94 @@
-import {HealthcareElement} from "../../models/HealthcareElement";
-import {Filter} from "../../filter/Filter";
-import {PaginatedListHealthcareElement} from "../../models/PaginatedListHealthcareElement";
-import {HealthcareElementApi} from "../HealthcareElementApi";
+import {HealthcareElement} from '../../models/HealthcareElement'
+import {Filter} from '../../filter/Filter'
+import {PaginatedListHealthcareElement} from '../../models/PaginatedListHealthcareElement'
+import {HealthcareElementApi} from '../HealthcareElementApi'
 import {
   FilterChainPatient,
+  HealthElement,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
   IccHcpartyXApi,
   IccHelementXApi,
   IccPatientXApi,
-  IccUserXApi
-} from "@icure/api";
-import {forceUuid} from "../../mappers/utils";
-import {PaginatedListMapper} from "../../mappers/paginatedList";
-import {FilterMapper} from "../../mappers/filter";
-import {HealthcareElementMapper} from "../../mappers/healthcareElement";
-import {firstOrNull} from "../../utils/functionalUtils";
+  IccUserXApi,
+  Patient as PatientDto,
+  User as UserDto,
+} from '@icure/api'
+import {forceUuid} from '../../mappers/utils'
+import {PaginatedListMapper} from '../../mappers/paginatedList'
+import {FilterMapper} from '../../mappers/filter'
+import {HealthcareElementMapper} from '../../mappers/healthcareElement'
+import {firstOrNull} from '../../utils/functionalUtils'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
-  private readonly userApi: IccUserXApi;
-  private readonly heApi: IccHelementXApi;
-  private readonly patientApi: IccPatientXApi;
-  private readonly cryptoApi: IccCryptoXApi;
+  private readonly userApi: IccUserXApi
+  private readonly heApi: IccHelementXApi
+  private readonly patientApi: IccPatientXApi
+  private readonly cryptoApi: IccCryptoXApi
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
-    this.userApi = api.userApi;
-    this.heApi = api.healthcareElementApi;
-    this.patientApi = api.patientApi;
-    this.cryptoApi = api.cryptoApi;
+  constructor(api: {
+    cryptoApi: IccCryptoXApi
+    userApi: IccUserXApi
+    patientApi: IccPatientXApi
+    contactApi: IccContactXApi
+    documentApi: IccDocumentXApi
+    healthcarePartyApi: IccHcpartyXApi
+    healthcareElementApi: IccHelementXApi
+  }) {
+    this.userApi = api.userApi
+    this.heApi = api.healthcareElementApi
+    this.patientApi = api.patientApi
+    this.cryptoApi = api.cryptoApi
   }
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser();
+    const currentUser = await this.userApi.getCurrentUser()
     const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
-    let createdOrUpdateHealthElement;
+    let createdOrUpdateHealthElement
     if (healthcareElement.rev) {
-      createdOrUpdateHealthElement = await this.heApi.modifyHealthElementWithUser(currentUser, HealthcareElementMapper.toHealthElementDto(healthcareElement));
+      createdOrUpdateHealthElement = await this.heApi.modifyHealthElementWithUser(
+        currentUser,
+        HealthcareElementMapper.toHealthElementDto(healthcareElement)
+      )
     } else if (patient) {
-      createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(currentUser, await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true));
+      createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(
+        currentUser,
+        await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true)
+      )
     }
 
     if (createdOrUpdateHealthElement) {
-      return HealthcareElementMapper.toHealthcareElement(createdOrUpdateHealthElement)!;
+      return HealthcareElementMapper.toHealthcareElement(createdOrUpdateHealthElement)!
     }
 
     throw Error(`Could not create / modify healthElement ${healthcareElement.id}`)
   }
 
   async createOrModifyHealthcareElements(healthcareElements: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
-    const heToCreate = healthcareElements.filter(he => !he.rev)
-    const heToUpdate = healthcareElements.filter(he => !!he.rev)
-    const currentUser = await this.userApi.getCurrentUser();
+    const heToCreate = healthcareElements.filter((he) => !he.rev)
+    const heToUpdate = healthcareElements.filter((he) => !!he.rev)
+    const currentUser = await this.userApi.getCurrentUser()
     const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
-    if (!heToUpdate.every(he => he.id != null && forceUuid(he.id))) {
-      throw Error("Update id should be provided as an UUID");
+    if (!heToUpdate.every((he) => he.id != null && forceUuid(he.id))) {
+      throw Error('Update id should be provided as an UUID')
     }
 
     if (!patient && heToCreate.length > 0) {
-      throw Error("patientId is required when creating a new healthcare element");
+      throw Error('patientId is required when creating a new healthcare element')
     }
 
-    const hesCreated = await Promise.all(heToCreate
-      .map((he) => HealthcareElementMapper.toHealthElementDto(he))
-      .map((he) => this.heApi.newInstance(currentUser, patient, he, true))
+    const hesCreated = await Promise.all(
+      heToCreate.map((he) => HealthcareElementMapper.toHealthElementDto(he)).map((he) => this.heApi.newInstance(currentUser, patient, he, true))
+    ).then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
+    const hesUpdated = await this.heApi.modifyHealthElementsWithUser(
+      currentUser,
+      heToUpdate.map((he) => HealthcareElementMapper.toHealthElementDto(he))
     )
-      .then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
-    const hesUpdated = await this.heApi.modifyHealthElementsWithUser(currentUser, heToUpdate.map(he => HealthcareElementMapper.toHealthElementDto(he)))
 
-    return [...hesCreated, ...hesUpdated].map(he => HealthcareElementMapper.toHealthcareElement(he))
+    return [...hesCreated, ...hesUpdated].map((he) => HealthcareElementMapper.toHealthcareElement(he))
   }
 
   async deleteHealthcareElement(id: string): Promise<string> {
@@ -81,17 +99,115 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     throw Error(`Could not delete healthcare element ${id}`)
   }
 
-  async filterHealthcareElement(filter: Filter<HealthcareElement>, nextHealthElementId?: string, limit?: number): Promise<PaginatedListHealthcareElement> {
-    return PaginatedListMapper.toPaginatedListHealthcareElement(await this.heApi.filterHealthElementsBy(nextHealthElementId, limit, new FilterChainPatient({
-      filter: FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')
-    })))!
+  async filterHealthcareElement(
+    filter: Filter<HealthcareElement>,
+    nextHealthElementId?: string,
+    limit?: number
+  ): Promise<PaginatedListHealthcareElement> {
+    return PaginatedListMapper.toPaginatedListHealthcareElement(
+      await this.heApi.filterHealthElementsBy(
+        nextHealthElementId,
+        limit,
+        new FilterChainPatient({
+          filter: FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'),
+        })
+      )
+    )!
   }
 
   async getHealthcareElement(id: string): Promise<HealthcareElement> {
-    return HealthcareElementMapper.toHealthcareElement(await this.heApi.getHealthElement(id))
+    const currentUser = await this.userApi.getCurrentUser()
+    return HealthcareElementMapper.toHealthcareElement(await this.heApi.getHealthElementWithUser(currentUser, id))
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'));
+    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'))
+  }
+
+  async _getPatientOfHealthElement(
+    currentUser: UserDto,
+    healthElementDto: HealthElement
+  ): Promise<PatientDto | undefined> {
+    let patientId = await this._getPatientIdOfHealthElement(currentUser, healthElementDto);
+    if (patientId) {
+      return this.patientApi.getPatientWithUser(currentUser, patientId);
+    } else {
+      return undefined;
+    }
+  }
+
+  async _getPatientIdOfHealthElement(
+    currentUser: UserDto,
+    healthElement: HealthElement
+  ): Promise<string | undefined> {
+    let keysFromDeleg =
+      await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
+        this.userApi.getDataOwnerOf(currentUser),
+        healthElement.id!,
+        healthElement.cryptedForeignKeys!
+      );
+    return keysFromDeleg
+      .map((key) =>
+        key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined
+      )
+      .find((key) => key != undefined);
+  }
+
+  async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
+    const currentUser = await this.userApi.getCurrentUser()
+    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
+
+    if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
+      throw Error(`User ${currentUser.id} may not access healthcare element information`)
+    }
+
+    if (healthElementToModify.delegations[delegatedTo] != undefined) {
+      return healthcareElement;
+    }
+
+    const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
+    if (healthcareElementPatient == undefined) {
+      throw Error(`User ${currentUser.id} may not access patient identifier of healthcare element ${healthElementToModify.id}`)
+    }
+
+    return this.cryptoApi
+      .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
+      .then((delKeys) => {
+        if (delKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+        }
+        return delKeys.extractedKeys.shift()!
+      })
+      .then(async (secretKey) => {
+        const newKeys = await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(healthElementToModify, healthcareElementPatient, dataOwnerId, delegatedTo, secretKey);
+        return new HealthElement({
+          ...healthElementToModify,
+          delegations: newKeys.delegations,
+          cryptedForeignKeys: newKeys.cryptedForeignKeys
+        })
+      })
+      .then(async (heWithNewDelegationsAndCryptedFKeys) => {
+        return {
+          he: heWithNewDelegationsAndCryptedFKeys,
+          encKeys: await this.cryptoApi.extractEncryptionsSKs(heWithNewDelegationsAndCryptedFKeys, dataOwnerId)
+        }
+      })
+      .then(({he, encKeys}) => {
+        if (encKeys.extractedKeys.length == 0) {
+          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+        }
+
+        return {he: he, encKey: encKeys.extractedKeys.shift()!}
+      })
+      .then(({he, encKey}) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
+      .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
+      .then((updatedHealthElement) => {
+        if (!updatedHealthElement) {
+          throw Error(`Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`)
+        }
+
+        return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
+      })
   }
 }
