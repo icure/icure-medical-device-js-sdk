@@ -1,6 +1,6 @@
 import {Patient} from "../models/Patient";
 import {Patient as PatientDto} from "@icure/api";
-import {forceUuid, map, mapSet, mapSetToArray, toMapSetTransform} from "./utils";
+import {forceUuid, map, mapSet, mapSetToArray, toMapArrayTransform, toMapSetTransform} from "./utils";
 import {IdentifierDtoMapper} from "./identifier";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {PersonNameDtoMapper} from "./personName";
@@ -101,7 +101,7 @@ export namespace PatientMapper {
     names: map(obj.names, toPersonNameDto),
     languages: obj.languages,
     addresses: map(obj.addresses, toAddressDto),
-    mergedIds: obj.mergedIds,
+    mergedIds: mapSetToArray(obj.mergedIds, (id) => id),
     active: obj.active,
     deactivationReason: obj.deactivationReason,
     partnerships: map(obj.partnerships, toPartnershipDto),
@@ -147,9 +147,9 @@ export namespace PatientMapper {
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
     secretForeignKeys: obj.systemMetaData?.secretForeignKeys,
-    cryptedForeignKeys: toMapSetTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
-    delegations: toMapSetTransform(obj.systemMetaData?.delegations, toDelegationDto),
-    encryptionKeys: toMapSetTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
+    cryptedForeignKeys: toMapArrayTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
+    delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
+    encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
     aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
     transferKeys: obj.systemMetaData?.transferKeys,
     lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,

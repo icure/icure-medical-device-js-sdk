@@ -89,5 +89,16 @@ export interface DataSampleApi {
    */
   setDataSampleAttachment(dataSampleId: string, body: ArrayBuffer, documentName?: string, documentVersion?: string, documentExternalUuid?: string, documentLanguage?: string, ): Promise<Document >;
 
+  /**
+   * Service where current user gives access to the data sample information to another dataOwner (HCP, patient or device).
+   * For this, the current user data owner should be able to access the data sample provided in argument in order to provide access to another data owner.
+
+   * @param dataSample Data Sample the current data owner would like to share with another data owner
+   * @param delegatedTo ID of the data owner to which current user would like to give access
+   *
+   * @return The dataSample with updated access rights
+   */
+  giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
+
   subscribeToDataSampleEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => Promise<void>): Promise<Connection>;
 }
