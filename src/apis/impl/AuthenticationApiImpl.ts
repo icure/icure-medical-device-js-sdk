@@ -105,19 +105,20 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     try {
       const user = await api.baseApi.userApi.getCurrentUser();
       if (user == null) {
-        throw Error("Your validation code is expired");
+        throw Error("Your validation code is expired - Couldn't login new user");
       }
 
       const [providedToken, keyPair] = tokenAndKeyPairProvider(user.groupId!, user.id!) ?? [undefined, undefined];
 
       const token = providedToken ?? await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10);
       if (token == null) {
-        throw Error("Your validation code is expired");
+        throw Error("Your validation code is expired - Couldn't create new secured token");
       }
 
       return [api, new ApiInitialisationResult(user, token, keyPair)];
     } catch (e) {
-      throw Error("Your validation code is expired");
+      let errorMessage = (e instanceof Error) ? e.message : String(e)
+      throw Error(`Your validation code is expired - An error occurred : ${errorMessage}`);
     }
   }
 
