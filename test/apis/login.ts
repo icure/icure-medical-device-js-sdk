@@ -15,7 +15,7 @@ const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
 const msgGtwUrl =
   process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
-const authProcessHcpId = process.env.ICURE_TS_TEST_HCP_ID!;
+const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
 
 describe("Login / Sign-Up", () => {
   it("HCP should be capable of logging in / sign up using email", async () => {
