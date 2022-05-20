@@ -1,4 +1,6 @@
-dist
+coverage/
+dist/
 /.idea/
 /.swagger-codegen/
 /node_modules/
+/.nyc_output/
