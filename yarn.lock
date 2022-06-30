@@ -197,7 +197,7 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@icure/api@^4.2.13":
+"@icure/api@4.2.13":
   version "4.2.13"
   resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.2.13.tgz#172bcdf06b689068d77feaecfaef9812ff1fe0b4"
   integrity sha512-/n6wrID4TaD1TW/+8buA+RQIWkHmjleFD/cVOE6vUGjaiTZx1XIgXLiNoe6vHt32WRtq18rlQE7O9PQIAtto4w==

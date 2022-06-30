@@ -38,7 +38,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authServerUrl: string;
   private readonly authProcessId: string;
 
-  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
+  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string, patientId?: string): Promise<AuthenticationProcess | null> {
     const requestId = uuid()
 
     const res = await XHR.sendCommand('POST',
@@ -50,7 +50,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         'lastName': lastName,
         'from': email,
         'mobilePhone': mobilePhone,
-        'hcpId': healthcareProfessionalId
+        'hcpId': healthcareProfessionalId,
+        'patientId': patientId ?? uuid()
       },
       this.fetchImpl,
       "text/plain")
