@@ -1,6 +1,6 @@
 {
   "name": "@icure/medical-device-sdk",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "OpenAPI client for ",
   "author": "OpenAPI-Generator Contributors",
   "keywords": [
@@ -39,7 +39,7 @@
     "all": true
   },
   "dependencies": {
-    "@icure/api": "^4.2.13",
+    "@icure/api": "4.2.13",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
     "rsocket-core": "^0.0.27",
