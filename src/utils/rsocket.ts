@@ -25,16 +25,17 @@ import {PatientMapper} from "../mappers/patient";
 import {DataSampleMapper} from "../mappers/serviceDataSample";
 
 
-export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'Patient', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Patient> | undefined, eventFired: (entity: Patient) => Promise<void>, decryptor: (encrypted: PatientDto) => Promise<PatientDto>): Promise<ReactiveSocket<any, any>>
-export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'DataSample', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<DataSample> | undefined, eventFired: (entity: DataSample) => Promise<void>, decryptor: (encrypted: Service) => Promise<Service>): Promise<ReactiveSocket<any, any>>
-export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'User', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<User> | undefined, eventFired: (entity: User) => Promise<void>): Promise<ReactiveSocket<any, any>>
-export function subscribeToEntityEvents<O extends Patient | DataSample | User, T extends PatientDto | Service>(basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<O> | undefined, eventFired: (entity: O) => Promise<void>, decryptor?: (encrypted: T) => Promise<T>): Promise<ReactiveSocket<any, any>> {
+export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'Patient', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Patient> | undefined, eventFired: (entity: Patient) => Promise<void>, options: {keepAlive?: number, lifetime?: number }, decryptor: (encrypted: PatientDto) => Promise<PatientDto>): Promise<ReactiveSocket<any, any>>
+export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'DataSample', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<DataSample> | undefined, eventFired: (entity: DataSample) => Promise<void>, options: {keepAlive?: number, lifetime?: number }, decryptor: (encrypted: Service) => Promise<Service>): Promise<ReactiveSocket<any, any>>
+export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'User', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<User> | undefined, eventFired: (entity: User) => Promise<void>, options: {keepAlive?: number, lifetime?: number }): Promise<ReactiveSocket<any, any>>
+export function subscribeToEntityEvents<O extends Patient | DataSample | User, T extends PatientDto | Service>(basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User', eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<O> | undefined, eventFired: (entity: O) => Promise<void>, options: {keepAlive?: number, lifetime?: number } = {}, decryptor?: (encrypted: T) => Promise<T>): Promise<ReactiveSocket<any, any>> {
   const auth = encodeSimpleAuthMetadata(username, password)
   const setup = {
     keepAlive: 1000000,
     lifetime: 100000,
     dataMimeType: APPLICATION_JSON.string,
     metadataMimeType: MESSAGE_RSOCKET_COMPOSITE_METADATA.string,
+    ...options
   };
   const transport = new RSocketWebSocketClient({
     url: `${basePath.startsWith('https:')?'wss':'ws'}://${basePath.replace(/https?:\/\/([^\/]+)(\/rest\/v[123])?\/?/,'$1')}/rsocket`,

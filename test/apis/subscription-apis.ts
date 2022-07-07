@@ -87,4 +87,68 @@ describe("Subscription API", () => {
     assert(events.length === 1, "The events have not been recorded");
     assert(statuses.length === 2, "The statuses have not been recorded");
   }).timeout(60000);
+
+  it("Can subscribe to Data Samples with options", async () => {
+    const medtechApi = medTechApi()
+      .withICureBasePath(iCureUrl)
+      .withUserName(userName)
+      .withPassword(password)
+      .withCrypto(webcrypto as any)
+      .build();
+
+    const loggedUser = await medtechApi.userApi.getLoggedUser();
+    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+      loggedUser.healthcarePartyId!,
+      hex2ua(privKey)
+    );
+
+    const hcp =
+      await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
+        loggedUser.healthcarePartyId!
+      );
+    const events: DataSample[] = [];
+    const statuses: string[] = [];
+    const connection = (
+      await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
+        ["CREATE"],
+        await new DataSampleFilter()
+          .forDataOwner(hcp.id!)
+          .byTagCodeFilter("IC-TEST", "TEST")
+          .build(),
+        async (ds) => {
+          events.push(ds);
+        },
+        {keepAlive: 100, lifetime: 100}
+      )
+    )
+      .onConnected(() => statuses.push("CONNECTED"))
+      .onClosed(() => statuses.push("CLOSED"));
+
+    const patient = await medtechApi.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: "John",
+        lastName: "Snow",
+        note: "Winter is coming",
+      })
+    );
+    await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        labels: new Set([
+          new CodingReference({ type: "IC-TEST", code: "TEST" }),
+        ]),
+        content: { en: { stringValue: "Hello world" } },
+      })
+    );
+
+    await sleep(2000);
+    connection.close();
+    await sleep(1000);
+
+    events?.forEach((event) => console.log(`Event : ${event}`))
+    statuses?.forEach((event) => console.log(`Status : ${event}`))
+
+    assert(events.length === 1, "The events have not been recorded");
+    assert(statuses.length === 2, "The statuses have not been recorded");
+  }).timeout(60000);
 });

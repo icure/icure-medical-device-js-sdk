@@ -13,6 +13,7 @@
 import {CodingReference} from './CodingReference';
 import {Content} from './Content';
 import {Identifier} from './Identifier';
+import {SystemMetaDataEncrypted} from "./SystemMetaDataEncrypted";
 
 /**
 * A Data Sample represents a medical information, provided by a Data Owner concerning one specific [Patient], for a T moment.       Provided by a Data Owner means that the data sample may have been either provided by a [HealthcareProfessional] or a [Patient], either collected by a [MedicalDevice].         Data Samples provided by the patient include subjective information, such as complaints, reason for visit, feelings, etc. or objective information       like bio-metric measures (blood pressure, temperature, heart beat, etc.), or physical exam description, diagnosis, prescription, integration of lab reports from another [HealthcareProfessional], action plan, etc.      Any action performed by the [HealthcareProfessional] (which is relevant for a [HealthcareElement] of a [Patient]) is considered as a [DataSample].       The data samples can be linked to healthcare elements or other structuring elements of the medical record
@@ -102,6 +103,7 @@ constructor(json: IDataSample) {
     * A label is an item from a codification system that qualifies a data sample as being member of a certain class, whatever the value it might have taken. If the label qualifies the content of a field, it means that whatever the content of the field, the label will always apply. LOINC is a codification system typically used for labels.
     */
     'labels': Set<CodingReference>;
+    'systemMetaData'?: SystemMetaDataEncrypted;
 
 }
 
@@ -126,5 +128,6 @@ interface IDataSample {
   'qualifiedLinks'?: { [key: string]: { [key: string]: string; }; };
   'codes'?: Set<CodingReference>;
   'labels'?: Set<CodingReference>;
+  'systemMetaData'?: SystemMetaDataEncrypted;
 }
 

@@ -52,6 +52,7 @@ export interface PatientApi {
   subscribeToPatientEvents(
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient>,
-    eventFired: (patient: Patient) => Promise<void>
+    eventFired: (patient: Patient) => Promise<void>,
+    options?: {keepAlive?: number, lifetime?: number }
   ): Promise<Connection>
 }

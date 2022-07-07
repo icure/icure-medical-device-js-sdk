@@ -147,7 +147,8 @@ export class PatientApiImpl implements PatientApi {
   async subscribeToPatientEvents(
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient> | undefined,
-    eventFired: (patient: Patient) => Promise<void>
+    eventFired: (patient: Patient) => Promise<void>,
+    options: {keepAlive?: number, lifetime?: number } = {}
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(
@@ -158,6 +159,7 @@ export class PatientApiImpl implements PatientApi {
       eventTypes,
       filter,
       eventFired,
+      options,
       async (encrypted) => (await this.patientApi.decrypt(currentUser, [encrypted]))[0]
     ).then((rs) => new ConnectionImpl(rs))
   }
