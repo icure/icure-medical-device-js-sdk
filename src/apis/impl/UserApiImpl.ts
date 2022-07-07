@@ -88,8 +88,13 @@ export class UserApiImpl implements UserApi {
     return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
 
-  subscribeToUserEvents(eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], filter: Filter<User> | undefined, eventFired: (patient: User) => Promise<void>): Promise<Connection> {
-    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired).then((rs) => new ConnectionImpl(rs))
+  subscribeToUserEvents(
+    eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
+    filter: Filter<User> | undefined,
+    eventFired: (patient: User) => Promise<void>,
+    options: {keepAlive?: number, lifetime?: number } = {}
+  ): Promise<Connection> {
+    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired, options).then((rs) => new ConnectionImpl(rs))
   }
 
 }

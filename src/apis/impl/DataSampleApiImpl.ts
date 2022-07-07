@@ -31,7 +31,9 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {UtiDetector} from "../../utils/utiDetector";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
-import {toMap} from "../../mappers/utils";
+import {toMap, toMapArrayTransform} from "../../mappers/utils";
+import {DelegationMapper} from "../../mappers/delegation";
+import toDelegationDto = DelegationMapper.toDelegationDto;
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -860,7 +862,8 @@ export class DataSampleApiImpl implements DataSampleApi {
   async subscribeToDataSampleEvents(
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<DataSample> | undefined,
-    eventFired: (patient: DataSample) => Promise<void>
+    eventFired: (patient: DataSample) => Promise<void>,
+    options: {keepAlive?: number, lifetime?: number } = {}
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
     return subscribeToEntityEvents(
@@ -871,6 +874,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       eventTypes,
       filter,
       eventFired,
+      options,
       async (encrypted) =>
         (
           await this.contactApi.decryptServices(
@@ -880,4 +884,21 @@ export class DataSampleApiImpl implements DataSampleApi {
         )[0]
     ).then((rs) => new ConnectionImpl(rs));
   }
+
+  async extractPatientId(dataSample: DataSample): Promise<String|undefined> {
+    const currentUser = await this.userApi.getCurrentUser();
+    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+
+    if (!dataSample?.systemMetaData?.cryptedForeignKeys) {
+      return undefined
+    }
+    const cfksForAllDelegates = dataSample.systemMetaData.cryptedForeignKeys
+
+    if (!cfksForAllDelegates || !Object.keys(cfksForAllDelegates).length) {
+      console.log(`There is no cryptedForeignKeys in dataSample (${dataSample.id})`)
+      return undefined
+    }
+    return (await this.crypto.extractKeysFromDelegationsForHcpHierarchy(dataOwnerId, dataSample.id!, toMapArrayTransform(cfksForAllDelegates, toDelegationDto)!)).extractedKeys[0]
+  }
+
 }

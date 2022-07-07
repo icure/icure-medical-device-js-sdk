@@ -102,6 +102,28 @@ describe("Data Samples API", () => {
     assert(createdDataSample.id != undefined);
   });
 
+  it("Create Data Sample and extract patient id - Success", async () => {
+    // Given
+    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const medtechApi = apiAndUser.api;
+
+    const patient = await getOrCreatePatient(medtechApi);
+
+    // When
+    const createdDataSample = await createDataSampleForPatient(medtechApi, patient);
+
+    // Then
+    assert(createdDataSample != undefined);
+    assert(createdDataSample.id != undefined);
+
+    // When
+    const loadedDataSample = await apiAndUser.api.dataSampleApi.getDataSample(createdDataSample.id!);
+    const patientId = await apiAndUser.api.dataSampleApi.extractPatientId(loadedDataSample);
+
+    // Then
+    assert(patientId === patient.id);
+  });
+
   it("Create Data Sample linked to HealthElement - Success", async () => {
     // Given
     const apiAndUser = await getOrCreateHcpApiAndLoggedUser()

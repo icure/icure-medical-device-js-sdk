@@ -1,4 +1,4 @@
-import {forceUuid, map, mapReduce, mapSet, mapSetToArray} from "./utils";
+import {forceUuid, map, mapReduce, mapSet, mapSetToArray, toMapSetTransform} from "./utils";
 import {Content as ContentDto, Measure as MeasureDto, Service, SubContact} from "@icure/api";
 import {DataSample} from "../models/DataSample";
 import {Content} from "../models/Content";
@@ -6,6 +6,8 @@ import {Measure} from "../models/Measure";
 import {TimeSeriesMapper} from "./timeSeries";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {IdentifierDtoMapper} from "./identifier";
+import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
+import {DelegationMapper} from "./delegation";
 
 export namespace DataSampleMapper {
   import toTimeSeries = TimeSeriesMapper.toTimeSeries;
@@ -14,6 +16,7 @@ export namespace DataSampleMapper {
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
   import toIdentifier = IdentifierDtoMapper.toIdentifier;
   import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+  import toDelegation = DelegationMapper.toDelegation;
 
   export const toDataSample = (obj?: Service, batchId?: string, subContacts?: SubContact[]) => obj ? new DataSample({
     id: obj.id,
@@ -44,7 +47,14 @@ export namespace DataSampleMapper {
     endOfLife: obj.endOfLife,
     author: obj.author,
     responsible: obj.responsible,
-    comment: obj.comment
+    comment: obj.comment,
+    systemMetaData: new SystemMetaDataEncrypted({
+      secretForeignKeys: obj.secretForeignKeys,
+      cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
+      delegations: toMapSetTransform(obj.delegations, toDelegation),
+      encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
+    })
+
   }) : undefined;
 
   export const toContent = (obj?: ContentDto): Content | undefined => obj ? new Content({

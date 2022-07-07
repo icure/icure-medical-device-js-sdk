@@ -55,7 +55,7 @@ export interface DataSampleApi {
    * Get a [DataSample] by its id
    * @param dataSampleId
    */
-  getDataSample(dataSampleId: string, ): Promise<DataSample >;
+  getDataSample(dataSampleId: string, ): Promise<DataSample>;
   /**
    * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the content of an attachment
    * Get attachment content of a DataSample
@@ -100,5 +100,11 @@ export interface DataSampleApi {
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
 
-  subscribeToDataSampleEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => Promise<void>): Promise<Connection>;
+  subscribeToDataSampleEvents(
+    eventTypes: ('CREATE'|'UPDATE'|'DELETE')[],
+    filter: Filter<DataSample>, eventFired: (dataSample:DataSample) => Promise<void>,
+    options?: {keepAlive?: number, lifetime?: number }
+  ): Promise<Connection>;
+
+  extractPatientId(dataSample: DataSample): Promise<String|undefined>;
 }
