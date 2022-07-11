@@ -26,7 +26,7 @@ const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
 
 describe("Subscription API", () => {
   it("Can subscribe to Data Samples", async () => {
-    const medtechApi = medTechApi()
+    const medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)

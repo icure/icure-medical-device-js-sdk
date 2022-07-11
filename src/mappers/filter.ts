@@ -105,6 +105,7 @@ import {
   DataSampleByHealthcarePartyHealthcareElementIdsFilter
 } from "../filter/datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+import {UserByPatientIdFilter} from "../filter/user/UserByPatientIdFilter";
 
 
 export namespace FilterMapper {

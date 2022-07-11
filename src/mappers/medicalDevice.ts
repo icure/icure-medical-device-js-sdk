@@ -29,8 +29,7 @@ export namespace MedicalDeviceMapper {
         hcPartyKeys: dto.hcPartyKeys,
         privateKeyShamirPartitions: dto.privateKeyShamirPartitions,
         aesExchangeKeys: dto.aesExchangeKeys,
-        transferKeys: dto.transferKeys,
-        lostHcPartyKeys: dto.lostHcPartyKeys
+        transferKeys: dto.transferKeys
       })
   });
 
@@ -53,7 +52,6 @@ export namespace MedicalDeviceMapper {
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
     aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
-    transferKeys: obj.systemMetaData?.transferKeys,
-    lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,
+    transferKeys: obj.systemMetaData?.transferKeys
   });
 }
