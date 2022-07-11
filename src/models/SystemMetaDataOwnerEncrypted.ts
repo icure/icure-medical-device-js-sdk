@@ -24,9 +24,8 @@ constructor(json: ISystemMetaDataOwnerEncrypted) {
     'cryptedForeignKeys': { [key: string]: Set<Delegation>; };
     'delegations': { [key: string]: Set<Delegation>; };
     'encryptionKeys': { [key: string]: Set<Delegation>; };
-    'aesExchangeKeys' : { [key: string]: { [key: string]: Array<string>; }; };
+    'aesExchangeKeys' : { [key: string]: { [key: string]: { [key: string]: string }; }; };
     'transferKeys' : { [key: string]: { [key: string]: string; }; };
-    'lostHcPartyKeys' : Array<string>;
 }
 
 interface ISystemMetaDataOwnerEncrypted {
@@ -37,8 +36,7 @@ interface ISystemMetaDataOwnerEncrypted {
   'cryptedForeignKeys'?: { [key: string]: Set<Delegation>; };
   'delegations'?: { [key: string]: Set<Delegation>; };
   'encryptionKeys'?: { [key: string]: Set<Delegation>; };
-  'aesExchangeKeys' ?: { [key: string]: { [key: string]: Array<string>; }; };
+  'aesExchangeKeys' ?: { [key: string]: { [key: string]: { [key: string]: string }; }; };
   'transferKeys' ?: { [key: string]: { [key: string]: string; }; };
-  'lostHcPartyKeys' ?: Array<string>;
 }
 

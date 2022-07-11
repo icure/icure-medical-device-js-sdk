@@ -88,8 +88,7 @@ export namespace PatientMapper {
       delegations: toMapSetTransform(obj.delegations, toDelegation),
       encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
       aesExchangeKeys: obj.aesExchangeKeys,
-      transferKeys: obj.transferKeys,
-      lostHcPartyKeys: obj.lostHcPartyKeys
+      transferKeys: obj.transferKeys
     })
   }) : undefined;
 
@@ -151,7 +150,6 @@ export namespace PatientMapper {
     delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
     encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
     aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
-    transferKeys: obj.systemMetaData?.transferKeys,
-    lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,
+    transferKeys: obj.systemMetaData?.transferKeys
   }) : undefined;
 }

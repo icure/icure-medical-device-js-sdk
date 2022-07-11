@@ -40,6 +40,7 @@ import {HealthcareElementApiImpl} from "./impl/HealthcareElementApiImpl";
 import {HealthcareProfessionalApiImpl} from "./impl/HealthcareProfessionalApiImpl";
 import {AuthenticationApi} from "./AuthenticationApi";
 import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
+import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi;
@@ -56,9 +57,9 @@ export class MedTechApi {
   private readonly _authServerUrl: string | undefined;
   private readonly _authProcessId: string | undefined;
   private readonly _authenticationApi: AuthenticationApi | undefined;
-  private _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi };
+  private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi };
 
-  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi },
+  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi },
               basePath: string,
               username: string | undefined,
               password: string | undefined,
@@ -157,6 +158,7 @@ export class MedTechApiBuilder {
   private crypto?: Crypto;
   private authServerUrl?: string;
   private authProcessId?: string;
+  private _preventCookieUsage: boolean = false;
 
   withICureBasePath(newICureBasePath: string): MedTechApiBuilder {
     this.iCureBasePath = newICureBasePath;
@@ -190,10 +192,15 @@ export class MedTechApiBuilder {
     return this;
   }
 
-  build() : MedTechApi {
-    const api = Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto);
+  preventCookieUsage(): MedTechApiBuilder {
+    this._preventCookieUsage = true;
+    return this;
+  }
 
-    return new MedTechApi(api, this.iCureBasePath!, this.userName, this.password, this.authServerUrl, this.authProcessId);
+  async build() : Promise<MedTechApi> {
+    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then( api => {
+      return new MedTechApi(api, this.iCureBasePath!, this.userName, this.password, this.authServerUrl, this.authProcessId);
+    });
   }
 }
 

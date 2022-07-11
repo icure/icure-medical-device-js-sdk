@@ -31,71 +31,16 @@ const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
 const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
 const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
 
-let cachedHcpApi: MedTechApi | undefined;
-let cachedHcpLoggedUser: User | undefined;
-let cachedPatient: Patient | undefined;
-let cachedHealthcareElement: HealthcareElement | undefined;
-
-async function getOrCreateHcpApiAndLoggedUser(): Promise<{api: MedTechApi, user: User}> {
-  if (cachedHcpApi == undefined && cachedHcpLoggedUser == undefined) {
-    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
-    cachedHcpApi = apiAndUser.api;
-    cachedHcpLoggedUser = apiAndUser.user;
-  }
-
-  return {api: cachedHcpApi!, user: cachedHcpLoggedUser!};
-}
-
-async function getOrCreatePatient(medtechApi: MedTechApi): Promise<Patient> {
-  if (cachedPatient == undefined) {
-    cachedPatient = await medtechApi.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-  }
-  return cachedPatient
-}
-
-async function getOrCreateHealthElement(
-  medtechApi: MedTechApi,
-  patient: Patient
-): Promise<HealthcareElement> {
-  if (cachedHealthcareElement == undefined) {
-    cachedHealthcareElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
-      new HealthcareElement({
-        note: "Hero Syndrome",
-      }),
-      patient!.id!
-    );
-  }
-  return cachedHealthcareElement;
-}
-
-function createDataSampleForPatient(medtechApi: MedTechApi, patient: Patient) {
-  return medtechApi.dataSampleApi.createOrModifyDataSampleFor(
-    patient.id!,
-    new DataSample({
-      labels: new Set([
-        new CodingReference({type: "IC-TEST", code: "TEST"}),
-      ]),
-      content: {en: {stringValue: "Hello world"}},
-    })
-  );
-}
-
 describe("Data Samples API", () => {
   it("Create Data Sample - Success", async () => {
     // Given
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
 
-    const patient = await getOrCreatePatient(medtechApi);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
 
     // When
-    const createdDataSample = await createDataSampleForPatient(medtechApi, patient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(medtechApi, patient);
 
     // Then
     assert(createdDataSample != undefined);
@@ -126,11 +71,11 @@ describe("Data Samples API", () => {
 
   it("Create Data Sample linked to HealthElement - Success", async () => {
     // Given
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
 
-    const patient = await getOrCreatePatient(medtechApi);
-    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
+    const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient);
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: "IC-TEST", code: "TEST" })]),
       content: { en: { stringValue: "Hello world" } },
@@ -154,12 +99,12 @@ describe("Data Samples API", () => {
 
   it("Create Data Sample and modify it to link it to HealthElement - Success", async () => {
     // Given
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
 
-    const patient = await getOrCreatePatient(medtechApi);
-    const createdDataSample = await createDataSampleForPatient(medtechApi, patient);
-    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(medtechApi, patient);
+    const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient);
 
     // When
     const modifiedDataSample =
@@ -178,10 +123,10 @@ describe("Data Samples API", () => {
 
   it("Can not create Data Sample with invalid healthElementId", async () => {
     // Given
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
     const loggedUser = apiAndUser.user;
-    const patient = await getOrCreatePatient(medtechApi);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
 
     // When
     const createdDataSample = await medtechApi.dataSampleApi
@@ -207,7 +152,7 @@ describe("Data Samples API", () => {
   });
 
   it("Filter Data Samples", async () => {
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
     const loggedUser = apiAndUser.user;
 
@@ -215,7 +160,7 @@ describe("Data Samples API", () => {
       await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
-    const patient = await getOrCreatePatient(medtechApi);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
     const createdDataSample =
       await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
         patient.id!,
@@ -242,12 +187,12 @@ describe("Data Samples API", () => {
 
   it("Filter data samples by HealthElementIds - Success", async () => {
     // Given
-    const apiAndUser = await getOrCreateHcpApiAndLoggedUser()
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
     const medtechApi = apiAndUser.api;
     const loggedUser = apiAndUser.user;
 
-    const patient = await getOrCreatePatient(medtechApi);
-    const healthElement = await getOrCreateHealthElement(medtechApi, patient);
+    const patient = await TestUtils.getOrCreatePatient(medtechApi);
+    const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient);
     const createdDataSample =
       await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
         patient.id!,
@@ -288,7 +233,7 @@ describe("Data Samples API", () => {
     const hcpUser = hcpApiAndUser.user;
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!);
 
-    const createdDataSample = await createDataSampleForPatient(patApi, currentPatient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(patApi, currentPatient);
 
     // When
     const sharedDataSample = await patApi.dataSampleApi.giveAccessTo(createdDataSample, currentHcp.id!);
@@ -309,7 +254,7 @@ describe("Data Samples API", () => {
     const patUser = patApiAndUser.user;
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
 
-    const createdDataSample = await createDataSampleForPatient(hcpApi, currentPatient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(hcpApi, currentPatient);
 
     // When
     const sharedDataSample = await hcpApi.dataSampleApi.giveAccessTo(createdDataSample, currentPatient.id!);
@@ -330,9 +275,9 @@ describe("Data Samples API", () => {
     const hcp2User = hcp2ApiAndUser.user;
     const currentHcp2 = await hcp2Api.healthcareProfessionalApi.getHealthcareProfessional(hcp2User.healthcarePartyId!);
 
-    const patient = await getOrCreatePatient(hcp1Api);
+    const patient = await TestUtils.getOrCreatePatient(hcp1Api);
 
-    const createdDataSample = await createDataSampleForPatient(hcp1Api, patient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, patient);
 
     // When
     const sharedDataSample = await hcp1Api.dataSampleApi.giveAccessTo(createdDataSample, currentHcp2.id!);
@@ -348,7 +293,7 @@ describe("Data Samples API", () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
-    const createdDataSample = await createDataSampleForPatient(patApiAndUser.api, patient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, patient);
 
     // When
     const sharedDataSample = await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcp1ApiAndUser.user.healthcarePartyId!)
@@ -368,7 +313,7 @@ describe("Data Samples API", () => {
     const patUser = patApiAndUser.user;
 
     const patient = await TestUtils.createDefaultPatient(hcp1Api);
-    const createdDataSample = await createDataSampleForPatient(hcp1Api, patient);
+    const createdDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, patient);
 
     // When
     await hcp2Api.dataSampleApi.giveAccessTo(createdDataSample, patUser.patientId!)
