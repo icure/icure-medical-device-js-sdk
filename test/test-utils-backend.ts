@@ -24,15 +24,12 @@ export class RemoteTestBackend implements TestBackend{
     this.iCureUser = iCureUser;
     this.iCurePwd = iCurePwd;
     if(!!iCureURL) this.iCureURL = iCureURL;
-    else this.iCureURL = "https://kraken.icure.dev/rest/v1";
+    else this.iCureURL = "https://kraken.icure.dev";
   }
 
   static getInstance(iCureUser: string, iCurePwd: string, iCureURL?: string) : TestBackend {
-    if(!!RemoteTestBackend.instance) return RemoteTestBackend.instance;
-    else {
-      RemoteTestBackend.instance = new RemoteTestBackend(iCureUser, iCurePwd, iCureURL);
-      return RemoteTestBackend.instance;
-    }
+    if(!RemoteTestBackend.instance) RemoteTestBackend.instance = new RemoteTestBackend(iCureUser, iCurePwd, iCureURL);
+    return RemoteTestBackend.instance;
   }
 
   async init() {}

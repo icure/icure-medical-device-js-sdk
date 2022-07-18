@@ -22,7 +22,7 @@ import { Patient } from "../../models/Patient";
 import {v4 as uuid} from 'uuid';
 import {Address, AddressAddressTypeEnum} from "../../models/Address";
 import {Telecom, TelecomTelecomTypeEnum} from "../../models/Telecom";
-import {UserByPatientIdFilter} from "../../filter/user/UserByPatientIdFilter";
+import {UsersByPatientIdFilter} from "../../filter/user/UsersByPatientIdFilter";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -96,7 +96,7 @@ export class UserApiImpl implements UserApi {
 
   filteredContactsFromAddresses(addresses: Array<Address>, telecomType: TelecomTelecomTypeEnum, addressType?: AddressAddressTypeEnum): Telecom | undefined {
     return addresses
-      .filter( address => (!!addressType || address.addressType === addressType) &&
+      .filter( address => address.addressType === addressType &&
         address.telecoms.filter( telecom => telecom.telecomType === telecomType).length > 0)
       .map( address => address.telecoms.filter( telecom => telecom.telecomType === telecomType).pop())
       .filter( telecom => !!telecom)[0];
@@ -105,8 +105,8 @@ export class UserApiImpl implements UserApi {
   async newUserFromPatient(patient: Patient): Promise<User> {
     // return this.matchUsers(({
     //   patientId: patient.id,
-    //   '$type': 'UserByPatientIdFilter'
-    // } as UserByPatientIdFilter)).then (r => {
+    //   '$type': 'UsersByPatientIdFilter'
+    // } as UsersByPatientIdFilter)).then (r => {
     //  if (r.length > 0) throw new Error("There is already a user associated to this patient");
 
     return new Promise( (resolve, reject) => {
