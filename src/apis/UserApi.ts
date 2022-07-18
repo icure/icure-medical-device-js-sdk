@@ -70,7 +70,7 @@ import {Patient} from "../models/Patient";
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
   /**
-   * Instantiate a User object from an existing patient.
+   * Instantiates a User object from an existing patient.
    * Returns a Promise containing the User or throws an exception if a user already exists for that patient.
    * @param patient The Patient to create the user for
    */
