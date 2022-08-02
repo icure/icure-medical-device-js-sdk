@@ -76,11 +76,5 @@ import {Patient} from "../models/Patient";
    */
     newUserFromPatient(patient: Patient): Promise<User>;
 
-    subscribeToUserEvents(
-      eventTypes: ('CREATE'|'UPDATE'|'DELETE')[],
-      filter: Filter<User>,
-      eventFired: (user:User) => Promise<void>,
-      options?: {keepAlive?: number, lifetime?: number }
-    ): Promise<Connection>;
-
+    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => Promise<void>): Promise<Connection>;
   }
