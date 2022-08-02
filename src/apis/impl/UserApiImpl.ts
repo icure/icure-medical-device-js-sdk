@@ -103,13 +103,12 @@ export class UserApiImpl implements UserApi {
   }
 
   async newUserFromPatient(patient: Patient): Promise<User> {
-    // return this.matchUsers(({
-    //   patientId: patient.id,
-    //   '$type': 'UsersByPatientIdFilter'
-    // } as UsersByPatientIdFilter)).then (r => {
-    //  if (r.length > 0) throw new Error("There is already a user associated to this patient");
-
-    return new Promise( (resolve, reject) => {
+    return this.matchUsers(({
+      description: "",
+      patientId: patient.id,
+      '$type': 'UsersByPatientIdFilter'
+    } as UsersByPatientIdFilter)).then (r => {
+     if (r.length > 0) throw new Error("There is already a user associated to this patient");
       const contact = [
         this.filteredContactsFromAddresses(patient.addresses, "email", "home"),  // Check for the home email
         this.filteredContactsFromAddresses(patient.addresses, "mobile", "home"), // Check for the home mobile
@@ -123,19 +122,15 @@ export class UserApiImpl implements UserApi {
       if (patient.firstName === undefined) throw new Error("No first name provided in patient");
       if (patient.lastName === undefined) throw new Error("No last name provided in patient");
 
-      // return new User({
-      resolve( new User({
+      return new User({
         created: new Date().getTime(),
         name: patient.firstName + patient.lastName,
         login: contact.telecomNumber,
         patientId: patient.id,
         email: contact.telecomType == "email" ? contact.telecomNumber : undefined,
         mobilePhone: contact.telecomType == "mobile" ? contact.telecomNumber : undefined,
-
-      })
-      )
+      });
     });
-
   }
 
   subscribeToUserEvents(

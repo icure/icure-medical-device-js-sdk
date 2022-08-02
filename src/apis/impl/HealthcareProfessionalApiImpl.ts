@@ -33,7 +33,7 @@ export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi 
     if(userId === undefined) throw Error("Cannot create delegation for an undefined user");
     return this.userApi.getUser(userId).then( user => {
       if(hcpId === undefined) throw Error("Cannot create delegation for an undefined hcpId");
-      return this.maintenanceApi.newInstance(user, {}, undefined, [hcpId])
+      return this.maintenanceApi.newInstance(user, {}, [hcpId])
     });
   }
 
