@@ -2,7 +2,9 @@ import 'mocha';
 import {Notification, notificationTypeEnum} from '../../src/models/Notification';
 import {v4 as uuid} from 'uuid';
 import {MaintenanceTask} from "@icure/api/icc-api/model/MaintenanceTask";
-import {Delegation, Property, SystemMetaDataEncrypted} from "../../dist";
+import {Delegation} from "../../src/models/Delegation";
+import {Property} from "../../src/models/Property";
+import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
 import {assert} from "chai";
 
 describe('Notification model test', () => {
