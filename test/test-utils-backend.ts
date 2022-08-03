@@ -18,7 +18,6 @@ export class RemoteTestBackend implements TestBackend{
   readonly iCureUser: string;
   readonly iCurePwd: string;
   readonly iCureURL: string;
-  readonly hashedAdmin = '{R0DLKxxRDxdtpfY542gOUZbvWkfv1KWO9QOi9yvr/2c=}39a484cbf9057072623177422172e8a173bd826d68a2b12fa8e36ff94a44a0d7';
 
   private constructor(iCureUser: string, iCurePwd: string, iCureURL?: string) {
     this.iCureUser = iCureUser;

@@ -12,6 +12,10 @@ export class Notification {
    */
   id?: string;
   /**
+   * the revision of the patient in the database, used for conflict management / optimistic locking.
+   */
+  rev?: string;
+  /**
    * The status of the notification.
    */
   status?: maintenanceTaskStatusEnum;
@@ -56,6 +60,7 @@ export class Notification {
 
 export interface INotification {
   id?: string;
+  rev?: string;
   status?: maintenanceTaskStatusEnum;
   identifier?: Array<Identifier>;
   created?: number;
