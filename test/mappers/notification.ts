@@ -41,6 +41,7 @@ function metadataEquality(obj1: any, obj2: any) {
 
 function assertNotificationIsEquivalentToMaintenanceTask(notification: Notification, maintenanceTask: MaintenanceTask) {
   assert(notification.id === maintenanceTask.id);
+  assert(notification.rev === maintenanceTask.rev);
   assert(notification.status === maintenanceTask.status);
   assert(arrayEquality(!!notification.identifier ? notification.identifier : [],
     !!maintenanceTask.identifier ? maintenanceTask.identifier : [], identifierEquality));
@@ -61,6 +62,7 @@ describe('Notification mapper test', () => {
   it('Notification to MaintenanceTask - Success', () => {
     const newNotification = new Notification({
       id: uuid(),
+      rev: '1.234556',
       status: MaintenanceTask.StatusEnum.Cancelled,
       identifier: [new Identifier({id: uuid()})],
       created: new Date().getTime(),
@@ -85,6 +87,7 @@ describe('Notification mapper test', () => {
   it('MaintenanceTask to Notification - Success', () => {
     const newTask = new MaintenanceTask({
       id: uuid(),
+      rev: '3.1421',
       status: MaintenanceTask.StatusEnum.Cancelled,
       identifier: [new Identifier({id: uuid()})],
       created: new Date().getTime(),

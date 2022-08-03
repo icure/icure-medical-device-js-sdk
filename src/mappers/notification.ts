@@ -9,6 +9,7 @@ export namespace notificationMapper {
   import toDelegation = DelegationMapper.toDelegation;
   export const toNotification = (obj?: MaintenanceTask) => obj ? new Notification({
     id: obj.id,
+    rev: obj.rev,
     status: obj.status,
     identifier: obj.identifier,
     created: obj.created,
@@ -28,6 +29,7 @@ export namespace notificationMapper {
 
   export const toMaintenanceTaskDto = (obj?: Notification) => obj ? new MaintenanceTask({
     id: obj.id,
+    rev: obj.rev,
     status: obj.status,
     identifier: obj.identifier,
     created: obj.created,
