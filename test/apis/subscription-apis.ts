@@ -89,7 +89,7 @@ describe("Subscription API", () => {
   }).timeout(60000);
 
   it("Can subscribe to Data Samples with options", async () => {
-    const medtechApi = medTechApi()
+    const medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)

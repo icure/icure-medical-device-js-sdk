@@ -16,7 +16,9 @@ import axios, {Method} from "axios";
 import { v4 as uuid } from 'uuid'
 import {assert} from "chai";
 import {DockerTestBackend} from "../test-utils-backend";
-import {medTechApi, Patient, SystemMetaDataOwnerEncrypted} from "../../dist";
+import { medTechApi } from "../../src/apis/medTechApi";
+import { SystemMetaDataOwnerEncrypted } from "../../src/models/SystemMetaDataOwnerEncrypted";
+import {Patient} from "../../src/models/Patient";
 
 (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
 ;(global as any).fetch = fetch
