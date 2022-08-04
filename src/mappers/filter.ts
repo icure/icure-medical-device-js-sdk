@@ -4,7 +4,7 @@ import {
   AbstractFilterCode,
   AbstractFilterDevice,
   AbstractFilterHealthcareParty,
-  AbstractFilterHealthElement,
+  AbstractFilterHealthElement, AbstractFilterMaintenanceTask,
   AbstractFilterPatient,
   AbstractFilterService,
   AbstractFilterUser,
@@ -27,6 +27,7 @@ import {
   HealthElementByHcPartyTagCodeFilter as HealthElementByHcPartyTagCodeFilterDto,
   HealthElementByIdsFilter as HealthElementByIdsFilterDto,
   IntersectionFilter as IntersectionFilterDto,
+  MaintenanceTask as MaintenanceTaskDto,
   Patient as PatientDto,
   PatientByHcPartyAndIdentifiersFilter as PatientByHcPartyAndIdentifiersFilterDto,
   PatientByHcPartyAndSsinsFilter as PatientByHcPartyAndSsinsFilterDto,
@@ -46,6 +47,11 @@ import {
   User as UserDto,
   UserByIdsFilter as UserByIdsFilterDto,
 } from "@icure/api";
+import {MaintenanceTaskByIdsFilter as MaintenanceTaskByIdsFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByIdsFilter";
+import {
+  MaintenanceTaskByHcPartyAndTypeFilter,
+  MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto
+} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
 import {UnionFilter} from "../filter/UnionFilter";
@@ -106,6 +112,9 @@ import {
 } from "../filter/datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 import {UsersByPatientIdFilter} from "../filter/user/UsersByPatientIdFilter";
+import {Notification} from "../models/Notification";
+import {NotificationsByIdFilter} from "../filter/notification/NotificationsByIdFilter";
+import {NotificationsByHcPartyAndTypeFilter} from "../filter/notification/NotificationsByHcPartyAndTypeFilter";
 
 
 export namespace FilterMapper {
@@ -116,15 +125,18 @@ export namespace FilterMapper {
   export function toAbstractFilterDto<HealthcareElement>(filter: Filter<HealthcareElement>, input: "HealthcareElement"): AbstractFilterHealthElement
   export function toAbstractFilterDto<Patient>(filter: Filter<Patient>, input: "Patient"): AbstractFilterPatient
   export function toAbstractFilterDto<User>(filter: Filter<User>, input: "User"): AbstractFilterUser
-  export function toAbstractFilterDto<T>(filter: Filter<T>, input: "DataSample" | "Coding" | "MedicalDevice" | "HealthcareProfessional" | "HealthcareElement" | "Patient" | "User"):
-    AbstractFilter<ServiceDto | CodeDto | DeviceDto | HealthcarePartyDto | HealthElementDto | PatientDto | UserDto> {
+  export function toAbstractFilterDto<Notification>(filter: Filter<Notification>, input: "Notification"): AbstractFilterMaintenanceTask
+  export function toAbstractFilterDto<T>(filter: Filter<T>, input: "DataSample" | "Coding" | "MedicalDevice" | "HealthcareProfessional" | "HealthcareElement" | "Patient" | "User" | "Notification"):
+    AbstractFilter<ServiceDto | CodeDto | DeviceDto | HealthcarePartyDto | HealthElementDto | PatientDto | UserDto | MaintenanceTaskDto> {
     const res = input === "DataSample" ? toAbstractFilterServiceDto(filter) :
       input === "Coding" ? toAbstractFilterCodeDto(filter) :
         input === "MedicalDevice" ? toAbstractFilterDeviceDto(filter) :
           input === "HealthcareProfessional" ? toAbstractFilterHealthcarePartyDto(filter) :
             input === "HealthcareElement" ? toAbstractFilterHealthElementDto(filter) :
               input === "Patient" ? toAbstractFilterPatientDto(filter) :
-                input === "User" ? toAbstractFilterUserDto(filter) : null;
+                input === "User" ? toAbstractFilterUserDto(filter) :
+                  input === "Notification" ? toAbstractFilterMaintenanceTaskDto(filter) :
+                    null;
     if (!res) {
       throw Error("Filter is not recognized");
     }
@@ -527,4 +539,47 @@ const toPatientByHcPartyGenderEducationProfessionDto = (filter: PatientByHealthc
     gender: filter.gender,
     education: filter.education, profession: filter.profession,
 })
+
+  function toAbstractFilterMaintenanceTaskDto(filter: Filter<Notification>): AbstractFilter<MaintenanceTaskDto> {
+    if (filter['$type'] === 'ComplementFilter') {
+      return toComplementFilterMaintenanceTaskDto(filter as ComplementFilter<Notification>);
+    }
+    if (filter['$type'] === 'UnionFilter') {
+      return toUnionFilterMaintenanceTaskDto(filter as UnionFilter<Notification>);
+    }
+    if (filter['$type'] === 'IntersectionFilter') {
+      return toIntersectionFilterMaintenanceTaskDto(filter as IntersectionFilter<Notification>);
+    }
+    if (filter['$type'] === 'NotificationsByIdFilter') {
+      return toMaintenanceTaskByIdsFilterDto(filter as NotificationsByIdFilter);
+    }
+    if (filter['$type'] === 'NotificationByHcPartyAndTypeFilter') {
+      return toMaintenanceTaskByHcPartyAndTypeFilterDto(filter as NotificationsByHcPartyAndTypeFilter);
+    }
+    throw Error(`No mapper for ${filter['$type']}`);
+  }
+
+  const toComplementFilterMaintenanceTaskDto = (filter: ComplementFilter<Notification>) =>
+    new ComplementFilterDto<MaintenanceTaskDto>(toAbstractFilterMaintenanceTaskDto(filter.superSet), toAbstractFilterMaintenanceTaskDto(filter.subSet));
+
+  const toUnionFilterMaintenanceTaskDto = (filter: UnionFilter<Notification>) =>
+    new UnionFilterDto<MaintenanceTaskDto>(filter.filters.map((it) => toAbstractFilterMaintenanceTaskDto(it)))
+
+  const toIntersectionFilterMaintenanceTaskDto = (filter: IntersectionFilter<Notification>) =>
+    new IntersectionFilterDto<MaintenanceTaskDto>(filter.filters.map((it) => toAbstractFilterMaintenanceTaskDto(it)));
+
+  const toMaintenanceTaskByIdsFilterDto = (filter: NotificationsByIdFilter) =>
+    new MaintenanceTaskByIdsFilterDto({
+      desc: filter.description,
+      ids: filter.ids
+    });
+
+  const toMaintenanceTaskByHcPartyAndTypeFilterDto = (filter: NotificationsByHcPartyAndTypeFilter) =>
+    new MaintenanceTaskByHcPartyAndTypeFilter({
+      desc: filter.description,
+      healthcarePartyId: filter.healthcarePartyId,
+      type: filter.type
+    });
+
+
 }
