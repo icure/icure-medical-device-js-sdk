@@ -41,12 +41,15 @@ import {HealthcareProfessionalApiImpl} from "./impl/HealthcareProfessionalApiImp
 import {AuthenticationApi} from "./AuthenticationApi";
 import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
+import {NotificationApiImpl} from "./impl/NotificationApiImpl";
+import {NotificationApi} from "./NotificationApi";
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi;
   private readonly _userApi: UserApi;
   private readonly _patientApi: PatientApi;
   private readonly _healthcareElementApi: HealthcareElementApi;
+  private readonly _notificationApi: NotificationApi;
   private readonly _medicalDeviceApi: MedicalDeviceApi;
   private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
   private readonly _dataSampleApi: DataSampleApi;
@@ -80,6 +83,7 @@ export class MedTechApi {
     this._userApi = new UserApiImpl(api, basePath, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
+    this._notificationApi = new NotificationApiImpl(api);
     this._cryptoApi = api.cryptoApi;
   }
 
@@ -97,6 +101,10 @@ export class MedTechApi {
 
   get healthcareElementApi(): HealthcareElementApi {
     return this._healthcareElementApi;
+  }
+
+  get notificationApi(): NotificationApi {
+    return this._notificationApi;
   }
 
   get medicalDeviceApi(): MedicalDeviceApi {

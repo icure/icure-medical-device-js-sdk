@@ -18,6 +18,7 @@ import {
   PaginatedListDevice as PaginatedListDeviceDto,
   PaginatedListHealthcareParty as PaginatedListHealthcarePartyDto,
   PaginatedListHealthElement as PaginatedListHealthElementDto,
+  PaginatedListMaintenanceTask as PaginatedListMaintenanceTaskDto,
   PaginatedListPatient as PaginatedListPatientDto,
   PaginatedListService as PaginatedListServiceDto,
   PaginatedListUser as PaginatedListUserDto
@@ -26,6 +27,8 @@ import {PatientMapper} from "./patient";
 import {UserMapper} from "./user";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {HealthcareProfessionalMapper} from "./healthcareProfessional";
+import {PaginatedListNotification} from "../models/PaginatedListNotification";
+import {notificationMapper} from "./notification";
 
 export namespace PaginatedListMapper {
   import toDataSample = DataSampleMapper.toDataSample;
@@ -42,6 +45,8 @@ export namespace PaginatedListMapper {
   import toUserDto = UserMapper.toUserDto;
   import toHealthcareProfessional = HealthcareProfessionalMapper.toHealthcareProfessional;
   import toHealthcarePartyDto = HealthcareProfessionalMapper.toHealthcarePartyDto;
+  import toNotification = notificationMapper.toNotification;
+  import toMaintenanceTaskDto = notificationMapper.toMaintenanceTaskDto;
   export const toPaginatedListMedicalDevice = (obj?: PaginatedListDeviceDto) => obj ? new PaginatedListMedicalDevice({
       pageSize: obj.pageSize,
       totalSize: obj.totalSize,
@@ -74,6 +79,13 @@ export namespace PaginatedListMapper {
       pageSize: obj.pageSize,
       totalSize: obj.totalSize,
       rows: map(obj.rows, toHealthcareProfessional),
+      nextKeyPair: new PaginatedDocumentKeyAndIdPairObject({startKey: obj.nextKeyPair?.startKey, startKeyDocId: obj.nextKeyPair?.startKeyDocId})
+    }) : undefined;
+
+    export const toPaginatedListNotification = (obj?: PaginatedListMaintenanceTaskDto) => obj ? new PaginatedListNotification({
+      pageSize: obj.pageSize,
+      totalSize: obj.totalSize,
+      rows: map(obj.rows, toNotification),
       nextKeyPair: new PaginatedDocumentKeyAndIdPairObject({startKey: obj.nextKeyPair?.startKey, startKeyDocId: obj.nextKeyPair?.startKeyDocId})
     }) : undefined;
 
@@ -123,6 +135,13 @@ export namespace PaginatedListMapper {
       pageSize: obj.pageSize,
       totalSize: obj.totalSize,
       rows: map(obj.rows, toHealthcarePartyDto),
+      nextKeyPair: new PaginatedDocumentKeyIdPairObject({startKey: obj.nextKeyPair?.startKey, startKeyDocId: obj.nextKeyPair?.startKeyDocId})
+    }) : undefined;
+
+    export const toPaginatedListMaintenanceTaskDto = (obj?: PaginatedListNotification) => obj ? new PaginatedListMaintenanceTaskDto({
+      pageSize: obj.pageSize,
+      totalSize: obj.totalSize,
+      rows: map(obj.rows, toMaintenanceTaskDto),
       nextKeyPair: new PaginatedDocumentKeyIdPairObject({startKey: obj.nextKeyPair?.startKey, startKeyDocId: obj.nextKeyPair?.startKeyDocId})
     }) : undefined;
 
