@@ -12,7 +12,7 @@ export class Notification {
    */
   'id'?: string;
   /**
-   * the revision of the patient in the database, used for conflict management / optimistic locking.
+   * The revision of the patient in the database, used for conflict management / optimistic locking.
    */
   'rev'?: string;
   /**
