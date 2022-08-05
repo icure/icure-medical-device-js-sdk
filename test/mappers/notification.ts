@@ -6,7 +6,7 @@ import {Delegation} from "../../src/models/Delegation";
 import {Property} from "../../src/models/Property";
 import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
 import {assert} from "chai";
-import {notificationMapper} from "../../src/mappers/notification";
+import {NotificationMapper} from "../../src/mappers/notification";
 import {Identifier} from "@icure/api";
 
 function identifierEquality(identifier1: Identifier, identifier2: Identifier) {
@@ -79,7 +79,7 @@ describe('Notification mapper test', () => {
       })
     });
     assert(newNotification);
-    const newTask = notificationMapper.toMaintenanceTaskDto(newNotification);
+    const newTask = NotificationMapper.toMaintenanceTaskDto(newNotification);
     assert(newTask);
     assertNotificationIsEquivalentToMaintenanceTask(newNotification, newTask);
   });
@@ -102,7 +102,7 @@ describe('Notification mapper test', () => {
       encryptionKeys: { 'TEST_KEY': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) }
     });
     assert(newTask);
-    const newNotification = notificationMapper.toNotification(newTask);
+    const newNotification = NotificationMapper.toNotification(newTask);
     assert(newNotification);
     assertNotificationIsEquivalentToMaintenanceTask(newNotification, newTask);
   });
@@ -113,19 +113,19 @@ describe('Notification mapper test', () => {
       taskType: 'THIS DOES NOT BELONG TO THE ENUM'
     });
     assert(newTask);
-    const newNotification = notificationMapper.toNotification(newTask);
+    const newNotification = NotificationMapper.toNotification(newTask);
     assert(newNotification);
     assert(newNotification.id === newTask.id);
     assert(newNotification.type === notificationTypeEnum.OTHER);
   });
 
   it('If the toNotification parameter is undefined, then the result is undefined', () => {
-    const newNotification = notificationMapper.toNotification(undefined);
+    const newNotification = NotificationMapper.toNotification(undefined);
     assert(newNotification === undefined);
   });
 
   it('If the toMaintenanceTask parameter is undefined, then the result is undefined', () => {
-    const newTask = notificationMapper.toNotification(undefined);
+    const newTask = NotificationMapper.toNotification(undefined);
     assert(newTask === undefined);
   });
 });

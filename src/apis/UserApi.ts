@@ -69,12 +69,6 @@ import {Patient} from "../models/Patient";
       * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
-  /**
-   * Instantiates a User object from an existing patient.
-   * Returns a Promise containing the User or throws an exception if a user already exists for that patient.
-   * @param patient The Patient to create the user for
-   */
-    newUserFromPatient(patient: Patient): Promise<User>;
 
     subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => Promise<void>): Promise<Connection>;
   }

@@ -8,7 +8,6 @@ import {MaintenanceTask} from "@icure/api";
   */
   export interface HealthcareProfessionalApi {
 
-    createMaintenanceTask(hcpId: string | undefined, userId: string | undefined): Promise<MaintenanceTask>;
     /**
       * Ahealthcare professional must have a login, an email or a mobilePhone defined, ahealthcare professional should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an healthcare professional, you must ensure that the rev obtained when getting or creating thehealthcare professional is present as the rev is used to guarantee that thehealthcare professional has not been modified by a third party.
       * Create a newhealthcare professional or modify an existing one.

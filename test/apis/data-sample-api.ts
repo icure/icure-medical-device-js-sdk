@@ -296,7 +296,8 @@ describe("Data Samples API", () => {
     // When
     await hcp2Api.dataSampleApi.giveAccessTo(createdDataSample, patUser.patientId!)
       .then(
-        () => {
+        (el) => {
+          console.log(el);
           throw Error(`HCP ${hcp2ApiAndUser.user.id} should not be able to access info of data sample !!`)
         },
         (e) => assert(e != undefined)

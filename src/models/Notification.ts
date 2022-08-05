@@ -10,52 +10,52 @@ export class Notification {
   /**
    * The Id of the notification. We encourage using either a v4 UUID or a HL7 Id.
    */
-  id?: string;
+  'id'?: string;
   /**
    * the revision of the patient in the database, used for conflict management / optimistic locking.
    */
-  rev?: string;
+  'rev'?: string;
   /**
    * The status of the notification.
    */
-  status?: maintenanceTaskStatusEnum;
+  'status'?: maintenanceTaskStatusEnum;
   /**
    * The creation date of the notification (encoded as epoch).
    */
-  created?: number;
+  'created'?: number;
   /**
    * Soft delete (unix epoch in ms) timestamp of the patient
    */
-  endOfLife?: number;
+  'endOfLife'?: number;
   /**
-   * the soft delete timestamp. When a patient is ”deleted“, this is set to a non null value: the moment of the deletion
+   * the soft delete timestamp. When a patient is "deleted", this is set to a non-null value: the moment of the deletion
    */
-  deletionDate?: number;
+  'deletionDate'?: number;
   /**
    * Typically used for business / client identifiers. An identifier should identify a notification uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
    */
-  identifier?: Array<Identifier>;
+  'identifier'?: Array<Identifier>;
   /**
    * the last modification date of the notification (encoded as epoch).
    */
-  modified?: number;
+  'modified'?: number;
   /**
    * The id of the [User] that created this notification. When creating the notification, this field will be filled automatically by the current user id if not provided.
    */
-  author?: string;
+  'author'?: string;
   /**
    * The id of the data owner that is responsible for this notification. When creating the notification, will be filled automatically by the current user data owner id ([HealthcareProfessional], [Patient] or [MedicalDevice]) if missing
    */
-  responsible?: string;
+  'responsible'?: string;
   /**
    * Additional properties for the notification.
    */
-  properties?: Array<Property>;
+  'properties'?: Array<Property>;
   /**
    * The type of the notification.
    */
-  type?: notificationTypeEnum;
-  systemMetadata?: SystemMetaDataEncrypted;
+  'type'?: notificationTypeEnum;
+  'systemMetadata'?: SystemMetaDataEncrypted;
 }
 
 export interface INotification {
