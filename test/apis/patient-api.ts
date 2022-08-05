@@ -19,7 +19,7 @@ const msgGtwUrl =
   process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
 const patAuthProcessId =
   process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ??
-  "6a355458dbfa392cb5624403190c39e5";
+  "6a355458dbfa392cb5624403190c39e5"; // pragma: allowlist secret
 const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
 const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
 const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;

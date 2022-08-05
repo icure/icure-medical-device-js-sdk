@@ -21,7 +21,7 @@ describe("Login / Sign-Up", () => {
   it("HCP should be capable of logging in / sign up using email", async () => {
     // Given
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
-      "6a355458dbfa392cb5624403190c6a19";
+      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
 
     // When
     const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, authProcessId, authProcessHcpId);
