@@ -1,12 +1,13 @@
 import {Notification, notificationTypeEnum} from "../models/Notification";
 import {MaintenanceTask} from "@icure/api";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
-import {toMapSetTransform} from "./utils";
+import {toMapArrayTransform, toMapSetTransform} from "./utils";
 import {DelegationMapper} from "./delegation";
 
 export namespace NotificationMapper {
 
   import toDelegation = DelegationMapper.toDelegation;
+  import toDelegationDto = DelegationMapper.toDelegationDto;
   export const toNotification = (obj?: MaintenanceTask) => obj ? new Notification({
     id: obj.id,
     rev: obj.rev,
@@ -21,7 +22,7 @@ export namespace NotificationMapper {
     properties: obj.properties,
     type: !!obj.taskType && Object.values(notificationTypeEnum).includes(obj.taskType as unknown as notificationTypeEnum) ?
       notificationTypeEnum[obj.taskType as keyof typeof notificationTypeEnum] : notificationTypeEnum.OTHER,
-    systemMetadata: new SystemMetaDataEncrypted({
+    systemMetaData: new SystemMetaDataEncrypted({
       delegations: toMapSetTransform(obj.delegations, toDelegation),
       encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation)
     })
@@ -40,7 +41,7 @@ export namespace NotificationMapper {
     responsible: obj.responsible,
     properties: obj.properties,
     taskType: obj.type,
-    delegations: obj.systemMetadata?.delegations,
-    encryptionKeys: obj.systemMetadata?.encryptionKeys,
+    delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
+    encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
   }) : undefined;
 }

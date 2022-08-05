@@ -2,12 +2,11 @@ import {NotificationApi} from "../NotificationApi";
 import {Notification} from "../../models/Notification";
 import {
   FilterChainMaintenanceTask,
-  FilterChainService,
   IccHcpartyXApi,
   IccUserXApi, MaintenanceTask
 } from "@icure/api";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
-import {notificationMapper} from "../../mappers/notification";
+import {NotificationMapper} from "../../mappers/notification";
 import {PaginatedListNotification} from "../../models/PaginatedListNotification";
 import {Filter} from "../../filter/Filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
@@ -28,18 +27,18 @@ export class NotificationApiImpl implements NotificationApi {
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then( user => {
       if(!user) throw new Error("There is no user currently logged in user");
-      const inputMaintenanceTask = notificationMapper.toMaintenanceTaskDto(notification);
+      const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
       if(!inputMaintenanceTask?.rev) {
         if(!delegate) throw new Error("No delegate provided for Notification creation");
         return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
           .then( task => {
             return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task).then( (createdTask) => {
-              return notificationMapper.toNotification(createdTask as MaintenanceTask);
+              return NotificationMapper.toNotification(createdTask as MaintenanceTask);
             });
           })
       } else {
         return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask).then( (createdTask) => {
-          return notificationMapper.toNotification(createdTask as MaintenanceTask);
+          return NotificationMapper.toNotification(createdTask as MaintenanceTask);
         });
       }
     });
@@ -72,7 +71,7 @@ export class NotificationApiImpl implements NotificationApi {
     return this.userApi.getCurrentUser().then( user => {
       if(!user) throw new Error("There is no user currently logged in user");
       return this.maintenanceTaskApi.getMaintenanceTaskWithUser(user, notificationId).then( task => {
-        return notificationMapper.toNotification(task)
+        return NotificationMapper.toNotification(task)
       });
     });
   }

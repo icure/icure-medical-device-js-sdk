@@ -55,7 +55,7 @@ export class Notification {
    * The type of the notification.
    */
   'type'?: notificationTypeEnum;
-  'systemMetadata'?: SystemMetaDataEncrypted;
+  'systemMetaData'?: SystemMetaDataEncrypted;
 }
 
 export interface INotification {
@@ -71,7 +71,7 @@ export interface INotification {
   responsible?: string;
   properties?: Array<Property>;
   type?: notificationTypeEnum;
-  systemMetadata?: SystemMetaDataEncrypted;
+  systemMetaData?: SystemMetaDataEncrypted;
 }
 
 export enum notificationTypeEnum {
