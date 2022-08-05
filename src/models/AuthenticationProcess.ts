@@ -19,4 +19,3 @@ interface IAuthenticationProcess {
   'requestId'?: string;
   'login'?: string;
 }
-
