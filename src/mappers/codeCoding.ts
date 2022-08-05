@@ -27,4 +27,3 @@ export namespace CodingMapper {
       label: obj.description
     });
 }
-

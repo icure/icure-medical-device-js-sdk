@@ -33,7 +33,7 @@ export class TestUtils {
       })
     );
   }
-  
+
   static async createMedTechApiAndLoggedUserFor(iCureUrl: string, userName: string, password: string, dataOwnerKey: string): Promise<{api: MedTechApi, user: User}> {
     const medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)

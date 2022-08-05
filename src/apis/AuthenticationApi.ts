@@ -45,4 +45,3 @@ export interface AuthenticationApi {
   ): Promise<AuthenticationResult|null>
 
 }
-

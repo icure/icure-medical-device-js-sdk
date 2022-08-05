@@ -57,4 +57,3 @@ interface IContent {
   'ratio'?: Array<Measure>;
   'range'?: Array<Measure>;
 }
-

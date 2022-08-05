@@ -19,4 +19,3 @@ interface IAuthenticationResult {
   'token'?: string;
   'groupId'?: string;
   'userId'?: string;}
-

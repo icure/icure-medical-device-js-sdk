@@ -124,7 +124,7 @@ describe('Patient API', () => {
       .then(
         () => {
           throw Error(`Patient ${currentPatient.id} should not be able to access info of another patient !!`)
-        }, 
+        },
         (e) => assert(e != undefined)
       );
   });
