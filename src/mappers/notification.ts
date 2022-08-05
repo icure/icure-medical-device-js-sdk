@@ -4,7 +4,7 @@ import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
 import {toMapSetTransform} from "./utils";
 import {DelegationMapper} from "./delegation";
 
-export namespace notificationMapper {
+export namespace NotificationMapper {
 
   import toDelegation = DelegationMapper.toDelegation;
   export const toNotification = (obj?: MaintenanceTask) => obj ? new Notification({

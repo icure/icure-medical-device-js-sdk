@@ -94,45 +94,6 @@ export class UserApiImpl implements UserApi {
     return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User'));
   }
 
-  filteredContactsFromAddresses(addresses: Array<Address>, telecomType: TelecomTelecomTypeEnum, addressType?: AddressAddressTypeEnum): Telecom | undefined {
-    return addresses
-      .filter( address => address.addressType === addressType &&
-        address.telecoms.filter( telecom => telecom.telecomType === telecomType).length > 0)
-      .map( address => address.telecoms.filter( telecom => telecom.telecomType === telecomType).pop())
-      .filter( telecom => !!telecom)[0];
-  }
-
-  async newUserFromPatient(patient: Patient): Promise<User> {
-    return this.matchUsers(({
-      description: "",
-      patientId: patient.id,
-      '$type': 'UsersByPatientIdFilter'
-    } as UsersByPatientIdFilter)).then (r => {
-     if (r.length > 0) throw new Error("There is already a user associated to this patient");
-      const contact = [
-        this.filteredContactsFromAddresses(patient.addresses, "email", "home"),  // Check for the home email
-        this.filteredContactsFromAddresses(patient.addresses, "mobile", "home"), // Check for the home mobile
-        this.filteredContactsFromAddresses(patient.addresses, "email", "work"),  // Check for the work email
-        this.filteredContactsFromAddresses(patient.addresses, "mobile", "work"), // Check for the work mobile
-        this.filteredContactsFromAddresses(patient.addresses, "email"),                    // Check for any email
-        this.filteredContactsFromAddresses(patient.addresses, "mobile")                    // Check for any mobile
-      ].filter(contact => !!contact)[0]
-
-      if (contact === undefined) throw new Error("No email or mobile phone information provided in patient");
-      if (patient.firstName === undefined) throw new Error("No first name provided in patient");
-      if (patient.lastName === undefined) throw new Error("No last name provided in patient");
-
-      return new User({
-        created: new Date().getTime(),
-        name: patient.firstName + patient.lastName,
-        login: contact.telecomNumber,
-        patientId: patient.id,
-        email: contact.telecomType == "email" ? contact.telecomNumber : undefined,
-        mobilePhone: contact.telecomType == "mobile" ? contact.telecomNumber : undefined,
-      });
-    });
-  }
-
   subscribeToUserEvents(
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<User> | undefined,

@@ -10,31 +10,20 @@ import {
   IccHcpartyXApi,
   IccHelementXApi,
   IccPatientXApi,
-  IccUserXApi, MaintenanceTask
+  IccUserXApi
 } from "@icure/api";
 import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
-import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 
 export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   private readonly userApi: IccUserXApi;
   private readonly hcpApi: IccHcpartyXApi;
-  private readonly maintenanceApi: IccMaintenanceTaskXApi;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi, maintenanceTaskApi: IccMaintenanceTaskXApi}) {
+  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi; healthcarePartyApi: IccHcpartyXApi, healthcareElementApi: IccHelementXApi}) {
     this.userApi = api.userApi;
     this.hcpApi = api.healthcarePartyApi;
-    this.maintenanceApi = api.maintenanceTaskApi;
-  }
-
-  async createMaintenanceTask(hcpId: string | undefined, userId: string | undefined): Promise<MaintenanceTask> {
-    if(userId === undefined) throw Error("Cannot create delegation for an undefined user");
-    return this.userApi.getUser(userId).then( user => {
-      if(hcpId === undefined) throw Error("Cannot create delegation for an undefined hcpId");
-      return this.maintenanceApi.newInstance(user, {}, undefined, [hcpId])
-    });
   }
 
   async createOrModifyHealthcareProfessional(healthcareProfessional: HealthcareProfessional): Promise<HealthcareProfessional> {
