@@ -1,5 +1,5 @@
 import "mocha";
-import {medTechApi} from "../../src/apis/medTechApi";
+import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
 
@@ -23,30 +23,34 @@ const iCureUrl =
 const userName = process.env.ICURE_TS_TEST_HCP_USER!;
 const password = process.env.ICURE_TS_TEST_HCP_PWD!;
 const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
+let medtechApi: MedTechApi | undefined = undefined;
 
 describe("Subscription API", () => {
-  it("Can subscribe to Data Samples", async () => {
-    const medtechApi = await medTechApi()
+
+  before(async () => {
+    medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
       .build();
+  });
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+  it("Can subscribe to Data Samples", async () => {
+    const loggedUser = await medtechApi!.userApi.getLoggedUser();
+    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
     const hcp =
-      await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
+      await medtechApi!.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
     const events: DataSample[] = [];
     const statuses: string[] = [];
     const connection = (
-      await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
+      await medtechApi!.dataSampleApi.subscribeToDataSampleEvents(
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
@@ -60,14 +64,14 @@ describe("Subscription API", () => {
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await medtechApi.patientApi.createOrModifyPatient(
+    const patient = await medtechApi!.patientApi.createOrModifyPatient(
       new Patient({
         firstName: "John",
         lastName: "Snow",
         note: "Winter is coming",
       })
     );
-    await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+    await medtechApi!.dataSampleApi.createOrModifyDataSampleFor(
       patient.id!,
       new DataSample({
         labels: new Set([
@@ -89,27 +93,21 @@ describe("Subscription API", () => {
   }).timeout(60000);
 
   it("Can subscribe to Data Samples with options", async () => {
-    const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
-
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+    const loggedUser = await medtechApi!.userApi.getLoggedUser();
+    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
     const hcp =
-      await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
+      await medtechApi!.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
+
     const events: DataSample[] = [];
     const statuses: string[] = [];
     const connection = (
-      await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
+      await medtechApi!.dataSampleApi.subscribeToDataSampleEvents(
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
@@ -118,20 +116,24 @@ describe("Subscription API", () => {
         async (ds) => {
           events.push(ds);
         },
-        {keepAlive: 100, lifetime: 100}
+        {
+          keepAlive: 100,
+          lifetime: 10000
+        }
       )
     )
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await medtechApi.patientApi.createOrModifyPatient(
+    const patient = await medtechApi!.patientApi.createOrModifyPatient(
       new Patient({
         firstName: "John",
         lastName: "Snow",
         note: "Winter is coming",
       })
     );
-    await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+
+    await medtechApi!.dataSampleApi.createOrModifyDataSampleFor(
       patient.id!,
       new DataSample({
         labels: new Set([
