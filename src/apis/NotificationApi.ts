@@ -9,7 +9,7 @@ export interface NotificationApi {
    * @param delegate the id of the Healthcare Party to delegate.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  createOrModifyNotification(notification: Notification, delegate: string): Promise<Notification | undefined>;
+  createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined>;
 
   /**
    * This method deletes the Notification with the provided id.

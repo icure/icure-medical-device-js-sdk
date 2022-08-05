@@ -28,7 +28,7 @@ import {UserMapper} from "./user";
 import {CodeStubDtoMapper} from "./codeStubCodingReference";
 import {HealthcareProfessionalMapper} from "./healthcareProfessional";
 import {PaginatedListNotification} from "../models/PaginatedListNotification";
-import {notificationMapper} from "./notification";
+import {NotificationMapper} from "./notification";
 
 export namespace PaginatedListMapper {
   import toDataSample = DataSampleMapper.toDataSample;
@@ -45,8 +45,8 @@ export namespace PaginatedListMapper {
   import toUserDto = UserMapper.toUserDto;
   import toHealthcareProfessional = HealthcareProfessionalMapper.toHealthcareProfessional;
   import toHealthcarePartyDto = HealthcareProfessionalMapper.toHealthcarePartyDto;
-  import toNotification = notificationMapper.toNotification;
-  import toMaintenanceTaskDto = notificationMapper.toMaintenanceTaskDto;
+  import toNotification = NotificationMapper.toNotification;
+  import toMaintenanceTaskDto = NotificationMapper.toMaintenanceTaskDto;
   export const toPaginatedListMedicalDevice = (obj?: PaginatedListDeviceDto) => obj ? new PaginatedListMedicalDevice({
       pageSize: obj.pageSize,
       totalSize: obj.totalSize,

@@ -48,10 +48,8 @@ import {
   UserByIdsFilter as UserByIdsFilterDto,
 } from "@icure/api";
 import {MaintenanceTaskByIdsFilter as MaintenanceTaskByIdsFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByIdsFilter";
-import {
-  MaintenanceTaskByHcPartyAndTypeFilter,
-  MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto
-} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
+import {MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
+import {MaintenanceTaskAfterDateFilter as MaintenanceTaskAfterDateFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskAfterDateFilter";
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
 import {UnionFilter} from "../filter/UnionFilter";
@@ -115,6 +113,7 @@ import {UsersByPatientIdFilter} from "../filter/user/UsersByPatientIdFilter";
 import {Notification} from "../models/Notification";
 import {NotificationsByIdFilter} from "../filter/notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "../filter/notification/NotificationsByHcPartyAndTypeFilter";
+import {NotificationsAfterDateFilter} from "../filter/notification/NotificationsAfterDateFilter";
 
 
 export namespace FilterMapper {
@@ -553,8 +552,11 @@ const toPatientByHcPartyGenderEducationProfessionDto = (filter: PatientByHealthc
     if (filter['$type'] === 'NotificationsByIdFilter') {
       return toMaintenanceTaskByIdsFilterDto(filter as NotificationsByIdFilter);
     }
-    if (filter['$type'] === 'NotificationByHcPartyAndTypeFilter') {
+    if (filter['$type'] === 'NotificationsByHcPartyAndTypeFilter') {
       return toMaintenanceTaskByHcPartyAndTypeFilterDto(filter as NotificationsByHcPartyAndTypeFilter);
+    }
+    if (filter['$type'] === 'NotificationsAfterDateFilter') {
+      return toMaintenanceTaskAfterDateFilterDto(filter as NotificationsAfterDateFilter);
     }
     throw Error(`No mapper for ${filter['$type']}`);
   }
@@ -575,11 +577,15 @@ const toPatientByHcPartyGenderEducationProfessionDto = (filter: PatientByHealthc
     });
 
   const toMaintenanceTaskByHcPartyAndTypeFilterDto = (filter: NotificationsByHcPartyAndTypeFilter) =>
-    new MaintenanceTaskByHcPartyAndTypeFilter({
+    new MaintenanceTaskByHcPartyAndTypeFilterDto({
       desc: filter.description,
       healthcarePartyId: filter.healthcarePartyId,
       type: filter.type
     });
 
-
+  const toMaintenanceTaskAfterDateFilterDto = (filter: NotificationsAfterDateFilter) =>
+    new MaintenanceTaskAfterDateFilterDto({
+      desc: filter.description,
+      date: filter.date
+    });
 }

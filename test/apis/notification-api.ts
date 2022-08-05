@@ -1,14 +1,14 @@
 import {before, describe, it} from 'mocha'
 import 'isomorphic-fetch'
-import {Api, HealthcareParty, IccCryptoXApi, ua2hex, User} from "@icure/api";
-import {webcrypto} from "crypto";
 import {assert} from "chai";
 import {v4 as uuid} from "uuid";
-import {RemoteTestBackend} from "../test-utils-backend";
-import {MedTechApi, medTechApi} from "../../src/apis/medTechApi";
+import {MedTechApi} from "../../src/apis/medTechApi";
 import {Notification, notificationTypeEnum} from "../../src/models/Notification";
 import {tmpdir} from "os";
 import {TextDecoder, TextEncoder} from "util";
+import {TestUtils} from "../test-utils";
+import {User} from "../../src/models/User";
+import {NotificationFilter} from "../../src/filter";
 
 (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
 ;(global as any).fetch = fetch
@@ -16,117 +16,83 @@ import {TextDecoder, TextEncoder} from "util";
 ;(global as any).TextDecoder = TextDecoder
 ;(global as any).TextEncoder = TextEncoder
 
-const backend = RemoteTestBackend.getInstance(
-  process.env.ICURE_USR!,
-  process.env.ICURE_PWD!,
-  process.env.TEST_ICURE_URL!
-);
+const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
+let hcp1Api: MedTechApi | undefined = undefined;
+let hcp1User: User | undefined = undefined;
+let hcp2Api: MedTechApi | undefined = undefined;
+let hcp2User: User | undefined = undefined;
+let hcp3Api: MedTechApi | undefined = undefined;
+let idFilterNotification1: Notification | undefined = undefined;
+let idFilterNotification2: Notification | undefined = undefined;
+let idFilterNotification3: Notification | undefined = undefined;
 
-let mtApiHcp1: MedTechApi | undefined = undefined;
-let mtApiHcp2: MedTechApi | undefined = undefined;
-const privateKeys = {} as Record<string, Record<string, string>>
-
-async function makeKeyPair(cryptoApi: IccCryptoXApi, login: string) {
-  const { publicKey, privateKey } = await cryptoApi.RSA.generateKeyPair()
-  const publicKeyHex = ua2hex(await cryptoApi.RSA.exportKey(publicKey!, 'spki'))
-  privateKeys[login] = { [publicKeyHex]: ua2hex((await cryptoApi.RSA.exportKey(privateKey!, 'pkcs8')) as ArrayBuffer) }
-  return publicKeyHex
-}
 
 describe('Notification API', async function () {
 
   before(async function () {
-    this.timeout(300000)
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      iCureUrl,
+      process.env.ICURE_TS_TEST_HCP_USER!,
+      process.env.ICURE_TS_TEST_HCP_PWD!,
+      process.env.ICURE_TS_TEST_HCP_PRIV_KEY!)
+    hcp1Api = hcpApi1AndUser.api;
+    hcp1User = hcpApi1AndUser.user;
 
-    await backend.init();
+    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      iCureUrl,
+      process.env.ICURE_TS_TEST_HCP_2_USER!,
+      process.env.ICURE_TS_TEST_HCP_2_PWD!,
+      process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!)
+    hcp2Api = hcpApi2AndUser.api;
+    hcp2User = hcpApi2AndUser.user;
 
-    const hcpId = uuid();
-    const hcpLogin = `hcp-${hcpId}-delegate`;
-    const api = await Api(backend.iCureURL, backend.iCureUser, backend.iCurePwd, webcrypto as unknown as Crypto);
-    const { userApi, healthcarePartyApi, cryptoApi } = api;
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      iCureUrl,
+      process.env.ICURE_TS_TEST_HCP_3_USER!,
+      process.env.ICURE_TS_TEST_HCP_3_PWD!,
+      process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!)
+    hcp3Api = hcpApi3AndUser.api;
 
-    const publicKeyDelegate = await makeKeyPair(cryptoApi, hcpLogin);
-    const delegateHcp = await healthcarePartyApi.createHealthcareParty(
-      new HealthcareParty({ id: hcpId, publicKey: publicKeyDelegate, firstName: 'test', lastName: 'test' })
+    idFilterNotification1 = await hcp1Api!.notificationApi.createOrModifyNotification(
+      new Notification({
+        id: uuid(),
+        status: "pending",
+        type: notificationTypeEnum.KEY_PAIR_UPDATE
+      }),
+      hcp2User!.healthcarePartyId!
     )
-    const delegateUser = await userApi.createUser(
-      new User({
-        id: `user-${hcpId}-hcp`,
-        login: hcpLogin,
-        status: 'ACTIVE',
-        healthcarePartyId: delegateHcp.id,
-      })
-    );
-    assert(delegateUser);
-    const delegateToken = await userApi.getToken(delegateUser.id!, uuid(), 60*60*1000);
-    assert(delegateToken);
-
-    mtApiHcp1 = await medTechApi()
-      .withICureBasePath(backend.iCureURL)
-      .withUserName(hcpLogin)
-      .withPassword(delegateToken!)
-      .withCrypto(webcrypto as any)
-      .preventCookieUsage()
-      .build();
-
-    await mtApiHcp1.addKeyPair(
-      delegateUser.healthcarePartyId!,
-      {
-        publicKey: publicKeyDelegate,
-        privateKey: privateKeys[hcpLogin][publicKeyDelegate]
-      }
+    assert(!!idFilterNotification1);
+    idFilterNotification2 = await hcp1Api!.notificationApi.createOrModifyNotification(
+      new Notification({
+        id: uuid(),
+        status: "pending",
+        type: notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+      }),
+      hcp2User!.healthcarePartyId!
     )
-
-    const hcpId2 = uuid();
-    const hcpLogin2 = `hcp-${hcpId2}-delegate`;
-    const publicKeyDelegate2 = await makeKeyPair(cryptoApi, hcpLogin2);
-    const delegateHcp2 = await healthcarePartyApi.createHealthcareParty(
-      new HealthcareParty({ id: hcpId2, publicKey: publicKeyDelegate2, firstName: 'test', lastName: 'test' })
+    assert(!!idFilterNotification2);
+    idFilterNotification3 = await hcp1Api!.notificationApi.createOrModifyNotification(
+      new Notification({
+        id: uuid(),
+        status: "pending",
+        type: notificationTypeEnum.OTHER
+      }),
+      hcp2User!.healthcarePartyId!
     )
-    const delegateUser2 = await userApi.createUser(
-      new User({
-        id: `user-${hcpId2}-hcp`,
-        login: hcpLogin2,
-        status: 'ACTIVE',
-        healthcarePartyId: delegateHcp2.id,
-      })
-    );
-    assert(delegateUser2);
-    const delegateToken2 = await userApi.getToken(delegateUser2.id!, uuid(), 60*60*1000);
-    assert(delegateToken2);
+    assert(!!idFilterNotification3);
 
-    mtApiHcp2 = await medTechApi()
-      .withICureBasePath(backend.iCureURL)
-      .withUserName(hcpLogin2)
-      .withPassword(delegateToken2!)
-      .withCrypto(webcrypto as any)
-      .preventCookieUsage()
-      .build();
-
-    await mtApiHcp2.addKeyPair(
-      delegateUser2.healthcarePartyId!,
-      {
-        publicKey: publicKeyDelegate2,
-        privateKey: privateKeys[hcpLogin2][publicKeyDelegate2]
-      }
-    )
-
-    console.log('All prerequisites are started')
-  })
+    console.log('All prerequisites are started');
+  });
 
   it('should be able to create a new Notification with a logged in user', async () => {
-    const user1 = await mtApiHcp1!.userApi.getLoggedUser();
-    const user2 = await mtApiHcp2!.userApi.getLoggedUser();
-    assert(!!user1);
-    assert(!!user2);
     const notification = new Notification({
       id: uuid(),
       status: "pending",
       type: notificationTypeEnum.KEY_PAIR_UPDATE
     })
-    const createdNotification = await mtApiHcp1!.notificationApi.createOrModifyNotification(
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
       notification,
-      user2.healthcarePartyId!
+      hcp2User!.healthcarePartyId!
     )
     assert(!!createdNotification);
     assert(createdNotification.id === notification.id);
@@ -134,10 +100,262 @@ describe('Notification API', async function () {
     assert(!!createdNotification.rev);
     assert(!!createdNotification.created);
     assert(createdNotification.type === notification.type);
-    assert(createdNotification.author === user1.id);
-    assert(createdNotification.responsible === user1.healthcarePartyId);
-    assert(user2.healthcarePartyId! in createdNotification.systemMetadata?.delegations!);
-    assert(user1.healthcarePartyId! in createdNotification.systemMetadata?.delegations!);
+    assert(createdNotification.author === hcp1User!.id!);
+    assert(createdNotification.responsible === hcp1User!.healthcarePartyId);
+    assert(hcp1User!.healthcarePartyId! in createdNotification.systemMetaData?.delegations!);
+    assert(hcp2User!.healthcarePartyId! in createdNotification.systemMetaData?.delegations!);
   });
 
+  it('should be able to get an existing Notification by Id as the creator', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    const retrievedNotification = await hcp1Api!.notificationApi.getNotification(notificationId);
+    assert(!!retrievedNotification);
+    assert(createdNotification.id === retrievedNotification.id);
+    assert(createdNotification.rev === retrievedNotification.rev);
+  });
+
+  it('should be able to get an existing Notification by Id as a delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    const retrievedNotification = await hcp2Api!.notificationApi.getNotification(notificationId);
+    assert(!!retrievedNotification);
+    assert(createdNotification.id === retrievedNotification.id);
+    assert(createdNotification.rev === retrievedNotification.rev);
+  });
+
+  it('should not be able to get an existing Notification if not author or delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    hcp3Api!.notificationApi.getNotification(notificationId).then(
+      () => {
+        throw Error(`You should not be able to get this notification!!`);
+      },
+      (e) => assert(e != undefined)
+    );
+  });
+
+  it('should be able to modify an existing Notification as the creator', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    createdNotification.status = "ongoing";
+    const modifiedNotification = await hcp1Api!.notificationApi.createOrModifyNotification(createdNotification);
+    assert(!!modifiedNotification);
+    assert(createdNotification.id === modifiedNotification.id);
+    assert(createdNotification.rev !== modifiedNotification.rev);
+    assert(modifiedNotification.status === "ongoing");
+  });
+
+  it('should be able to modify an existing Notification as the delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    createdNotification.status = "ongoing";
+    const modifiedNotification = await hcp2Api!.notificationApi.createOrModifyNotification(createdNotification);
+    assert(!!modifiedNotification);
+    assert(createdNotification.id === modifiedNotification.id);
+    assert(createdNotification.rev !== modifiedNotification.rev);
+    assert(modifiedNotification.status === "ongoing");
+  });
+
+  it('should not be able to modify an existing Notification if not author or delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    createdNotification.status = "ongoing";
+    hcp3Api!.notificationApi.createOrModifyNotification(createdNotification).then(
+      () => {
+        throw Error(`You should not be able to modify this notification!!`);
+      },
+      (e) => assert(e != undefined)
+    );
+  });
+
+  it('should be able to delete an existing Notification as the creator', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    const deletedId = await hcp1Api!.notificationApi.deleteNotification(createdNotification.id!);
+    assert(!!deletedId);
+    const deletedNotification = await hcp1Api!.notificationApi.getNotification(createdNotification.id!);
+    assert(!!deletedNotification);
+    assert(!!deletedNotification.deletionDate);
+  });
+
+  it('should be able to delete an existing Notification as the delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    const deletedId = await hcp2Api!.notificationApi.deleteNotification(createdNotification.id!);
+    assert(!!deletedId);
+    const deletedNotification = await hcp2Api!.notificationApi.getNotification(createdNotification.id!);
+    assert(!!deletedNotification);
+    assert(!!deletedNotification.deletionDate);
+  });
+
+  it('should not be able to delete an existing Notification if not author or delegate', async () => {
+    const notificationId = uuid();
+    const notification = new Notification({
+      id: notificationId,
+      status: "pending",
+      type: notificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId!
+    )
+    assert(!!createdNotification);
+    const deletedId = await hcp3Api!.notificationApi.deleteNotification(createdNotification.id!);
+    assert(!deletedId);
+  });
+
+  it('should be able to filter Notifications by id as the creator', async () => {
+    const result = await hcp1Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
+        .build()
+    );
+    assert(result.rows.length == 2);
+    assert(result.rows.map(it => it.id).includes(idFilterNotification1!.id!));
+    assert(result.rows.map(it => it.id).includes(idFilterNotification2!.id!));
+    assert(!result.rows.map(it => it.id).includes(idFilterNotification3!.id!));
+  });
+
+  it('should be able to filter Notifications by id as the delegate', async () => {
+    const result = await hcp2Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
+        .build()
+    );
+    assert(result.rows.length == 2);
+    assert(result.rows.map(it => it.id).includes(idFilterNotification1!.id!));
+    assert(result.rows.map(it => it.id).includes(idFilterNotification2!.id!));
+    assert(!result.rows.map(it => it.id).includes(idFilterNotification3!.id!));
+  });
+
+  it('should not be able to filter Notifications by id if not author or delegate', async () => {
+    const result = await hcp3Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
+        .build()
+    );
+    assert(result.rows.length == 0);
+  });
+
+  it('should be able to filter Notifications by HcParty id and type as the creator', async () => {
+    const result = await hcp1Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .forHcParty(hcp1User!.healthcarePartyId!)
+        .withType(notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .build()
+    );
+    assert(result.rows.length > 0);
+    result.rows.forEach( notification => {
+      assert(notification.type === notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
+      assert(Object.keys(notification.systemMetaData?.delegations!).includes(hcp1User!.healthcarePartyId!));
+    })
+  });
+
+  it('should be able to filter Notifications by HcParty id and type as the delegate', async () => {
+    const result = await hcp1Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .forHcParty(hcp2User!.healthcarePartyId!)
+        .withType(notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .build()
+    );
+    assert(result.rows.length > 0);
+    result.rows.forEach( notification => {
+      assert(notification.type === notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
+      assert(Object.keys(notification.systemMetaData?.delegations!).includes(hcp2User!.healthcarePartyId!));
+    })
+  });
+
+  it('should be able to filter Notifications after date', async () => {
+    const startTimestamp = new Date().getTime() - 100000;
+    const result = await hcp1Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .afterDateFilter(startTimestamp)
+        .build()
+    );
+    assert(result.rows.length > 0);
+    result.rows.forEach( notification => {
+      assert(notification.created! >= startTimestamp);
+    })
+  });
+
+  it('should be able to get all the Notifications as the creator', async () => {
+    const result = await hcp1Api!.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .build()
+    );
+    assert(result.rows.length > 0);
+  });
 });
