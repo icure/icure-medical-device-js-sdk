@@ -30,6 +30,9 @@ const patPrivKey = process.env.ICURE_TS_TEST_PAT_PRIV_KEY!;
 const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
 const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
 const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
+const hcp3UserName = process.env.ICURE_TS_TEST_HCP_3_USER!;
+const hcp3Password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
+const hcp3PrivKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
 
 describe("Data Samples API", () => {
   it("Create Data Sample - Success", async () => {
@@ -284,8 +287,8 @@ describe("Data Samples API", () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const hcp1Api = hcp1ApiAndUser.api;
 
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
-    const hcp2Api = hcp2ApiAndUser.api;
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3Api = hcp3ApiAndUser.api;
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
     const patUser = patApiAndUser.user;
@@ -294,11 +297,10 @@ describe("Data Samples API", () => {
     const createdDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, patient);
 
     // When
-    await hcp2Api.dataSampleApi.giveAccessTo(createdDataSample, patUser.patientId!)
+    await hcp3Api.dataSampleApi.giveAccessTo(createdDataSample, patUser.patientId!)
       .then(
-        (el) => {
-          console.log(el);
-          throw Error(`HCP ${hcp2ApiAndUser.user.id} should not be able to access info of data sample !!`)
+        () => {
+          throw Error(`HCP ${hcp3ApiAndUser.user.id} should not be able to access info of data sample !!`)
         },
         (e) => assert(e != undefined)
       );
