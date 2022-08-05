@@ -7,3 +7,4 @@ export interface NotificationsByHcPartyAndTypeFilter extends Filter<Notification
   type?: string
   '$type': 'NotificationsByHcPartyAndTypeFilter'
 }
+
