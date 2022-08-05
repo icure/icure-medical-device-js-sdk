@@ -52,6 +52,10 @@ import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealth
 import {
   DataSampleByHealthcarePartyHealthcareElementIdsFilter
 } from "./datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
+import {Notification} from "../models/Notification";
+import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
+import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
+import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -411,6 +415,66 @@ export class CodingFilter implements FilterBuilder<Coding> {
       return ({ filters }) as IntersectionFilter<Coding>
     }
   }
+}
+
+export class NotificationFilter implements FilterBuilder<Notification> {
+  _union?: NotificationFilter[];
+  _intersection?: NotificationFilter[];
+  _byIds?: NotificationsByIdFilter;
+  _afterDate?: NotificationsAfterDateFilter;
+  _hcPartyId?: string;
+  _type?: string;
+
+  byIdFilter(ids: string[]): NotificationFilter {
+    this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
+    return this;
+  }
+
+  forHcParty(hcPartyId: string): NotificationFilter {
+    this._hcPartyId = hcPartyId;
+    return this;
+  }
+
+  withType(type: string): NotificationFilter {
+    this._type = type;
+    return this;
+  }
+
+  afterDateFilter(
+    date: number
+  ): NotificationFilter {
+    this._afterDate = {date: date, '$type': 'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+    return this;
+  }
+
+  union(filters: NotificationFilter[]): NotificationFilter {
+    this._union = filters;
+    return this;
+  }
+
+  intersection(filters: NotificationFilter[]): NotificationFilter {
+    this._intersection = filters;
+    return this;
+  }
+
+  async build(): Promise<Filter<Notification>> {
+    const filters = [
+      this._byIds,
+      this._hcPartyId && this._type && ({healthcarePartyId: this._hcPartyId, type: this._type, '$type': 'NotificationsByHcPartyAndTypeFilter'} as NotificationsByHcPartyAndTypeFilter),
+      this._afterDate,
+      this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Notification>),
+      this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<Notification>),
+    ].filter((x) => !!x) as Filter<Notification>[];
+
+    if (!filters.length) {
+      return {date: 0, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+    } else if (filters.length == 1) {
+      return filters[0];
+    } else {
+      return ({ filters }) as IntersectionFilter<Notification>
+    }
+  }
+
 }
 
 export class DataSampleFilter implements FilterBuilder<DataSample> {
