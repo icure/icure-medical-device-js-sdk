@@ -282,4 +282,3 @@ export type PatientGenderEnum = "male" | "female" | "indeterminate" | "changed" 
 export type PatientBirthSexEnum = "male" | "female" | "indeterminate" | "changed" | "changedToMale" | "changedToFemale" | "unknown" ;
 export type PatientDeactivationReasonEnum = "deceased" | "moved" | "other_doctor" | "retired" | "no_contact" | "unknown" | "none" ;
 export type PatientPersonalStatusEnum = "single" | "in_couple" | "married" | "separated" | "divorced" | "divorcing" | "widowed" | "widower" | "complicated" | "unknown" | "contract" | "other" | "annulled" | "polygamous" ;
-

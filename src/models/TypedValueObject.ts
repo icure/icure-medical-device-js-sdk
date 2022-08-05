@@ -36,4 +36,3 @@ interface ITypedValueObject {
 
 
 export type TypedValueObjectTypeEnum = "BOOLEAN" | "INTEGER" | "DOUBLE" | "STRING" | "DATE" | "CLOB" | "JSON" ;
-

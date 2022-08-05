@@ -30,4 +30,3 @@ interface ISystemMetaDataOwner {
   'aesExchangeKeys'?: { [key: string]: { [key: string]: { [key: string]: string }; }; };
   'transferKeys'?: { [key: string]: { [key: string]: string; }; };
 }
-
