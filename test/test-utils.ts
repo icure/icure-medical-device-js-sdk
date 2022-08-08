@@ -61,16 +61,11 @@ export class TestUtils {
 
     const domainOptions = {
       method: 'GET' as Method,
-      url: 'https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/',
-      headers: {
-        'X-RapidAPI-Host': 'privatix-temp-mail-v1.p.rapidapi.com',
-        'X-RapidAPI-Key': apiKey,
-      },
+      url: 'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1'
     };
 
     const { data: domains } = await axios.request(domainOptions);
     const email = `${uuid()}${domains[0]}`;
-    const emailMd5 = md5(email);
     const process =
       await anonymousMedTechApi.authenticationApi.startAuthentication(
         hcpId,
@@ -93,15 +88,11 @@ export class TestUtils {
 
     const emailOptions = {
       method: 'GET' as Method,
-      url: `https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/${emailMd5}/`,
-      headers: {
-        'X-RapidAPI-Host': 'privatix-temp-mail-v1.p.rapidapi.com',
-        'X-RapidAPI-Key': apiKey,
-      },
+      url: `https://www.1secmail.com/api/v1/?action=getMessages&login=${email.split('@')[0]}&domain=${email.split('@')[1]}`
     };
     const { data: emails } = await axios.request(emailOptions);
 
-    const subjectCode = emails[0].mail_subject!.replace(/.*?(\d+).*/, '$1');
+    const subjectCode = emails[0].subject!.replace(/.*?(\d+).*/, '$1');
     const result =
       await anonymousMedTechApi.authenticationApi.completeAuthentication(
         process!,
