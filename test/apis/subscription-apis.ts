@@ -27,33 +27,6 @@ let medtechApi: MedTechApi | undefined = undefined;
 const testType = "IC-TEST";
 const testCode = "TEST";
 
-async function createPatientAndDataSample(api: MedTechApi, codeType: string, codeCode: string) {
-  const patient = await api.patientApi.createOrModifyPatient(
-    new Patient({
-      firstName: "John",
-      lastName: "Snow",
-      note: "Winter is coming",
-    })
-  );
-  await api.dataSampleApi.createOrModifyDataSampleFor(
-    patient.id!,
-    new DataSample({
-      labels: new Set([
-        new CodingReference({type: codeType, code: codeCode}),
-      ]),
-      content: {en: {stringValue: "Hello world"}},
-    })
-  );
-}
-
-function checkStatusesAndEvents(events: DataSample[], statuses: string[], expectedEventsNumber: number, expectedStatusesNumber: number) {
-  events?.forEach((event) => console.log(`Event : ${event}`))
-  statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-  assert(events.length === expectedEventsNumber, "The events have not been recorded");
-  assert(statuses.length === expectedStatusesNumber, "The statuses have not been recorded");
-}
-
 describe("Subscription API", () => {
 
   before(async () => {
@@ -65,60 +38,21 @@ describe("Subscription API", () => {
       .build();
   });
 
-  it("Can subscribe to Data Samples", async () => {
-    const loggedUser = await medtechApi!.userApi.getLoggedUser();
+  async function createDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
+    const loggedUser = await api.userApi.getLoggedUser();
     await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
     const hcp =
-      await medtechApi!.healthcareProfessionalApi.getHealthcareProfessional(
+      await api.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
     const events: DataSample[] = [];
     const statuses: string[] = [];
     const connection = (
-      await medtechApi!.dataSampleApi.subscribeToDataSampleEvents(
-        ["CREATE"],
-        await new DataSampleFilter()
-          .forDataOwner(hcp.id!)
-          .byTagCodeFilter(testType, testCode)
-          .build(),
-        async (ds) => {
-          events.push(ds);
-        }
-      )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
-
-    await createPatientAndDataSample(medtechApi!, testType, testCode);
-
-    await sleep(2000);
-    connection.close();
-    await sleep(1000);
-
-    checkStatusesAndEvents(events, statuses, 1, 2);
-
-  }).timeout(60000);
-
-  it("Can subscribe to Data Samples with options", async () => {
-    const loggedUser = await medtechApi!.userApi.getLoggedUser();
-    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const hcp =
-      await medtechApi!.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-
-    const events: DataSample[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await medtechApi!.dataSampleApi.subscribeToDataSampleEvents(
+      await api.dataSampleApi.subscribeToDataSampleEvents(
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
@@ -127,22 +61,45 @@ describe("Subscription API", () => {
         async (ds) => {
           events.push(ds);
         },
-        {
-          keepAlive: 100,
-          lifetime: 10000
-        }
+        options
       )
     )
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    await createPatientAndDataSample(medtechApi!, testType, testCode);
+    const patient = await api.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: "John",
+        lastName: "Snow",
+        note: "Winter is coming",
+      })
+    );
+    await api.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        labels: new Set([
+          new CodingReference({type: testType, code: testCode}),
+        ]),
+        content: {en: {stringValue: "Hello world"}},
+      })
+    );
 
     await sleep(2000);
     connection.close();
     await sleep(1000);
 
-    checkStatusesAndEvents(events, statuses, 1, 2);
+    events?.forEach((event) => console.log(`Event : ${event}`))
+    statuses?.forEach((event) => console.log(`Status : ${event}`))
 
+    assert(events.length === 1, "The events have not been recorded");
+    assert(statuses.length === 2, "The statuses have not been recorded");
+  }
+
+  it("Can subscribe to Data Samples", async () => {
+    await createDataSamplesAndSubscribe(medtechApi!, {});
+  }).timeout(60000);
+
+  it("Can subscribe to Data Samples with options", async () => {
+    await createDataSamplesAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
   }).timeout(60000);
 });
