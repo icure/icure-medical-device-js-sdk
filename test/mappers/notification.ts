@@ -54,8 +54,8 @@ function assertNotificationIsEquivalentToMaintenanceTask(notification: Notificat
   assert(arrayEquality(!!notification.properties ? notification.properties : [],
     !!maintenanceTask.properties ? maintenanceTask.properties : [], propertyEquality));
   assert(notification.type === maintenanceTask.taskType);
-  assert(metadataEquality(notification.systemMetadata?.delegations, maintenanceTask.delegations));
-  assert(metadataEquality(notification.systemMetadata?.encryptionKeys, maintenanceTask.encryptionKeys));
+  assert(metadataEquality(notification.systemMetaData?.delegations, maintenanceTask.delegations));
+  assert(metadataEquality(notification.systemMetaData?.encryptionKeys, maintenanceTask.encryptionKeys));
 }
 
 const commonOptions = {
@@ -77,7 +77,7 @@ describe('Notification mapper test', () => {
     const newNotification = new Notification({
       ...commonOptions,
       type: notificationTypeEnum.KEY_PAIR_UPDATE,
-      systemMetadata: new SystemMetaDataEncrypted({
+      systemMetaData: new SystemMetaDataEncrypted({
         delegations: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) },
         encryptionKeys: { 'TEST_KEY': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) }
       })
