@@ -24,6 +24,35 @@ const userName = process.env.ICURE_TS_TEST_HCP_USER!;
 const password = process.env.ICURE_TS_TEST_HCP_PWD!;
 const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
 let medtechApi: MedTechApi | undefined = undefined;
+const testType = "IC-TEST";
+const testCode = "TEST";
+
+async function createPatientAndDataSample(api: MedTechApi, codeType: string, codeCode: string) {
+  const patient = await api.patientApi.createOrModifyPatient(
+    new Patient({
+      firstName: "John",
+      lastName: "Snow",
+      note: "Winter is coming",
+    })
+  );
+  await api.dataSampleApi.createOrModifyDataSampleFor(
+    patient.id!,
+    new DataSample({
+      labels: new Set([
+        new CodingReference({type: codeType, code: codeCode}),
+      ]),
+      content: {en: {stringValue: "Hello world"}},
+    })
+  );
+}
+
+function checkStatusesAndEvents(events: DataSample[], statuses: string[], expectedEventsNumber: number, expectedStatusesNumber: number) {
+  events?.forEach((event) => console.log(`Event : ${event}`))
+  statuses?.forEach((event) => console.log(`Status : ${event}`))
+
+  assert(events.length === expectedEventsNumber, "The events have not been recorded");
+  assert(statuses.length === expectedStatusesNumber, "The statuses have not been recorded");
+}
 
 describe("Subscription API", () => {
 
@@ -54,7 +83,7 @@ describe("Subscription API", () => {
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
-          .byTagCodeFilter("IC-TEST", "TEST")
+          .byTagCodeFilter(testType, testCode)
           .build(),
         async (ds) => {
           events.push(ds);
@@ -64,32 +93,14 @@ describe("Subscription API", () => {
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await medtechApi!.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-    await medtechApi!.dataSampleApi.createOrModifyDataSampleFor(
-      patient.id!,
-      new DataSample({
-        labels: new Set([
-          new CodingReference({ type: "IC-TEST", code: "TEST" }),
-        ]),
-        content: { en: { stringValue: "Hello world" } },
-      })
-    );
+    await createPatientAndDataSample(medtechApi!, testType, testCode);
 
     await sleep(2000);
     connection.close();
     await sleep(1000);
 
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
+    checkStatusesAndEvents(events, statuses, 1, 2);
 
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
   }).timeout(60000);
 
   it("Can subscribe to Data Samples with options", async () => {
@@ -111,7 +122,7 @@ describe("Subscription API", () => {
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
-          .byTagCodeFilter("IC-TEST", "TEST")
+          .byTagCodeFilter(testType, testCode)
           .build(),
         async (ds) => {
           events.push(ds);
@@ -125,32 +136,13 @@ describe("Subscription API", () => {
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await medtechApi!.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-
-    await medtechApi!.dataSampleApi.createOrModifyDataSampleFor(
-      patient.id!,
-      new DataSample({
-        labels: new Set([
-          new CodingReference({ type: "IC-TEST", code: "TEST" }),
-        ]),
-        content: { en: { stringValue: "Hello world" } },
-      })
-    );
+    await createPatientAndDataSample(medtechApi!, testType, testCode);
 
     await sleep(2000);
     connection.close();
     await sleep(1000);
 
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
+    checkStatusesAndEvents(events, statuses, 1, 2);
 
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
   }).timeout(60000);
 });
