@@ -92,7 +92,7 @@ export class TestUtils {
     };
     const { data: emails } = await axios.request(emailOptions);
 
-    const subjectCode = emails[0].subject!.replace(/.*?(\d+).*/, '$1');
+    const subjectCode = emails[0].subject!.replace(/[a-zA-Z :]{0,40}(\d+).{0,5}/, '$1');
     const result =
       await anonymousMedTechApi.authenticationApi.completeAuthentication(
         process!,
