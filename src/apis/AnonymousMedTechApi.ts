@@ -68,17 +68,17 @@ export class AnonymousMedTechApiBuilder {
     return this;
   }
 
-  build(): AnonymousMedTechApi {
-    if (!this.authProcessId) {
-      throw new Error("authProcessId is required");
-    }
-    const api = Api(this.iCureUrlPath!, null!, null!, this.crypto);
-
-    return new AnonymousMedTechApi(
-      this.iCureUrlPath,
-      this.authServerUrl,
-      this.authProcessId,
-      api
-    );
+  async build(): Promise<AnonymousMedTechApi> {
+    return Api(this.iCureUrlPath!, null!, null!, this.crypto).then( api => {
+      if (!this.authProcessId) {
+        throw new Error("authProcessId is required");
+      }
+      return new AnonymousMedTechApi(
+        this.iCureUrlPath,
+        this.authServerUrl,
+        this.authProcessId,
+        api
+      );
+    });
   }
 }

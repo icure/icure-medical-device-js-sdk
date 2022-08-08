@@ -93,7 +93,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   }
 
   async initApiAndUserAuthenticationToken(process: AuthenticationProcess, validationCode: string, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<[MedTechApi, ApiInitialisationResult]> {
-    const api = medTechApi()
+    const api = await medTechApi()
       .withICureBasePath(this.iCureBasePath)
       .withUserName(process.login)
       .withPassword(validationCode)
@@ -127,7 +127,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       throw Error("Invalid user, no data owner id")
     }
 
-    const authenticatedApi = medTechApi(api)
+    const authenticatedApi = await medTechApi(api)
       .withPassword(token)
       .build();
 

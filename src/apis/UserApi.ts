@@ -2,6 +2,7 @@ import {Filter} from '../filter/Filter';
 import {PaginatedListUser} from '../models/PaginatedListUser';
 import {User} from '../models/User';
 import {Connection} from "../models/Connection";
+import {Patient} from "../models/Patient";
 
 /**
   * no description
@@ -69,11 +70,5 @@ import {Connection} from "../models/Connection";
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
 
-    subscribeToUserEvents(
-      eventTypes: ('CREATE'|'UPDATE'|'DELETE')[],
-      filter: Filter<User>,
-      eventFired: (user:User) => Promise<void>,
-      options?: {keepAlive?: number, lifetime?: number }
-    ): Promise<Connection>;
-
+    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => Promise<void>): Promise<Connection>;
   }

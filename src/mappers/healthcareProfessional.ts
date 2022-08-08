@@ -37,8 +37,7 @@ export namespace HealthcareProfessionalMapper {
         hcPartyKeys: obj.hcPartyKeys,
         privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
         aesExchangeKeys: obj.aesExchangeKeys,
-        transferKeys: obj.transferKeys,
-        lostHcPartyKeys: obj.lostHcPartyKeys
+        transferKeys: obj.transferKeys
       })
   });
 
@@ -64,7 +63,6 @@ export namespace HealthcareProfessionalMapper {
     hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
     privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
     aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
-    transferKeys: obj.systemMetaData?.transferKeys,
-    lostHcPartyKeys: obj.systemMetaData?.lostHcPartyKeys,
+    transferKeys: obj.systemMetaData?.transferKeys
   });
 }

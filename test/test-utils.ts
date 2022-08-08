@@ -8,11 +8,19 @@ import {v4 as uuid} from 'uuid';
 import * as md5 from 'md5';
 import {Patient} from '../src/models/Patient';
 import {assert} from "chai";
+import {HealthcareElement} from "../src/models/HealthcareElement";
+import {DataSample} from "../src/models/DataSample";
+import {CodingReference} from "../src/models/CodingReference";
 
 const apiKey = process.env.ICURE_TS_TEST_RAPID_API_KEY!;
 
 const delay = (delay: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
+
+let cachedHcpApi: MedTechApi | undefined;
+let cachedHcpLoggedUser: User | undefined;
+let cachedPatient: Patient | undefined;
+let cachedHealthcareElement: HealthcareElement | undefined;
 
 export class TestUtils {
 
@@ -27,7 +35,7 @@ export class TestUtils {
   }
   
   static async createMedTechApiAndLoggedUserFor(iCureUrl: string, userName: string, password: string, dataOwnerKey: string): Promise<{api: MedTechApi, user: User}> {
-    const medtechApi = medTechApi()
+    const medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
@@ -44,7 +52,7 @@ export class TestUtils {
   }
 
   static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authProcessId: string, hcpId: string): Promise<{api: MedTechApi, user: User}> {
-    const anonymousMedTechApi = new AnonymousMedTechApiBuilder()
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
       .withCrypto(webcrypto as any)
@@ -116,4 +124,55 @@ export class TestUtils {
 
     return {api: result.medTechApi, user: foundUser};
   }
+
+  static async getOrCreateHcpApiAndLoggedUser(iCureUrl: string, hcpUserName: string, hcpPassword: string, hcpPrivKey: string): Promise<{api: MedTechApi, user: User}> {
+    if (cachedHcpApi == undefined && cachedHcpLoggedUser == undefined) {
+      const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
+      cachedHcpApi = apiAndUser.api;
+      cachedHcpLoggedUser = apiAndUser.user;
+    }
+
+    return {api: cachedHcpApi!, user: cachedHcpLoggedUser!};
+  }
+
+  static async getOrCreatePatient(medtechApi: MedTechApi): Promise<Patient> {
+    if (cachedPatient == undefined) {
+      cachedPatient = await medtechApi.patientApi.createOrModifyPatient(
+        new Patient({
+          firstName: "John",
+          lastName: "Snow",
+          note: "Winter is coming",
+        })
+      );
+    }
+    return cachedPatient
+  }
+
+  static async getOrCreateHealthElement(
+    medtechApi: MedTechApi,
+    patient: Patient
+  ): Promise<HealthcareElement> {
+    if (cachedHealthcareElement == undefined) {
+      cachedHealthcareElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+        new HealthcareElement({
+          note: "Hero Syndrome",
+        }),
+        patient!.id!
+      );
+    }
+    return cachedHealthcareElement;
+  }
+
+  static createDataSampleForPatient(medtechApi: MedTechApi, patient: Patient) {
+    return medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        labels: new Set([
+          new CodingReference({type: "IC-TEST", code: "TEST"}),
+        ]),
+        content: {en: {stringValue: "Hello world"}},
+      })
+    );
+  }
 }
+
