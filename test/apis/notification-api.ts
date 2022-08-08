@@ -9,6 +9,7 @@ import {TextDecoder, TextEncoder} from "util";
 import {TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
 import {NotificationFilter} from "../../src/filter";
+import {PaginatedListNotification} from "../../src/models/PaginatedListNotification";
 
 (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
 ;(global as any).fetch = fetch
@@ -26,6 +27,30 @@ let idFilterNotification1: Notification | undefined = undefined;
 let idFilterNotification2: Notification | undefined = undefined;
 let idFilterNotification3: Notification | undefined = undefined;
 
+async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
+  const notificationId = uuid();
+  const notification = new Notification({
+    id: notificationId,
+    status: "pending",
+    type: notificationTypeEnum.KEY_PAIR_UPDATE
+  })
+  const createdNotification = await api.notificationApi.createOrModifyNotification(
+    notification,
+    delegateId
+  )
+  assert(!!createdNotification);
+  return createdNotification;
+}
+
+function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, expectedLength: number, includedIds: string[], excludedIds: string[]) {
+  assert(paginatedList.rows.length == expectedLength);
+  includedIds.forEach( id => {
+    assert(paginatedList.rows.map(it => it.id).includes(id));
+  });
+  excludedIds.forEach( id => {
+    assert(!paginatedList.rows.map(it => it.id).includes(id));
+  });
+}
 
 describe('Notification API', async function () {
 
@@ -53,31 +78,31 @@ describe('Notification API', async function () {
       process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!)
     hcp3Api = hcpApi3AndUser.api;
 
-    idFilterNotification1 = await hcp1Api!.notificationApi.createOrModifyNotification(
+    idFilterNotification1 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
         id: uuid(),
         status: "pending",
         type: notificationTypeEnum.KEY_PAIR_UPDATE
       }),
-      hcp2User!.healthcarePartyId!
+      hcp2User.healthcarePartyId
     )
     assert(!!idFilterNotification1);
-    idFilterNotification2 = await hcp1Api!.notificationApi.createOrModifyNotification(
+    idFilterNotification2 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
         id: uuid(),
         status: "pending",
         type: notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
       }),
-      hcp2User!.healthcarePartyId!
+      hcp2User.healthcarePartyId
     )
     assert(!!idFilterNotification2);
-    idFilterNotification3 = await hcp1Api!.notificationApi.createOrModifyNotification(
+    idFilterNotification3 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
         id: uuid(),
         status: "pending",
         type: notificationTypeEnum.OTHER
       }),
-      hcp2User!.healthcarePartyId!
+      hcp2User.healthcarePartyId
     )
     assert(!!idFilterNotification3);
 
@@ -92,7 +117,7 @@ describe('Notification API', async function () {
     })
     const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
       notification,
-      hcp2User!.healthcarePartyId!
+      hcp2User!.healthcarePartyId
     )
     assert(!!createdNotification);
     assert(createdNotification.id === notification.id);
@@ -107,54 +132,24 @@ describe('Notification API', async function () {
   });
 
   it('should be able to get an existing Notification by Id as the creator', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
-    const retrievedNotification = await hcp1Api!.notificationApi.getNotification(notificationId);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    const retrievedNotification = await hcp1Api!.notificationApi.getNotification(createdNotification.id!);
     assert(!!retrievedNotification);
     assert(createdNotification.id === retrievedNotification.id);
     assert(createdNotification.rev === retrievedNotification.rev);
   });
 
   it('should be able to get an existing Notification by Id as a delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
-    const retrievedNotification = await hcp2Api!.notificationApi.getNotification(notificationId);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    const retrievedNotification = await hcp2Api!.notificationApi.getNotification(createdNotification.id!);
     assert(!!retrievedNotification);
     assert(createdNotification.id === retrievedNotification.id);
     assert(createdNotification.rev === retrievedNotification.rev);
   });
 
   it('should not be able to get an existing Notification if not author or delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
-    hcp3Api!.notificationApi.getNotification(notificationId).then(
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    hcp3Api!.notificationApi.getNotification(createdNotification.id!).then(
       () => {
         throw Error(`You should not be able to get this notification!!`);
       },
@@ -163,17 +158,7 @@ describe('Notification API', async function () {
   });
 
   it('should be able to modify an existing Notification as the creator', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     createdNotification.status = "ongoing";
     const modifiedNotification = await hcp1Api!.notificationApi.createOrModifyNotification(createdNotification);
     assert(!!modifiedNotification);
@@ -183,17 +168,7 @@ describe('Notification API', async function () {
   });
 
   it('should be able to modify an existing Notification as the delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     createdNotification.status = "ongoing";
     const modifiedNotification = await hcp2Api!.notificationApi.createOrModifyNotification(createdNotification);
     assert(!!modifiedNotification);
@@ -203,17 +178,7 @@ describe('Notification API', async function () {
   });
 
   it('should not be able to modify an existing Notification if not author or delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     createdNotification.status = "ongoing";
     hcp3Api!.notificationApi.createOrModifyNotification(createdNotification).then(
       () => {
@@ -224,17 +189,7 @@ describe('Notification API', async function () {
   });
 
   it('should be able to delete an existing Notification as the creator', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     const deletedId = await hcp1Api!.notificationApi.deleteNotification(createdNotification.id!);
     assert(!!deletedId);
     const deletedNotification = await hcp1Api!.notificationApi.getNotification(createdNotification.id!);
@@ -243,17 +198,7 @@ describe('Notification API', async function () {
   });
 
   it('should be able to delete an existing Notification as the delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     const deletedId = await hcp2Api!.notificationApi.deleteNotification(createdNotification.id!);
     assert(!!deletedId);
     const deletedNotification = await hcp2Api!.notificationApi.getNotification(createdNotification.id!);
@@ -262,32 +207,20 @@ describe('Notification API', async function () {
   });
 
   it('should not be able to delete an existing Notification if not author or delegate', async () => {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
-      notification,
-      hcp2User!.healthcarePartyId!
-    )
-    assert(!!createdNotification);
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     const deletedId = await hcp3Api!.notificationApi.deleteNotification(createdNotification.id!);
     assert(!deletedId);
   });
 
-  it('should be able to filter Notifications by id as the creator', async () => {
-    const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter()
-        .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
-        .build()
-    );
-    assert(result.rows.length == 2);
-    assert(result.rows.map(it => it.id).includes(idFilterNotification1!.id!));
-    assert(result.rows.map(it => it.id).includes(idFilterNotification2!.id!));
-    assert(!result.rows.map(it => it.id).includes(idFilterNotification3!.id!));
-  });
+  it('should be able to filter Notifications by id as the creator',
+    async () => {
+      const result = await hcp1Api!.notificationApi.filterNotifications(
+        await new NotificationFilter()
+          .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
+          .build()
+      );
+      checkThatPaginatedListHasId(result, 2, [idFilterNotification1!.id!, idFilterNotification2!.id!], [idFilterNotification3!.id!]);
+    });
 
   it('should be able to filter Notifications by id as the delegate', async () => {
     const result = await hcp2Api!.notificationApi.filterNotifications(
@@ -295,10 +228,7 @@ describe('Notification API', async function () {
         .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
         .build()
     );
-    assert(result.rows.length == 2);
-    assert(result.rows.map(it => it.id).includes(idFilterNotification1!.id!));
-    assert(result.rows.map(it => it.id).includes(idFilterNotification2!.id!));
-    assert(!result.rows.map(it => it.id).includes(idFilterNotification3!.id!));
+    checkThatPaginatedListHasId(result, 2, [idFilterNotification1!.id!, idFilterNotification2!.id!], [idFilterNotification3!.id!]);
   });
 
   it('should not be able to filter Notifications by id if not author or delegate', async () => {
