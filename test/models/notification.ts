@@ -21,7 +21,7 @@ describe('Notification model test', () => {
       responsible: uuid(),
       properties: [new Property({id: uuid()})],
       type: notificationTypeEnum.OTHER,
-      systemMetadata: new SystemMetaDataEncrypted({
+      systemMetaData: new SystemMetaDataEncrypted({
         delegations: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) },
         encryptionKeys: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) }
       })
