@@ -58,20 +58,24 @@ function assertNotificationIsEquivalentToMaintenanceTask(notification: Notificat
   assert(metadataEquality(notification.systemMetadata?.encryptionKeys, maintenanceTask.encryptionKeys));
 }
 
+const commonOptions = {
+    id: uuid(),
+    rev: '1.234556',
+    status: MaintenanceTask.StatusEnum.Cancelled,
+    identifier: [new Identifier({id: uuid()})],
+    created: new Date().getTime(),
+    modified: new Date().getTime(),
+    deletionDate: new Date().getTime(),
+    endOfLife: new Date().getTime(),
+    author: uuid(),
+    responsible: uuid(),
+    properties: [new Property({id: uuid()})],
+};
+
 describe('Notification mapper test', () => {
   it('Notification to MaintenanceTask - Success', () => {
     const newNotification = new Notification({
-      id: uuid(),
-      rev: '1.234556',
-      status: MaintenanceTask.StatusEnum.Cancelled,
-      identifier: [new Identifier({id: uuid()})],
-      created: new Date().getTime(),
-      modified: new Date().getTime(),
-      deletionDate: new Date().getTime(),
-      endOfLife: new Date().getTime(),
-      author: uuid(),
-      responsible: uuid(),
-      properties: [new Property({id: uuid()})],
+      ...commonOptions,
       type: notificationTypeEnum.KEY_PAIR_UPDATE,
       systemMetadata: new SystemMetaDataEncrypted({
         delegations: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) },
@@ -86,17 +90,7 @@ describe('Notification mapper test', () => {
 
   it('MaintenanceTask to Notification - Success', () => {
     const newTask = new MaintenanceTask({
-      id: uuid(),
-      rev: '3.1421',
-      status: MaintenanceTask.StatusEnum.Cancelled,
-      identifier: [new Identifier({id: uuid()})],
-      created: new Date().getTime(),
-      modified: new Date().getTime(),
-      deletionDate: new Date().getTime(),
-      endOfLife: new Date().getTime(),
-      author: uuid(),
-      responsible: uuid(),
-      properties: [new Property({id: uuid()})],
+      ...commonOptions,
       taskType: notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS,
       delegations: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) },
       encryptionKeys: { 'TEST_KEY': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) }
