@@ -1,5 +1,4 @@
 import "mocha";
-import {MedTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
 
 import {DataSampleFilter} from "../../src/filter";
@@ -7,11 +6,8 @@ import {DataSampleFilter} from "../../src/filter";
 import {LocalStorage} from "node-localstorage";
 import * as os from "os";
 import {assert} from "chai";
-import {Patient} from "../../src/models/Patient";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
-import {HealthcareElement} from "../../src/models/HealthcareElement";
-import {User} from "../../src/models/User";
 import {TestUtils} from "../test-utils";
 
 const tmp = os.tmpdir();
@@ -223,7 +219,7 @@ describe("Data Samples API", () => {
     const hcpDataSample = await hcpApi.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(hcpDataSample != null);
     assert(hcpDataSample.id == sharedDataSample.id);
-  }).timeout(20000);
+  });
 
   it('HCP sharing data sample with patient', async () => {
     // Given
@@ -244,7 +240,7 @@ describe("Data Samples API", () => {
     const patDataSample = await patApi.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(patDataSample != null);
     assert(patDataSample.id == sharedDataSample.id);
-  }).timeout(20000);
+  });
 
   it('HCP sharing data sample with another HCP', async () => {
     // Given
@@ -267,7 +263,7 @@ describe("Data Samples API", () => {
     const hcpDataSample = await hcp2Api.dataSampleApi.getDataSample(sharedDataSample.id!);
     assert(hcpDataSample != null);
     assert(hcpDataSample.id == sharedDataSample.id);
-  }).timeout(20000);
+  });
 
   it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
