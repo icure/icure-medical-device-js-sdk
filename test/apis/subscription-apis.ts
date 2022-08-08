@@ -1,5 +1,5 @@
 import "mocha";
-import {medTechApi} from "../../src/apis/medTechApi";
+import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
 
@@ -23,121 +23,64 @@ const iCureUrl =
 const userName = process.env.ICURE_TS_TEST_HCP_USER!;
 const password = process.env.ICURE_TS_TEST_HCP_PWD!;
 const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
+let medtechApi: MedTechApi | undefined = undefined;
+const testType = "IC-TEST";
+const testCode = "TEST";
 
 describe("Subscription API", () => {
-  it("Can subscribe to Data Samples", async () => {
-    const medtechApi = medTechApi()
+
+  before(async () => {
+    medtechApi = await medTechApi()
       .withICureBasePath(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
       .build();
+  });
 
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+  async function createDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
+    const loggedUser = await api.userApi.getLoggedUser();
+    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
     const hcp =
-      await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
+      await api.healthcareProfessionalApi.getHealthcareProfessional(
         loggedUser.healthcarePartyId!
       );
     const events: DataSample[] = [];
     const statuses: string[] = [];
     const connection = (
-      await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
+      await api.dataSampleApi.subscribeToDataSampleEvents(
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
-          .byTagCodeFilter("IC-TEST", "TEST")
-          .build(),
-        async (ds) => {
-          events.push(ds);
-        }
-      )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
-
-    const patient = await medtechApi.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-    await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
-      patient.id!,
-      new DataSample({
-        labels: new Set([
-          new CodingReference({ type: "IC-TEST", code: "TEST" }),
-        ]),
-        content: { en: { stringValue: "Hello world" } },
-      })
-    );
-
-    await sleep(2000);
-    connection.close();
-    await sleep(1000);
-
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }).timeout(60000);
-
-  it("Can subscribe to Data Samples with options", async () => {
-    const medtechApi = medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
-      .withCrypto(webcrypto as any)
-      .build();
-
-    const loggedUser = await medtechApi.userApi.getLoggedUser();
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const hcp =
-      await medtechApi.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-    const events: DataSample[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await medtechApi.dataSampleApi.subscribeToDataSampleEvents(
-        ["CREATE"],
-        await new DataSampleFilter()
-          .forDataOwner(hcp.id!)
-          .byTagCodeFilter("IC-TEST", "TEST")
+          .byTagCodeFilter(testType, testCode)
           .build(),
         async (ds) => {
           events.push(ds);
         },
-        {keepAlive: 100, lifetime: 100}
+        options
       )
     )
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await medtechApi.patientApi.createOrModifyPatient(
+    const patient = await api.patientApi.createOrModifyPatient(
       new Patient({
         firstName: "John",
         lastName: "Snow",
         note: "Winter is coming",
       })
     );
-    await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+    await api.dataSampleApi.createOrModifyDataSampleFor(
       patient.id!,
       new DataSample({
         labels: new Set([
-          new CodingReference({ type: "IC-TEST", code: "TEST" }),
+          new CodingReference({type: testType, code: testCode}),
         ]),
-        content: { en: { stringValue: "Hello world" } },
+        content: {en: {stringValue: "Hello world"}},
       })
     );
 
@@ -150,5 +93,13 @@ describe("Subscription API", () => {
 
     assert(events.length === 1, "The events have not been recorded");
     assert(statuses.length === 2, "The statuses have not been recorded");
+  }
+
+  it("Can subscribe to Data Samples", async () => {
+    await createDataSamplesAndSubscribe(medtechApi!, {});
+  }).timeout(60000);
+
+  it("Can subscribe to Data Samples with options", async () => {
+    await createDataSamplesAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
   }).timeout(60000);
 });

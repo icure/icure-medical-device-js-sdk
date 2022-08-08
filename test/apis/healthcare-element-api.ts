@@ -57,7 +57,7 @@ describe('Healthcare Element API', () => {
     const hcpHealthcareElement = await hcpApi.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(hcpHealthcareElement != null);
     assert(hcpHealthcareElement.id == sharedHealthcareElement.id);
-  }).timeout(20000);
+  });
 
   it('HCP sharing healthcare element with patient', async () => {
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
@@ -78,7 +78,7 @@ describe('Healthcare Element API', () => {
     const patHealthcareElement = await patApi.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(patHealthcareElement != null);
     assert(patHealthcareElement.id == sharedHealthcareElement.id);
-  }).timeout(20000);
+  });
 
   it('HCP sharing healthcare element with another HCP', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
@@ -101,7 +101,7 @@ describe('Healthcare Element API', () => {
     const hcp2HealthcareElement = await hcp2Api.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!);
     assert(hcp2HealthcareElement != null);
     assert(hcp2HealthcareElement.id == sharedHealthcareElement.id);
-  }).timeout(20000);
+  });
 
   it('Optimization - No delegation sharing if delegated already has access to HE', async () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)

@@ -1,6 +1,7 @@
 import {Filter} from '../filter/Filter';
 import {HealthcareProfessional} from '../models/HealthcareProfessional';
 import {PaginatedListHealthcareProfessional} from '../models/PaginatedListHealthcareProfessional';
+import {MaintenanceTask} from "@icure/api";
 
 /**
   * no description
