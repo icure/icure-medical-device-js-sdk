@@ -10,6 +10,7 @@ import {TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
 import {NotificationFilter} from "../../src/filter";
 import {PaginatedListNotification} from "../../src/models/PaginatedListNotification";
+import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
 
 (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
 ;(global as any).fetch = fetch
@@ -177,15 +178,73 @@ describe('Notification API', async function () {
     assert(modifiedNotification.status === "ongoing");
   });
 
+  async function modifyNotificationAndExpectFailure(api: MedTechApi, notification: Notification) {
+    api.notificationApi.createOrModifyNotification(notification).then(
+      () => {throw new Error("Illegal state");},
+      (e) => assert(e != undefined)
+    );
+  }
+
   it('should not be able to modify an existing Notification if not author or delegate', async () => {
     const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
     createdNotification.status = "ongoing";
-    hcp3Api!.notificationApi.createOrModifyNotification(createdNotification).then(
-      () => {
-        throw Error(`You should not be able to modify this notification!!`);
-      },
-      (e) => assert(e != undefined)
-    );
+    await modifyNotificationAndExpectFailure(hcp3Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if rev changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.rev = 'NOPE';
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if created changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.created = 12234;
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if endOfLife changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.endOfLife = 12234;
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if deletionDate changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.deletionDate = 12234;
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if modified changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.modified = 12234;
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if author changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.author = "FAIL";
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if responsible changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.responsible = "FAIL";
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if type changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.type = notificationTypeEnum.OTHER;
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
+  });
+
+  it('should not be able to modify an existing Notification if systemMetaData changes', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    createdNotification.systemMetaData = new SystemMetaDataEncrypted({
+      secretForeignKeys: ["NOPE", "SHOULD", "FAIL"]
+    })
+    await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
   });
 
   it('should be able to delete an existing Notification as the creator', async () => {
