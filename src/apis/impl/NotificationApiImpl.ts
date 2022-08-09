@@ -3,7 +3,7 @@ import {Notification} from "../../models/Notification";
 import {
   FilterChainMaintenanceTask,
   IccHcpartyXApi,
-  IccUserXApi, MaintenanceTask
+  IccUserXApi, MaintenanceTask, User
 } from "@icure/api";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 import {NotificationMapper} from "../../mappers/notification";
@@ -11,6 +11,7 @@ import {PaginatedListNotification} from "../../models/PaginatedListNotification"
 import {Filter} from "../../filter/Filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
+import {systemMetaDataEncryptedEquality} from "../../utils/equality";
 
 export class NotificationApiImpl implements NotificationApi {
 
@@ -24,23 +25,40 @@ export class NotificationApiImpl implements NotificationApi {
     this.hcpApi = api.healthcarePartyApi;
   }
 
+  private async createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
+    if(!delegate) throw new Error("No delegate provided for Notification creation");
+    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
+    return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
+      .then( task => {
+        return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task);
+      });
+  }
+
+  private async updateNotification(notification: Notification, user: User): Promise<any> {
+    if (!notification.id) throw new Error("Invalid notification");
+    const existingNotification = await this.getNotification(notification.id);
+    if (!existingNotification) throw new Error("Cannot modify a non-existing Notification");
+    if (existingNotification.rev !== notification.rev) throw new Error("Cannot modify rev field");
+    else if (existingNotification.created !== notification.created) throw new Error("Cannot modify created field");
+    else if (existingNotification.endOfLife !== notification.endOfLife) throw new Error("Cannot modify endOfLife field");
+    else if (existingNotification.deletionDate !== notification.deletionDate) throw new Error("Cannot modify deletionDate field");
+    else if (existingNotification.modified !== notification.modified) throw new Error("Cannot modify modified field");
+    else if (existingNotification.author !== notification.author) throw new Error("Cannot modify created author field");
+    else if (existingNotification.responsible !== notification.responsible) throw new Error("Cannot modify responsible field");
+    else if (existingNotification.type !== notification.type) throw new Error("Cannot modify type field");
+    else if (systemMetaDataEncryptedEquality(existingNotification.systemMetaData, notification.systemMetaData)) throw new Error("Cannot modify created field");
+    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
+    return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask);
+  }
+
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then( user => {
       if(!user) throw new Error("There is no user currently logged in user");
-      const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
-      if(!inputMaintenanceTask?.rev) {
-        if(!delegate) throw new Error("No delegate provided for Notification creation");
-        return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
-          .then( task => {
-            return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task).then( (createdTask) => {
-              return NotificationMapper.toNotification(createdTask as MaintenanceTask);
-            });
-          })
-      } else {
-        return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask).then( (createdTask) => {
-          return NotificationMapper.toNotification(createdTask as MaintenanceTask);
-        });
-      }
+      const notificationPromise = !!notification?.rev ? this.createNotification(notification, user, delegate)
+        : this.updateNotification(notification, user);
+      return notificationPromise.then( (createdTask) => {
+        return NotificationMapper.toNotification(createdTask as MaintenanceTask);
+      });
     });
   }
 
