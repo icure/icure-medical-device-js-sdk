@@ -24,6 +24,7 @@ let hcp1User: User | undefined = undefined;
 let hcp2Api: MedTechApi | undefined = undefined;
 let hcp2User: User | undefined = undefined;
 let hcp3Api: MedTechApi | undefined = undefined;
+let hcp3User: User | undefined = undefined;
 let idFilterNotification1: Notification | undefined = undefined;
 let idFilterNotification2: Notification | undefined = undefined;
 let idFilterNotification3: Notification | undefined = undefined;
@@ -78,6 +79,7 @@ describe('Notification API', async function () {
       process.env.ICURE_TS_TEST_HCP_3_PWD!,
       process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!)
     hcp3Api = hcpApi3AndUser.api;
+    hcp3User = hcpApi3AndUser.user;
 
     idFilterNotification1 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
