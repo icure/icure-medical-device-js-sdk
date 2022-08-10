@@ -1,4 +1,6 @@
 export * from "./src/models/all"
+export * from "./src/apis/AnonymousMedTechApi"
+export * from "./src/apis/AuthenticationApi"
 export * from "./src/apis/CodingApi"
 export * from "./src/apis/DataSampleApi"
 export * from "./src/apis/HealthcareElementApi"
