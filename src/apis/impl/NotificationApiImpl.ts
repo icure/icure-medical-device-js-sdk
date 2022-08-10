@@ -43,10 +43,10 @@ export class NotificationApiImpl implements NotificationApi {
     else if (existingNotification.endOfLife !== notification.endOfLife) throw new Error("Cannot modify endOfLife field");
     else if (existingNotification.deletionDate !== notification.deletionDate) throw new Error("Cannot modify deletionDate field");
     else if (existingNotification.modified !== notification.modified) throw new Error("Cannot modify modified field");
-    else if (existingNotification.author !== notification.author) throw new Error("Cannot modify created author field");
+    else if (existingNotification.author !== notification.author) throw new Error("Cannot modify  author field");
     else if (existingNotification.responsible !== notification.responsible) throw new Error("Cannot modify responsible field");
     else if (existingNotification.type !== notification.type) throw new Error("Cannot modify type field");
-    else if (systemMetaDataEncryptedEquality(existingNotification.systemMetaData, notification.systemMetaData)) throw new Error("Cannot modify created field");
+    else if (!systemMetaDataEncryptedEquality(existingNotification.systemMetaData, notification.systemMetaData)) throw new Error("Cannot modify systemMetaData field");
     const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
     return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask);
   }
@@ -54,7 +54,7 @@ export class NotificationApiImpl implements NotificationApi {
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then( user => {
       if(!user) throw new Error("There is no user currently logged in user");
-      const notificationPromise = !!notification?.rev ? this.createNotification(notification, user, delegate)
+      const notificationPromise = !notification?.rev ? this.createNotification(notification, user, delegate)
         : this.updateNotification(notification, user);
       return notificationPromise.then( (createdTask) => {
         return NotificationMapper.toNotification(createdTask as MaintenanceTask);
