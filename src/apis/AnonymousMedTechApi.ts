@@ -41,6 +41,7 @@ export class AnonymousMedTechApiBuilder {
   private authServerUrl: string;
   private authProcessId: string | undefined;
   private crypto?: Crypto;
+  private _preventCookieUsage: boolean = false;
 
   constructor() {
     this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
@@ -68,8 +69,13 @@ export class AnonymousMedTechApiBuilder {
     return this;
   }
 
+  preventCookieUsage(): AnonymousMedTechApiBuilder {
+    this._preventCookieUsage = true;
+    return this;
+  }
+
   async build(): Promise<AnonymousMedTechApi> {
-    return Api(this.iCureUrlPath!, null!, null!, this.crypto).then( api => {
+    return Api(this.iCureUrlPath!, null!, null!, this.crypto, fetch, this._preventCookieUsage).then( api => {
       if (!this.authProcessId) {
         throw new Error("authProcessId is required");
       }
