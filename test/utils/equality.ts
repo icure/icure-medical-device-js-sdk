@@ -70,13 +70,10 @@ describe("Equality functions test", () => {
   });
 
   it("delegationEquality should be able to check if two Delegations are equal if the tags are in different order", () => {
-    const firstDelegation = new Delegation({
-      tags: ["b", "a"]
-    });
-    const secondDelegation = new Delegation({
-      tags: ["a", "b"]
-    });
-    assert(delegationEquality(firstDelegation, secondDelegation));
+    assert(delegationEquality(
+      new Delegation({tags: ["b", "a"]}),
+      new Delegation({tags: ["a", "b"]})
+      ));
   });
 
   it("delegationEquality should be able to check if two Delegations are tags are null", () => {
