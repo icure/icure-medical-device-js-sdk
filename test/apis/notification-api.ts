@@ -47,10 +47,10 @@ async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
 function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, expectedLength: number, includedIds: string[], excludedIds: string[]) {
   assert(paginatedList.rows.length == expectedLength);
   includedIds.forEach( id => {
-    assert(paginatedList.rows.map(it => it.id).includes(id));
+    assert(paginatedList.rows.map(el => el.id).includes(id));
   });
   excludedIds.forEach( id => {
-    assert(!paginatedList.rows.map(it => it.id).includes(id));
+    assert(!paginatedList.rows.map(el => el.id).includes(id));
   });
 }
 
@@ -269,8 +269,12 @@ describe('Notification API', async function () {
 
   it('should not be able to delete an existing Notification if not author or delegate', async () => {
     const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
-    const deletedId = await hcp3Api!.notificationApi.deleteNotification(createdNotification.id!);
-    assert(!deletedId);
+    hcp3Api!.notificationApi.deleteNotification(createdNotification.id!).then(
+      () => {
+        throw Error(`You should not be here`);
+      },
+      (e) => assert(e != undefined)
+    );
   });
 
   it('should be able to filter Notifications by id as the creator',
@@ -290,15 +294,6 @@ describe('Notification API', async function () {
         .build()
     );
     checkThatPaginatedListHasId(result, 2, [idFilterNotification1!.id!, idFilterNotification2!.id!], [idFilterNotification3!.id!]);
-  });
-
-  it('should not be able to filter Notifications by id if not author or delegate', async () => {
-    const result = await hcp3Api!.notificationApi.filterNotifications(
-      await new NotificationFilter()
-        .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
-        .build()
-    );
-    assert(result.rows.length == 0);
   });
 
   it('should be able to filter Notifications by HcParty id and type as the creator', async () => {
