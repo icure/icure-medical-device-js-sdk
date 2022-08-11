@@ -10,6 +10,7 @@ import {
   IccUserXApi,
   Patient as PatientDto
 } from '@icure/api'
+import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
 import {FilterMapper} from '../../mappers/filter'
 import {PaginatedListMapper} from '../../mappers/paginatedList'
 import {Filter} from '../../filter/Filter'
@@ -21,13 +22,14 @@ export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
+  private readonly dataOwnerApi: IccDataOwnerXApi
 
   private readonly basePath: string
   private readonly username?: string
   private readonly password?: string
 
   constructor(
-    api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+    api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; dataOwnerApi: IccDataOwnerXApi; documentApi: IccDocumentXApi },
     basePath: string,
     username: string | undefined,
     password: string | undefined
@@ -38,6 +40,7 @@ export class PatientApiImpl implements PatientApi {
     this.userApi = api.userApi
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
+    this.dataOwnerApi = api.dataOwnerApi
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
@@ -97,7 +100,7 @@ export class PatientApiImpl implements PatientApi {
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
     const currentUser = await this.userApi.getCurrentUser()
-    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const patientToModify = PatientMapper.toPatientDto(patient)!
 
     if (patientToModify.delegations == undefined || patientToModify.delegations[dataOwnerId].length == 0) {

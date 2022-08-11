@@ -53,7 +53,7 @@ export class NotificationApiImpl implements NotificationApi {
 
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then( user => {
-      if(!user) throw new Error("There is no user currently logged in user");
+      if(!user) throw new Error("There is no user currently logged in");
       const notificationPromise = !notification?.rev ? this.createNotification(notification, user, delegate)
         : this.updateNotification(notification, user);
       return notificationPromise.then( (createdTask) => {
@@ -63,15 +63,18 @@ export class NotificationApiImpl implements NotificationApi {
   }
 
   async deleteNotification(notificationId: string): Promise<string | undefined> {
-    return this.maintenanceTaskApi.deleteMaintenanceTask(notificationId).then( identifiers => {
-      if(!identifiers || identifiers.length == 0) return undefined;
-      return identifiers[0].id;
+    return this.userApi.getCurrentUser().then( user => {
+      if(!user) throw new Error("There is no user currently logged in");
+      return this.maintenanceTaskApi.deleteMaintenanceTaskWithUser(user, notificationId).then(identifiers => {
+        if (!identifiers || identifiers.length == 0) return undefined;
+        return identifiers[0].id;
+      });
     });
   }
 
   async filterNotifications(filter: Filter<Notification>, nextNotificationId?: string, limit?: number): Promise<PaginatedListNotification> {
     return this.userApi.getCurrentUser().then( user => {
-      if (!user) throw new Error("There is no user currently logged in user");
+      if (!user) throw new Error("There is no user currently logged in");
       return this.maintenanceTaskApi.filterMaintenanceTasksByWithUser(
         user,
         nextNotificationId,
@@ -87,7 +90,7 @@ export class NotificationApiImpl implements NotificationApi {
 
   async getNotification(notificationId: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then( user => {
-      if(!user) throw new Error("There is no user currently logged in user");
+      if(!user) throw new Error("There is no user currently logged in");
       return this.maintenanceTaskApi.getMaintenanceTaskWithUser(user, notificationId).then( task => {
         return NotificationMapper.toNotification(task)
       });

@@ -22,6 +22,7 @@ import {
   SubContact,
   User as UserDto,
 } from "@icure/api";
+import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
 import {any, distinctBy, firstOrNull, isNotEmpty, sumOf,} from "../../utils/functionalUtils";
 import {CachedMap} from "../../utils/cachedMap";
 import {DataSampleMapper} from "../../mappers/serviceDataSample";
@@ -40,6 +41,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   private readonly userApi: IccUserXApi;
   private readonly patientApi: IccPatientXApi;
   private readonly contactApi: IccContactXApi;
+  private readonly dataOwnerApi: IccDataOwnerXApi;
   private readonly documentApi: IccDocumentXApi;
   private readonly healthcareElementApi: IccHelementXApi;
 
@@ -55,6 +57,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       userApi: IccUserXApi;
       patientApi: IccPatientXApi;
       contactApi: IccContactXApi;
+      dataOwnerApi: IccDataOwnerXApi;
       documentApi: IccDocumentXApi;
       healthcareElementApi: IccHelementXApi;
     },
@@ -69,6 +72,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     this.userApi = api.userApi;
     this.patientApi = api.patientApi;
     this.contactApi = api.contactApi;
+    this.dataOwnerApi = api.dataOwnerApi;
     this.documentApi = api.documentApi;
     this.healthcareElementApi = api.healthcareElementApi;
   }
@@ -259,7 +263,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   ): Promise<string | undefined> {
     let keysFromDeleg =
       await this.crypto.extractKeysHierarchyFromDelegationLikes(
-        this.userApi.getDataOwnerOf(currentUser),
+        this.dataOwnerApi.getDataOwnerOf(currentUser),
         contactDto.id!,
         contactDto.cryptedForeignKeys!
       );
@@ -799,7 +803,7 @@ export class DataSampleApiImpl implements DataSampleApi {
 
   async giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample> {
     const currentUser = await this.userApi.getCurrentUser()
-    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const contactOfDataSample = (await this._getContactOfDataSample(currentUser, dataSample))[1]
 
     if (contactOfDataSample == undefined) {
@@ -887,7 +891,7 @@ export class DataSampleApiImpl implements DataSampleApi {
 
   async extractPatientId(dataSample: DataSample): Promise<String|undefined> {
     const currentUser = await this.userApi.getCurrentUser();
-    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
 
     if (!dataSample?.systemMetaData?.cryptedForeignKeys) {
       return undefined
