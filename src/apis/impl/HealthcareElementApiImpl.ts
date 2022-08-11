@@ -15,6 +15,7 @@ import {
   Patient as PatientDto,
   User as UserDto,
 } from '@icure/api'
+import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
 import {forceUuid} from '../../mappers/utils'
 import {PaginatedListMapper} from '../../mappers/paginatedList'
 import {FilterMapper} from '../../mappers/filter'
@@ -26,12 +27,14 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly heApi: IccHelementXApi
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
+  private readonly dataOwnerApi: IccDataOwnerXApi
 
   constructor(api: {
     cryptoApi: IccCryptoXApi
     userApi: IccUserXApi
     patientApi: IccPatientXApi
     contactApi: IccContactXApi
+    dataOwnerApi: IccDataOwnerXApi
     documentApi: IccDocumentXApi
     healthcarePartyApi: IccHcpartyXApi
     healthcareElementApi: IccHelementXApi
@@ -40,6 +43,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     this.heApi = api.healthcareElementApi
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
+    this.dataOwnerApi = api.dataOwnerApi
   }
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
@@ -142,7 +146,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   ): Promise<string | undefined> {
     let keysFromDeleg =
       await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
-        this.userApi.getDataOwnerOf(currentUser),
+        this.dataOwnerApi.getDataOwnerOf(currentUser),
         healthElement.id!,
         healthElement.cryptedForeignKeys!
       );
@@ -155,7 +159,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
   async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
     const currentUser = await this.userApi.getCurrentUser()
-    const dataOwnerId = this.userApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
     if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {

@@ -5,7 +5,6 @@ import {hex2ua, ua2hex} from '@icure/api';
 import {AnonymousMedTechApiBuilder} from '../src/apis/AnonymousMedTechApi';
 import axios, {Method} from 'axios';
 import {v4 as uuid} from 'uuid';
-import * as md5 from 'md5';
 import {Patient} from '../src/models/Patient';
 import {assert} from "chai";
 import {HealthcareElement} from "../src/models/HealthcareElement";
