@@ -11,32 +11,29 @@ class DummyData {
 }
 
 function dummyDataEquality(obj1: DummyData, obj2: DummyData): boolean {
-  return obj1.field1 === obj2.field1 && obj2.field2 === obj2.field2;
+  return obj1.field1 === obj2.field1 && obj1.field2 === obj2.field2;
 }
+
+const firstSet = () => new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
 
 describe("Equality functions test", () => {
   it("setEquality should be able to check if two sets are equal", () => {
-    const firstSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
-    const secondSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
-    assert(setEquality<DummyData>(firstSet, secondSet, dummyDataEquality));
+    assert(setEquality<DummyData>(firstSet(), firstSet(), dummyDataEquality));
   });
 
   it("setEquality should be able to check if two sets are equal independently from the order of the elements", () => {
-    const firstSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
     const secondSet = new Set<DummyData>([new DummyData("c", "d"), new DummyData("a", "b")]);
-    assert(setEquality<DummyData>(firstSet, secondSet, dummyDataEquality));
+    assert(setEquality<DummyData>(firstSet(), secondSet, dummyDataEquality));
   });
 
   it("setEquality should fail if the Sets have different lengths", () => {
-    const firstSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
     const secondSet = new Set<DummyData>([new DummyData("a", "b")]);
-    assert(!setEquality<DummyData>(firstSet, secondSet, dummyDataEquality));
+    assert(!setEquality<DummyData>(firstSet(), secondSet, dummyDataEquality));
   });
 
   it("setEquality should fail if the Sets have different elements", () => {
-    const firstSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("c", "d")]);
     const secondSet = new Set<DummyData>([new DummyData("a", "b"), new DummyData("a", "b")]);
-    assert(!setEquality<DummyData>(firstSet, secondSet, dummyDataEquality));
+    assert(!setEquality<DummyData>(firstSet(), secondSet, dummyDataEquality));
   });
 
   it("delegationEquality should be able to check if two Delegations are equal", () => {
@@ -80,9 +77,7 @@ describe("Equality functions test", () => {
   });
 
   it("delegationEquality delegationEquality should return true if Delegations are empty", () => {
-    const firstDelegation = new Delegation({});
-    const secondDelegation = new Delegation({});
-    assert(delegationEquality(firstDelegation, secondDelegation));
+    assert(delegationEquality(new Delegation({}), new Delegation({})));
   });
 
   it("delegationEquality should fail if tags have different lengths", () => {
@@ -162,9 +157,7 @@ describe("Equality functions test", () => {
   });
 
   it("systemMetaDataEncryptedEquality should be able to check if two systemMetaDataEncrypted are equal if they are empty", () => {
-    const metaData1 = new SystemMetaDataEncrypted({});
-    const metaData2 = new SystemMetaDataEncrypted({});
-    assert(systemMetaDataEncryptedEquality(metaData1, metaData2));
+    assert(systemMetaDataEncryptedEquality(new SystemMetaDataEncrypted({}), new SystemMetaDataEncrypted({})));
   });
 
   it("systemMetaDataEncryptedEquality should be able to check if two systemMetaDataEncrypted are equal if they are undefined", () => {
