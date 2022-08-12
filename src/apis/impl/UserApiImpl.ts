@@ -17,6 +17,11 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
+import {Patient} from "../../models/Patient";
+import {UserFilter} from "../../filter";
+import {Address, AddressAddressTypeEnum} from "../../models/Address";
+import {Telecom, TelecomTelecomTypeEnum} from "../../models/Telecom";
+import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -36,6 +41,50 @@ export class UserApiImpl implements UserApi {
 
   async checkTokenValidity(userId: string, token: string): Promise<boolean> {
     return this.userApi.checkTokenValidity(userId, token)
+  }
+
+  async createAndInviteUser(patient: Patient) {
+    // Checks that the Patient has all the required information
+    if (!patient.id) throw new Error("Patient does not have a valid id")
+    if (!patient.firstName) throw new Error("No first name provided in Patient");
+    if (!patient.lastName) throw new Error("No last name provided in Patient");
+
+    // Checks that no Users already exist for the Patient
+    const existingUsers = await this.matchUsers(
+      await new UserFilter()
+        .byPatientId(patient.id)
+        .build()
+    );
+    if(!!existingUsers && existingUsers.length > 0) throw new Error("A User already exists for this Patient");
+
+    // Gets the preferred contact information
+    const contact = [
+      filteredContactsFromAddresses(patient.addresses, "email", "home"),  // Check for the home email
+      filteredContactsFromAddresses(patient.addresses, "mobile", "home"), // Check for the home mobile
+      filteredContactsFromAddresses(patient.addresses, "email", "work"),  // Check for the work email
+      filteredContactsFromAddresses(patient.addresses, "mobile", "work"), // Check for the work mobile
+      filteredContactsFromAddresses(patient.addresses, "email"),                     // Check for any email
+      filteredContactsFromAddresses(patient.addresses, "mobile")                     // Check for any mobile
+    ].filter(contact => !!contact)[0];
+    if (!contact) throw new Error("No email or mobile phone information provided in patient");
+
+    // Creates the user
+    const createdUser = await this.createOrModifyUser(
+      new User({
+        created: new Date().getTime(),
+        name: patient.firstName + patient.lastName,
+        login: contact.telecomNumber,
+        patientId: patient.id,
+        email: contact.telecomType == "email" ? contact.telecomNumber : undefined,
+        mobilePhone: contact.telecomType == "mobile" ? contact.telecomNumber : undefined,
+      })
+    );
+    if (!createdUser || !createdUser.id) throw new Error("Something went wrong during User creation");
+
+    // Gets a short-lived authentication token
+    const shortLivedToken = await this.createToken(createdUser.id, 60*60);
+    if (!shortLivedToken) throw new Error("Something went wrong while creating a token for the User");
+
   }
 
   async createOrModifyUser(user: User): Promise<User> {
