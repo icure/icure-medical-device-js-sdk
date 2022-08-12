@@ -5,6 +5,7 @@ import {v4 as uuid} from 'uuid';
 import {Device, HealthcareParty, Patient, retry, User, XHR} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import Header = XHR.Header;
+import {MessageGatewayApi} from "../MessageGatewayApi";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -19,24 +20,29 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
-  constructor(iCureBasePath: string, authServerUrl: string, authProcessId: string,
-              fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
-                ? window.fetch
-                : typeof self !== 'undefined'
-                  ? self.fetch
-                  : fetch
+  constructor(
+    messageGatewayApi: MessageGatewayApi,
+    iCureBasePath: string,
+    authServerUrl: string,
+    authProcessId: string,
+    fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
+      ? window.fetch
+      : typeof self !== 'undefined'
+        ? self.fetch
+        : fetch
   ) {
     this.iCureBasePath = iCureBasePath;
     this.authServerUrl = authServerUrl;
     this.authProcessId = authProcessId;
     this.fetchImpl = fetchImpl;
+    this.messageGatewayApi = messageGatewayApi;
   }
-
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
   private readonly authServerUrl: string;
   private readonly authProcessId: string;
+  private readonly messageGatewayApi: MessageGatewayApi;
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
