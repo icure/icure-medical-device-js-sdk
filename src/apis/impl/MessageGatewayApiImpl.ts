@@ -8,6 +8,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   constructor(
     authProcessId: string,
     authServerUrl: string,
+    username: string,
+    password: string,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -23,10 +25,31 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   private readonly authProcessId: string;
   private readonly authServerUrl: string;
 
-  sendEmail(emailFactory: EmailMessageFactory): void {
+  async sendEmail(recipientEmail: string, emailFactory: EmailMessageFactory): Promise<XHR.Data | null> {
+    const res = await XHR.sendCommand('POST',
+      `${this.authServerUrl}/ic/email/to/${recipientEmail}`,
+      [
+        new Header('Authorization', `application/json`)
+      ],
+      emailFactory.get(),
+      this.fetchImpl
+    );
+
+    return res.statusCode < 400 ? res : null;
   }
 
-  sendSMS(smsFactory: SMSMessageFactory): void {
+  async sendSMS(recipientMobileNumber: string, smsFactory: SMSMessageFactory): Promise<XHR.Data | null> {
+
+    const res = await XHR.sendCommand('POST',
+      `${this.authServerUrl}/ic/email/to/${recipientMobileNumber}`,
+      [
+        new Header('Authorization', `application/json`)
+      ],
+      smsFactory.get(),
+      this.fetchImpl
+    );
+
+    return res.statusCode < 400 ? res : null;
   }
 
   async startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null> {
@@ -42,7 +65,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
         'hcpId': healthcareProfessionalId
       },
       this.fetchImpl,
-      "text/plain")
+      "text/plain"
+    )
 
     return res.statusCode < 400 ? res : null;
   }
@@ -52,7 +76,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       `${this.authServerUrl}/process/validate/${requestId}-${validationCode}`,
       [],
       undefined,
-      this.fetchImpl)
+      this.fetchImpl
+    )
 
     return res.statusCode < 400 ? res : null;
 

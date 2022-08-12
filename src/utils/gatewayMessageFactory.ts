@@ -6,7 +6,7 @@ import {filteredContactsFromAddresses} from "./addressUtils";
 export type SMSMessage = {message: string};
 export type EmailMessage = {from: string, html: string, subject: string}
 
-export interface GatewayMessageFactory<T> {
+export interface GatewayMessageFactory<T extends SMSMessage | EmailMessage> {
   hcp: HealthcareProfessional;
   patient: Patient;
   user: User;

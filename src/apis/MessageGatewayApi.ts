@@ -3,9 +3,9 @@ import {XHR} from "@icure/api";
 
 export interface MessageGatewayApi {
 
-  sendEmail(emailFactory: EmailMessageFactory): void;
+  sendEmail(recipientEmail: string, emailFactory: EmailMessageFactory): Promise<XHR.Data | null>;
 
-  sendSMS(smsFactory: SMSMessageFactory): void;
+  sendSMS(recipientMobileNumber: string, smsFactory: SMSMessageFactory): Promise<XHR.Data | null>;
 
   startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null>;
 
