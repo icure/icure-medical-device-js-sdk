@@ -6,6 +6,7 @@ import {
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
+  IccHcpartyXApi,
   IccPatientXApi,
   IccUserApi,
   IccUserXApi
@@ -19,31 +20,40 @@ import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 import {Patient} from "../../models/Patient";
 import {UserFilter} from "../../filter";
-import {Address, AddressAddressTypeEnum} from "../../models/Address";
-import {Telecom, TelecomTelecomTypeEnum} from "../../models/Telecom";
 import {filteredContactsFromAddresses} from "../../utils/addressUtils";
+import {MessageGatewayApi} from "../MessageGatewayApi";
+import {
+  EmailMessageFactory,
+  SMSMessageFactory
+} from "../../utils/gatewayMessageFactory";
+import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
+  private readonly hcpApi: IccHcpartyXApi
   private readonly username: string | undefined;
   private readonly basePath: string;
   private readonly password: string | undefined;
+  private readonly messageGatewayApi: MessageGatewayApi | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+  constructor(api: { healthcarePartyApi: IccHcpartyXApi, cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+              messageGatewayApi: MessageGatewayApi | undefined,
               basePath: string,
               username: string | undefined,
               password: string | undefined) {
     this.basePath = basePath;
     this.username = username;
     this.password = password;
-    this.userApi = api.userApi
+    this.userApi = api.userApi;
+    this.hcpApi = api.healthcarePartyApi;
+    this.messageGatewayApi = messageGatewayApi;
   }
 
   async checkTokenValidity(userId: string, token: string): Promise<boolean> {
     return this.userApi.checkTokenValidity(userId, token)
   }
 
-  async createAndInviteUser(patient: Patient) {
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory) {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
     if (!patient.firstName) throw new Error("No first name provided in Patient");
@@ -79,12 +89,31 @@ export class UserApiImpl implements UserApi {
         mobilePhone: contact.telecomType == "mobile" ? contact.telecomNumber : undefined,
       })
     );
-    if (!createdUser || !createdUser.id) throw new Error("Something went wrong during User creation");
+    if (!createdUser || !createdUser.id || !createdUser.login) throw new Error("Something went wrong during User creation");
 
     // Gets a short-lived authentication token
     const shortLivedToken = await this.createToken(createdUser.id, 60*60);
     if (!shortLivedToken) throw new Error("Something went wrong while creating a token for the User");
 
+    const currentHcp = await this.userApi.getCurrentUser().then( (user) => {
+      if (!user.healthcarePartyId) throw new Error("Invalid Healthcare Professional");
+      return this.hcpApi.getHealthcareParty(user.healthcarePartyId).then( (hcp) =>
+        HealthcareProfessionalMapper.toHealthcareProfessional(hcp));
+    })
+    if (!currentHcp) throw new Error("Invalid Healthcare Professional");
+
+    const messagePromise = !!createdUser.email
+      ? this.messageGatewayApi?.sendEmail(createdUser.login, (messageFactory as EmailMessageFactory).get(
+        createdUser,
+        shortLivedToken
+        )
+      )
+      : this.messageGatewayApi?.sendSMS(createdUser.login, (messageFactory as SMSMessageFactory).get(
+        createdUser,
+        shortLivedToken
+      ))
+
+    if (!(await messagePromise)) throw new Error("Something went wrong contacting the Message Gateway");
   }
 
   async createOrModifyUser(user: User): Promise<User> {

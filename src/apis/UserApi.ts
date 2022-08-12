@@ -2,6 +2,12 @@ import {Filter} from '../filter/Filter'
 import {PaginatedListUser} from '../models/PaginatedListUser'
 import {User} from '../models/User'
 import {Connection} from '../models/Connection'
+import {Filter} from '../filter/Filter';
+import {PaginatedListUser} from '../models/PaginatedListUser';
+import {User} from '../models/User';
+import {Connection} from "../models/Connection";
+import {Patient} from "../models/Patient";
+import {EmailMessageFactory, SMSMessageFactory} from "../utils/gatewayMessageFactory";
 
 export interface UserApi {
   /**
@@ -11,6 +17,7 @@ export interface UserApi {
    * @param token The token that will be checked
    */
   checkTokenValidity(userId: string, token: string): Promise<boolean>
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): void;
   /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.
    * Create a new user or modify an existing one.
@@ -21,6 +28,7 @@ export interface UserApi {
    * A token is used to authenticate the user. It is just like a password but it is destined to be used by programs instead of humans. Tokens have a limited validity period (one month).
    * Create a token for a user.
    * @param userId The UUID that identifies the user uniquely
+   * @param durationInSeconds the validity duration of the token, in seconds
    */
   createToken(userId: string, durationInSeconds?: number): Promise<string>
   /**

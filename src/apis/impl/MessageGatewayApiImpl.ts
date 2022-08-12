@@ -1,5 +1,5 @@
 import {MessageGatewayApi} from "../MessageGatewayApi";
-import {EmailMessageFactory, SMSMessageFactory} from "../../utils/gatewayMessageFactory";
+import {EmailMessage, SMSMessage} from "../../utils/gatewayMessageFactory";
 import {XHR} from "@icure/api";
 import Header = XHR.Header;
 
@@ -19,33 +19,38 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     this.fetchImpl = fetchImpl;
     this.authProcessId = authProcessId;
     this.authServerUrl = authServerUrl;
+    this.authHeader = new Header(
+      "Authorization",
+      Buffer.from(`${username}:${password}`).toString('base64')
+    )
   }
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   private readonly authProcessId: string;
   private readonly authServerUrl: string;
+  private readonly authHeader: XHR.Header;
 
-  async sendEmail(recipientEmail: string, emailFactory: EmailMessageFactory): Promise<XHR.Data | null> {
+  async sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null> {
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/ic/email/to/${recipientEmail}`,
       [
-        new Header('Authorization', `application/json`)
+        this.authHeader
       ],
-      emailFactory.get(),
+      email,
       this.fetchImpl
     );
 
     return res.statusCode < 400 ? res : null;
   }
 
-  async sendSMS(recipientMobileNumber: string, smsFactory: SMSMessageFactory): Promise<XHR.Data | null> {
+  async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
 
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/ic/email/to/${recipientMobileNumber}`,
       [
-        new Header('Authorization', `application/json`)
+        this.authHeader
       ],
-      smsFactory.get(),
+      sms,
       this.fetchImpl
     );
 
