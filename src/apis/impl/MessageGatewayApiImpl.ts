@@ -78,7 +78,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     return res.statusCode < 400 ? res : null;
   }
 
-  async validateAuthenticationProcess(requestId: string, validationCode: String): Promise<XHR.Data | null> {
+  async validateAuthenticationProcess(requestId: string, validationCode: string): Promise<XHR.Data | null> {
     if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('GET',
       `${this.authServerUrl}/process/validate/${requestId}-${validationCode}`,
