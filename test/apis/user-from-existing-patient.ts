@@ -82,7 +82,7 @@ describe("A Healthcare Party", () => {
       })]
     });
     await userFromPatient(newPatient);
-  });
+  }).timeout(300000);
 
   it("should not be able to create a new User if the Patient has no firstname", async () => {
       const newPatient = new Patient({
