@@ -1,5 +1,4 @@
 import "isomorphic-fetch";
-import {v4 as uuid} from "uuid";
 import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
 import {User} from "../../src/models/User";
 import {Patient} from "../../src/models/Patient";
@@ -62,7 +61,7 @@ describe("A Healthcare Party", () => {
       "iCure",
       existingPatient
     )
-    await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory, false);
+    medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory, false);
   }
 
   it("should be able to create a new User from an existing Patient", async () => {
@@ -145,7 +144,7 @@ describe("A Healthcare Party", () => {
 
     let error = undefined;
     try {
-      await medtechApi.userApi.createAndInviteUser(newPatient, new ICureRegistrationEmail(
+      medtechApi.userApi.createAndInviteUser(newPatient, new ICureRegistrationEmail(
         hcp,
         "test",
         "iCure",

@@ -9,5 +9,5 @@ export interface MessageGatewayApi {
 
   startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null>;
 
-  validateAuthenticationProcess(requestId: string, validationCode: String): Promise<XHR.Data | null>;
+  validateAuthenticationProcess(requestId: string, validationCode: string): Promise<XHR.Data | null>;
 }
