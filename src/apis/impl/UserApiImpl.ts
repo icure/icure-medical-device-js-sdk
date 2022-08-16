@@ -52,7 +52,7 @@ export class UserApiImpl implements UserApi {
     return this.userApi.checkTokenValidity(userId, token)
   }
 
-  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean) {
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean): Promise<void> {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
     if (!patient.firstName) throw new Error("No first name provided in Patient");
