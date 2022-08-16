@@ -78,7 +78,7 @@ export class MedTechApi {
     this._password = password;
     this._authServerUrl = authServerUrl;
     this._authProcessId = authProcessId;
-    this._messageGatewayApi = authServerUrl && authProcessId && !!username && !!password ? new MessageGatewayApiImpl(authProcessId, authServerUrl, username, password) : undefined;
+    this._messageGatewayApi = !!authServerUrl ? new MessageGatewayApiImpl(authServerUrl, authProcessId, username, password) : undefined;
     this._authenticationApi = authServerUrl && authProcessId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authServerUrl, authProcessId) : undefined;
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
     this._codingApi = new CodingApiImpl(api);

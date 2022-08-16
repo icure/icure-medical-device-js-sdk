@@ -26,7 +26,6 @@ import {
   EmailMessageFactory,
   SMSMessageFactory
 } from "../../utils/gatewayMessageFactory";
-import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -53,19 +52,19 @@ export class UserApiImpl implements UserApi {
     return this.userApi.checkTokenValidity(userId, token)
   }
 
-  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory) {
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean) {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
     if (!patient.firstName) throw new Error("No first name provided in Patient");
     if (!patient.lastName) throw new Error("No last name provided in Patient");
 
     // Checks that no Users already exist for the Patient
-    const existingUsers = await this.matchUsers(
+    const existingUsers = await this.filterUsers(
       await new UserFilter()
         .byPatientId(patient.id)
         .build()
     );
-    if(!!existingUsers && existingUsers.length > 0) throw new Error("A User already exists for this Patient");
+    if(!!existingUsers && existingUsers.rows.length > 0) throw new Error("A User already exists for this Patient");
 
     // Gets the preferred contact information
     const contact = [
@@ -95,23 +94,17 @@ export class UserApiImpl implements UserApi {
     const shortLivedToken = await this.createToken(createdUser.id, 60*60);
     if (!shortLivedToken) throw new Error("Something went wrong while creating a token for the User");
 
-    const currentHcp = await this.userApi.getCurrentUser().then( (user) => {
-      if (!user.healthcarePartyId) throw new Error("Invalid Healthcare Professional");
-      return this.hcpApi.getHealthcareParty(user.healthcarePartyId).then( (hcp) =>
-        HealthcareProfessionalMapper.toHealthcareProfessional(hcp));
-    })
-    if (!currentHcp) throw new Error("Invalid Healthcare Professional");
-
     const messagePromise = !!createdUser.email
       ? this.messageGatewayApi?.sendEmail(createdUser.login, (messageFactory as EmailMessageFactory).get(
-        createdUser,
-        shortLivedToken
-        )
+          createdUser,
+          shortLivedToken),
+        msgGtwAuth
       )
       : this.messageGatewayApi?.sendSMS(createdUser.login, (messageFactory as SMSMessageFactory).get(
-        createdUser,
-        shortLivedToken
-      ))
+          createdUser,
+          shortLivedToken),
+        msgGtwAuth
+      )
 
     if (!(await messagePromise)) throw new Error("Something went wrong contacting the Message Gateway");
   }
