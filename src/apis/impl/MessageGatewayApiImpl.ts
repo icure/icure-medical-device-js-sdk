@@ -6,10 +6,10 @@ import Header = XHR.Header;
 export class MessageGatewayApiImpl implements MessageGatewayApi {
 
   constructor(
-    authProcessId: string,
     authServerUrl: string,
-    username: string,
-    password: string,
+    authProcessId?: string,
+    username?: string,
+    password?: string,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -19,23 +19,25 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     this.fetchImpl = fetchImpl;
     this.authProcessId = authProcessId;
     this.authServerUrl = authServerUrl;
-    this.authHeader = new Header(
+    this.authHeader = (!!username && !!password) ? new Header(
       "Authorization",
-      Buffer.from(`${username}:${password}`).toString('base64')
-    )
+      "Basic "+Buffer.from(`${username}:${password}`).toString('base64')
+    ) : null;
+    this.headers = [new Header("Content-Type", "application/json")]
   }
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  private readonly authProcessId: string;
+  private readonly authProcessId: string | undefined;
   private readonly authServerUrl: string;
-  private readonly authHeader: XHR.Header;
+  private readonly authHeader: XHR.Header | null;
+  private readonly headers: Header[];
 
-  async sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null> {
+  async sendEmail(recipientEmail: string, email: EmailMessage, anonymous: boolean): Promise<XHR.Data | null> {
+    if (!this.authHeader && !anonymous) return null;
+    const headers = anonymous ? this.headers : this.headers.concat([this.authHeader!])
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/ic/email/to/${recipientEmail}`,
-      [
-        this.authHeader
-      ],
+      `${this.authServerUrl}/email/to/${recipientEmail}`,
+      headers,
       email,
       this.fetchImpl
     );
@@ -43,13 +45,12 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     return res.statusCode < 400 ? res : null;
   }
 
-  async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
-
+  async sendSMS(recipientMobileNumber: string, sms: SMSMessage, anonymous: boolean): Promise<XHR.Data | null> {
+    if (!this.authHeader && !anonymous) return null;
+    const headers = anonymous ? this.headers : this.headers.concat([this.authHeader!])
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/ic/email/to/${recipientMobileNumber}`,
-      [
-        this.authHeader
-      ],
+      `${this.authServerUrl}/email/to/${recipientMobileNumber}`,
+      headers,
       sms,
       this.fetchImpl
     );
@@ -58,9 +59,10 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   }
 
   async startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null> {
+    if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
-      [new Header('Content-type', 'application/json')],
+      this.headers,
       {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
@@ -77,6 +79,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   }
 
   async validateAuthenticationProcess(requestId: string, validationCode: String): Promise<XHR.Data | null> {
+    if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('GET',
       `${this.authServerUrl}/process/validate/${requestId}-${validationCode}`,
       [],

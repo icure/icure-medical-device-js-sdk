@@ -1,7 +1,3 @@
-import {Filter} from '../filter/Filter'
-import {PaginatedListUser} from '../models/PaginatedListUser'
-import {User} from '../models/User'
-import {Connection} from '../models/Connection'
 import {Filter} from '../filter/Filter';
 import {PaginatedListUser} from '../models/PaginatedListUser';
 import {User} from '../models/User';
@@ -17,7 +13,14 @@ export interface UserApi {
    * @param token The token that will be checked
    */
   checkTokenValidity(userId: string, token: string): Promise<boolean>
-  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): void;
+  /**
+   * Creates a User from an existing patient with a short-lived authentication token. It sends an invitation with the
+   * credentials and the link to complete the signup.
+   * @param patient the Patient to create the user for.
+   * @param messageFactory a MessageFactory that generates an EmailMessage or a SMSMessage.
+   * @param msgGtwAuth true if authentication is required for the Message Gateway, false otherwise.
+   */
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean): void;
   /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.
    * Create a new user or modify an existing one.
