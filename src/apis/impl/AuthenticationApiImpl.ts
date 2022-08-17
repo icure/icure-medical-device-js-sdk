@@ -38,7 +38,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authServerUrl: string;
   private readonly authProcessId: string;
 
-  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
+  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
+    if (email == undefined && mobilePhone == undefined) {
+      throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
+    }
+
     const requestId = uuid()
 
     const res = await XHR.sendCommand('POST',
@@ -48,7 +52,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
         'lastName': lastName,
-        'from': email,
+        'from': email ?? mobilePhone,
+        'email': email,
         'mobilePhone': mobilePhone,
         'hcpId': healthcareProfessionalId
       },
