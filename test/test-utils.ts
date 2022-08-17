@@ -70,8 +70,8 @@ export class TestUtils {
         hcpId,
         'Antoine',
         'Duchâteau',
-        email,
-        'a58afe0e-02dc-431b-8155-0351140099e4'
+        'a58afe0e-02dc-431b-8155-0351140099e4',
+        email
       );
 
     const { publicKey, privateKey } =
@@ -165,4 +165,3 @@ export class TestUtils {
     );
   }
 }
-
