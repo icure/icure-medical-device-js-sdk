@@ -1,10 +1,12 @@
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import "mocha";
 import "isomorphic-fetch";
 
 import {LocalStorage} from "node-localstorage";
 import * as os from "os";
 import {TestUtils} from "../test-utils";
+import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
+import {webcrypto} from "crypto";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
@@ -17,8 +19,29 @@ const msgGtwUrl =
   process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
 const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
 
-describe("Login / Sign-Up", () => {
-  it("HCP should be capable of logging in / sign up using email", async () => {
+describe("Authentication API", () => {
+  it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
+    // Given
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
+      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureUrlPath(iCureUrl)
+      .withAuthServerUrl(msgGtwUrl)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessId(authProcessId)
+      .build();
+
+    // When
+    try {
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', undefined, undefined);
+      expect(true, "promise should fail").eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
+    }
+  });
+
+  it("HCP should be capable of signing up using email", async () => {
     // Given
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
       "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
@@ -40,7 +63,9 @@ describe("Login / Sign-Up", () => {
     assert(currentHcp.lastName == "Duchâteau");
   }).timeout(60000);
 
-  it("Patient should be able to login / sign up through email", async () => {
+
+
+  it("Patient should be able to signing up through email", async () => {
     // Given
     const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
 

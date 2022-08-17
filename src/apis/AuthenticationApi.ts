@@ -20,8 +20,8 @@ export interface AuthenticationApi {
     healthcareProfessionalId: string | undefined,
     firstName: string,
     lastName: string,
-    email: string,
     recaptcha: string,
+    email?: string,
     mobilePhone?: string
   ): Promise<AuthenticationProcess|null>
 

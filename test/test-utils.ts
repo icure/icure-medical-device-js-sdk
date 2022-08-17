@@ -70,8 +70,8 @@ export class TestUtils {
         hcpId,
         'Antoine',
         'Duchâteau',
-        email,
-        'process.env.ICURE_RECAPTCHA'
+        'process.env.ICURE_RECAPTCHA',
+        email
       );
 
     const { publicKey, privateKey } =
@@ -165,4 +165,3 @@ export class TestUtils {
     );
   }
 }
-
