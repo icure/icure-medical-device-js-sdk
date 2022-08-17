@@ -36,7 +36,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/email/to/${recipientEmail}`,
-      this.headers.concat([this.authHeader!]),
+      this.headers.concat([this.authHeader]),
       email,
       this.fetchImpl
     );
@@ -48,7 +48,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/email/to/${recipientMobileNumber}`,
-      this.headers.concat([this.authHeader!]),
+      this.headers.concat([this.authHeader]),
       sms,
       this.fetchImpl
     );
