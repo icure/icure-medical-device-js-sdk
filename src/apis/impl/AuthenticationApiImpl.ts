@@ -39,7 +39,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authProcessId: string;
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
-    if (email == undefined && mobilePhone == undefined) {
+    if (!email && !mobilePhone) {
       throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
 
