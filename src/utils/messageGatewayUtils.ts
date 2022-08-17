@@ -5,8 +5,17 @@ import {filteredContactsFromAddresses} from "./addressUtils";
 
 export type SMSMessage = {message: string};
 export type EmailMessage = {from: string, html: string, subject: string}
+export type AuthenticationProcessBody = {
+  'g-recaptcha-response': string,
+  'firstName': string,
+  'lastName': string,
+  'from': string | undefined,
+  'email': string | undefined,
+  'mobilePhone': string | undefined,
+  'hcpId': string | undefined
+}
 
-export interface GatewayMessageFactory<T extends SMSMessage | EmailMessage> {
+export interface MessageGatewayUtils<T extends SMSMessage | EmailMessage> {
   hcp: HealthcareProfessional;
   link: string;
   patient: Patient;
@@ -14,9 +23,9 @@ export interface GatewayMessageFactory<T extends SMSMessage | EmailMessage> {
   get(recipient: User, recipientPassword: string): T;
 }
 
-export interface EmailMessageFactory extends GatewayMessageFactory<EmailMessage> {}
+export interface EmailMessageFactory extends MessageGatewayUtils<EmailMessage> {}
 
-export interface SMSMessageFactory extends GatewayMessageFactory<SMSMessage> {}
+export interface SMSMessageFactory extends MessageGatewayUtils<SMSMessage> {}
 
 export class ICureRegistrationEmail implements EmailMessageFactory {
   hcp: HealthcareProfessional;

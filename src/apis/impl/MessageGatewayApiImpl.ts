@@ -1,5 +1,5 @@
 import {MessageGatewayApi} from "../MessageGatewayApi";
-import {EmailMessage, SMSMessage} from "../../utils/gatewayMessageFactory";
+import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/messageGatewayUtils";
 import {XHR} from "@icure/api";
 import Header = XHR.Header;
 
@@ -41,7 +41,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     );
 
-    return res.statusCode < 400 ? res : null;
+    if (res.statusCode < 400) return res;
+    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
   }
 
   async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
@@ -53,30 +54,25 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     );
 
-    return res.statusCode < 400 ? res : null;
+    if (res.statusCode < 400) return res;
+    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
   }
 
-  async startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null> {
+  async startProcess(requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null> {
     if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
       this.headers,
-      {
-        'g-recaptcha-response': recaptcha,
-        'firstName': firstName,
-        'lastName': lastName,
-        'from': email,
-        'mobilePhone': mobilePhone,
-        'hcpId': healthcareProfessionalId
-      },
+      processBody,
       this.fetchImpl,
       "text/plain"
     )
 
-    return res.statusCode < 400 ? res : null;
+    if (res.statusCode < 400) return res;
+    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
   }
 
-  async validateAuthenticationProcess(requestId: string, validationCode: string): Promise<XHR.Data | null> {
+  async validateProcess(requestId: string, validationCode: string): Promise<XHR.Data | null> {
     if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('GET',
       `${this.authServerUrl}/process/validate/${requestId}-${validationCode}`,
@@ -85,8 +81,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     )
 
-    return res.statusCode < 400 ? res : null;
-
+    if (res.statusCode < 400) return res;
+    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
   }
 
 }

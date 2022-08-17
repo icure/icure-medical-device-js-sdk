@@ -1,5 +1,5 @@
 import {XHR} from "@icure/api";
-import {EmailMessage, SMSMessage} from "../utils/gatewayMessageFactory";
+import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../utils/messageGatewayUtils";
 
 export interface MessageGatewayApi {
 
@@ -7,7 +7,7 @@ export interface MessageGatewayApi {
 
   sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null>;
 
-  startAuthenticationProcess(requestId: string, healthcareProfessionalId: string | undefined, firstName: string, lastName: string, email: string, recaptcha: string, mobilePhone?: string): Promise<XHR.Data | null>;
+  startProcess(requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null>;
 
-  validateAuthenticationProcess(requestId: string, validationCode: string): Promise<XHR.Data | null>;
+  validateProcess(requestId: string, validationCode: string): Promise<XHR.Data | null>;
 }

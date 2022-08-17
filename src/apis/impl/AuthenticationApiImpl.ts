@@ -51,9 +51,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const requestId = uuid()
 
-    const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
-      [new Header('Content-type', 'application/json')],
+    const res = await this.messageGatewayApi.startProcess(
+      requestId,
       {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
@@ -62,12 +61,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         'email': email,
         'mobilePhone': mobilePhone,
         'hcpId': healthcareProfessionalId
-      },
-      this.fetchImpl,
-      "text/plain")
+      }
+    );
 
-    if (res.statusCode < 400) {
-      return new AuthenticationProcess({requestId, login: email ?? mobilePhone});
+    if (!!res) {
+      return new AuthenticationProcess({requestId, login: email});
     }
 
     return null;
