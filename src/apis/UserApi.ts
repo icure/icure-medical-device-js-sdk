@@ -3,7 +3,7 @@ import {PaginatedListUser} from '../models/PaginatedListUser';
 import {User} from '../models/User';
 import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
-import {EmailMessageFactory, SMSMessageFactory} from "../utils/gatewayMessageFactory";
+import {EmailMessageFactory, SMSMessageFactory} from "../utils/messageGatewayUtils";
 
 export interface UserApi {
   /**
@@ -18,8 +18,9 @@ export interface UserApi {
    * credentials and the link to complete the signup.
    * @param patient the Patient to create the user for.
    * @param messageFactory a MessageFactory that generates an EmailMessage or a SMSMessage.
+   * @param tokenDuration the validity duration of the short-lived token, in seconds (default 48 hours)
    */
-  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): Promise<void>;
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration?: number): Promise<User>;
 
   /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.

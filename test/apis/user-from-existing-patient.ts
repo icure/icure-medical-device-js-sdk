@@ -7,8 +7,8 @@ import {hex2ua} from "@icure/api";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {Address} from "../../src/models/Address";
 import {Telecom} from "../../src/models/Telecom";
-import {assert} from "chai";
-import {ICureRegistrationEmail} from "../../src/utils/gatewayMessageFactory";
+import {assert, expect} from "chai";
+import {ICureRegistrationEmail} from "../../src/utils/messageGatewayUtils";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 
 setLocalStorage(fetch);
@@ -61,7 +61,9 @@ describe("A Healthcare Party", () => {
       "iCure",
       existingPatient
     )
-    await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory);
+    const createdUser = await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory);
+    assert(!!createdUser);
+    assert(createdUser.patientId === existingPatient.id);
   }
 
   it("should be able to create a new User from an existing Patient", async () => {
@@ -88,13 +90,12 @@ describe("A Healthcare Party", () => {
         lastName: "Specter"
       });
 
-      let error = undefined;
       try {
         await userFromPatient(newPatient);
+        expect(true, "promise should fail").eq(false);
       } catch (e) {
-        error = e;
+        expect((e as Error).message).to.eq("No first name provided in Patient");
       }
-      assert(!!error);
     });
 
   it("should not be able to create a new User if the Patient has no lastname", async () => {
@@ -102,13 +103,12 @@ describe("A Healthcare Party", () => {
       firstName: "Marc"
     });
 
-    let error = undefined;
     try {
       await userFromPatient(newPatient);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("No last name provided in Patient");
     }
-    assert(!!error);
   });
 
   it("should not be able to create a new User if the Patient has no contact information", async () => {
@@ -117,13 +117,12 @@ describe("A Healthcare Party", () => {
       lastName: "Specter"
     });
 
-    let error = undefined;
     try {
       await userFromPatient(newPatient);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("No email or mobile phone information provided in patient");
     }
-    assert(!!error);
   });
 
   it("should not be able to create a new User if it already exists for that Patient", async () => {
@@ -142,18 +141,16 @@ describe("A Healthcare Party", () => {
     }))
     assert(!!newUser)
 
-    let error = undefined;
     try {
       await medtechApi.userApi.createAndInviteUser(newPatient, new ICureRegistrationEmail(
         hcp,
         "test",
         "iCure",
         newPatient));
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("A User already exists for this Patient");
     }
-    assert(!!error);
   });
-
 
 });

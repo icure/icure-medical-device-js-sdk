@@ -25,7 +25,7 @@ import {MessageGatewayApi} from "../MessageGatewayApi";
 import {
   EmailMessageFactory,
   SMSMessageFactory
-} from "../../utils/gatewayMessageFactory";
+} from "../../utils/messageGatewayUtils";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -52,7 +52,7 @@ export class UserApiImpl implements UserApi {
     return this.userApi.checkTokenValidity(userId, token)
   }
 
-  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): Promise<void> {
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration = 48 * 60 * 60): Promise<User> {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
     if (!patient.firstName) throw new Error("No first name provided in Patient");
@@ -91,7 +91,7 @@ export class UserApiImpl implements UserApi {
     if (!createdUser || !createdUser.id || !createdUser.login) throw new Error("Something went wrong during User creation");
 
     // Gets a short-lived authentication token
-    const shortLivedToken = await this.createToken(createdUser.id, 60*60);
+    const shortLivedToken = await this.createToken(createdUser.id, tokenDuration);
     if (!shortLivedToken) throw new Error("Something went wrong while creating a token for the User");
 
     const messagePromise = !!createdUser.email
@@ -103,6 +103,8 @@ export class UserApiImpl implements UserApi {
           shortLivedToken))
 
     if (!(await messagePromise)) throw new Error("Something went wrong contacting the Message Gateway");
+
+    return createdUser;
   }
 
   async createOrModifyUser(user: User): Promise<User> {
