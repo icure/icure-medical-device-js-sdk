@@ -18,9 +18,9 @@ export interface UserApi {
    * credentials and the link to complete the signup.
    * @param patient the Patient to create the user for.
    * @param messageFactory a MessageFactory that generates an EmailMessage or a SMSMessage.
-   * @param msgGtwAuth true if authentication is required for the Message Gateway, false otherwise.
    */
-  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean): void;
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): Promise<void>;
+
   /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.
    * Create a new user or modify an existing one.

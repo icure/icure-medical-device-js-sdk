@@ -32,12 +32,11 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   private readonly authHeader: XHR.Header | null;
   private readonly headers: Header[];
 
-  async sendEmail(recipientEmail: string, email: EmailMessage, anonymous: boolean): Promise<XHR.Data | null> {
-    if (!this.authHeader && !anonymous) return null;
-    const headers = anonymous ? this.headers : this.headers.concat([this.authHeader!])
+  async sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null> {
+    if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/email/to/${recipientEmail}`,
-      headers,
+      this.headers.concat([this.authHeader!]),
       email,
       this.fetchImpl
     );
@@ -45,12 +44,11 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     return res.statusCode < 400 ? res : null;
   }
 
-  async sendSMS(recipientMobileNumber: string, sms: SMSMessage, anonymous: boolean): Promise<XHR.Data | null> {
-    if (!this.authHeader && !anonymous) return null;
-    const headers = anonymous ? this.headers : this.headers.concat([this.authHeader!])
+  async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
+    if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
       `${this.authServerUrl}/email/to/${recipientMobileNumber}`,
-      headers,
+      this.headers.concat([this.authHeader!]),
       sms,
       this.fetchImpl
     );
