@@ -61,7 +61,7 @@ describe("A Healthcare Party", () => {
       "iCure",
       existingPatient
     )
-    await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory, false);
+    await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory);
   }
 
   it("should be able to create a new User from an existing Patient", async () => {
@@ -148,8 +148,7 @@ describe("A Healthcare Party", () => {
         hcp,
         "test",
         "iCure",
-        newPatient),
-        false);
+        newPatient));
     } catch (e) {
       error = e;
     }

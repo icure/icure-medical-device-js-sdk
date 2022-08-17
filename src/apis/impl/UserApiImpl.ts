@@ -52,7 +52,7 @@ export class UserApiImpl implements UserApi {
     return this.userApi.checkTokenValidity(userId, token)
   }
 
-  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, msgGtwAuth: boolean): Promise<void> {
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory): Promise<void> {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
     if (!patient.firstName) throw new Error("No first name provided in Patient");
@@ -97,14 +97,10 @@ export class UserApiImpl implements UserApi {
     const messagePromise = !!createdUser.email
       ? this.messageGatewayApi?.sendEmail(createdUser.login, (messageFactory as EmailMessageFactory).get(
           createdUser,
-          shortLivedToken),
-        msgGtwAuth
-      )
+          shortLivedToken))
       : this.messageGatewayApi?.sendSMS(createdUser.login, (messageFactory as SMSMessageFactory).get(
           createdUser,
-          shortLivedToken),
-        msgGtwAuth
-      )
+          shortLivedToken))
 
     if (!(await messagePromise)) throw new Error("Something went wrong contacting the Message Gateway");
   }
