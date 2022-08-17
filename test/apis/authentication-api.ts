@@ -41,6 +41,27 @@ describe("Authentication API", () => {
     }
   });
 
+  it("User should not be able to start authentication if he provided an empty email and mobilePhone", async () => {
+    // Given
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
+      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureUrlPath(iCureUrl)
+      .withAuthServerUrl(msgGtwUrl)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessId(authProcessId)
+      .build();
+
+    // When
+    try {
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', '', '');
+      expect(true, "promise should fail").eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
+    }
+  });
+
   it("HCP should be capable of signing up using email", async () => {
     // Given
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
