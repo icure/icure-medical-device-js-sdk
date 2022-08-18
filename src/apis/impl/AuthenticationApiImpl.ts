@@ -61,7 +61,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       "text/plain")
 
     if (res.statusCode < 400) {
-      return new AuthenticationProcess({requestId, login: email});
+      return new AuthenticationProcess({requestId, login: email ?? mobilePhone});
     }
 
     return null;
