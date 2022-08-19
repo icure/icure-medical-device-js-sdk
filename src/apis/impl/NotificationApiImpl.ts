@@ -1,10 +1,6 @@
 import {NotificationApi} from "../NotificationApi";
-import {Notification} from "../../models/Notification";
-import {
-  FilterChainMaintenanceTask,
-  IccHcpartyXApi,
-  IccUserXApi, MaintenanceTask, User
-} from "@icure/api";
+import {MaintenanceTaskStatusEnum, Notification, NotificationTypeEnum} from "../../models/Notification";
+import {FilterChainMaintenanceTask, IccHcpartyXApi, IccUserXApi, MaintenanceTask, User} from "@icure/api";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 import {NotificationMapper} from "../../mappers/notification";
 import {PaginatedListNotification} from "../../models/PaginatedListNotification";
@@ -12,6 +8,7 @@ import {Filter} from "../../filter/Filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {systemMetaDataEncryptedEquality} from "../../utils/equality";
+import {NotificationFilter} from "../../filter";
 
 export class NotificationApiImpl implements NotificationApi {
 
@@ -95,6 +92,29 @@ export class NotificationApiImpl implements NotificationApi {
         return NotificationMapper.toNotification(task)
       });
     });
+  }
+
+  async filterNotificationsFromMultiplePages(filter: Filter<Notification>, nextNotificationId?: string | undefined, limit?: number | undefined): Promise<Array<Notification>> {
+    const paginatedNotifications = await this.filterNotifications(filter, nextNotificationId, limit);
+    return !!paginatedNotifications.nextKeyPair?.startKeyDocId
+      ? paginatedNotifications.rows.concat((await this.filterNotificationsFromMultiplePages(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit)))
+      : paginatedNotifications.rows
+  }
+
+  async getPendingNotificationsFromNewUsers(): Promise<Array<Notification>> {
+    const user = await this.userApi.getCurrentUser();
+    if (!user) throw new Error("There is no user currently logged in");
+    if (!user.healthcarePartyId) throw new Error("User is not a Healthcare Party");
+    const filter = await new NotificationFilter()
+      .forHcParty(user.healthcarePartyId)
+      .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+      .build()
+    return (await this.filterNotificationsFromMultiplePages(filter)).filter( it => it.status === "pending");
+  }
+
+  async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
+    notification.status = newStatus;
+    return this.createOrModifyNotification(notification);
   }
 
 }

@@ -35,6 +35,8 @@ import {subscribeToEntityEvents} from "../../utils/rsocket";
 import {toMap, toMapArrayTransform} from "../../mappers/utils";
 import {DelegationMapper} from "../../mappers/delegation";
 import toDelegationDto = DelegationMapper.toDelegationDto;
+import {DataSampleFilter} from "../../filter";
+import {Patient} from "../../models/Patient";
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -861,6 +863,21 @@ export class DataSampleApiImpl implements DataSampleApi {
           updatedContact.id,
           updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined))!
       })
+  }
+
+  async getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample> {
+    return this.userApi.getCurrentUser().then( user => {
+      if (!user) throw new Error("There is no user currently logged in");
+      const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
+      if (!dataOwnerId) throw new Error("User is not a Data Owner");
+      return new DataSampleFilter()
+        .forDataOwner(dataOwnerId)
+        .forPatients(this.crypto, [patient])
+        .build()
+        .then( filter => {
+          return this.filterDataSample(filter);
+        })
+    });
   }
 
   async subscribeToDataSampleEvents(

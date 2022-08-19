@@ -52,7 +52,7 @@ import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealth
 import {
   DataSampleByHealthcarePartyHealthcareElementIdsFilter
 } from "./datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
-import {Notification} from "../models/Notification";
+import {Notification, NotificationTypeEnum} from "../models/Notification";
 import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
@@ -431,7 +431,7 @@ export class NotificationFilter implements FilterBuilder<Notification> {
   _byIds?: NotificationsByIdFilter;
   _afterDate?: NotificationsAfterDateFilter;
   _hcPartyId?: string;
-  _type?: string;
+  _type?: NotificationTypeEnum;
 
   byIdFilter(ids: string[]): NotificationFilter {
     this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
@@ -443,7 +443,7 @@ export class NotificationFilter implements FilterBuilder<Notification> {
     return this;
   }
 
-  withType(type: string): NotificationFilter {
+  withType(type: NotificationTypeEnum): NotificationFilter {
     this._type = type;
     return this;
   }

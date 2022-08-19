@@ -5,6 +5,8 @@ import {v4 as uuid} from 'uuid';
 import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
+import {Notification, NotificationTypeEnum} from "../../models/Notification";
+import {HealthcareProfessionalFilter} from "../../filter";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -104,10 +106,67 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     return null
   }
 
-  async initApiAndUserAuthenticationToken(process: AuthenticationProcess, validationCode: string, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<[MedTechApi, ApiInitialisationResult]> {
+  async authenticateAndAskForAccess(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
+    const authenticationResult = await this.initUserTokenAndCrypto(userLogin, shortLivedToken, dataOwnerKeyPair, tokenAndKeyPairProvider);
+
+    const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
+    if (!loggedUser) throw new Error("User log in failed");
+    if (!loggedUser.patientId) throw new Error("User is not associated to any Patient");
+
+    const patientUser = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
+    if (!patientUser) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+
+    const delegates = Object.entries(patientUser.systemMetaData?.delegations ?? {})
+      .map( (keyValue) => Array.from(keyValue[1]))
+      .flat()
+      .filter( (delegation) => !!delegation.delegatedTo)
+      .map( (delegation) => delegation.delegatedTo!);
+
+    const hcpDelegates = await authenticationResult.medTechApi.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byIds(delegates)
+        .build()
+    )
+
+    for (const delegate of hcpDelegates.rows.map( (it) => it.id)) {
+      const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
+        new Notification({
+          id: uuid(),
+          status: "pending",
+          type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+        }),
+        delegate
+      );
+      if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+    }
+
+    return authenticationResult;
+  }
+
+  async initUserTokenAndCrypto(login: string, token: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult> {
+    const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
+      () => this.initApiAndUserAuthenticationToken(login, token, tokenAndKeyPairProvider)
+    )
+
+    const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
+    if (!dataOwnerInitialisedKeyPair) {
+      throw Error('A keypair must be provided either directly or through the provider')
+    }
+    const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
+
+    return new AuthenticationResult({
+      medTechApi: authenticatedApi,
+      keyPair: dataOwnerInitialisedKeyPair,
+      token: apiInitialisationResult.token,
+      groupId: apiInitialisationResult.user.groupId!,
+      userId: apiInitialisationResult.user.id
+    });
+  }
+
+  async initApiAndUserAuthenticationToken(login: string, validationCode: string, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<[MedTechApi, ApiInitialisationResult]> {
     const api = await medTechApi()
       .withICureBasePath(this.iCureBasePath)
-      .withUserName(process.login)
+      .withUserName(login)
       .withPassword(validationCode)
       .withMsgGtwUrl(this.msgGtwUrl)
       .withMsgGtwSpecId(this.msgGtwSpecId)
@@ -185,7 +244,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .then((patient) => apiWithNewKeyPair.baseApi.patientApi.initDelegations(patient, user))
       .then(async (patientWithDelegations) => {
         const currentPatient = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
-        return new Patient({...currentPatient, delegations: patientWithDelegations.delegations});
+        return new Patient({...currentPatient, delegations: Object.assign(patientWithDelegations.delegations ?? {}, currentPatient.delegations)});
       })
       .then((patientWithDelegations) => apiWithNewKeyPair.baseApi.patientApi.initEncryptionKeys(user, patientWithDelegations))
 

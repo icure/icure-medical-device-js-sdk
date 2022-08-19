@@ -46,4 +46,23 @@ export interface AuthenticationApi {
     tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
   ): Promise<AuthenticationResult|null>
 
+  /**
+   * Completes the authentication process of a user created from a Patient.
+   * - It creates the private and public key for the user
+   * - It creates a long-lived authentication token
+   * - Send a Notification to all the delegated HCP to ask for access to the data of the Patient
+   * @param userLogin The login of the user
+   * @param shortLivedToken The short-lived authentication token created by the HCP
+   * @param userKeyPair The key pair [private, public] that will be used by the user to encrypt/decrypt data;
+   * @param tokenAndKeyPairProvider A custom function to generate an authentication token and a key pair for user
+   *
+   * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
+   * user.
+   */
+  authenticateAndAskForAccess(
+    userLogin: string,
+    shortLivedToken: string,
+    userKeyPair: [string, string] | undefined,
+    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
+  ): Promise<AuthenticationResult|null>
 }

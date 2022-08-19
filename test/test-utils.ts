@@ -11,8 +11,10 @@ import {DataSample} from "../src/models/DataSample";
 import {CodingReference} from "../src/models/CodingReference";
 import {tmpdir} from "os";
 import {TextDecoder, TextEncoder} from "util";
+import {EmailMessage, EmailMessageFactory} from "../src/utils/gatewayMessageFactory";
+import {HealthcareProfessional} from "../src/models/HealthcareProfessional";
 
-const delay = (delay: number) =>
+export const delay = (delay: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
 
 let cachedHcpApi: MedTechApi | undefined;
@@ -21,7 +23,7 @@ let cachedPatient: Patient | undefined;
 let cachedHealthcareElement: HealthcareElement | undefined;
 
 export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
-  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
+  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024**3)
   ;(global as any).fetch = fetch
   ;(global as any).Storage = ''
   ;(global as any).TextDecoder = TextDecoder
@@ -68,6 +70,29 @@ export function getEnvVariables(): TestVars {
     hcp3Password: process.env.ICURE_TS_TEST_HCP_3_PWD!,
     hcp3PrivKey: process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!
   }
+}
+
+export class ICureTestEmail implements EmailMessageFactory {
+  hcp: HealthcareProfessional;
+  link: string;
+  patient: Patient;
+
+  constructor(
+    patient: Patient
+  ) {
+    this.hcp = new HealthcareProfessional({});
+    this.link = "test";
+    this.patient = patient;
+  }
+
+  get(recipient: User, recipientPassword: string): EmailMessage {
+    return {
+      from: "nobody@nowhere.boh",
+      subject: `${recipient.login}|${recipientPassword}`,
+      html: `User: ${recipient.id}`
+    }
+  }
+
 }
 
 export class TestUtils {

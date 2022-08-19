@@ -24,6 +24,7 @@ import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {EmailMessageFactory, SMSMessageFactory} from "../../utils/messageGatewayUtils";
 
+
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
   private readonly hcpApi: IccHcpartyXApi
