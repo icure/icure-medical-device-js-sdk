@@ -226,7 +226,7 @@ describe("A Healthcare Party", () => {
   }).timeout(600000);
 
   it("should not be able to create a new User if the Patient has no firstname", async () => {
-      const newPatient = new Patient({
+    const newPatient = new Patient({
         lastName: "Specter"
       });
 
@@ -240,18 +240,27 @@ describe("A Healthcare Party", () => {
     });
 
   it("should not be able to create a new User if the Patient has no lastname", async () => {
+    // Given
+    const apiWithoutMsgGtw = await medTechApi()
+      .withICureBasePath(iCureUrl)
+      .withUserName(hcpUserName)
+      .withPassword(hcpPassword)
+      .withMsgGtwUrl(undefined)
+      .withCrypto(webcrypto as any)
+      .build()
+
     const newPatient = new Patient({
       firstName: "Marc"
     });
 
     let error = undefined;
     try {
-      await userFromPatient(newPatient);
+      await userFromPatient(apiWithoutMsgGtw, newPatient);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("Can not invite a user, as no msgGtwUrl and/or specId have been provided : Make sure to call .withMsgGtwUrl and .withMsgGtwSpecId when creating your MedTechApi");
     }
-    assert(!!error);
-  });
+  })
 
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({
@@ -276,18 +285,98 @@ describe("A Healthcare Party", () => {
       })
     );
     assert(!!newPatient);
-    const newUser = await hcp1Api.userApi.createOrModifyUser(new User({
-      login: email,
-      patientId: newPatient.id,
-      email: email
-    }))
-    assert(!!newUser)
+    const patientFirstDelegation = await hcp1Api.patientApi.giveAccessTo(newPatient, hcp3User.healthcarePartyId!);
+    assert(!!patientFirstDelegation);
+    const patientSecondDelegation = await hcp1Api.patientApi.giveAccessTo(patientFirstDelegation, patUser.patientId!);
+    assert(!!patientSecondDelegation);
+
+    const newDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    assert(!!newDataSample);
+    const newHealthcareElement = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
+    assert(!!newHealthcareElement);
+
+    const messageFactory = new ICureTestEmail(newPatient);
+    await hcp1Api.userApi.createAndInviteUser(newPatient, messageFactory, false);
+
+    // Then the user can log in
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureUrlPath(iCureUrl)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessId(authProcessHcpId)
+      .build();
+
+    const { publicKey, privateKey } =
+      await anonymousMedTechApi.cryptoApi.RSA.generateKeyPair();
+    const publicKeyHex = ua2hex(
+      await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey, 'spki')
+    );
+    const privateKeyHex = ua2hex(
+      await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8')
+    );
+    const loginAndPassword = (await TestUtils.getEmail(email, 0)).subject!
+
+    const authTimestamp = new Date().getTime();
+    const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskForAccess(
+      loginAndPassword.split('|')[0],
+      loginAndPassword.split('|')[1],
+      [privateKeyHex, publicKeyHex],
+      () => undefined
+    );
+
+    const userApi = authResult!.medTechApi;
+    const createdNotification = await userApi.notificationApi.filterNotifications(
+      await new NotificationFilter()
+        .afterDateFilter(authTimestamp)
+        .build()
+    );
+    assert(!!createdNotification);
+    assert(createdNotification.rows.length === 2);
+    const notificationDelegates = createdNotification.rows
+      .map( it => Object.keys(it.systemMetaData?.delegations ?? {}))
+      .flat();
+    assert(notificationDelegates.includes(hcp1User.healthcarePartyId!));
+    assert(notificationDelegates.includes(hcp3User.healthcarePartyId!));
 
     try {
-      await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),3600);
+      await userApi.dataSampleApi.getDataSample(newDataSample.id!);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      expect((e as Error).message).to.eq("A User already exists for this Patient");
+      expect((e as Error).message).to.eq("Cannot read properties of undefined (reading 'replace')");
     }
+
+    const currentPatient = await userApi.patientApi.getPatient(newPatient.id!);
+    const delegatedPatient = await userApi.patientApi.giveAccessTo(currentPatient, currentPatient.id!);
+    const delegatedDs = await hcp1Api.dataSampleApi.giveAccessTo(newDataSample, currentPatient.id!);
+
+    const ds = await userApi.dataSampleApi.getDataSample(newDataSample.id!);
+    assert(!!ds);
+
   });
+  //
+  // it("should not be able to create a new User if it already exists for that Patient", async () => {
+  //   const email = await TestUtils.getTempEmail();
+  //   const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
+  //     new Patient({
+  //       firstName: "Marc",
+  //       lastName: "Specter"
+  //     })
+  //   );
+  //   assert(!!newPatient);
+  //   const newUser = await hcp1Api.userApi.createOrModifyUser(new User({
+  //     login: email,
+  //     patientId: newPatient.id,
+  //     email: email
+  //   }))
+  //   assert(!!newUser)
+  //
+  //   let error = undefined;
+  //   try {
+  //     await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),false);
+  //   } catch (e) {
+  //     error = e;
+  //   }
+  //   assert(!!error);
+  // });
+
 
 });
