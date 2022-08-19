@@ -122,6 +122,8 @@ export interface DataSampleApi {
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
 
+  getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample>
+
   /**
    * Service where current user gives access to the information of a set of data samples to another dataOwner (HCP, patient or device).
    * For this, the current user data owner should be able to access the data sample provided in argument in order to provide access to another data owner.
