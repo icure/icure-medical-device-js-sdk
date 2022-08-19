@@ -33,5 +33,11 @@ export interface NotificationApi {
    * @param notificationId the id of the Notification to retrieve.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  getNotification(notificationId: string): Promise<Notification | undefined>
+  getNotification(notificationId: string): Promise<Notification | undefined>;
+
+  filterNotificationsFromMultiplePages(filter: Filter<Notification>, nextNotificationId?: string | undefined, limit?: number | undefined): Promise<Array<Notification>>
+
+  getPendingNotificationsFromNewUsers(): Promise<Array<Notification>>;
+
+  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>;
 }

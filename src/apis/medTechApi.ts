@@ -47,6 +47,7 @@ import {NotificationApi} from "./NotificationApi";
 import {MessageGatewayApi} from "./MessageGatewayApi";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 
+
 export class MedTechApi {
   private readonly _codingApi: CodingApi;
   private readonly _userApi: UserApi;

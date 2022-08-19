@@ -1,5 +1,5 @@
 import 'mocha';
-import {Notification, notificationTypeEnum} from '../../src/models/Notification';
+import {Notification, NotificationTypeEnum} from '../../src/models/Notification';
 import {v4 as uuid} from 'uuid';
 import {MaintenanceTask} from "@icure/api/icc-api/model/MaintenanceTask";
 import {Delegation} from "../../src/models/Delegation";
@@ -20,7 +20,7 @@ describe('Notification model test', () => {
       author: uuid(),
       responsible: uuid(),
       properties: [new Property({id: uuid()})],
-      type: notificationTypeEnum.OTHER,
+      type: NotificationTypeEnum.OTHER,
       systemMetaData: new SystemMetaDataEncrypted({
         delegations: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) },
         encryptionKeys: { 'TEST_ID': new Set([new Delegation({owner: uuid(), delegatedTo: uuid()})]) }

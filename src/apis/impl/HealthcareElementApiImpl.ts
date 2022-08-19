@@ -21,6 +21,8 @@ import {PaginatedListMapper} from '../../mappers/paginatedList'
 import {FilterMapper} from '../../mappers/filter'
 import {HealthcareElementMapper} from '../../mappers/healthcareElement'
 import {firstOrNull} from '../../utils/functionalUtils'
+import {Patient} from "../../models/Patient";
+import {HealthcareElementFilter} from "../../filter";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -214,4 +216,20 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
       })
   }
+
+  async getHealthcareElementsForPatient(patient: Patient): Promise<PaginatedListHealthcareElement> {
+    return this.userApi.getCurrentUser().then( user => {
+      if (!user) throw new Error("There is no user currently logged in");
+      const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
+      if (!dataOwnerId) throw new Error("User is not a Data Owner");
+      return new HealthcareElementFilter()
+        .forDataOwner(dataOwnerId)
+        .forPatients(this.cryptoApi, [patient])
+        .build()
+        .then( filter => {
+          return this.filterHealthcareElement(filter);
+        })
+    });
+  }
+
 }

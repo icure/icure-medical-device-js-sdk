@@ -18,7 +18,7 @@ export class Notification {
   /**
    * The status of the notification.
    */
-  'status'?: maintenanceTaskStatusEnum;
+  'status'?: MaintenanceTaskStatusEnum;
   /**
    * The creation date of the notification (encoded as epoch).
    */
@@ -54,14 +54,14 @@ export class Notification {
   /**
    * The type of the notification.
    */
-  'type'?: notificationTypeEnum;
+  'type'?: NotificationTypeEnum;
   'systemMetaData'?: SystemMetaDataEncrypted;
 }
 
 export interface INotification {
   id?: string;
   rev?: string;
-  status?: maintenanceTaskStatusEnum;
+  status?: MaintenanceTaskStatusEnum;
   identifier?: Array<Identifier>;
   created?: number;
   modified?: number;
@@ -70,13 +70,13 @@ export interface INotification {
   author?: string;
   responsible?: string;
   properties?: Array<Property>;
-  type?: notificationTypeEnum;
+  type?: NotificationTypeEnum;
   systemMetaData?: SystemMetaDataEncrypted;
 }
 
-export enum notificationTypeEnum {
+export enum NotificationTypeEnum {
   KEY_PAIR_UPDATE = "KEY_PAIR_UPDATE",
   NEW_USER_OWN_DATA_ACCESS = "NEW_USER_OWN_DATA_ACCESS",
   OTHER = "OTHER"
 }
-export type maintenanceTaskStatusEnum = "pending" | "ongoing" | "cancelled" | "completed";
+export type MaintenanceTaskStatusEnum = "pending" | "ongoing" | "cancelled" | "completed";
