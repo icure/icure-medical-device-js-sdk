@@ -357,9 +357,12 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
         patientSecretForeignKeys: (await Promise.all(
           this._forPatients[1].map(async (p) =>
             (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(dataOwnerId, p.id!, Object.entries(p.systemMetaData!.delegations!)
-              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
+              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]])
+              .reduce((m, [k, v]) => {
+                m[k] = v; return m}, {} as {[key: string]: Delegation[]
+              })
             )).map((x) => x.extractedKeys))
-        )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
+        )).reduce((t,v) => t.concat(v[0]) ,[] as string[])
         , '$type':'HealthcareElementByHealthcarePartyPatientFilter'} as HealthcareElementByHealthcarePartyPatientFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<HealthcareElement>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<HealthcareElement>),

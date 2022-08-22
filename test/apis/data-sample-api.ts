@@ -3,7 +3,7 @@ import "isomorphic-fetch";
 
 import {DataSampleFilter} from "../../src/filter";
 
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {setLocalStorage, TestUtils} from "../test-utils";
@@ -295,4 +295,33 @@ describe("Data Samples API", () => {
         (e) => assert(e != undefined)
       );
   });
+
+  it('Data Owner can filter all the Data Samples for a Patient - Success', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const newDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    expect(!!newDataSample).to.eq(true);
+
+    const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
+    expect(!!filteredSamples).to.eq(true);
+    expect(filteredSamples.rows.length).to.eq(1);
+    expect(filteredSamples.rows[0].id).to.eq(newDataSample.id);
+  });
+
+  it('getDataSamplesForPatient returns no Data Samples for a Patient with no Data Samples', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
+    expect(!!filteredSamples).to.eq(true);
+    expect(filteredSamples.rows.length).to.eq(0);
+  });
+
 });

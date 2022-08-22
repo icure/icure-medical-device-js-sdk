@@ -4,7 +4,7 @@ import "isomorphic-fetch";
 
 import {LocalStorage} from "node-localstorage";
 import * as os from "os";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {TestUtils} from "../test-utils";
@@ -138,5 +138,33 @@ describe('Healthcare Element API', () => {
         },
         (e) => assert(e != undefined)
       );
+  });
+
+  it('Data Owner can filter all the Healthcare Elements for a Patient - Success', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const newHealthElement = await createHealthcareElementForPatient(hcp1Api, newPatient);
+    expect(!!newHealthElement).to.eq(true);
+
+    const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
+    expect(!!filteredElements).to.eq(true);
+    expect(filteredElements.rows.length).to.eq(1);
+    expect(filteredElements.rows[0].id).to.eq(newHealthElement.id);
+  });
+
+  it('getHealthcareElementsForPatient returns no Healthcare Elements for a Patient with no Healthcare Elements', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
+    expect(!!filteredElements).to.eq(true);
+    expect(filteredElements.rows.length).to.eq(0);
   });
 });
