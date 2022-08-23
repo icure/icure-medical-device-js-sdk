@@ -285,16 +285,29 @@ describe("A Healthcare Party", () => {
       })
     );
     assert(!!newPatient);
+
+    // The Patient has some delegations
     const patientFirstDelegation = await hcp1Api.patientApi.giveAccessTo(newPatient, hcp3User.healthcarePartyId!);
     assert(!!patientFirstDelegation);
     const patientSecondDelegation = await hcp1Api.patientApi.giveAccessTo(patientFirstDelegation, patUser.patientId!);
     assert(!!patientSecondDelegation);
 
-    const newDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
-    assert(!!newDataSample);
-    const newHealthcareElement = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
-    assert(!!newHealthcareElement);
+    // Some Data Samples and Healthcare Elements were created for the Patient
+    const newDS1 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    assert(!!newDS1);
+    const newDS2 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    assert(!!newDS2);
+    const newDS3 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    assert(!!newDS3);
+    const newHE1 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
+    assert(!!newHE1);
+    const newHE2 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
+    assert(!!newHE2);
+    const newHE3 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
+    assert(!!newHE3);
 
+    // When HCP_1 creates user for patient PAT_1
+    // And HCP_1 is sending an invitation email to patient PAT_1
     const messageFactory = new ICureTestEmail(newPatient);
     await hcp1Api.userApi.createAndInviteUser(newPatient, messageFactory, false);
 
@@ -316,6 +329,10 @@ describe("A Healthcare Party", () => {
     const loginAndPassword = (await TestUtils.getEmail(email, 0)).subject!
 
     const authTimestamp = new Date().getTime();
+
+    // When PAT_1 generates a key pair for himself
+    // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
+    // Then PAT_1 is able to log as a user
     const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskForAccess(
       loginAndPassword.split('|')[0],
       loginAndPassword.split('|')[1],
@@ -337,20 +354,61 @@ describe("A Healthcare Party", () => {
     assert(notificationDelegates.includes(hcp1User.healthcarePartyId!));
     assert(notificationDelegates.includes(hcp3User.healthcarePartyId!));
 
-    try {
-      await userApi.dataSampleApi.getDataSample(newDataSample.id!);
-      expect(true, "promise should fail").eq(false);
-    } catch (e) {
-      expect((e as Error).message).to.eq("Cannot read properties of undefined (reading 'replace')");
-    }
+    // But PAT_1 may not access data sample DATA_SAMPLE_1
+    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS1.id!);
+    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
+    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS3.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE1.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE2.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
 
-    const currentPatient = await userApi.patientApi.getPatient(newPatient.id!);
-    const delegatedPatient = await userApi.patientApi.giveAccessTo(currentPatient, currentPatient.id!);
-    const delegatedDs = await hcp1Api.dataSampleApi.giveAccessTo(newDataSample, currentPatient.id!);
+    // When HCP_1 gives access to PAT_1
+    const newNotifications = await hcp1Api.notificationApi.getPendingNotificationsFromNewUsers();
+    expect(!!newNotifications).to.eq(true);
+    const newPatientNotification = newNotifications.filter( notification => notification.responsible === newPatient.id)[0];
+    expect(!!newPatientNotification).to.eq(true);
 
-    const ds = await userApi.dataSampleApi.getDataSample(newDataSample.id!);
-    assert(!!ds);
+    const ongoingStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(newPatientNotification, "ongoing");
+    expect(!!ongoingStatusUpdate).to.eq(true);
+    expect(ongoingStatusUpdate?.status).to.eq("ongoing");
 
+    const existingDS = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
+    expect(!!existingDS).to.eq(true);
+    expect(existingDS.rows.length).to.eq(3);
+
+    const sharedDSId = await hcp1Api.dataSampleApi.giveAccessToMany(
+      existingDS.rows.filter( ds => ds.id !== newDS2.id),
+      newPatient.id!
+    )
+    expect(sharedDSId.length).to.eq(2);
+    expect(sharedDSId).to.contain(newDS1.id);
+    expect(sharedDSId).to.not.contain(newDS2.id);
+    expect(sharedDSId).to.contain(newDS3.id);
+
+    const existingHE = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
+    expect(!!existingHE).to.eq(true);
+    expect(existingHE.rows.length).to.eq(3);
+
+    const sharedHEId = await hcp1Api.healthcareElementApi.giveAccessToMany(
+      existingHE.rows.filter( he => he.id !== newHE3.id),
+      newPatient.id!
+    )
+    expect(sharedHEId.length).to.eq(2);
+    expect(sharedHEId).to.contain(newHE1.id);
+    expect(sharedHEId).to.contain(newHE2.id);
+    expect(sharedHEId).to.not.contain(newHE3.id);
+
+    const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(newPatientNotification, "completed");
+    expect(!!completedStatusUpdate).to.eq(true);
+    expect(completedStatusUpdate?.status).to.eq("completed");
+
+    // Then PAT_1 may access data sample DATA_SAMPLE_1
+    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
+    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newHE1.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newHE2.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
   });
   //
   // it("should not be able to create a new User if it already exists for that Patient", async () => {

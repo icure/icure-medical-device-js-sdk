@@ -122,6 +122,8 @@ export interface DataSampleApi {
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
 
+  giveAccessToMany(dataSamples: Array<DataSample>, delegatedTo: string): Promise<Array<string>>
+
   getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample>
 
   /**
