@@ -6,23 +6,15 @@ import {DataSampleFilter} from "../../src/filter";
 import {assert, expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
-import {setLocalStorage, TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {MedTechApi} from "../../src/apis/medTechApi";
 
 setLocalStorage(fetch);
 
-const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
-const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
-const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;
-const hcpPrivKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
-const patUserName = process.env.ICURE_TS_TEST_PAT_USER!;
-const patPassword = process.env.ICURE_TS_TEST_PAT_PWD!;
-const patPrivKey = process.env.ICURE_TS_TEST_PAT_PRIV_KEY!;
-const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
-const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
-const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
-const hcp3UserName = process.env.ICURE_TS_TEST_HCP_3_USER!;
-const hcp3Password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
-const hcp3PrivKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
+  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 describe("Data Samples API", () => {
   it("Create Data Sample - Success", async () => {
@@ -322,6 +314,79 @@ describe("Data Samples API", () => {
     const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
     expect(!!filteredSamples).to.eq(true);
     expect(filteredSamples.rows.length).to.eq(0);
+  });
+
+  it('Data Owner can give access to multiple Data Samples at the same time', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApi = patApiAndUser.api;
+    const patUser = patApiAndUser.user;
+    const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
+
+    const newDataSample1 = await TestUtils.createDataSampleForPatient(hcp1Api, currentPatient);
+    expect(!!newDataSample1).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample1.id!)
+
+    const newDataSample2 = await TestUtils.createDataSampleForPatient(hcp1Api, currentPatient);
+    expect(!!newDataSample2).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample2.id!)
+
+    const newDataSample3 = await TestUtils.createDataSampleForPatient(hcp1Api, currentPatient);
+    expect(!!newDataSample3).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample3.id!)
+
+    const sharedDataSampleIds = await hcp1Api.dataSampleApi.giveAccessToMany(
+      [newDataSample1, newDataSample2, newDataSample3],
+      currentPatient.id!
+    )
+    expect(sharedDataSampleIds.length).to.eq(3);
+    expect(sharedDataSampleIds).to.contain(newDataSample1.id);
+    expect(sharedDataSampleIds).to.contain(newDataSample2.id);
+    expect(sharedDataSampleIds).to.contain(newDataSample3.id);
+
+    await TestUtils.retrieveDataSampleAndExpectSuccess(patApi, newDataSample1.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(patApi, newDataSample2.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(patApi, newDataSample3.id!);
+  });
+
+  it('Data Owner can give access to multiple Data Samples at the same time but only some of them succeed', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3Api = hcp3ApiAndUser.api;
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApi = patApiAndUser.api;
+    const patUser = patApiAndUser.user;
+    const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
+
+    const newDataSample1 = await TestUtils.createDataSampleForPatient(hcp3Api, currentPatient);
+    expect(!!newDataSample1).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample1.id!)
+
+    const newDataSample2 = await TestUtils.createDataSampleForPatient(hcp1Api, currentPatient);
+    expect(!!newDataSample2).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample2.id!)
+
+    const newDataSample3 = await TestUtils.createDataSampleForPatient(hcp1Api, currentPatient);
+    expect(!!newDataSample3).to.eq(true);
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample3.id!)
+
+    const sharedDataSampleIds = await hcp1Api.dataSampleApi.giveAccessToMany(
+      [newDataSample1, newDataSample2, newDataSample3],
+      currentPatient.id!
+    )
+    expect(sharedDataSampleIds.length).to.eq(2);
+    expect(sharedDataSampleIds).to.not.contain(newDataSample1.id);
+    expect(sharedDataSampleIds).to.contain(newDataSample2.id);
+    expect(sharedDataSampleIds).to.contain(newDataSample3.id);
+
+    await TestUtils.retrieveDataSampleAndExpectError(patApi, newDataSample1.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(patApi, newDataSample2.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(patApi, newDataSample3.id!);
   });
 
 });

@@ -22,7 +22,7 @@ import {FilterMapper} from '../../mappers/filter'
 import {HealthcareElementMapper} from '../../mappers/healthcareElement'
 import {firstOrNull} from '../../utils/functionalUtils'
 import {Patient} from "../../models/Patient";
-import {DataSampleFilter, HealthcareElementFilter} from "../../filter";
+import {HealthcareElementFilter} from "../../filter";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -215,6 +215,16 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
         return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
       })
+  }
+
+  async giveAccessToMany(healthElements: Array<HealthcareElement>, delegatedTo: string): Promise<Array<string>> {
+    return (await Promise.all(healthElements.map(async healthElement => {
+      try {
+        return (await this.giveAccessTo(healthElement, delegatedTo)).id
+      } catch(e) {
+        return null;
+      }
+    }))).filter( it => !!it ) as unknown as string[];
   }
 
   async getHealthcareElementsForPatient(patient: Patient): Promise<PaginatedListHealthcareElement> {
