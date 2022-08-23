@@ -78,5 +78,7 @@ export interface HealthcareElementApi {
    */
   giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement>
 
+  giveAccessToMany(healthElements: Array<HealthcareElement>, delegatedTo: string): Promise<Array<string>>
+
   getHealthcareElementsForPatient(patient: Patient): Promise<PaginatedListHealthcareElement>
 }

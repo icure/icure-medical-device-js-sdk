@@ -5,7 +5,7 @@ import {hex2ua, ua2hex} from '@icure/api';
 import {AnonymousMedTechApiBuilder} from '../src/apis/AnonymousMedTechApi';
 import axios, {Method} from 'axios';
 import {Patient} from '../src/models/Patient';
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {HealthcareElement} from "../src/models/HealthcareElement";
 import {DataSample} from "../src/models/DataSample";
 import {CodingReference} from "../src/models/CodingReference";
@@ -246,5 +246,35 @@ export class TestUtils {
         content: {en: {stringValue: "Hello world"}},
       })
     );
+  }
+
+  static async retrieveHealthcareElementAndExpectError(api: MedTechApi, healthcareElementId: string) {
+    try {
+      await api.healthcareElementApi.getHealthcareElement(healthcareElementId);
+      expect(true, "promise should fail").eq(false);
+    } catch (e) {
+      expect((e as Error).message).to.eq("");
+    }
+  }
+
+  static async retrieveHealthcareElementAndExpectSuccess(api: MedTechApi, healthcareElementId: string) {
+    const retrievedHC = await api.healthcareElementApi.getHealthcareElement(healthcareElementId);
+    expect(!!retrievedHC).to.eq(true);
+    expect(retrievedHC.id).to.eq(healthcareElementId);
+  }
+
+  static async retrieveDataSampleAndExpectError(api: MedTechApi, dataSampleId: string) {
+    try {
+      await api.dataSampleApi.getDataSample(dataSampleId);
+      expect(true, "promise should fail").eq(false);
+    } catch (e) {
+      expect((e as Error).message).to.eq("Cannot read properties of undefined (reading 'replace')");
+    }
+  }
+
+  static async retrieveDataSampleAndExpectSuccess(api: MedTechApi, dataSampleId: string) {
+    const retrievedDataSample = await api.dataSampleApi.getDataSample(dataSampleId);
+    expect(!!retrievedDataSample).to.eq(true);
+    expect(retrievedDataSample.id).to.eq(dataSampleId);
   }
 }

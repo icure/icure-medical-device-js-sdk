@@ -865,6 +865,16 @@ export class DataSampleApiImpl implements DataSampleApi {
       })
   }
 
+  async giveAccessToMany(dataSamples: Array<DataSample>, delegatedTo: string): Promise<Array<string>> {
+    return (await Promise.all(dataSamples.map(async dataSample => {
+      try {
+        return (await this.giveAccessTo(dataSample, delegatedTo)).id
+      } catch(e) {
+        return null;
+      }
+    }))).filter( it => !!it ) as unknown as string[];
+  }
+
   async getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample> {
     return this.userApi.getCurrentUser().then( user => {
       if (!user) throw new Error("There is no user currently logged in");
