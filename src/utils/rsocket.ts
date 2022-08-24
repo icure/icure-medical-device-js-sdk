@@ -235,16 +235,11 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
   }
 
   async connect(maxRetry: number = 5, retryIntervalMs: number = 10000) {
-    await this.reconnectWithRetry(0, maxRetry, retryIntervalMs)
+    await this.reconnectWithRetry(maxRetry, retryIntervalMs)
   }
 
-  private async reconnectWithRetry(nbAttempts: number = 0, maxRetry: number = 5, retryIntervalMs: number = 10000) {
-    if (nbAttempts > 0) {
-      await sleep(retryIntervalMs * (Math.random() + 1) ** nbAttempts)
-    }
-
-    console.info(`Trying to connect to WS for the ${nbAttempts} time...`)
-
+  private async reconnectWithRetry(maxRetry: number = 5, retryIntervalMs: number = 10000,
+                                   exponentialFactor: number = 1.8) {
     this._clientFactory().connect()
       .then((socket) => {
         this._socket = socket;
@@ -252,15 +247,17 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
         socket.connectionStatus().subscribe(async event => {
           if (event.kind !== 'CONNECTED') {
             this._socket = undefined;
-            await this.reconnectWithRetry(1, maxRetry, retryIntervalMs);
+            await sleep(retryIntervalMs * (Math.random() + 1))
+            await this.reconnectWithRetry(maxRetry - 1, retryIntervalMs * exponentialFactor, exponentialFactor);
           }
         });
     }, async (error) => {
-        if (nbAttempts == maxRetry) {
+        if (maxRetry === 1) {
           this._socket?.close()
           this._reject(error);
         } else {
-          await this.reconnectWithRetry(nbAttempts + 1, maxRetry, retryIntervalMs)
+          await sleep(retryIntervalMs * (Math.random() + 1))
+          await this.reconnectWithRetry(maxRetry - 1, retryIntervalMs * exponentialFactor, exponentialFactor);
         }
     });
   }
