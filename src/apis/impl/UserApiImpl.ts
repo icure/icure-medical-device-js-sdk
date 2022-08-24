@@ -2,7 +2,6 @@ import {User} from "../../models/User";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
-  AllUsersFilter,
   FilterChainUser,
   IccContactXApi,
   IccCryptoXApi,
@@ -18,11 +17,6 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
-import { Patient } from "../../models/Patient";
-import {v4 as uuid} from 'uuid';
-import {Address, AddressAddressTypeEnum} from "../../models/Address";
-import {Telecom, TelecomTelecomTypeEnum} from "../../models/Telecom";
-import {UsersByPatientIdFilter} from "../../filter/user/UsersByPatientIdFilter";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -97,10 +91,11 @@ export class UserApiImpl implements UserApi {
   subscribeToUserEvents(
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<User> | undefined,
-    eventFired: (patient: User) => Promise<void>,
-    options: {keepAlive?: number, lifetime?: number } = {}
+    eventFired: (user: User) => Promise<void>,
+    options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired, options).then((rs) => new ConnectionImpl(rs))
+    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired, options)
+      .then((rs) => new ConnectionImpl(rs))
   }
 
 }
