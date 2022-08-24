@@ -49,10 +49,21 @@ export interface PatientApi {
      */
   giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>
 
+  /**
+   * Opens a WebSocket Connection in order to receive all the Patients corresponding to specific filter criteria.
+   * @param eventTypes Type of event you would like to listen. It can be CREATE, UPDATE or DELETE
+   * @param filter Filter criteria to filter to the Patients you would like to receive
+   * @param eventFired Action applied each time you receive a Patient through the WebSocket
+   * @param options Options to configure the WebSocket.
+   *    - keepAlive : How long to keep connection alive (ms);
+   *    - lifetime : How long to keep the WebSocket alive (ms);
+   *    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;
+   *    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts)
+   */
   subscribeToPatientEvents(
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient>,
     eventFired: (patient: Patient) => Promise<void>,
-    options?: {keepAlive?: number, lifetime?: number }
+    options?: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 }

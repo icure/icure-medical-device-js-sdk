@@ -20,9 +20,9 @@ console.log("Saving keys in " + tmp);
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v2";
-const userName = process.env.ICURE_TS_TEST_HCP_USER!;
-const password = process.env.ICURE_TS_TEST_HCP_PWD!;
-const privKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
+const userName = process.env.ICURE_TS_TEST_HCP_3_USER!;
+const password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
+const privKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
 let medtechApi: MedTechApi | undefined = undefined;
 const testType = "IC-TEST";
 const testCode = "TEST";
@@ -102,4 +102,73 @@ describe("Subscription API", () => {
   it("Can subscribe to Data Samples with options", async () => {
     await createDataSamplesAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
   }).timeout(60000);
+
+  it("WebSocket Issue error", async () => {
+    const api = medtechApi!
+
+    const loggedUser = await api.userApi.getLoggedUser();
+    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+      loggedUser.healthcarePartyId!,
+      hex2ua(privKey)
+    );
+
+    const hcp =
+      await api.healthcareProfessionalApi.getHealthcareProfessional(
+        loggedUser.healthcarePartyId!
+      );
+
+    const connection = (
+      await api.dataSampleApi.subscribeToDataSampleEvents(
+        ["CREATE"],
+        await new DataSampleFilter()
+          .forDataOwner(hcp.id!)
+          .byTagCodeFilter(testType, testCode)
+          .build(),
+        async (ds) => {
+          console.info(`Received data sample ${ds.id}`)
+        },
+        {keepAlive: 1000, lifetime: 600000}
+      )
+    )
+      .onConnected(() => console.error(`WS Connection : CONNECTED`))
+      .onClosed(() => console.error(`WS Connection : CLOSED`))
+      .onError(() => console.error(`WS Connection : ERROR`));
+
+    const patient = await api.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: "John",
+        lastName: "Snow",
+        note: "Winter is coming",
+      })
+    );
+
+    let i = 1;
+    while (i < 1000) {
+
+      try {
+        let createdDataSample = await api.dataSampleApi.createOrModifyDataSampleFor(
+          patient.id!,
+          new DataSample({
+            labels: new Set([
+              new CodingReference({type: testType, code: testCode}),
+            ]),
+            content: {en: {stringValue: "Hello world"}},
+          })
+        );
+
+        console.info(`Created Data Sample ${createdDataSample.id}`)
+
+      } catch (e) {
+        console.error(`Couldn't create data sample due to error ${e}`)
+      } finally {
+        await sleep(3000);
+        i += 1;
+      }
+
+    }
+
+    connection.close();
+    await sleep(1000);
+
+  }).timeout(6000000)
 });

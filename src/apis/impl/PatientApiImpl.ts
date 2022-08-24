@@ -151,7 +151,7 @@ export class PatientApiImpl implements PatientApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient> | undefined,
     eventFired: (patient: Patient) => Promise<void>,
-    options: {keepAlive?: number, lifetime?: number } = {}
+    options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(
