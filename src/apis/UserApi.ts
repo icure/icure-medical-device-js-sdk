@@ -2,7 +2,6 @@ import {Filter} from '../filter/Filter';
 import {PaginatedListUser} from '../models/PaginatedListUser';
 import {User} from '../models/User';
 import {Connection} from "../models/Connection";
-import {Patient} from "../models/Patient";
 
 /**
   * no description
@@ -70,5 +69,20 @@ import {Patient} from "../models/Patient";
     */
     matchUsers(filter: Filter<User>, ): Promise<Array<string> >;
 
-    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[], filter: Filter<User>, eventFired: (user:User) => Promise<void>): Promise<Connection>;
+  /**
+   * Opens a WebSocket Connection in order to receive all the Users corresponding to specific filter criteria.
+   * @param eventTypes Type of event you would like to listen. It can be CREATE, UPDATE or DELETE
+   * @param filter Filter criteria to filter to the users you would like to receive
+   * @param eventFired Action applied each time you receive a user through the WebSocket
+   * @param options Options to configure the WebSocket.
+   *    - keepAlive : How long to keep connection alive (ms);
+   *    - lifetime : How long to keep the WebSocket alive (ms);
+   *    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;
+   *    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts)
+   */
+    subscribeToUserEvents(eventTypes: ('CREATE'|'UPDATE'|'DELETE')[],
+                          filter: Filter<User>,
+                          eventFired: (user:User) => Promise<void>,
+                          options?: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }
+    ): Promise<Connection>;
   }

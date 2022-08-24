@@ -866,8 +866,8 @@ export class DataSampleApiImpl implements DataSampleApi {
   async subscribeToDataSampleEvents(
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<DataSample> | undefined,
-    eventFired: (patient: DataSample) => Promise<void>,
-    options: {keepAlive?: number, lifetime?: number } = {}
+    eventFired: (dataSample: DataSample) => Promise<void>,
+    options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     let currentUser = await this.userApi.getCurrentUser();
     return subscribeToEntityEvents(

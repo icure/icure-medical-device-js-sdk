@@ -11,9 +11,11 @@ export interface Connection {
 
 export class ConnectionImpl implements Connection {
   rs: ReactiveSocket<any, any>
+  connectionStatus: string
 
   constructor(rs: ReactiveSocket<any, any>) {
     this.rs = rs;
+    this.connectionStatus = 'NOT_CONNECTED'
   }
 
   close() {
@@ -23,6 +25,7 @@ export class ConnectionImpl implements Connection {
   onConnecting(callback:() => void): Connection {
     this.rs?.connectionStatus()?.subscribe((cs: ConnectionStatus) => {
       if (cs.kind === 'CONNECTING') {
+        this.connectionStatus = 'CONNECTING'
         callback()
       }
     })
@@ -32,6 +35,7 @@ export class ConnectionImpl implements Connection {
   onNotConnected(callback:() => void): Connection {
     this.rs?.connectionStatus()?.subscribe((cs: ConnectionStatus) => {
       if (cs.kind === 'NOT_CONNECTED') {
+        this.connectionStatus = 'NOT_CONNECTED'
         callback()
       }
     })
@@ -41,6 +45,7 @@ export class ConnectionImpl implements Connection {
   onConnected(callback:() => void): Connection {
     this.rs?.connectionStatus()?.subscribe((cs: ConnectionStatus) => {
       if (cs.kind === 'CONNECTED') {
+        this.connectionStatus = 'CONNECTED'
         callback()
       }
     })
@@ -50,6 +55,7 @@ export class ConnectionImpl implements Connection {
   onClosed(callback:() => void): Connection {
     this.rs?.connectionStatus()?.subscribe((cs: ConnectionStatus) => {
       if (cs.kind === 'CLOSED') {
+        this.connectionStatus = 'CLOSED'
         callback()
       }
     })
@@ -59,6 +65,7 @@ export class ConnectionImpl implements Connection {
   onError(callback:(e: Error) => void): Connection {
     this.rs?.connectionStatus()?.subscribe((cs: ConnectionStatus) => {
       if (cs.kind === 'ERROR') {
+        this.connectionStatus = 'ERROR'
         callback(cs.error)
       }
     })
