@@ -35,9 +35,17 @@ export interface NotificationApi {
    */
   getNotification(notificationId: string): Promise<Notification | undefined>;
 
-  filterNotificationsFromMultiplePages(filter: Filter<Notification>, nextNotificationId?: string | undefined, limit?: number | undefined): Promise<Array<Notification>>
-
+  /**
+   * Gets all the Notifications with type NEW_USER_OWN_DATA_ACCESS and status "pending" that the current dataOwner can access
+   * @return an Array of the Notifications matching those criteria
+   */
   getPendingNotificationsFromNewUsers(): Promise<Array<Notification>>;
 
+  /**
+   * Updates the status of a Notification.
+   * @param notification the Notification to update
+   * @param newStatus the new status
+   * @return the updated Notification
+   */
   updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>;
 }

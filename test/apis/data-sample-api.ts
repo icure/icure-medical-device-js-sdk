@@ -1,13 +1,16 @@
 import "mocha";
 import "isomorphic-fetch";
 
-import {DataSampleFilter} from "../../src/filter";
+import {DataSampleFilter, NotificationFilter} from "../../src/filter";
 
 import {assert, expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
-import {MedTechApi} from "../../src/apis/medTechApi";
+import {it} from "mocha";
+import {NotificationTypeEnum} from "../../src/models/Notification";
+import {NotificationApiImpl} from "../../src/apis/impl/NotificationApiImpl";
+import {DataSampleApiImpl} from "../../src/apis/impl/DataSampleApiImpl";
 
 setLocalStorage(fetch);
 
@@ -17,6 +20,7 @@ const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, h
   patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 describe("Data Samples API", () => {
+
   it("Create Data Sample - Success", async () => {
     // Given
     const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
@@ -300,8 +304,8 @@ describe("Data Samples API", () => {
 
     const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
     expect(!!filteredSamples).to.eq(true);
-    expect(filteredSamples.rows.length).to.eq(1);
-    expect(filteredSamples.rows[0].id).to.eq(newDataSample.id);
+    expect(filteredSamples.length).to.eq(1);
+    expect(filteredSamples[0].id).to.eq(newDataSample.id);
   });
 
   it('getDataSamplesForPatient returns no Data Samples for a Patient with no Data Samples', async () => {
@@ -313,7 +317,7 @@ describe("Data Samples API", () => {
 
     const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
     expect(!!filteredSamples).to.eq(true);
-    expect(filteredSamples.rows.length).to.eq(0);
+    expect(filteredSamples.length).to.eq(0);
   });
 
   it('Data Owner can give access to multiple Data Samples at the same time', async () => {
