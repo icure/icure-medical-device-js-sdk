@@ -86,7 +86,7 @@ describe("Subscription API", () => {
 
     await sleep(2000);
     connection.close();
-    await sleep(1000);
+    await sleep(5000);
 
     events?.forEach((event) => console.log(`Event : ${event}`))
     statuses?.forEach((event) => console.log(`Status : ${event}`))
