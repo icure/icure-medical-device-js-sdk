@@ -94,11 +94,11 @@ export class NotificationApiImpl implements NotificationApi {
     });
   }
 
-  async filterNotificationsFromMultiplePages(filter: Filter<Notification>, nextNotificationId?: string | undefined, limit?: number | undefined): Promise<Array<Notification>> {
-    const paginatedNotifications = await this.filterNotifications(filter, nextNotificationId, limit);
-    return !!paginatedNotifications.nextKeyPair?.startKeyDocId
-      ? paginatedNotifications.rows.concat((await this.filterNotificationsFromMultiplePages(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit)))
-      : paginatedNotifications.rows
+  async concatenateFilterResults(filter: Filter<Notification>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<Notification> = []): Promise<Array<Notification>> {
+    const paginatedNotifications = await this.filterNotifications(filter, nextId, limit);
+    return !paginatedNotifications.nextKeyPair?.startKeyDocId
+      ? accumulator.concat(paginatedNotifications.rows)
+      : this.concatenateFilterResults(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedNotifications.rows))
   }
 
   async getPendingNotificationsFromNewUsers(): Promise<Array<Notification>> {
@@ -109,7 +109,7 @@ export class NotificationApiImpl implements NotificationApi {
       .forHcParty(user.healthcarePartyId)
       .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
       .build()
-    return (await this.filterNotificationsFromMultiplePages(filter)).filter( it => it.status === "pending");
+    return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {

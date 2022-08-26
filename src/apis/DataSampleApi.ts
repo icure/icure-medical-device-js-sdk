@@ -122,9 +122,24 @@ export interface DataSampleApi {
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
 
+  /**
+   * Service where current user gives access to the information of a set of data samples to another dataOwner (HCP, patient or device).
+   * For this, the current user data owner should be able to access the data sample provided in argument in order to provide access to another data owner.
+
+   * @param dataSamples An Array of Data Samples the current data owner would like to share with another data owner
+   * @param delegatedTo ID of the data owner to which current user would like to give access
+   *
+   * @return A list of id of the Data Samples id that were successfully shared
+   */
   giveAccessToMany(dataSamples: Array<DataSample>, delegatedTo: string): Promise<Array<string>>
 
-  getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample>
+  /**
+   * Gets all the Data Samples associated to a Patient that the current dataOwner can access.
+   * @param patient the Patient associated to the Data Samples to get
+   *
+   * @return an array containing the Data Samples
+   */
+  getDataSamplesForPatient(patient: Patient): Promise<Array<DataSample>>
 
   /**
    * Opens a WebSocket Connection in order to receive all the Data Samples corresponding to specific filter criteria.

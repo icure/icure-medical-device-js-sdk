@@ -12,7 +12,6 @@ import {ICureRegistrationEmail} from "../../src/utils/messageGatewayUtils";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {NotificationFilter} from "../../src/filter";
-import {DataSample} from "../../src/models/DataSample";
 
 setLocalStorage(fetch);
 
@@ -192,10 +191,10 @@ describe("A Healthcare Party", () => {
 
     const existingDS = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
     expect(!!existingDS).to.eq(true);
-    expect(existingDS.rows.length).to.eq(3);
+    expect(existingDS.length).to.eq(3);
 
     const sharedDSId = await hcp1Api.dataSampleApi.giveAccessToMany(
-      existingDS.rows.filter( ds => ds.id !== newDS2.id),
+      existingDS.filter( ds => ds.id !== newDS2.id),
       newPatient.id!
     )
     expect(sharedDSId.length).to.eq(2);
@@ -205,10 +204,10 @@ describe("A Healthcare Party", () => {
 
     const existingHE = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
     expect(!!existingHE).to.eq(true);
-    expect(existingHE.rows.length).to.eq(3);
+    expect(existingHE.length).to.eq(3);
 
     const sharedHEId = await hcp1Api.healthcareElementApi.giveAccessToMany(
-      existingHE.rows.filter( he => he.id !== newHE3.id),
+      existingHE.filter( he => he.id !== newHE3.id),
       newPatient.id!
     )
     expect(sharedHEId.length).to.eq(2);

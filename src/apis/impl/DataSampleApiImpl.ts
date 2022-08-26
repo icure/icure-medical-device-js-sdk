@@ -875,19 +875,23 @@ export class DataSampleApiImpl implements DataSampleApi {
     }))).filter( it => !!it ) as unknown as string[];
   }
 
-  async getDataSamplesForPatient(patient: Patient): Promise<PaginatedListDataSample> {
-    return this.userApi.getCurrentUser().then( user => {
-      if (!user) throw new Error("There is no user currently logged in");
-      const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
-      if (!dataOwnerId) throw new Error("User is not a Data Owner");
-      return new DataSampleFilter()
-        .forDataOwner(dataOwnerId)
-        .forPatients(this.crypto, [patient])
-        .build()
-        .then( filter => {
-          return this.filterDataSample(filter);
-        })
-    });
+  async concatenateFilterResults(filter: Filter<DataSample>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<DataSample> = []): Promise<Array<DataSample>> {
+    const paginatedDataSamples = await this.filterDataSample(filter, nextId, limit);
+    return !paginatedDataSamples.nextKeyPair?.startKeyDocId
+      ? accumulator.concat(paginatedDataSamples.rows)
+      : this.concatenateFilterResults(filter, paginatedDataSamples.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedDataSamples.rows))
+  }
+
+  async getDataSamplesForPatient(patient: Patient): Promise<Array<DataSample>> {
+    const user = await this.userApi.getCurrentUser();
+    if (!user) throw new Error("There is no user currently logged in");
+    const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
+    if (!dataOwnerId) throw new Error("User is not a Data Owner");
+    const filter = await new DataSampleFilter()
+      .forDataOwner(dataOwnerId)
+      .forPatients(this.crypto, [patient])
+      .build()
+    return await this.concatenateFilterResults(filter);
   }
 
   async subscribeToDataSampleEvents(

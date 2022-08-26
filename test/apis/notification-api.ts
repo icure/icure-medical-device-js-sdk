@@ -9,6 +9,7 @@ import {User} from "../../src/models/User";
 import {NotificationFilter} from "../../src/filter";
 import {PaginatedListNotification} from "../../src/models/PaginatedListNotification";
 import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
+import {NotificationApiImpl} from "../../src/apis/impl/NotificationApiImpl";
 
 setLocalStorage(fetch);
 
@@ -354,48 +355,48 @@ describe('Notification API', async function () {
         filter,
         nextId
       );
-      existingNotifications = existingNotifications.concat(page.rows.map( it => it.id! ) ?? []);
+      existingNotifications = existingNotifications.concat(page.rows.map(it => it.id!) ?? []);
       nextId = page?.nextKeyPair?.startKeyDocId
-    } while(!!nextId);
+    } while (!!nextId);
 
-    const result = await hcp1Api!.notificationApi.filterNotificationsFromMultiplePages(
+    const result = await (hcp1Api!.notificationApi as NotificationApiImpl).concatenateFilterResults(
       filter,
       undefined,
       Math.floor(existingNotifications.length / 3)
     );
     expect(result.length).to.eq(existingNotifications.length);
-    result.forEach( notification => {
+    result.forEach(notification => {
       expect(existingNotifications).to.contain(notification.id);
     });
-
-    it('should be able to get all the pending Notification of Users asking for data access', async() => {
-      const createdNotification = await hcp2Api!.notificationApi.createOrModifyNotification(
-        new Notification({
-          id: uuid(),
-          status: "pending",
-          type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
-        }),
-        hcp1User?.healthcarePartyId!
-      )
-      expect(!!createdNotification).to.eq(true);
-
-      const notifications = await hcp1Api!.notificationApi.getPendingNotificationsFromNewUsers();
-
-      expect(notifications.length).to.gt(0);
-      notifications.forEach( notification => {
-        expect(notification.status).to.eq("pending");
-        expect(notification.type).to.eq(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
-        expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
-      });
-    });
-
-    it('should be able to update the status of a Notification', async () => {
-      const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
-      expect(!!createdNotification).to.eq(true);
-      const updatedNotification = await hcp1Api?.notificationApi.updateNotificationStatus(createdNotification, "completed");
-      expect(!!updatedNotification).to.eq(true);
-      expect(updatedNotification!.status).to.eq("completed");
-    });
-
   });
+
+  it('should be able to get all the pending Notification of Users asking for data access', async() => {
+    const createdNotification = await hcp2Api!.notificationApi.createOrModifyNotification(
+      new Notification({
+        id: uuid(),
+        status: "pending",
+        type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+      }),
+      hcp1User?.healthcarePartyId!
+    )
+    expect(!!createdNotification).to.eq(true);
+
+    const notifications = await hcp1Api!.notificationApi.getPendingNotificationsFromNewUsers();
+
+    expect(notifications.length).to.gt(0);
+    notifications.forEach( notification => {
+      expect(notification.status).to.eq("pending");
+      expect(notification.type).to.eq(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
+      expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
+    });
+  });
+
+  it('should be able to update the status of a Notification', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    expect(!!createdNotification).to.eq(true);
+    const updatedNotification = await hcp1Api?.notificationApi.updateNotificationStatus(createdNotification, "completed");
+    expect(!!updatedNotification).to.eq(true);
+    expect(updatedNotification!.status).to.eq("completed");
+  });
+
 });

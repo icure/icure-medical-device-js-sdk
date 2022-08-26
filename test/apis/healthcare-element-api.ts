@@ -140,8 +140,8 @@ describe('Healthcare Element API', () => {
 
     const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
     expect(!!filteredElements).to.eq(true);
-    expect(filteredElements.rows.length).to.eq(1);
-    expect(filteredElements.rows[0].id).to.eq(newHealthElement.id);
+    expect(filteredElements.length).to.eq(1);
+    expect(filteredElements[0].id).to.eq(newHealthElement.id);
   });
 
   it('getHealthcareElementsForPatient returns no Healthcare Elements for a Patient with no Healthcare Elements', async () => {
@@ -153,7 +153,7 @@ describe('Healthcare Element API', () => {
 
     const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
     expect(!!filteredElements).to.eq(true);
-    expect(filteredElements.rows.length).to.eq(0);
+    expect(filteredElements.length).to.eq(0);
   });
 
   it('Data Owner can give access to multiple Healthcare Elements at the same time', async () => {
