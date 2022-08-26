@@ -32,21 +32,21 @@ export function subscribeToEntityEvents(basePath: string, username: string, pass
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Patient> | undefined,
                                         eventFired: (entity: Patient) => Promise<void>,
                                         options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
-                                        decryptor: (encrypted: PatientDto) => Promise<PatientDto>): Promise<ReactiveSocket<any, any>>
+                                        decryptor: (encrypted: PatientDto) => Promise<PatientDto>): Promise<ICureRSocket<any, any>>
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'DataSample',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<DataSample> | undefined,
                                         eventFired: (entity: DataSample) => Promise<void>,
                                         options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
-                                        decryptor: (encrypted: Service) => Promise<Service>): Promise<ReactiveSocket<any, any>>
+                                        decryptor: (encrypted: Service) => Promise<Service>): Promise<ICureRSocket<any, any>>
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'User',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<User> | undefined,
                                         eventFired: (entity: User) => Promise<void>,
-                                        options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }): Promise<ReactiveSocket<any, any>>
+                                        options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }): Promise<ICureRSocket<any, any>>
 export function subscribeToEntityEvents<O extends Patient | DataSample | User, T extends PatientDto | Service>(
   basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User',
   eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<O> | undefined, eventFired: (entity: O) => Promise<void>,
   options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {},
-  decryptor?: (encrypted: T) => Promise<T>): Promise<ReactiveSocket<any, any>> {
+  decryptor?: (encrypted: T) => Promise<T>): Promise<ICureRSocket<any, any>> {
 
   const auth = encodeSimpleAuthMetadata(username, password)
   const setup = {
@@ -76,13 +76,8 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
     }, BufferEncoders)
   });
 
-  return new Promise(async (resolve, reject) => {
-    const socket = new ReconnectableRSocket(clientFactory, reject);
-    await socket.connect(options.connectionMaxRetry, options.connectionRetryIntervalMs)
-
-    console.log('websocket connection established.');
-
-    const request = new Flowable((subscriber) => {
+  const requestStreamFlowable = <O>(socket: ICureRSocket<unknown, string | Buffer | Uint8Array>, eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], entityClass: "Patient" | "DataSample" | "User", filter: Filter<O> | undefined, auth: Buffer) => {
+    return new Flowable((subscriber) => {
       socket.requestStream({
           data: {
             eventTypes,
@@ -106,6 +101,15 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
         }
       ).subscribe(subscriber)
     });
+  };
+
+  return new Promise(async (resolve, reject) => {
+    const socket = new ICureRSocket(clientFactory, reject);
+    await socket.connect(options.connectionMaxRetry, options.connectionRetryIntervalMs)
+
+    console.log('websocket connection established.');
+
+    const request = requestStreamFlowable(socket, eventTypes, entityClass, filter, auth);
 
     request
       .lift(actual => new ResubscribeOperator(request, actual))
@@ -222,8 +226,11 @@ class ResubscribeOperator<T> implements ISubscriber<T>, ISubscription {
 }
 
 
-export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
+export class ICureRSocket<D, M> implements ReactiveSocket<D, M> {
   _socket: ReactiveSocket<D, M> | undefined;
+  _socketStatus: string | undefined;
+  _socketStatusCallbacks: Array<(cs: ConnectionStatus) => void>
+  _closed: boolean;
 
   _clientFactory: () => RSocketClient<D, M>;
   _reject: (reason?: any) => void
@@ -232,6 +239,9 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
               reject: (reason?: any) => void = () => {}) {
     this._clientFactory = clientFactory;
     this._reject = reject;
+    this._socketStatus = undefined
+    this._socketStatusCallbacks = []
+    this._closed = false
   }
 
   async connect(maxRetry: number = 5, retryIntervalMs: number = 10000) {
@@ -245,7 +255,14 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
         this._socket = socket;
 
         socket.connectionStatus().subscribe(async event => {
-          if (event.kind !== 'CONNECTED') {
+          if (event.kind == this._socketStatus) {
+            return;
+          }
+
+          this._socketStatus = event.kind;
+          this._socketStatusCallbacks.forEach((callback) => callback(event))
+
+          if (event.kind !== 'CONNECTED' && !this._closed) {
             this._socket = undefined;
             await sleep(retryIntervalMs * (Math.random() + 1))
             await this.reconnectWithRetry(maxRetry - 1, retryIntervalMs * exponentialFactor, exponentialFactor);
@@ -255,7 +272,7 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
         if (maxRetry === 1) {
           this._socket?.close()
           this._reject(error);
-        } else {
+        } else if (!this._closed) {
           await sleep(retryIntervalMs * (Math.random() + 1))
           await this.reconnectWithRetry(maxRetry - 1, retryIntervalMs * exponentialFactor, exponentialFactor);
         }
@@ -302,6 +319,10 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
     return this._socket.metadataPush(payload);
   }
 
+  connectionStatusWithCallback(callback: (cs: ConnectionStatus) => void) {
+      this._socketStatusCallbacks.push(callback)
+  }
+
   connectionStatus(): Flowable<ConnectionStatus> {
     if (!this._socket) {
       return Flowable.error(new Error('Not Connected yet. Retry later'));
@@ -315,6 +336,7 @@ export class ReconnectableRSocket<D, M> implements ReactiveSocket<D, M> {
   }
 
   close() {
+    this._closed = true
     this._socket?.close()
   }
 }
