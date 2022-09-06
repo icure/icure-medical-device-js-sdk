@@ -2,45 +2,69 @@ import {Filter} from '../filter/Filter'
 import {HealthcareElement} from '../models/HealthcareElement'
 import {PaginatedListHealthcareElement} from '../models/PaginatedListHealthcareElement'
 
-/**
- * no description
- */
 export interface HealthcareElementApi {
   /**
-   * Create a Healthcare Element
-   * @param healthcareElement
+   * A Healthcare Element is a data giving some medical context to a series of measures, symptoms, ...
+   * For example, if the data samples are symptoms representing fever, cold feel, headache, ... the associated healthcare
+   * element could be a flue.
+   *
+   * A healthcare Element can be linked to a patient and to a series of data samples.
+   *
+   * This service allows you to create a healthcare element linked to a specific patient
+   *
+   * @param healthcareElement Healthcare element to create in iCure Database
+   * @param patientId Id of the patient to which the healthcare element is linked
    */
   createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement>
 
   /**
-   * Create a Healthcare Element
+   * A Healthcare Element is a data giving some medical context to a series of measures, symptoms, ...
+   * For example, if the data samples are symptoms representing fever, cold feel, headache, ... the associated healthcare
+   * element could be a flue.
+   *
+   * A healthcare Element can be linked to a patient and to a series of data samples.
+   *
+   * This service permits you to create multiple healthcare elements for a specific patient
+   *
    * @param healthcareElement
+   * @param patientId Id of the patient to which the healthcare elements are linked
    */
   createOrModifyHealthcareElements(healthcareElement: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>>
 
   /**
-   * Delete a Healthcare Element
-   * @param id
+   * Delete a Healthcare Element from the iCure database
+   * @param id Id of the healthcare element to delete
    */
   deleteHealthcareElement(id: string): Promise<string>
 
   /**
-   * Find Healthcare Elements using a filter
-   * @param filter
-   * @param nextHealthElementId
-   * @param limit
+   * Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for Healthcare elements are :
+   *  - HealthcareElementByHealthcarePartyFilter;
+   *  - HealthcareElementByHealthcarePartyIdentifiersFilter;
+   *  - HealthcareElementByHealthcarePartyLabelCodeFilter;
+   *  - HealthcareElementByHealthcarePartyPatientFilter;
+   *  - and HealthcareElementByIdsFilter.
+   *
+   * This method returns a paginated list of healthcare elements (with a cursor that lets you query the following items).
+   * Load healthcare elements from the database by filtering them using the provided Filter.
+   * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
+   * @param nextHealthElementId The id of the first Healthcare professional in the next page
+   * @param limit The maximum number of healthcare elements that should contain the returned page. By default, a page contains 1000 healthcare elements
    */
   filterHealthcareElement(filter: Filter<HealthcareElement>, nextHealthElementId?: string, limit?: number): Promise<PaginatedListHealthcareElement>
 
   /**
-   * Get a Healthcare Element
-   * @param id
+   * Retrieves the information of a specific Healthcare Element
+   * @param id Id of the healthcare element to retrieve
    */
   getHealthcareElement(id: string): Promise<HealthcareElement>
 
   /**
-   * Find Healthcare Elements using a filter
-   * @param filter
+   * Find which Healthcare Elements are matching a specific filter.
+   *
+   * @return the ids of the healthcare elements satisfying the provided filter
+   *
+   * @param filter Filtering conditions that the returned healthcare element ids are satisfying.
    */
   matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>>
 

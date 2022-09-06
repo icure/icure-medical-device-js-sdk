@@ -3,9 +3,6 @@ import {PaginatedListPatient} from '../models/PaginatedListPatient'
 import {Patient} from '../models/Patient'
 import {Connection} from '../models/Connection'
 
-/**
- * no description
- */
 export interface PatientApi {
   /**
    * When modifying a patient, you must ensure that the rev obtained when getting or creating the patient is present as the rev is used to guarantee that the patient has not been modified by a third party.
@@ -20,11 +17,20 @@ export interface PatientApi {
    */
   deletePatient(patientId: string): Promise<string>
   /**
-   * Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for [Patient] are AllPatientsFilter and PatientsByIdsFilter. This method returns a paginated list of patient (with a cursor that lets you query the following items).
+   * Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for [Patient] are :
+   *  - PatientByHealthcarePartyDateOfBirthBetweenFilter;
+   *  - PatientByHealthcarePartyFilter;
+   *  - PatientByHealthcarePartyGenderEducationProfessionFilter;
+   *  - PatientByHealthcarePartyIdentifiersFilter;
+   *  - PatientByHealthcarePartyNameContainsFuzzyFilter;
+   *  - PatientByHealthcarePartySsinsFilter;
+   *  - and PatientsByIdsFilter.
+   *
+   * This method returns a paginated list of patient (with a cursor that lets you query the following items).
    * Load patients from the database by filtering them using the provided [filter].
    * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
    * @param nextPatientId The id of the first patient in the next page
-   * @param limit The number of patients to return in the queried page
+   * @param limit The maximum number of patients that should contain the returned page. By default, a page contains 1000 patients
    */
   filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient>
   /**
@@ -64,6 +70,6 @@ export interface PatientApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient>,
     eventFired: (patient: Patient) => Promise<void>,
-    options?: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }
+    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 }
