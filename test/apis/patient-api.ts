@@ -1,35 +1,20 @@
 import 'mocha';
 import 'isomorphic-fetch';
 
-import {LocalStorage} from 'node-localstorage';
-import * as os from 'os';
 import {assert} from 'chai';
 import {Patient} from '../../src/models/Patient';
 import {HealthcareElement} from '../../src/models/HealthcareElement';
-import {TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 
-const tmp = os.tmpdir();
-console.log('Saving keys in ' + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = '';
+setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1';
-const msgGtwUrl =
-  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  msgGtwUrl: msgGtwUrl, patUserName: patUserName, patPassword: patPassword, authProcessHcpId: authProcessHcpId,
+  patPrivKey: patPrivKey, hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey} = getEnvVariables()
+
 const patAuthProcessId =
   process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ??
   "6a355458dbfa392cb5624403190c39e5"; // pragma: allowlist secret
-const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
-const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
-const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;
-const hcpPrivKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
-const patUserName = process.env.ICURE_TS_TEST_PAT_USER!;
-const patPassword = process.env.ICURE_TS_TEST_PAT_PWD!;
-const patPrivKey = process.env.ICURE_TS_TEST_PAT_PRIV_KEY!;
-const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
-const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
-const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
 
 describe('Patient API', () => {
   it('Can create a patient and a related Healthcare Element', async () => {

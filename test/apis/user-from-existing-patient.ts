@@ -66,7 +66,7 @@ describe("A Healthcare Party", () => {
     assert(createdUser.patientId === existingPatient.id);
   }
 
-  it("should be able to create a new User from an existing Patient", async () => {
+  it("should be able to create a new User from an existing Patient with an Email", async () => {
     const email = await TestUtils.getTempEmail();
     const newPatient = new Patient({
       firstName: "Marc",

@@ -48,7 +48,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
     if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/email/to/${recipientMobileNumber}`,
+      `${this.authServerUrl}/sms/to/${recipientMobileNumber}`,
       this.headers.concat([this.authHeader]),
       sms,
       this.fetchImpl

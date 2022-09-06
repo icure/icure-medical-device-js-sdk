@@ -3,7 +3,7 @@ import {MedTechApi} from "../../src/apis/medTechApi";
 import {User} from "../../src/models/User";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {UserFilter} from "../../src/filter";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 
 setLocalStorage(fetch);
 
@@ -42,9 +42,11 @@ describe("User Filters Test", function () {
         .build()
     );
 
-    assert(!!users)
-    assert(users.rows.length == 1)
-    assert(users.rows[0]!.id === patUser?.id)
+    expect(!!users).to.eq(true);
+    expect(users.rows.length).to.gt(0);
+    users.rows.forEach( (user) => {
+      expect(user.patientId).to.eq(patUser!.patientId!);
+    });
   })
 
   it("UsersByPatientIdFilter test - Failure", async function () {

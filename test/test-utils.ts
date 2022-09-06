@@ -4,7 +4,6 @@ import {webcrypto} from 'crypto';
 import {hex2ua, ua2hex} from '@icure/api';
 import {AnonymousMedTechApiBuilder} from '../src/apis/AnonymousMedTechApi';
 import axios, {Method} from 'axios';
-import {v4 as uuid} from 'uuid';
 import {Patient} from '../src/models/Patient';
 import {assert} from "chai";
 import {HealthcareElement} from "../src/models/HealthcareElement";
@@ -107,6 +106,15 @@ export class TestUtils {
     return domains[0];
   }
 
+  static async getEmail(email: string): Promise<any> {
+    const emailOptions = {
+      method: 'GET' as Method,
+      url: `${process.env.ICURE_TS_TEST_MSG_GTW_URL}/lastEmail/${email}`
+    };
+    const { data: response } = await axios.request(emailOptions);
+    return response;
+  }
+
   static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authProcessId: string, hcpId: string): Promise<{api: MedTechApi, user: User}> {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
@@ -115,7 +123,7 @@ export class TestUtils {
       .withAuthProcessId(authProcessId)
       .build();
 
-    const email = `${uuid()}${(await this.getTempEmail())}`;
+    const email = await this.getTempEmail();
     const process =
       await anonymousMedTechApi.authenticationApi.startAuthentication(
         hcpId,
@@ -134,15 +142,9 @@ export class TestUtils {
       await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8')
     );
 
-    await delay(10000);
+    const emails = await TestUtils.getEmail(email);
 
-    const emailOptions = {
-      method: 'GET' as Method,
-      url: `https://www.1secmail.com/api/v1/?action=getMessages&login=${email.split('@')[0]}&domain=${email.split('@')[1]}`
-    };
-    const { data: emails } = await axios.request(emailOptions);
-
-    const subjectCode = emails[0].subject!.replace(/[a-zA-Z :]{0,40}(\d+).{0,5}/, '$1');
+    const subjectCode = emails.subject!
     const result =
       await anonymousMedTechApi.authenticationApi.completeAuthentication(
         process!,
