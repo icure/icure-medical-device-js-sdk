@@ -65,7 +65,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     );
 
     if (!!res) {
-      return new AuthenticationProcess({requestId, login: email});
+      return new AuthenticationProcess({requestId, login: email ?? mobilePhone});
     }
 
     return null;

@@ -2,22 +2,14 @@ import {assert, expect} from "chai";
 import "mocha";
 import "isomorphic-fetch";
 
-import {LocalStorage} from "node-localstorage";
-import * as os from "os";
-import {TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {webcrypto} from "crypto";
 
-const tmp = os.tmpdir();
-console.log("Saving keys in " + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = "";
+setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
-const msgGtwUrl =
-  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
-const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
+const {iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId
+} = getEnvVariables()
 
 describe("Authentication API", () => {
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
