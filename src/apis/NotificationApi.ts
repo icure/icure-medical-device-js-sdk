@@ -1,6 +1,6 @@
-import {Notification} from "../models/Notification";
-import {Filter} from "../filter/Filter";
-import {PaginatedListNotification} from "../models/PaginatedListNotification";
+import {Notification} from '../models/Notification'
+import {Filter} from '../filter/Filter'
+import {PaginatedListNotification} from '../models/PaginatedListNotification'
 
 export interface NotificationApi {
   /**
@@ -9,20 +9,20 @@ export interface NotificationApi {
    * @param delegate the id of the Healthcare Party to delegate.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined>;
+  createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined>
 
   /**
    * This method deletes the Notification with the provided id.
    * @param notificationId the id of the Notification to delete
    * @return a Promise containing the id of the Notification or undefined if something goes wrong.
    */
-  deleteNotification(notificationId: string): Promise<string | undefined>;
+  deleteNotification(notificationId: string): Promise<string | undefined>
 
   /**
    * Filters are complex selectors that are built by combining basic building blocks. This method returns a paginated list of Notification (with a cursor that lets you query the following items).
-   * Load patients from the database by filtering them using the provided [filter].
+   * Load notifications from the database by filtering them using the provided [filter].
    * @param filter The Filter object that describes which condition(s) the elements which the ids should be returned must fulfill
-   * @param nextPatientId The id of the first patient in the next page
+   * @param nextNotificationId The id of the first notification in the next page
    * @param limit The number of patients to return in the queried page
    * @return a Promise containing the PaginatedList of Notification objects
    */
@@ -33,5 +33,5 @@ export interface NotificationApi {
    * @param notificationId the id of the Notification to retrieve.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  getNotification(notificationId: string): Promise<Notification | undefined>;
+  getNotification(notificationId: string): Promise<Notification | undefined>
 }

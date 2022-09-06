@@ -2,10 +2,7 @@ import {Filter} from '../filter/Filter';
 import {MedicalDevice} from '../models/MedicalDevice';
 import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
 
-/**
-  * no description
-  */
-  export interface MedicalDeviceApi {
+export interface MedicalDeviceApi {
 
     /**
       * When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.

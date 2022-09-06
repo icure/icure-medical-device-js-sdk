@@ -1,12 +1,8 @@
 import {Filter} from '../filter/Filter';
 import {HealthcareProfessional} from '../models/HealthcareProfessional';
 import {PaginatedListHealthcareProfessional} from '../models/PaginatedListHealthcareProfessional';
-import {MaintenanceTask} from "@icure/api";
 
-/**
-  * no description
-  */
-  export interface HealthcareProfessionalApi {
+export interface HealthcareProfessionalApi {
 
     /**
       * A healthcare professional must have a login, an email or a mobilePhone defined, a healthcare professional should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an healthcare professional, you must ensure that the rev obtained when getting or creating the healthcare professional is present as the rev is used to guarantee that the healthcare professional has not been modified by a third party.
