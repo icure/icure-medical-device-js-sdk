@@ -15,7 +15,7 @@ export namespace UserMapper {
         id: obj.id,
         properties: new Set(map(obj.properties, toProperty)),
         roles: new Set(obj.roles),
-        autoDelegations: toMapSet(obj.autoDelegations) as { [key in DelegationTag]: Set<string>; },
+        autoDelegations: toMapSet(obj.autoDelegations) as { [key in DelegationTag]: Set<string>; } | undefined,
         authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationToken),
         rev: obj.rev,
         deletionDate: obj.deletionDate,
