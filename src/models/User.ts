@@ -81,7 +81,7 @@ constructor(json: IUser) {
   /**
    * Delegations that are automatically generated client side when a new database object is created by this user
    */
-  'autoDelegations': { [key in AutoDelegation]: Set<string>; };
+  'autoDelegations': { [key in DelegationTag]: Set<string>; };
   /**
    * email address of the user (used for token exchange or password recovery).
    */
@@ -97,7 +97,27 @@ constructor(json: IUser) {
 
 }
 
-export type AutoDelegation = 'all' | 'medicalInformation'
+export type DelegationTag =
+  'all'
+  | 'administrativeData'
+  | 'anonymousMedicalInformation'
+  | 'generalInformation'
+  | 'financialInformation'
+  | 'medicalInformation'
+  | 'sensitiveInformation'
+  | 'confidentialInformation'
+  | 'cdItemRisk'
+  | 'cdItemFamilyRisk'
+  | 'cdItemHealthcareelement'
+  | 'cdItemHealthcareapproach'
+  | 'cdItemAllergy'
+  | 'cdItemDiagnosis'
+  | 'cdItemLab'
+  | 'cdItemResult'
+  | 'cdItemParameter'
+  | 'cdItemMedication'
+  | 'cdItemTreatment'
+  | 'cdItemVaccine';
 
 interface IUser {
   'id'?: string;
@@ -115,7 +135,7 @@ interface IUser {
   'healthcarePartyId'?: string;
   'patientId'?: string;
   'deviceId'?: string;
-  'autoDelegations'?: { [key in AutoDelegation]: Set<string>; };
+  'autoDelegations'?: { [key in DelegationTag]: Set<string>; };
   'email'?: string;
   'mobilePhone'?: string;
   'authenticationTokens'?: { [key: string]: AuthenticationToken; };

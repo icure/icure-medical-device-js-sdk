@@ -1,4 +1,4 @@
-import {AutoDelegation, User} from "../../models/User";
+import {DelegationTag, User} from "../../models/User";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
@@ -98,7 +98,7 @@ export class UserApiImpl implements UserApi {
       .then((rs) => new ConnectionImpl(rs))
   }
 
-  async addAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User> {
+  async addAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
 
     const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
       return {...accumulator, [key]: new Set(Array.of(...values, ...(type === key ? to : [])))};
@@ -119,7 +119,7 @@ export class UserApiImpl implements UserApi {
     throw new Error("Couldn't add auto-delegations to user")
   }
 
-  async removeAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User> {
+  async removeAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
     const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
       return {...accumulator, [key]: (type === key ? Array.of(...values).filter((v) => !to.includes(v)) : values)};
     }, {});

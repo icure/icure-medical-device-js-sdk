@@ -1,6 +1,6 @@
 import {Filter} from '../filter/Filter'
 import {PaginatedListUser} from '../models/PaginatedListUser'
-import {AutoDelegation, User} from '../models/User'
+import {DelegationTag, User} from '../models/User'
 import {Connection} from '../models/Connection'
 
 export interface UserApi {
@@ -90,7 +90,7 @@ export interface UserApi {
    * @param to Array of DataOwnerId to add
    * @return Updated user
    */
-  addAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User>
+  addAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User>
 
   /**
    * Removes autoDelegations values to the user.
@@ -99,5 +99,5 @@ export interface UserApi {
    * @param to Array of DataOwnerId to add
    * @return Updated user
    */
-  removeAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User>
+  removeAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User>
 }

@@ -1,5 +1,5 @@
 import {User as UserDto} from "@icure/api";
-import {User} from "../models/User";
+import {DelegationTag, User} from "../models/User";
 import {forceUuid, map, mapReduce, mapSetToArray, toMapSet} from "./utils";
 import {PropertyStubMapper} from "./property";
 import {AuthenticationTokenMapper} from "./authenticationToken";
@@ -15,7 +15,7 @@ export namespace UserMapper {
         id: obj.id,
         properties: new Set(map(obj.properties, toProperty)),
         roles: new Set(obj.roles),
-        autoDelegations: toMapSet(obj.autoDelegations),
+        autoDelegations: toMapSet(obj.autoDelegations) as { [key in DelegationTag]: Set<string>; },
         authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationToken),
         rev: obj.rev,
         deletionDate: obj.deletionDate,
