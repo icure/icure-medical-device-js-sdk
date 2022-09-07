@@ -1,4 +1,4 @@
-import {User} from "../../models/User";
+import {AutoDelegation, User} from "../../models/User";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
@@ -92,10 +92,51 @@ export class UserApiImpl implements UserApi {
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<User> | undefined,
     eventFired: (user: User) => Promise<void>,
-    options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
+    options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired, options)
       .then((rs) => new ConnectionImpl(rs))
+  }
+
+  async addAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User> {
+
+    const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+      return {...accumulator, [key]: new Set(Array.of(...values, ...(type === key ? to : [])))};
+    }, {});
+
+    const updatedUserDto = await this.userApi.modifyUser(
+      UserMapper.toUserDto(
+        {
+          ...user,
+          ...newAutoDelegations
+        }
+      )
+    )
+
+    if (updatedUserDto != undefined) {
+      return UserMapper.toUser(updatedUserDto)!
+    }
+    throw new Error("Couldn't add auto-delegations to user")
+  }
+
+  async removeAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User> {
+    const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+      return {...accumulator, [key]: (type === key ? Array.of(...values).filter((v) => !to.includes(v)) : values)};
+    }, {});
+
+    const updatedUserDto = await this.userApi.modifyUser(
+      UserMapper.toUserDto(
+        {
+          ...user,
+          ...newAutoDelegations
+        }
+      )
+    )
+
+    if (updatedUserDto != undefined) {
+      return UserMapper.toUser(updatedUserDto)!
+    }
+    throw new Error("Couldn't remove auto-delegations of user")
   }
 
 }

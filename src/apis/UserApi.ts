@@ -1,6 +1,6 @@
 import {Filter} from '../filter/Filter'
 import {PaginatedListUser} from '../models/PaginatedListUser'
-import {User} from '../models/User'
+import {AutoDelegation, User} from '../models/User'
 import {Connection} from '../models/Connection'
 
 export interface UserApi {
@@ -82,4 +82,22 @@ export interface UserApi {
     eventFired: (user: User) => Promise<void>,
     options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
+
+  /**
+   * Add autoDelegations values to the user.
+   * @param type Type of AutoDelegation to add
+   * @param user User to update
+   * @param to Array of DataOwnerId to add
+   * @return Updated user
+   */
+  addAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User>
+
+  /**
+   * Removes autoDelegations values to the user.
+   * @param type Type of AutoDelegation to removes
+   * @param user User to update
+   * @param to Array of DataOwnerId to add
+   * @return Updated user
+   */
+  removeAutoDelegationsTo(type: AutoDelegation, user: User, to: string[]): Promise<User>
 }

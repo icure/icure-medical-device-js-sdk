@@ -75,27 +75,29 @@ constructor(json: IUser) {
     */
     'patientId'?: string;
     /**
-    * Id of the patient if the user is a patient
-    */
+     * Id of the patient if the user is a patient
+     */
     'deviceId'?: string;
+  /**
+   * Delegations that are automatically generated client side when a new database object is created by this user
+   */
+  'autoDelegations': { [key in AutoDelegation]: Set<string>; };
+  /**
+   * email address of the user (used for token exchange or password recovery).
+   */
+  'email'?: string;
     /**
-    * Delegations that are automatically generated client side when a new database object is created by this user
-    */
-    'autoDelegations': { [key: string]: Set<string>; };
-    /**
-    * email address of the user (used for token exchange or password recovery).
-    */
-    'email'?: string;
-    /**
-    * mobile phone of the user (used for token exchange or password recovery).
-    */
+     * mobile phone of the user (used for token exchange or password recovery).
+     */
     'mobilePhone'?: string;
-    /**
-    * Encrypted and time-limited Authentication tokens used for inter-applications authentication
-    */
-    'authenticationTokens': { [key: string]: AuthenticationToken; };
+  /**
+   * Encrypted and time-limited Authentication tokens used for inter-applications authentication
+   */
+  'authenticationTokens': { [key: string]: AuthenticationToken; };
 
 }
+
+export type AutoDelegation = 'all' | 'medicalInformation'
 
 interface IUser {
   'id'?: string;
@@ -113,7 +115,7 @@ interface IUser {
   'healthcarePartyId'?: string;
   'patientId'?: string;
   'deviceId'?: string;
-  'autoDelegations'?: { [key: string]: Set<string>; };
+  'autoDelegations'?: { [key in AutoDelegation]: Set<string>; };
   'email'?: string;
   'mobilePhone'?: string;
   'authenticationTokens'?: { [key: string]: AuthenticationToken; };
