@@ -39,13 +39,15 @@ export class AnonymousMedTechApi {
 export class AnonymousMedTechApiBuilder {
   private iCureUrlPath: string;
   private authServerUrl: string;
+  private authSpecId: string | undefined;
   private authProcessId: string | undefined;
   private crypto?: Crypto;
   private _preventCookieUsage: boolean = false;
 
   constructor() {
     this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
-    this.authServerUrl = "https://msg-gw.icure.cloud/";
+    this.authServerUrl = "https://msg-gw.icure.cloud";
+    this.authSpecId = undefined;
     this.authProcessId = undefined;
   }
 
@@ -56,6 +58,11 @@ export class AnonymousMedTechApiBuilder {
 
   withAuthServerUrl(authServerUrl: string): AnonymousMedTechApiBuilder {
     this.authServerUrl = authServerUrl;
+    return this;
+  }
+
+  withAuthSpecId(authSpecId: string): AnonymousMedTechApiBuilder {
+    this.authSpecId = authSpecId;
     return this;
   }
 
@@ -79,9 +86,12 @@ export class AnonymousMedTechApiBuilder {
       if (!this.authProcessId) {
         throw new Error("authProcessId is required");
       }
+      if (!this.authSpecId) {
+        throw new Error("authSpecId is required");
+      }
       return new AnonymousMedTechApi(
         this.iCureUrlPath,
-        this.authServerUrl,
+        `${this.authServerUrl}/${this.authSpecId}`,
         this.authProcessId,
         api
       );

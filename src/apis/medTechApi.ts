@@ -166,6 +166,7 @@ export class MedTechApiBuilder {
   private password?: string;
   private crypto?: Crypto;
   private authServerUrl?: string;
+  private authSpecId?: string;
   private authProcessId?: string;
   private _preventCookieUsage: boolean = false;
 
@@ -190,6 +191,11 @@ export class MedTechApiBuilder {
   }
 
 
+  withAuthSpecId(newAuthSpecId: string | undefined): MedTechApiBuilder {
+    this.authSpecId = newAuthSpecId;
+    return this;
+  }
+
   withAuthProcessId(newAuthProcessId: string | undefined): MedTechApiBuilder {
     this.authProcessId = newAuthProcessId;
     return this;
@@ -208,7 +214,14 @@ export class MedTechApiBuilder {
 
   async build() : Promise<MedTechApi> {
     return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then( api => {
-      return new MedTechApi(api, this.iCureBasePath!, this.userName, this.password, this.authServerUrl, this.authProcessId);
+      return new MedTechApi(
+        api,
+        this.iCureBasePath!,
+        this.userName,
+        this.password,
+        !!this.authServerUrl && !!this.authSpecId ? `${this.authServerUrl}/${this.authSpecId}` : this.authServerUrl,
+        this.authProcessId
+      );
     });
   }
 }

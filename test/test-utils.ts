@@ -50,10 +50,11 @@ export class TestUtils {
     return {api: medtechApi, user: foundUser};
   }
 
-  static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authProcessId: string, hcpId: string): Promise<{api: MedTechApi, user: User}> {
+  static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authSpecId: string, authProcessId: string, hcpId: string): Promise<{ api: MedTechApi, user: User }> {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
+      .withAuthSpecId(authSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessId)
       .build();

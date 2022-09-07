@@ -16,7 +16,9 @@ console.log('Saving keys in ' + tmp);
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1';
 const msgGtwUrl =
-  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
+  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud";
+const msgGtwSpecId =
+  process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? "ic";
 const patAuthProcessId =
   process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ??
   "6a355458dbfa392cb5624403190c39e5"; // pragma: allowlist secret
@@ -85,7 +87,7 @@ describe('Patient API', () => {
   });
 
   it('Patient sharing its own information with HCP', async () => {
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, patAuthProcessId, authProcessHcpId)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, msgGtwSpecId, patAuthProcessId, authProcessHcpId)
     const patApi = patApiAndUser.api;
     const patUser = patApiAndUser.user;
 

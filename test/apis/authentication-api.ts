@@ -16,7 +16,9 @@ console.log("Saving keys in " + tmp);
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
 const msgGtwUrl =
-  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
+  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud";
+const msgGtwSpecId =
+  process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? "ic";
 const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
 
 describe("Authentication API", () => {
@@ -28,6 +30,7 @@ describe("Authentication API", () => {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
+      .withAuthSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessId)
       .build();
@@ -49,6 +52,7 @@ describe("Authentication API", () => {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withAuthServerUrl(msgGtwUrl)
+      .withAuthSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessId)
       .build();
@@ -68,7 +72,7 @@ describe("Authentication API", () => {
       "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
 
     // When
-    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, authProcessId, authProcessHcpId);
+    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, msgGtwSpecId, authProcessId, authProcessHcpId);
     const currentUser = hcpApiAndUser.user;
 
     // Then
@@ -91,7 +95,7 @@ describe("Authentication API", () => {
     const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
 
     // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, patAuthProcessId, authProcessHcpId);
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, msgGtwSpecId, patAuthProcessId, authProcessHcpId);
 
     // Then
     const currentUser = patApiAndUser.user;
