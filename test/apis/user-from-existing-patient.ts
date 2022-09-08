@@ -84,33 +84,7 @@ describe("A Healthcare Party", () => {
     });
     await userFromPatient(newPatient);
   }).timeout(300000);
-
-  it("should not be able to create a new User if the Patient has no firstname", async () => {
-      const newPatient = new Patient({
-        lastName: "Specter"
-      });
-
-      try {
-        await userFromPatient(newPatient);
-        expect(true, "promise should fail").eq(false);
-      } catch (e) {
-        expect((e as Error).message).to.eq("No first name provided in Patient");
-      }
-    });
-
-  it("should not be able to create a new User if the Patient has no lastname", async () => {
-    const newPatient = new Patient({
-      firstName: "Marc"
-    });
-
-    try {
-      await userFromPatient(newPatient);
-      expect(true, "promise should fail").eq(false);
-    } catch (e) {
-      expect((e as Error).message).to.eq("No last name provided in Patient");
-    }
-  });
-
+  
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({
       firstName: "Marc",
