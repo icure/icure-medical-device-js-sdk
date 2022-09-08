@@ -24,7 +24,8 @@ export interface AuthenticationApi {
     recaptcha: string,
     bypassTokenCheck: boolean,
     email?: string,
-    mobilePhone?: string
+    mobilePhone?: string,
+    bypassTokenCheck: boolean = false
   ): Promise<AuthenticationProcess|null>
 
   /**
