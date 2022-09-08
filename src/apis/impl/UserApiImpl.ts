@@ -55,8 +55,6 @@ export class UserApiImpl implements UserApi {
   async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration = 48 * 60 * 60): Promise<User> {
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
-    if (!patient.firstName) throw new Error("No first name provided in Patient");
-    if (!patient.lastName) throw new Error("No last name provided in Patient");
 
     // Checks that no Users already exist for the Patient
     const existingUsers = await this.filterUsers(
@@ -81,7 +79,7 @@ export class UserApiImpl implements UserApi {
     const createdUser = await this.createOrModifyUser(
       new User({
         created: new Date().getTime(),
-        name: patient.firstName + patient.lastName,
+        name: contact.telecomNumber,
         login: contact.telecomNumber,
         patientId: patient.id,
         email: contact.telecomType == "email" ? contact.telecomNumber : undefined,
