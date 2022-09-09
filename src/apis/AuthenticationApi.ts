@@ -22,9 +22,9 @@ export interface AuthenticationApi {
     firstName: string,
     lastName: string,
     recaptcha: string,
+    bypassTokenCheck: boolean,
     email?: string,
-    mobilePhone?: string,
-    bypassTokenCheck: boolean = false
+    mobilePhone?: string
   ): Promise<AuthenticationProcess|null>
 
   /**
