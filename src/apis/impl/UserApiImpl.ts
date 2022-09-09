@@ -99,36 +99,44 @@ export class UserApiImpl implements UserApi {
   }
 
   async addAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
-
-    const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
-      return {...accumulator, [key]: new Set(Array.of(...values, ...(type === key ? to : [])))};
-    }, {});
+    let newAutoDelegations
+    if (user.autoDelegations[type]) {
+      newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+        return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? to : [])))]}
+      }, {});
+    } else {
+      newAutoDelegations = {
+        ...Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+          return {...accumulator, [key]: [...values]}
+        }, {}),
+        [type]: to
+      }
+    }
 
     const updatedUserDto = await this.userApi.modifyUser(
-      UserMapper.toUserDto(
-        {
-          ...user,
-          ...newAutoDelegations
-        }
-      )
+      UserMapper.toUserDto({
+        ...user,
+        autoDelegations: newAutoDelegations as { [key in DelegationTag]: Set<string> }
+      })
     )
 
     if (updatedUserDto != undefined) {
       return UserMapper.toUser(updatedUserDto)!
     }
+
     throw new Error("Couldn't add auto-delegations to user")
   }
 
   async removeAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
     const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
-      return {...accumulator, [key]: (type === key ? Array.of(...values).filter((v) => !to.includes(v)) : values)};
+      return {...accumulator, [key]: (type === key ? [...values].filter((v) => !to.includes(v)) : [...values])};
     }, {});
 
     const updatedUserDto = await this.userApi.modifyUser(
       UserMapper.toUserDto(
         {
           ...user,
-          ...newAutoDelegations
+          autoDelegations: newAutoDelegations as { [key in DelegationTag]: Set<string> }
         }
       )
     )

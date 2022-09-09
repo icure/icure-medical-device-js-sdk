@@ -37,7 +37,7 @@ export namespace UserMapper {
       new UserDto({
         id: forceUuid(obj.id),
         properties: mapSetToArray(obj.properties, toPropertyStubDto),
-        roles: obj.roles,
+        roles: [...obj.roles],
         autoDelegations: obj.autoDelegations,
         authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationTokenDto),
         rev: obj.rev,
