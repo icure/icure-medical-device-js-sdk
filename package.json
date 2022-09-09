@@ -17,7 +17,8 @@
     "prepare": "rimraf dist && npm run build && jq '{name:.name, version:.version, description:.description, main:\"index.js\", types:\"index.d.ts\", dependencies:.dependencies, author:.author, license:.license, bugs:.bugs, homepage:.homepage}' < package.json > dist/package.json",
     "publish": "yarn version && yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` && cd ..",
     "precommit": "pretty-quick --staged",
-    "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive"
+    "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive",
+    "test-user": "nyc mocha test/apis/user-api.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive"
   },
   "prettier": {
     "semi": false,
@@ -42,6 +43,7 @@
     "@icure/api": "4.2.36",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
+    "node-fetch": "^3.2.10",
     "node-jq": "^2.3.3",
     "rsocket-core": "^0.0.27",
     "rsocket-websocket-client": "^0.0.27",
