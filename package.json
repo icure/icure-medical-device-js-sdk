@@ -18,7 +18,6 @@
     "publish": "yarn version && yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` && cd ..",
     "precommit": "pretty-quick --staged",
     "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive",
-    "test-user": "nyc mocha test/apis/user-api.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive"
   },
   "prettier": {
     "semi": false,
