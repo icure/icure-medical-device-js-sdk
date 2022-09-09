@@ -2,7 +2,7 @@ import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
 import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
-import {Device, HealthcareParty, Patient, retry, User, XHR} from "@icure/api";
+import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 
@@ -43,7 +43,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authProcessId: string;
   private readonly messageGatewayApi: MessageGatewayApi;
 
-  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string, bypassTokenCheck: boolean = false): Promise<AuthenticationProcess | null> {
+  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, bypassTokenCheck: boolean = false, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
       throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
