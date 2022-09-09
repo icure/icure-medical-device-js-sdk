@@ -50,6 +50,7 @@ import {
 import {MaintenanceTaskByIdsFilter as MaintenanceTaskByIdsFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByIdsFilter";
 import {MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
 import {MaintenanceTaskAfterDateFilter as MaintenanceTaskAfterDateFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskAfterDateFilter";
+import {UsersByPatientIdFilter as UsersByPatientIdFilterDto} from "@icure/api/icc-x-api/filters/UsersByPatientIdFilter"
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
 import {UnionFilter} from "../filter/UnionFilter";
@@ -428,6 +429,9 @@ export namespace FilterMapper {
     if (filter['$type'] === 'UserByIdsFilter') {
       return toUserByIdsFilterDto(filter as UserByIdsFilter);
     }
+    if (filter['$type'] === 'UsersByPatientIdFilter') {
+      return toUsersByPatientIdFilterDto(filter as UsersByPatientIdFilter)
+    }
     throw Error(`No mapper for ${filter['$type']}`);
   }
 
@@ -443,9 +447,11 @@ export namespace FilterMapper {
   const toAllUsersFilterDto = (filter: AllUsersFilter) =>
     new AllUsersFilterDto({desc: filter.description})
 
-
   const toUserByIdsFilterDto = (filter: UserByIdsFilter) =>
     new UserByIdsFilterDto({desc: filter.description, ids: filter.ids})
+
+  const toUsersByPatientIdFilterDto = (filter: UsersByPatientIdFilter) =>
+    new UsersByPatientIdFilterDto({desc: filter.description, patientId: filter.patientId})
 
 
   function toAbstractFilterPatientDto(filter: Filter<Patient>): AbstractFilter<PatientDto> {

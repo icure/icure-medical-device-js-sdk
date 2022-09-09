@@ -1,6 +1,7 @@
 import {AuthenticationApi} from "./AuthenticationApi";
 import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
 import {Api, IccCryptoXApi} from "@icure/api";
+import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
@@ -23,6 +24,7 @@ export class AnonymousMedTechApi {
     this._authSpecId = authSpecId;
 
     this._authenticationApi = new AuthenticationApiImpl(
+      new MessageGatewayApiImpl(authServerUrl, authProcessId),
       this._iCureUrlPath,
       this._authServerUrl,
       this._authProcessId,
