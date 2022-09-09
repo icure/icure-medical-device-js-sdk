@@ -217,14 +217,13 @@ describe("A Healthcare Party", () => {
     expect(completedStatusUpdate?.status).to.eq("completed");
 
     // Then PAT_1 may access data sample DATA_SAMPLE_1
-    const test = await hcp1Api.dataSampleApi.getDataSample(newDS1.id!);
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
     await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE1.id!);
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE2.id!);
     await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
-  });
+  }).timeout(600000);
 
   it("should not be able to create a new User if the Patient has no firstname", async () => {
       const newPatient = new Patient({
