@@ -130,6 +130,7 @@ export class TestUtils {
         'Antoine',
         'Duchâteau',
         'process.env.ICURE_RECAPTCHA',
+        false,
         email
       );
 

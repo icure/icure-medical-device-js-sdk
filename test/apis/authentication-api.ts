@@ -26,7 +26,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', undefined, undefined);
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false, undefined, undefined);
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
@@ -47,7 +47,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', '', '');
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false,'', '');
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
