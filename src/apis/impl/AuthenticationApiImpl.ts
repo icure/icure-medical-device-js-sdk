@@ -4,7 +4,6 @@ import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
 import {Device, HealthcareParty, Patient, retry, User, XHR} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
-import Header = XHR.Header;
 import {MessageGatewayApi} from "../MessageGatewayApi";
 
 class ApiInitialisationResult {
@@ -64,25 +63,21 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     );
 
     if (!!res) {
-      return new AuthenticationProcess({requestId, login: email ?? mobilePhone});
+      return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck});
     }
 
     return null;
   }
 
   async completeAuthentication(process: AuthenticationProcess, validationCode: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
-    const res = await XHR.sendCommand('GET',
-      `${this.authServerUrl}/process/validate/${process.requestId}-${validationCode}`,
-      [],
-      undefined,
-      this.fetchImpl).catch((e) => {
+    const res = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
         if (process.bypassTokenCheck) {
           return {statusCode: 200, body: {}}
         }
         throw e
     })
 
-    if (res.statusCode < 400) {
+    if (!!res) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
         () => this.initApiAndUserAuthenticationToken(process, validationCode, tokenAndKeyPairProvider)
       )
