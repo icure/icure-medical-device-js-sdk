@@ -19,7 +19,15 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
-  constructor(iCureBasePath: string, authServerUrl: string, authProcessId: string,
+  private readonly authSpecId: string;
+
+
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+  private readonly iCureBasePath: string;
+  private readonly authServerUrl: string;
+  private readonly authProcessId: string;
+
+  constructor(iCureBasePath: string, authServerUrl: string, authProcessId: string, authSpecId: string,
               fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
                 ? window.fetch
                 : typeof self !== 'undefined'
@@ -29,14 +37,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.iCureBasePath = iCureBasePath;
     this.authServerUrl = authServerUrl;
     this.authProcessId = authProcessId;
+    this.authSpecId = authSpecId;
     this.fetchImpl = fetchImpl;
   }
-
-
-  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
-  private readonly iCureBasePath: string;
-  private readonly authServerUrl: string;
-  private readonly authProcessId: string;
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string, bypassTokenCheck: boolean = false): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
@@ -45,7 +48,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const requestId = uuid()
 
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
+      `${this.authServerUrl}/${this.authSpecId}/process/${this.authProcessId}/${requestId}`,
       [new Header('Content-type', 'application/json')],
       {
         'g-recaptcha-response': recaptcha,
@@ -68,7 +71,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
   async completeAuthentication(process: AuthenticationProcess, validationCode: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
     const res = await XHR.sendCommand('GET',
-      `${this.authServerUrl}/process/validate/${process.requestId}-${validationCode}`,
+      `${this.authServerUrl}/${this.authSpecId}/process/validate/${process.requestId}-${validationCode}`,
       [],
       undefined,
       this.fetchImpl).catch((e) => {
@@ -108,6 +111,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withPassword(validationCode)
       .withAuthServerUrl(this.authServerUrl)
       .withAuthProcessId(this.authProcessId)
+      .withAuthSpecId(this.authSpecId)
       .withCrypto(require('crypto').webcrypto)
       .build();
 
