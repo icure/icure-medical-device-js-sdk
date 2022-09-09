@@ -60,6 +60,7 @@ export class MedTechApi {
   private readonly _password: string | undefined;
   private readonly _authServerUrl: string | undefined;
   private readonly _authProcessId: string | undefined;
+  private readonly _authSpecId: string | undefined;
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
 
@@ -69,13 +70,15 @@ export class MedTechApi {
               password: string | undefined,
               authServerUrl: string | undefined = undefined,
               authProcessId: string | undefined = undefined,
+              authSpecId: string | undefined = undefined,
   ) {
     this._basePath = basePath;
     this._username = username;
     this._password = password;
     this._authServerUrl = authServerUrl;
     this._authProcessId = authProcessId;
-    this._authenticationApi = authServerUrl && authProcessId ? new AuthenticationApiImpl(basePath, authServerUrl, authProcessId) : undefined
+    this._authSpecId = authSpecId;
+    this._authenticationApi = authServerUrl && authProcessId && authSpecId ? new AuthenticationApiImpl(basePath, authServerUrl, authProcessId, authSpecId) : undefined
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
     this._codingApi = new CodingApiImpl(api);
     this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
@@ -224,8 +227,9 @@ export class MedTechApiBuilder {
         this.iCureBasePath!,
         this.userName,
         this.password,
-        !!this.authServerUrl && !!this.authSpecId ? `${this.authServerUrl}/${this.authSpecId}` : undefined,
-        this.authProcessId
+        this.authServerUrl,
+        this.authProcessId,
+        this.authSpecId
       );
     });
   }
