@@ -133,6 +133,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         new Notification({
           id: uuid(),
           status: "pending",
+          author: loggedUser.id,
+          responsible: loggedUser.patientId,
           type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
         }),
         delegate
