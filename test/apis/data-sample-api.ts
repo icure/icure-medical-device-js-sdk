@@ -3,20 +3,14 @@ import "isomorphic-fetch";
 
 import {DataSampleFilter} from "../../src/filter";
 
-import {LocalStorage} from "node-localstorage";
-import * as os from "os";
 import {assert} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
-import {TestUtils} from "../test-utils";
+import {setLocalStorage, TestUtils} from "../test-utils";
 
-const tmp = os.tmpdir();
-console.log("Saving keys in " + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = "";
+setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
+const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
 const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
 const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;
 const hcpPrivKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;

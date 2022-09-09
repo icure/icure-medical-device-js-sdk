@@ -2,9 +2,9 @@ import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
 import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
-import {Device, HealthcareParty, Patient, retry, User, XHR} from "@icure/api";
+import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
-import Header = XHR.Header;
+import {MessageGatewayApi} from "../MessageGatewayApi";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -19,34 +19,38 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
-  constructor(iCureBasePath: string, authServerUrl: string, authProcessId: string,
-              fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
-                ? window.fetch
-                : typeof self !== 'undefined'
-                  ? self.fetch
-                  : fetch
+  constructor(
+    messageGatewayApi: MessageGatewayApi,
+    iCureBasePath: string,
+    authServerUrl: string,
+    authProcessId: string,
+    fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
+      ? window.fetch
+      : typeof self !== 'undefined'
+        ? self.fetch
+        : fetch
   ) {
     this.iCureBasePath = iCureBasePath;
     this.authServerUrl = authServerUrl;
     this.authProcessId = authProcessId;
     this.fetchImpl = fetchImpl;
+    this.messageGatewayApi = messageGatewayApi;
   }
-
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
   private readonly authServerUrl: string;
   private readonly authProcessId: string;
+  private readonly messageGatewayApi: MessageGatewayApi;
 
-  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string, bypassTokenCheck: boolean = false): Promise<AuthenticationProcess | null> {
+  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, bypassTokenCheck: boolean = false, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
       throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
     const requestId = uuid()
 
-    const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
-      [new Header('Content-type', 'application/json')],
+    const res = await this.messageGatewayApi.startProcess(
+      requestId,
       {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
@@ -55,30 +59,25 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         'email': email,
         'mobilePhone': mobilePhone,
         'hcpId': healthcareProfessionalId
-      },
-      this.fetchImpl,
-      "text/plain")
+      }
+    );
 
-    if (res.statusCode < 400) {
-      return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck});
+    if (!!res) {
+      return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck});
     }
 
     return null;
   }
 
   async completeAuthentication(process: AuthenticationProcess, validationCode: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
-    const res = await XHR.sendCommand('GET',
-      `${this.authServerUrl}/process/validate/${process.requestId}-${validationCode}`,
-      [],
-      undefined,
-      this.fetchImpl).catch((e) => {
+    const res = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
         if (process.bypassTokenCheck) {
           return {statusCode: 200, body: {}}
         }
         throw e
     })
 
-    if (res.statusCode < 400) {
+    if (!!res) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
         () => this.initApiAndUserAuthenticationToken(process, validationCode, tokenAndKeyPairProvider)
       )

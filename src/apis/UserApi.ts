@@ -1,7 +1,9 @@
-import {Filter} from '../filter/Filter'
-import {PaginatedListUser} from '../models/PaginatedListUser'
-import {DelegationTag, User} from '../models/User'
-import {Connection} from '../models/Connection'
+import {Filter} from '../filter/Filter';
+import {PaginatedListUser} from '../models/PaginatedListUser';
+import {DelegationTag, User} from '../models/User';
+import {Connection} from "../models/Connection";
+import {Patient} from "../models/Patient";
+import {EmailMessageFactory, SMSMessageFactory} from "../utils/messageGatewayUtils";
 
 export interface UserApi {
   /**
@@ -12,6 +14,15 @@ export interface UserApi {
    */
   checkTokenValidity(userId: string, token: string): Promise<boolean>
   /**
+   * Creates a User from an existing patient with a short-lived authentication token. It sends an invitation with the
+   * credentials and the link to complete the signup.
+   * @param patient the Patient to create the user for.
+   * @param messageFactory a MessageFactory that generates an EmailMessage or a SMSMessage.
+   * @param tokenDuration the validity duration of the short-lived token, in seconds (default 48 hours)
+   */
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration?: number): Promise<User>;
+
+  /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.
    * Create a new user or modify an existing one.
    * @param user The user that must be created in the database.
@@ -21,6 +32,7 @@ export interface UserApi {
    * A token is used to authenticate the user. It is just like a password but it is destined to be used by programs instead of humans. Tokens have a limited validity period (one month).
    * Create a token for a user.
    * @param userId The UUID that identifies the user uniquely
+   * @param durationInSeconds the validity duration of the token, in seconds
    */
   createToken(userId: string, durationInSeconds?: number): Promise<string>
   /**
