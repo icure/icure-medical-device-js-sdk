@@ -44,6 +44,8 @@ import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 import {NotificationApiImpl} from "./impl/NotificationApiImpl";
 import {NotificationApi} from "./NotificationApi";
+import {MessageGatewayApi} from "./MessageGatewayApi";
+import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi;
@@ -61,6 +63,7 @@ export class MedTechApi {
   private readonly _authServerUrl: string | undefined;
   private readonly _authProcessId: string | undefined;
   private readonly _authenticationApi: AuthenticationApi | undefined;
+  private readonly _messageGatewayApi: MessageGatewayApi | undefined;
   private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
 
   constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi },
@@ -75,13 +78,14 @@ export class MedTechApi {
     this._password = password;
     this._authServerUrl = authServerUrl;
     this._authProcessId = authProcessId;
-    this._authenticationApi = authServerUrl && authProcessId ? new AuthenticationApiImpl(basePath, authServerUrl, authProcessId) : undefined
+    this._messageGatewayApi = !!authServerUrl ? new MessageGatewayApiImpl(authServerUrl, authProcessId, username, password) : undefined;
+    this._authenticationApi = authServerUrl && authProcessId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authServerUrl, authProcessId) : undefined;
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
     this._codingApi = new CodingApiImpl(api);
     this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
     this._patientApi = new PatientApiImpl(api, basePath, username, password);
     this._baseApi = api;
-    this._userApi = new UserApiImpl(api, basePath, username, password);
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
     this._notificationApi = new NotificationApiImpl(api);

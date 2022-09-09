@@ -2,22 +2,14 @@ import {assert, expect} from "chai";
 import "mocha";
 import "isomorphic-fetch";
 
-import {LocalStorage} from "node-localstorage";
-import * as os from "os";
-import {TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {webcrypto} from "crypto";
 
-const tmp = os.tmpdir();
-console.log("Saving keys in " + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = "";
+setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
-const msgGtwUrl =
-  process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic";
-const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
+const {iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId
+} = getEnvVariables()
 
 describe("Authentication API", () => {
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
@@ -34,7 +26,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', undefined, undefined);
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false, undefined, undefined);
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
@@ -55,7 +47,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', '', '');
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false,'', '');
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")

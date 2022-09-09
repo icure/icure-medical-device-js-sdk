@@ -4,21 +4,17 @@ import {assert} from "chai";
 import {v4 as uuid} from "uuid";
 import {MedTechApi} from "../../src/apis/medTechApi";
 import {Notification, notificationTypeEnum} from "../../src/models/Notification";
-import {tmpdir} from "os";
-import {TextDecoder, TextEncoder} from "util";
-import {TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
 import {NotificationFilter} from "../../src/filter";
 import {PaginatedListNotification} from "../../src/models/PaginatedListNotification";
 import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
 
-(global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
-;(global as any).fetch = fetch
-;(global as any).Storage = ''
-;(global as any).TextDecoder = TextDecoder
-;(global as any).TextEncoder = TextEncoder
+setLocalStorage(fetch);
 
-const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey} = getEnvVariables()
 let hcp1Api: MedTechApi | undefined = undefined;
 let hcp1User: User | undefined = undefined;
 let hcp2Api: MedTechApi | undefined = undefined;
@@ -59,25 +55,25 @@ describe('Notification API', async function () {
   before(async function () {
     const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
-      process.env.ICURE_TS_TEST_HCP_USER!,
-      process.env.ICURE_TS_TEST_HCP_PWD!,
-      process.env.ICURE_TS_TEST_HCP_PRIV_KEY!)
+      hcpUserName,
+      hcpPassword,
+      hcpPrivKey)
     hcp1Api = hcpApi1AndUser.api;
     hcp1User = hcpApi1AndUser.user;
 
     const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
-      process.env.ICURE_TS_TEST_HCP_2_USER!,
-      process.env.ICURE_TS_TEST_HCP_2_PWD!,
-      process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!)
+      hcp2UserName,
+      hcp2Password,
+      hcp2PrivKey)
     hcp2Api = hcpApi2AndUser.api;
     hcp2User = hcpApi2AndUser.user;
 
     const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
-      process.env.ICURE_TS_TEST_HCP_3_USER!,
-      process.env.ICURE_TS_TEST_HCP_3_PWD!,
-      process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!)
+      hcp3UserName,
+      hcp3Password,
+      hcp3PrivKey)
     hcp3Api = hcpApi3AndUser.api;
     hcp3User = hcpApi3AndUser.user;
 

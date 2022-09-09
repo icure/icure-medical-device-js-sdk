@@ -6,6 +6,7 @@ import {
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
+  IccHcpartyXApi,
   IccPatientXApi,
   IccUserApi,
   IccUserXApi
@@ -17,25 +18,91 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {Filter} from "../../filter/Filter";
 import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
+import {Patient} from "../../models/Patient";
+import {UserFilter} from "../../filter";
+import {filteredContactsFromAddresses} from "../../utils/addressUtils";
+import {MessageGatewayApi} from "../MessageGatewayApi";
+import {
+  EmailMessageFactory,
+  SMSMessageFactory
+} from "../../utils/messageGatewayUtils";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
+  private readonly hcpApi: IccHcpartyXApi
   private readonly username: string | undefined;
   private readonly basePath: string;
   private readonly password: string | undefined;
+  private readonly messageGatewayApi: MessageGatewayApi | undefined;
 
-  constructor(api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+  constructor(api: { healthcarePartyApi: IccHcpartyXApi, cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
+              messageGatewayApi: MessageGatewayApi | undefined,
               basePath: string,
               username: string | undefined,
               password: string | undefined) {
     this.basePath = basePath;
     this.username = username;
     this.password = password;
-    this.userApi = api.userApi
+    this.userApi = api.userApi;
+    this.hcpApi = api.healthcarePartyApi;
+    this.messageGatewayApi = messageGatewayApi;
   }
 
   async checkTokenValidity(userId: string, token: string): Promise<boolean> {
     return this.userApi.checkTokenValidity(userId, token)
+  }
+
+  async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration = 48 * 60 * 60): Promise<User> {
+    // Checks that the Patient has all the required information
+    if (!patient.id) throw new Error("Patient does not have a valid id")
+
+    // Checks that no Users already exist for the Patient
+    const existingUsers = await this.filterUsers(
+      await new UserFilter()
+        .byPatientId(patient.id)
+        .build()
+    );
+    if(!!existingUsers && existingUsers.rows.length > 0) throw new Error("A User already exists for this Patient");
+
+    // Gets the preferred contact information
+    const contact = [
+      filteredContactsFromAddresses(patient.addresses, "email", "home"),  // Check for the home email
+      filteredContactsFromAddresses(patient.addresses, "mobile", "home"), // Check for the home mobile
+      filteredContactsFromAddresses(patient.addresses, "email", "work"),  // Check for the work email
+      filteredContactsFromAddresses(patient.addresses, "mobile", "work"), // Check for the work mobile
+      filteredContactsFromAddresses(patient.addresses, "email"),                     // Check for any email
+      filteredContactsFromAddresses(patient.addresses, "mobile")                     // Check for any mobile
+    ].filter(contact => !!contact)[0];
+    if (!contact) throw new Error("No email or mobile phone information provided in patient");
+
+    // Creates the user
+    const createdUser = await this.createOrModifyUser(
+      new User({
+        created: new Date().getTime(),
+        name: contact.telecomNumber,
+        login: contact.telecomNumber,
+        patientId: patient.id,
+        email: contact.telecomType == "email" ? contact.telecomNumber : undefined,
+        mobilePhone: contact.telecomType == "mobile" ? contact.telecomNumber : undefined,
+      })
+    );
+    if (!createdUser || !createdUser.id || !createdUser.login) throw new Error("Something went wrong during User creation");
+
+    // Gets a short-lived authentication token
+    const shortLivedToken = await this.createToken(createdUser.id, tokenDuration);
+    if (!shortLivedToken) throw new Error("Something went wrong while creating a token for the User");
+
+    const messagePromise = !!createdUser.email
+      ? this.messageGatewayApi?.sendEmail(createdUser.login, (messageFactory as EmailMessageFactory).get(
+          createdUser,
+          shortLivedToken))
+      : this.messageGatewayApi?.sendSMS(createdUser.login, (messageFactory as SMSMessageFactory).get(
+          createdUser,
+          shortLivedToken))
+
+    if (!(await messagePromise)) throw new Error("Something went wrong contacting the Message Gateway");
+
+    return createdUser;
   }
 
   async createOrModifyUser(user: User): Promise<User> {

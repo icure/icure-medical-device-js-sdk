@@ -56,6 +56,7 @@ import {Notification} from "../models/Notification";
 import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
+import {UsersByPatientIdFilter} from "./user/UsersByPatientIdFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -65,18 +66,24 @@ export class UserFilter implements FilterBuilder<User> {
   _byIds?: string[]
   _union?: UserFilter[]
   _intersection?: UserFilter[]
+  _patientId?: string
 
-  byIds(byIds: string[]):   UserFilter {
+  byIds(byIds: string[]): UserFilter {
     this._byIds = byIds;
     return this;
   }
 
-  union(filters: UserFilter[]):   UserFilter {
+  byPatientId(patientId: string): UserFilter {
+    this._patientId = patientId;
+    return this;
+  }
+
+  union(filters: UserFilter[]): UserFilter {
     this._union = filters;
     return this;
   }
 
-  intersection(filters: UserFilter[]):   UserFilter {
+  intersection(filters: UserFilter[]): UserFilter {
     this._intersection = filters;
     return this;
   }
@@ -84,6 +91,7 @@ export class UserFilter implements FilterBuilder<User> {
   async build(): Promise<Filter<User>> {
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'UserByIdsFilter'} as UserByIdsFilter),
+      this._patientId && ({patientId: this._patientId, '$type':'UsersByPatientIdFilter'} as UsersByPatientIdFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<User>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<User>),
     ].filter((x) => !!x) as Filter<User>[];
