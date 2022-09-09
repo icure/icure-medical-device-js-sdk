@@ -44,11 +44,10 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authProcessId: string;
   private readonly messageGatewayApi: MessageGatewayApi;
 
-  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
+  async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, email?: string, mobilePhone?: string, bypassTokenCheck: boolean = false): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
       throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
-
     const requestId = uuid()
 
     const res = await this.messageGatewayApi.startProcess(
@@ -76,7 +75,12 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       `${this.authServerUrl}/process/validate/${process.requestId}-${validationCode}`,
       [],
       undefined,
-      this.fetchImpl)
+      this.fetchImpl).catch((e) => {
+        if (process.bypassTokenCheck) {
+          return {statusCode: 200, body: {}}
+        }
+        throw e
+    })
 
     if (res.statusCode < 400) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(

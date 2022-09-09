@@ -14,6 +14,7 @@ export interface AuthenticationApi {
    * @param email The email of the user to authenticate
    * @param recaptcha The recaptcha key used during authentication process
    * @param mobilePhone The mobile phone of the user to authenticate
+   * @param bypassTokenCheck Prevent the token check during the validation process
    * @return The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
    */
   startAuthentication(
@@ -22,7 +23,8 @@ export interface AuthenticationApi {
     lastName: string,
     recaptcha: string,
     email?: string,
-    mobilePhone?: string
+    mobilePhone?: string,
+    bypassTokenCheck: boolean = false
   ): Promise<AuthenticationProcess|null>
 
   /**
