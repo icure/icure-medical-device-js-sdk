@@ -1,4 +1,4 @@
-import {Notification} from '../models/Notification'
+import {MaintenanceTaskStatusEnum, Notification} from '../models/Notification'
 import {Filter} from '../filter/Filter'
 import {PaginatedListNotification} from '../models/PaginatedListNotification'
 
