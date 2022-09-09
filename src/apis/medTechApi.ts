@@ -213,13 +213,18 @@ export class MedTechApiBuilder {
   }
 
   async build() : Promise<MedTechApi> {
-    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then( api => {
+
+    if (!!this.authServerUrl && !this.authSpecId || !this.authServerUrl && !!this.authSpecId) {
+      throw Error("Don't forget to provide the specId you received in the Cockpit alongside the authServerUrl")
+    }
+
+    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then(api => {
       return new MedTechApi(
         api,
         this.iCureBasePath!,
         this.userName,
         this.password,
-        !!this.authServerUrl && !!this.authSpecId ? `${this.authServerUrl}/${this.authSpecId}` : this.authServerUrl,
+        !!this.authServerUrl && !!this.authSpecId ? `${this.authServerUrl}/${this.authSpecId}` : undefined,
         this.authProcessId
       );
     });
