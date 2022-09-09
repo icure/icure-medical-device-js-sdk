@@ -37,7 +37,7 @@ describe("Authentication API", () => {
         .build();
       expect(true, "promise should fail").eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq("specId is required")
+      expect((e as Error).message).to.eq("authSpecId is required")
     }
 
     try {
