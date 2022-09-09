@@ -25,7 +25,7 @@ export interface AuthenticationApi {
     bypassTokenCheck: boolean,
     email?: string,
     mobilePhone?: string,
-    bypassTokenCheck: boolean = false
+    bypassTokenCheck?: boolean
   ): Promise<AuthenticationProcess|null>
 
   /**
