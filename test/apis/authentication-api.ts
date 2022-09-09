@@ -7,6 +7,7 @@ import * as os from "os";
 import {TestUtils} from "../test-utils";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {webcrypto} from "crypto";
+import {MedTechApiBuilder} from "../../src/apis/medTechApi";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
@@ -22,6 +23,89 @@ const msgGtwSpecId =
 const authProcessHcpId = process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!;
 
 describe("Authentication API", () => {
+
+  it("AnonymousMedTechApi shouldn't be instantiated if both authServerUrl and specId aren't passed", async () => {
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
+      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+
+    try {
+      await new AnonymousMedTechApiBuilder()
+        .withICureUrlPath(iCureUrl)
+        .withAuthServerUrl(msgGtwUrl)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessId(authProcessId)
+        .build();
+      expect(true, "promise should fail").eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq("specId is required")
+    }
+
+    try {
+      const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+        .withICureUrlPath(iCureUrl)
+        .withAuthServerUrl(msgGtwUrl)
+        .withAuthSpecId(msgGtwSpecId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessId(authProcessId)
+        .build();
+
+      expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").not.null
+    } catch (e) {
+      expect(true, "promise should not fail").eq(false)
+    }
+
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureUrlPath(iCureUrl)
+      .withAuthServerUrl(msgGtwUrl)
+      .withAuthSpecId(msgGtwSpecId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessId(authProcessId)
+      .build();
+  })
+
+  it("MedTechApi shouldn't be instantiated if both authServerUrl and specId aren't passed", async () => {
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
+      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+
+    try {
+      await new MedTechApiBuilder()
+        .withICureBasePath(iCureUrl)
+        .withAuthServerUrl(msgGtwUrl)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessId(authProcessId)
+        .build();
+      expect(true, "promise should fail").eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq("Don't forget to provide the specId you received in the Cockpit alongside the authServerUrl")
+    }
+
+    try {
+      await new MedTechApiBuilder()
+        .withICureBasePath(iCureUrl)
+        .withAuthSpecId(msgGtwSpecId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessId(authProcessId)
+        .build();
+      expect(true, "promise should fail").eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq("Don't forget to provide the specId you received in the Cockpit alongside the authServerUrl")
+    }
+
+    try {
+      const medTechApi = await new MedTechApiBuilder()
+        .withICureBasePath(iCureUrl)
+        .withAuthServerUrl(msgGtwUrl)
+        .withAuthSpecId(msgGtwSpecId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessId(authProcessId)
+        .build();
+
+      expect(medTechApi, "medTechApi shouldn't be null").not.null
+    } catch (e) {
+      expect(true, "promise should not fail").eq(false)
+    }
+  })
+
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
     // Given
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
