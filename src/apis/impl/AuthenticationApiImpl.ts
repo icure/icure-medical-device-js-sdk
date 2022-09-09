@@ -19,9 +19,8 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
+
   private readonly authSpecId: string;
-
-
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
   private readonly authServerUrl: string;
