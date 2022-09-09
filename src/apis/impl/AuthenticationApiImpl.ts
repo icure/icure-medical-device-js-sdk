@@ -85,7 +85,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     if (!!res) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
-        () => this.initApiAndUserAuthenticationToken(process, validationCode, tokenAndKeyPairProvider)
+        () => this.initApiAndUserAuthenticationToken(process.login, validationCode, tokenAndKeyPairProvider)
       )
 
       const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
@@ -133,6 +133,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         new Notification({
           id: uuid(),
           status: "pending",
+          author: loggedUser.id,
+          responsible: loggedUser.patientId,
           type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
         }),
         delegate

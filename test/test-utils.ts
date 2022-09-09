@@ -13,9 +13,7 @@ import {tmpdir} from "os";
 import {TextDecoder, TextEncoder} from "util";
 import {EmailMessage, EmailMessageFactory} from "../src/utils/gatewayMessageFactory";
 import {HealthcareProfessional} from "../src/models/HealthcareProfessional";
-
-export const delay = (delay: number) =>
-  new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
+import {v4 as uuid} from "uuid";
 
 let cachedHcpApi: MedTechApi | undefined;
 let cachedHcpLoggedUser: User | undefined;
@@ -125,12 +123,7 @@ export class TestUtils {
   }
 
   static async getTempEmail(): Promise<string> {
-    const domainOptions = {
-      method: 'GET' as Method,
-      url: 'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1'
-    };
-    const { data: domains } = await axios.request(domainOptions);
-    return domains[0];
+    return `${uuid().substring(0,8)}@icure.com`
   }
 
   static async getEmail(email: string): Promise<any> {
@@ -245,6 +238,15 @@ export class TestUtils {
         ]),
         content: {en: {stringValue: "Hello world"}},
       })
+    );
+  }
+
+  static createHealthElementForPatient(medtechApi: MedTechApi, patient: Patient) {
+    return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+      new HealthcareElement({
+        note: "Hero Syndrome",
+      }),
+      patient.id!
     );
   }
 
