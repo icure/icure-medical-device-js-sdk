@@ -26,7 +26,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'a58afe0e-02dc-431b-8155-0351140099e4', undefined, undefined);
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'a58afe0e-02dc-431b-8155-0351140099e4', false, undefined, undefined);
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
@@ -47,7 +47,7 @@ describe("Authentication API", () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'a58afe0e-02dc-431b-8155-0351140099e4', '', '');
+      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'a58afe0e-02dc-431b-8155-0351140099e4', false,'', '');
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
