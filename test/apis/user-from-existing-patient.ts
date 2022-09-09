@@ -398,43 +398,86 @@ describe("A Healthcare Party", () => {
     expect(sharedHEId).to.contain(newHE2.id);
     expect(sharedHEId).to.not.contain(newHE3.id);
 
-    const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(newPatientNotification, "completed");
+    const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(ongoingStatusUpdate!, "completed");
     expect(!!completedStatusUpdate).to.eq(true);
     expect(completedStatusUpdate?.status).to.eq("completed");
 
     // Then PAT_1 may access data sample DATA_SAMPLE_1
+    const test = await hcp1Api.dataSampleApi.getDataSample(newDS1.id!);
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
     await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newHE1.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newHE2.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE1.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE2.id!);
     await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
   });
-  //
-  // it("should not be able to create a new User if it already exists for that Patient", async () => {
-  //   const email = await TestUtils.getTempEmail();
-  //   const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
-  //     new Patient({
-  //       firstName: "Marc",
-  //       lastName: "Specter"
-  //     })
-  //   );
-  //   assert(!!newPatient);
-  //   const newUser = await hcp1Api.userApi.createOrModifyUser(new User({
-  //     login: email,
-  //     patientId: newPatient.id,
-  //     email: email
-  //   }))
-  //   assert(!!newUser)
-  //
-  //   let error = undefined;
-  //   try {
-  //     await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),false);
-  //   } catch (e) {
-  //     error = e;
-  //   }
-  //   assert(!!error);
-  // });
 
+  it("should not be able to create a new User if the Patient has no firstname", async () => {
+      const newPatient = new Patient({
+        lastName: "Specter"
+      });
+
+      let error = undefined;
+      try {
+        await userFromPatient(newPatient);
+      } catch (e) {
+        error = e;
+      }
+      assert(!!error);
+    });
+
+  it("should not be able to create a new User if the Patient has no lastname", async () => {
+    const newPatient = new Patient({
+      firstName: "Marc"
+    });
+
+    let error = undefined;
+    try {
+      await userFromPatient(newPatient);
+    } catch (e) {
+      error = e;
+    }
+    assert(!!error);
+  });
+
+  it("should not be able to create a new User if the Patient has no contact information", async () => {
+    const newPatient = new Patient({
+      firstName: "Marc",
+      lastName: "Specter"
+    });
+
+    let error = undefined;
+    try {
+      await userFromPatient(newPatient);
+    } catch (e) {
+      error = e;
+    }
+    assert(!!error);
+  });
+
+  it("should not be able to create a new User if it already exists for that Patient", async () => {
+    const email = await TestUtils.getTempEmail();
+    const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: "Marc",
+        lastName: "Specter"
+      })
+    );
+    assert(!!newPatient);
+    const newUser = await hcp1Api.userApi.createOrModifyUser(new User({
+      login: email,
+      patientId: newPatient.id,
+      email: email
+    }))
+    assert(!!newUser)
+
+    let error = undefined;
+    try {
+      await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),3600);
+    } catch (e) {
+      error = e;
+    }
+    assert(!!error);
+  });
 
 });

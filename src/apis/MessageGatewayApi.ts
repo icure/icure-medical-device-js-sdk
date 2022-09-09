@@ -3,9 +3,9 @@ import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../utils/mess
 
 export interface MessageGatewayApi {
 
-  sendEmail(recipientEmail: string, email: EmailMessage, anonymous: boolean): Promise<XHR.Data | null>;
+  sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null>;
 
-  sendSMS(recipientMobileNumber: string, sms: SMSMessage, anonymous: boolean): Promise<XHR.Data | null>;
+  sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null>;
 
   startProcess(processId: string, requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null>;
 
