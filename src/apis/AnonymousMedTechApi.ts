@@ -6,6 +6,7 @@ export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
   private readonly _authServerUrl: string;
   private readonly _authProcessId: string;
+  private readonly _authSpecId: string;
   private readonly _authenticationApi: AuthenticationApi;
   private readonly _cryptoApi: IccCryptoXApi;
 
@@ -13,16 +14,19 @@ export class AnonymousMedTechApi {
     iCureUrlPath: string,
     authServerUrl: string,
     authProcessId: string,
+    authSpecId: string,
     api: { cryptoApi: IccCryptoXApi }
   ) {
     this._iCureUrlPath = iCureUrlPath;
     this._authServerUrl = authServerUrl;
     this._authProcessId = authProcessId;
+    this._authSpecId = authSpecId;
 
     this._authenticationApi = new AuthenticationApiImpl(
       this._iCureUrlPath,
       this._authServerUrl,
-      this._authProcessId
+      this._authProcessId,
+      this._authSpecId
     );
     this._cryptoApi = api.cryptoApi;
   }
@@ -91,8 +95,9 @@ export class AnonymousMedTechApiBuilder {
       }
       return new AnonymousMedTechApi(
         this.iCureUrlPath,
-        `${this.authServerUrl}/${this.authSpecId}`,
+        this.authServerUrl,
         this.authProcessId,
+        this.authSpecId,
         api
       );
     });
