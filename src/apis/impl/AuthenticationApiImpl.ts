@@ -22,8 +22,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   constructor(
     messageGatewayApi: MessageGatewayApi,
     iCureBasePath: string,
-    authServerUrl: string,
-    authProcessId: string, authSpecId: string,
+    msgGtwUrl: string,
+    msgGtwSpecId: string,
+    authProcessId: string,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -31,18 +32,18 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         : fetch
   ) {
     this.iCureBasePath = iCureBasePath;
-    this.authServerUrl = authServerUrl;
+    this.msgGtwUrl = msgGtwUrl;
+    this.msgGtwSpecId = msgGtwSpecId;
     this.authProcessId = authProcessId;
-    this.authSpecId = authSpecId;
     this.fetchImpl = fetchImpl;
     this.messageGatewayApi = messageGatewayApi;
   }
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
-  private readonly authServerUrl: string;
+  private readonly msgGtwUrl: string;
   private readonly authProcessId: string;
-  private readonly authSpecId: string;
+  private readonly msgGtwSpecId: string;
   private readonly messageGatewayApi: MessageGatewayApi;
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, bypassTokenCheck: boolean = false, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
@@ -52,6 +53,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const requestId = uuid()
 
     const res = await this.messageGatewayApi.startProcess(
+      this.authProcessId,
       requestId,
       {
         'g-recaptcha-response': recaptcha,
@@ -107,9 +109,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withICureBasePath(this.iCureBasePath)
       .withUserName(process.login)
       .withPassword(validationCode)
-      .withAuthServerUrl(this.authServerUrl)
+      .withMsgGtwUrl(this.msgGtwUrl)
+      .withMsgGtwSpecId(this.msgGtwSpecId)
       .withAuthProcessId(this.authProcessId)
-      .withAuthSpecId(this.authSpecId)
       .withCrypto(require('crypto').webcrypto)
       .build();
 
