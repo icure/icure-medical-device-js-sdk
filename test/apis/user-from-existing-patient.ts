@@ -14,7 +14,7 @@ import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-      msgGtwUrl: msgGtwUrl} = getEnvVariables()
+      msgGtwUrl: msgGtwUrl, specId: specId} = getEnvVariables()
 
 let medtechApi: MedTechApi;
 let hcpUser: User;
@@ -27,7 +27,8 @@ describe("A Healthcare Party", () => {
       .withICureBasePath(iCureUrl)
       .withUserName(hcpUserName)
       .withPassword(hcpPassword)
-      .withAuthServerUrl(msgGtwUrl)
+      .withMsgGtwUrl(msgGtwUrl)
+      .withMsgGtwSpecId(specId)
       .withCrypto(webcrypto as any)
       .build();
 
@@ -51,8 +52,8 @@ describe("A Healthcare Party", () => {
     })]
   });
 
-  async function userFromPatient(patient: Patient) {
-    const existingPatient = await medtechApi.patientApi.createOrModifyPatient(patient);
+  async function userFromPatient(api: MedTechApi, patient: Patient) {
+    const existingPatient = await api.patientApi.createOrModifyPatient(patient);
     assert(!!existingPatient);
 
     const messageFactory = new ICureRegistrationEmail(
@@ -61,7 +62,7 @@ describe("A Healthcare Party", () => {
       "iCure",
       existingPatient
     )
-    const createdUser = await medtechApi.userApi.createAndInviteUser(existingPatient, messageFactory);
+    const createdUser = await api.userApi.createAndInviteUser(existingPatient, messageFactory);
     assert(!!createdUser);
     assert(createdUser.patientId === existingPatient.id);
   }
@@ -82,9 +83,32 @@ describe("A Healthcare Party", () => {
         ]
       })]
     });
-    await userFromPatient(newPatient);
+    await userFromPatient(medtechApi, newPatient);
   }).timeout(300000);
-  
+
+  it("should not be able to invite a new user if the developer didn't provide msgGtw info in its API", async () => {
+    // Given
+    const apiWithoutMsgGtw = await medTechApi()
+      .withICureBasePath(iCureUrl)
+      .withUserName(hcpUserName)
+      .withPassword(hcpPassword)
+      .withMsgGtwUrl(undefined)
+      .withCrypto(webcrypto as any)
+      .build()
+
+    const newPatient = new Patient({
+      firstName: "Marc",
+      lastName: "Specter"
+    });
+
+    try {
+      await userFromPatient(apiWithoutMsgGtw, newPatient);
+      expect(true, "promise should fail").eq(false);
+    } catch (e) {
+      expect((e as Error).message).to.eq("Can not invite a user, as no msgGtwUrl and/or specId have been provided : Make sure to call .withMsgGtwUrl and .withMsgGtwSpecId when creating your MedTechApi");
+    }
+  })
+
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({
       firstName: "Marc",
@@ -92,7 +116,7 @@ describe("A Healthcare Party", () => {
     });
 
     try {
-      await userFromPatient(newPatient);
+      await userFromPatient(medtechApi, newPatient);
       expect(true, "promise should fail").eq(false);
     } catch (e) {
       expect((e as Error).message).to.eq("No email or mobile phone information provided in patient");

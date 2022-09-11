@@ -7,7 +7,7 @@ export interface MessageGatewayApi {
 
   sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null>;
 
-  startProcess(requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null>;
+  startProcess(processId: string, requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null>;
 
   validateProcess(requestId: string, validationCode: string): Promise<XHR.Data | null>;
 }
