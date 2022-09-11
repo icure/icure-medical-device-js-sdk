@@ -259,13 +259,12 @@ describe("A Healthcare Party", () => {
       lastName: "Specter"
     });
 
-    let error = undefined;
     try {
-      await userFromPatient(newPatient);
+      await userFromPatient(hcp1Api, newPatient);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("No email or mobile phone information provided in patient");
     }
-    assert(!!error);
   });
 
   it("should not be able to create a new User if it already exists for that Patient", async () => {
@@ -284,13 +283,11 @@ describe("A Healthcare Party", () => {
     }))
     assert(!!newUser)
 
-    let error = undefined;
     try {
       await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),3600);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("A User already exists for this Patient");
     }
-    assert(!!error);
   });
 
 });

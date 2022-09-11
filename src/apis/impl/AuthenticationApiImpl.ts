@@ -68,8 +68,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       }
     );
 
-    if (res.statusCode < 400) {
-      return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck});
+    if (!!res) {
+      return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck});
     }
 
     return null;
