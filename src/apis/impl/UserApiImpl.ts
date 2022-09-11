@@ -22,10 +22,7 @@ import {Patient} from "../../models/Patient";
 import {UserFilter} from "../../filter";
 import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 import {MessageGatewayApi} from "../MessageGatewayApi";
-import {
-  EmailMessageFactory,
-  SMSMessageFactory
-} from "../../utils/messageGatewayUtils";
+import {EmailMessageFactory, SMSMessageFactory} from "../../utils/messageGatewayUtils";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi;
@@ -53,6 +50,10 @@ export class UserApiImpl implements UserApi {
   }
 
   async createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration = 48 * 60 * 60): Promise<User> {
+    if (!this.messageGatewayApi) {
+      throw new Error("Can not invite a user, as no msgGtwUrl and/or specId have been provided : Make sure to call .withMsgGtwUrl and .withMsgGtwSpecId when creating your MedTechApi")
+    }
+
     // Checks that the Patient has all the required information
     if (!patient.id) throw new Error("Patient does not have a valid id")
 

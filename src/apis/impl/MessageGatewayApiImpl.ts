@@ -6,8 +6,8 @@ import Header = XHR.Header;
 export class MessageGatewayApiImpl implements MessageGatewayApi {
 
   constructor(
-    authServerUrl: string,
-    authProcessId?: string,
+    msgGtwUrl: string,
+    specId: string,
     username?: string,
     password?: string,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
@@ -17,8 +17,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
         : fetch
   ) {
     this.fetchImpl = fetchImpl;
-    this.authProcessId = authProcessId;
-    this.authServerUrl = authServerUrl;
+    this.msgGtwUrl = msgGtwUrl;
+    this.specId = specId;
     this.authHeader = (!!username && !!password) ? new Header(
       "Authorization",
       "Basic "+Buffer.from(`${username}:${password}`).toString('base64')
@@ -27,15 +27,15 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   }
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  private readonly authProcessId: string | undefined;
-  private readonly authServerUrl: string;
+  private readonly msgGtwUrl: string;
+  private readonly specId: string;
   private readonly authHeader: XHR.Header | null;
   private readonly headers: Header[];
 
   async sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null> {
     if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/email/to/${recipientEmail}`,
+      `${this.msgGtwUrl}/${this.specId}/email/to/${recipientEmail}`,
       this.headers.concat([this.authHeader]),
       email,
       this.fetchImpl
@@ -48,7 +48,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
     if (!this.authHeader) return null;
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/sms/to/${recipientMobileNumber}`,
+      `${this.msgGtwUrl}/${this.specId}/sms/to/${recipientMobileNumber}`,
       this.headers.concat([this.authHeader]),
       sms,
       this.fetchImpl
@@ -58,10 +58,9 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
   }
 
-  async startProcess(requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null> {
-    if (!this.authProcessId) return null;
+  async startProcess(processId: string, requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null> {
     const res = await XHR.sendCommand('POST',
-      `${this.authServerUrl}/process/${this.authProcessId}/${requestId}`,
+      `${this.msgGtwUrl}/${this.specId}/process/${processId}/${requestId}`,
       this.headers,
       processBody,
       this.fetchImpl,
@@ -73,9 +72,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   }
 
   async validateProcess(requestId: string, validationCode: string): Promise<XHR.Data | null> {
-    if (!this.authProcessId) return null;
     const res = await XHR.sendCommand('GET',
-      `${this.authServerUrl}/process/validate/${requestId}-${validationCode}`,
+      `${this.msgGtwUrl}/${this.specId}/process/validate/${requestId}-${validationCode}`,
       [],
       undefined,
       this.fetchImpl

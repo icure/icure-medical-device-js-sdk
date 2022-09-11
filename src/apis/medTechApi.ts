@@ -60,9 +60,9 @@ export class MedTechApi {
   private readonly _basePath: string;
   private readonly _username: string | undefined;
   private readonly _password: string | undefined;
-  private readonly _authServerUrl: string | undefined;
+  private readonly _msgGtwUrl: string | undefined;
   private readonly _authProcessId: string | undefined;
-  private readonly _authSpecId: string | undefined;
+  private readonly _msgGtwSpecId: string | undefined;
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private readonly _messageGatewayApi: MessageGatewayApi | undefined;
   private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
@@ -71,18 +71,18 @@ export class MedTechApi {
               basePath: string,
               username: string | undefined,
               password: string | undefined,
-              authServerUrl: string | undefined = undefined,
+              msgGtwUrl: string | undefined = undefined,
+              msgGtwSpecId: string | undefined = undefined,
               authProcessId: string | undefined = undefined,
-              authSpecId: string | undefined = undefined,
   ) {
     this._basePath = basePath;
     this._username = username;
     this._password = password;
-    this._authServerUrl = authServerUrl;
+    this._msgGtwUrl = msgGtwUrl;
     this._authProcessId = authProcessId;
-    this._authSpecId = authSpecId;
-    this._messageGatewayApi = !!authServerUrl ? new MessageGatewayApiImpl(authServerUrl, authProcessId, username, password) : undefined;
-    this._authenticationApi = authServerUrl && authProcessId && authSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authServerUrl, authProcessId, authSpecId) : undefined;
+    this._msgGtwSpecId = msgGtwSpecId;
+    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined;
+    this._authenticationApi = msgGtwUrl && authProcessId && msgGtwSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, msgGtwUrl, msgGtwSpecId, authProcessId) : undefined;
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
     this._codingApi = new CodingApiImpl(api);
     this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
@@ -131,7 +131,11 @@ export class MedTechApi {
     return this._cryptoApi;
   }
 
-  get authenticationApi(): AuthenticationApi | undefined {
+  get authenticationApi(): AuthenticationApi {
+    if (!this._authenticationApi) {
+      throw Error("authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId")
+    }
+
     return this._authenticationApi;
   }
 
@@ -147,8 +151,8 @@ export class MedTechApi {
     return this._password;
   }
 
-  get authServerUrl(): string | undefined {
-    return this._authServerUrl;
+  get msgGtwUrl(): string | undefined {
+    return this._msgGtwUrl;
   }
 
   get authProcessId(): string | undefined {
@@ -172,8 +176,8 @@ export class MedTechApiBuilder {
   private userName?: string;
   private password?: string;
   private crypto?: Crypto;
-  private authServerUrl?: string;
-  private authSpecId?: string;
+  private msgGtwUrl?: string;
+  private msgGtwSpecId?: string;
   private authProcessId?: string;
   private _preventCookieUsage: boolean = false;
 
@@ -192,14 +196,14 @@ export class MedTechApiBuilder {
     return this;
   }
 
-  withAuthServerUrl(newAuthServerUrl: string | undefined): MedTechApiBuilder {
-    this.authServerUrl = newAuthServerUrl;
+  withMsgGtwUrl(newMsgGtwUrl: string | undefined): MedTechApiBuilder {
+    this.msgGtwUrl = newMsgGtwUrl;
     return this;
   }
 
 
-  withAuthSpecId(newAuthSpecId: string | undefined): MedTechApiBuilder {
-    this.authSpecId = newAuthSpecId;
+  withMsgGtwSpecId(newSpecId: string | undefined): MedTechApiBuilder {
+    this.msgGtwSpecId = newSpecId;
     return this;
   }
 
@@ -220,20 +224,15 @@ export class MedTechApiBuilder {
   }
 
   async build() : Promise<MedTechApi> {
-
-    if (!!this.authServerUrl && !this.authSpecId || !this.authServerUrl && !!this.authSpecId) {
-      throw Error("Don't forget to provide the specId you received in the Cockpit alongside the authServerUrl")
-    }
-
     return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then(api => {
       return new MedTechApi(
         api,
         this.iCureBasePath!,
         this.userName,
         this.password,
-        this.authServerUrl,
-        this.authProcessId,
-        this.authSpecId
+        this.msgGtwUrl,
+        this.msgGtwSpecId,
+        this.authProcessId
       );
     });
   }

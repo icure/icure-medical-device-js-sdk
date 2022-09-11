@@ -5,30 +5,30 @@ import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
-  private readonly _authServerUrl: string;
+  private readonly _msgGtwUrl: string;
   private readonly _authProcessId: string;
-  private readonly _authSpecId: string;
+  private readonly _msgGtwSpecId: string;
   private readonly _authenticationApi: AuthenticationApi;
   private readonly _cryptoApi: IccCryptoXApi;
 
   constructor(
     iCureUrlPath: string,
-    authServerUrl: string,
+    msgGtwUrl: string,
+    msgGtwSpecId: string,
     authProcessId: string,
-    authSpecId: string,
     api: { cryptoApi: IccCryptoXApi }
   ) {
     this._iCureUrlPath = iCureUrlPath;
-    this._authServerUrl = authServerUrl;
+    this._msgGtwUrl = msgGtwUrl;
+    this._msgGtwSpecId = msgGtwSpecId;
     this._authProcessId = authProcessId;
-    this._authSpecId = authSpecId;
 
     this._authenticationApi = new AuthenticationApiImpl(
-      new MessageGatewayApiImpl(authServerUrl, authProcessId),
+      new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId),
       this._iCureUrlPath,
-      this._authServerUrl,
-      this._authProcessId,
-      this._authSpecId
+      this._msgGtwUrl,
+      this._msgGtwSpecId,
+      this._authProcessId
     );
     this._cryptoApi = api.cryptoApi;
   }
@@ -44,16 +44,16 @@ export class AnonymousMedTechApi {
 
 export class AnonymousMedTechApiBuilder {
   private iCureUrlPath: string;
-  private authServerUrl: string;
-  private authSpecId: string | undefined;
+  private msgGtwUrl: string;
+  private msgGtwSpecId: string | undefined;
   private authProcessId: string | undefined;
   private crypto?: Crypto;
   private _preventCookieUsage: boolean = false;
 
   constructor() {
     this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
-    this.authServerUrl = "https://msg-gw.icure.cloud";
-    this.authSpecId = undefined;
+    this.msgGtwUrl = "https://msg-gw.icure.cloud";
+    this.msgGtwSpecId = undefined;
     this.authProcessId = undefined;
   }
 
@@ -62,13 +62,13 @@ export class AnonymousMedTechApiBuilder {
     return this;
   }
 
-  withAuthServerUrl(authServerUrl: string): AnonymousMedTechApiBuilder {
-    this.authServerUrl = authServerUrl;
+  withMsgGtwUrl(msgGtwUrl: string): AnonymousMedTechApiBuilder {
+    this.msgGtwUrl = msgGtwUrl;
     return this;
   }
 
-  withAuthSpecId(authSpecId: string): AnonymousMedTechApiBuilder {
-    this.authSpecId = authSpecId;
+  withMsgGtwSpecId(msgGtwSpecId: string): AnonymousMedTechApiBuilder {
+    this.msgGtwSpecId = msgGtwSpecId;
     return this;
   }
 
@@ -92,14 +92,14 @@ export class AnonymousMedTechApiBuilder {
       if (!this.authProcessId) {
         throw new Error("authProcessId is required");
       }
-      if (!this.authSpecId) {
-        throw new Error("authSpecId is required");
+      if (!this.msgGtwSpecId) {
+        throw new Error("msgGtwSpecId is required");
       }
       return new AnonymousMedTechApi(
         this.iCureUrlPath,
-        this.authServerUrl,
+        this.msgGtwUrl,
+        this.msgGtwSpecId,
         this.authProcessId,
-        this.authSpecId,
         api
       );
     });
