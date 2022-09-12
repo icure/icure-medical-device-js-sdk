@@ -175,9 +175,14 @@ export class UserApiImpl implements UserApi {
 
     let newDataSharing
     if (user.autoDelegations?.[type]) {
-      newDataSharing = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
-        return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? dataOwnerIds : [])))]}
-      }, {});
+      const delegationsToAdd = user.autoDelegations[type].filter((item) => dataOwnerIds.indexOf(item) < 0)
+      if (delegationsToAdd.length > 0) {
+        newDataSharing = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+          return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? delegationsToAdd : [])))]}
+        }, {});
+      } else {
+        return UserMapper.toUser(user)!!
+      }
     } else {
       newDataSharing = {
         ...Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
@@ -208,10 +213,16 @@ export class UserApiImpl implements UserApi {
       throw new Error("Couldn't get current user")
     }
 
+    const delegationsToRemove = user.autoDelegations?.[type]?.filter((item) => dataOwnerIds.indexOf(item) >= 0)
+
+    if (delegationsToRemove === undefined || delegationsToRemove.length === 0) {
+      return UserMapper.toUser(user)!!
+    }
+
     const newDataSharing = Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
       return {
         ...accumulator,
-        [key]: (type === key ? [...values].filter((v) => !dataOwnerIds.includes(v)) : [...values])
+        [key]: (type === key ? [...values].filter((v) => !delegationsToRemove.includes(v)) : [...values])
       };
     }, {});
 
