@@ -22,16 +22,19 @@ jobs:
       - name: Install dependencies and build 🔧
         run: yarn install && yarn run build
       - name: Creation new version (Major) 🏷️
-        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Major') }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Major') }}
         run: yarn version --major
       - name: Creation new version (Minor) 🏷️
-        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Minor') }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Minor') }}
         run: yarn version --minor
       - name: Creation new version (Patch) 🏷️
-        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Patch') }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Patch') }}
         run: yarn version --patch
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Publish package on NPM 📦
-        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags`
+        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version ${{ steps.vars.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
