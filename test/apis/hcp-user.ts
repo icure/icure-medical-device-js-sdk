@@ -7,14 +7,12 @@ import {webcrypto} from "crypto";
 import {User} from "../../src/models/User";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
-import {TestUtils} from "../test-utils";
+import {setLocalStorage} from "../test-utils";
 import * as os from "os";
-import {LocalStorage} from "node-localstorage";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = "";
+setLocalStorage(fetch)
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";

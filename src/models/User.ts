@@ -79,9 +79,9 @@ constructor(json: IUser) {
      */
     'deviceId'?: string;
   /**
-   * Delegations that are automatically generated client side when a new database object is created by this user
+   * Ids of the dataOwners with who the user is sharing all new data he is creating in iCure : All Data Types that may be shared can be found in SharedDataType enum
    */
-  'autoDelegations': { [key in DelegationTag]: Set<string>; };
+  'sharingDataWith': { [key in SharedDataType]: Set<string>; };
   /**
    * email address of the user (used for token exchange or password recovery).
    */
@@ -97,27 +97,13 @@ constructor(json: IUser) {
 
 }
 
-export type DelegationTag =
-  'all'
+export type SharedDataType = 'all'
   | 'administrativeData'
-  | 'anonymousMedicalInformation'
   | 'generalInformation'
   | 'financialInformation'
   | 'medicalInformation'
   | 'sensitiveInformation'
-  | 'confidentialInformation'
-  | 'cdItemRisk'
-  | 'cdItemFamilyRisk'
-  | 'cdItemHealthcareelement'
-  | 'cdItemHealthcareapproach'
-  | 'cdItemAllergy'
-  | 'cdItemDiagnosis'
-  | 'cdItemLab'
-  | 'cdItemResult'
-  | 'cdItemParameter'
-  | 'cdItemMedication'
-  | 'cdItemTreatment'
-  | 'cdItemVaccine';
+  | 'confidentialInformation';
 
 interface IUser {
   'id'?: string;
@@ -135,7 +121,7 @@ interface IUser {
   'healthcarePartyId'?: string;
   'patientId'?: string;
   'deviceId'?: string;
-  'autoDelegations'?: { [key in DelegationTag]: Set<string>; };
+  'sharingDataWith'?: { [key in SharedDataType]: Set<string>; };
   'email'?: string;
   'mobilePhone'?: string;
   'authenticationTokens'?: { [key: string]: AuthenticationToken; };

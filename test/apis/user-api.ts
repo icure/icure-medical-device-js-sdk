@@ -1,44 +1,51 @@
-import {getEnvVariables, TestUtils} from "../test-utils";
-import {v4 as uuid} from 'uuid';
-import {assert} from "chai";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {v4 as uuid} from 'uuid'
+import {assert} from "chai"
 import 'isomorphic-fetch'
-import {tmpdir} from "os";
-import {TextDecoder, TextEncoder} from "util";
 
-(global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
-;(global as any).fetch = fetch
-;(global as any).Storage = ''
-;(global as any).TextDecoder = TextDecoder
-;(global as any).TextEncoder = TextEncoder
+setLocalStorage(fetch)
 
 const {iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId, specId: specId} = getEnvVariables()
 
 describe('User API', () => {
-  it('Management of auto-delegations', async () => {
+  it('A user is able to share data with another dataOwner, and stop sharing data with him later', async () => {
     const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
 
     try {
       const {
-        api,
-        user
+        api
       } = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId);
 
-      const currentUser = await api.userApi.getLoggedUser()
-
       const delegation = uuid()
-      const userUpdatedWithUpdatedDelegationsOnAll = await api.userApi.addAutoDelegationsTo('all', currentUser, [delegation])
+      it('When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only on the right type', async () => {
+        const userUpdatedWithUpdatedDelegationsOnAll = await api.userApi.shareAllFutureDataWith('all', [delegation])
 
-      assert(userUpdatedWithUpdatedDelegationsOnAll.autoDelegations.all.has(delegation))
-      assert(!userUpdatedWithUpdatedDelegationsOnAll.autoDelegations?.medicalInformation?.has(delegation))
+        assert(userUpdatedWithUpdatedDelegationsOnAll.sharingDataWith.all.has(delegation))
+        assert(!userUpdatedWithUpdatedDelegationsOnAll.sharingDataWith?.medicalInformation?.has(delegation))
 
-      const userUpdatedWithUpdatedDelegationsOnMedicalInformation = await api.userApi.addAutoDelegationsTo('medicalInformation', userUpdatedWithUpdatedDelegationsOnAll, [delegation])
+        it('When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only and no duplicates', async () => {
+          const userUpdatedWithUpdatedDelegationsOnMedicalInformation = await api.userApi.shareAllFutureDataWith('medicalInformation', [delegation])
 
-      assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation.autoDelegations.medicalInformation.has(delegation))
+          assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation.sharingDataWith.medicalInformation.has(delegation))
 
-      const userUpdatedWithRemovedDelegationsOnMedicalInformation = await api.userApi.removeAutoDelegationsTo('medicalInformation', userUpdatedWithUpdatedDelegationsOnMedicalInformation, [delegation])
+          it('When a user already shares data with the provided dataOwner, the user is returned successfully, without any additional request to iCure', async () => {
+            const userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges = await api.userApi.shareAllFutureDataWith('medicalInformation', [delegation])
 
-      assert(userUpdatedWithRemovedDelegationsOnMedicalInformation.autoDelegations.all.has(delegation))
-      assert(!userUpdatedWithRemovedDelegationsOnMedicalInformation.autoDelegations?.medicalInformation?.has(delegation))
+            assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation.sharingDataWith.medicalInformation.has(delegation))
+            assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation == userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges)
+
+            it('When a user want to stop to shares data with the provided dataOwner, the user is returned successfully, with removed data sharing entries only on provided type', async () => {
+              const userUpdatedWithRemovedDelegationsOnMedicalInformation = await api.userApi.stopSharingDataWith('medicalInformation', [delegation])
+
+              assert(userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith.all.has(delegation))
+              assert(!userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith?.medicalInformation?.has(delegation))
+            });
+
+          });
+
+        });
+
+      });
     } catch (e) {
       console.error(e)
     }
