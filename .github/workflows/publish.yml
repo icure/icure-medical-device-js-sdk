@@ -9,7 +9,7 @@ on:
 
 jobs:
   if_merged:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && contains(fromJson('["SemVer.Major", "SemVer.Minor", "SemVer.Patch"]'), github.event.pull_request.labels.*.name)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,4 +37,3 @@ jobs:
         run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version ${{ steps.vars.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
