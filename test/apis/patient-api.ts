@@ -9,7 +9,7 @@ import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-  msgGtwUrl: msgGtwUrl, patUserName: patUserName, patPassword: patPassword, authProcessHcpId: authProcessHcpId,
+  msgGtwUrl: msgGtwUrl, patUserName: patUserName, patPassword: patPassword, authProcessHcpId: authProcessHcpId, specId: specId,
   patPrivKey: patPrivKey, hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey} = getEnvVariables()
 
 const patAuthProcessId =
@@ -70,7 +70,7 @@ describe('Patient API', () => {
   });
 
   it('Patient sharing its own information with HCP', async () => {
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, patAuthProcessId, authProcessHcpId)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
     const patApi = patApiAndUser.api;
     const patUser = patApiAndUser.user;
 

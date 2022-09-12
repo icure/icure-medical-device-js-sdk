@@ -33,6 +33,7 @@ export type TestVars = {
   msgGtwUrl: string,
   patAuthProcessId: string,
   authProcessHcpId: string,
+  specId: string,
   hcpUserName: string,
   hcpPassword: string,
   hcpPrivKey: string,
@@ -53,6 +54,7 @@ export function getEnvVariables(): TestVars {
     msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic",
     patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5",
     authProcessHcpId: process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!,
+    specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? "ic",
     hcpUserName: process.env.ICURE_TS_TEST_HCP_USER!,
     hcpPassword: process.env.ICURE_TS_TEST_HCP_PWD!,
     hcpPrivKey: process.env.ICURE_TS_TEST_HCP_PRIV_KEY!,
@@ -107,18 +109,20 @@ export class TestUtils {
   }
 
   static async getEmail(email: string): Promise<any> {
+    const {msgGtwUrl, specId} = getEnvVariables()
     const emailOptions = {
       method: 'GET' as Method,
-      url: `${process.env.ICURE_TS_TEST_MSG_GTW_URL}/lastEmail/${email}`
+      url: `${msgGtwUrl}/${specId}/lastEmail/${email}`
     };
     const { data: response } = await axios.request(emailOptions);
     return response;
   }
 
-  static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, authProcessId: string, hcpId: string): Promise<{api: MedTechApi, user: User}> {
+  static async signUpUserUsingEmail(iCureUrl: string, msgGtwUrl: string, msgGtwSpecId: string, authProcessId: string, hcpId: string): Promise<{ api: MedTechApi, user: User }> {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
-      .withAuthServerUrl(msgGtwUrl)
+      .withMsgGtwUrl(msgGtwUrl)
+      .withMsgGtwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessId)
       .build();
