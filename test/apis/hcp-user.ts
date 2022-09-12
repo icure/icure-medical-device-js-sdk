@@ -7,6 +7,12 @@ import {webcrypto} from "crypto";
 import {User} from "../../src/models/User";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
+import {setLocalStorage} from "../test-utils";
+import * as os from "os";
+
+const tmp = os.tmpdir();
+console.log("Saving keys in " + tmp);
+setLocalStorage(fetch)
 
 const iCureUrl =
   process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";

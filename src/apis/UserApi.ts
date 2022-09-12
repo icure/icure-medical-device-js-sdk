@@ -1,6 +1,6 @@
 import {Filter} from '../filter/Filter';
 import {PaginatedListUser} from '../models/PaginatedListUser';
-import {User} from '../models/User';
+import {SharedDataType, User} from '../models/User';
 import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
 import {EmailMessageFactory, SMSMessageFactory} from "../utils/messageGatewayUtils";
@@ -94,4 +94,20 @@ export interface UserApi {
     eventFired: (user: User) => Promise<void>,
     options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
+
+  /**
+   * Add autoDelegations values to the user.
+   * @param type Type of AutoDelegation to add
+   * @param dataOwnerIds Array of DataOwnerId to add
+   * @return Updated user
+   */
+  shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
+
+  /**
+   * Removes autoDelegations values to the user.
+   * @param type Type of AutoDelegation to removes
+   * @param dataOwnerIds Array of DataOwnerId to add
+   * @return Updated user
+   */
+  stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
 }

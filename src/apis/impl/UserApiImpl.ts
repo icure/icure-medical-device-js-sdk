@@ -1,4 +1,4 @@
-import {User} from "../../models/User";
+import {SharedDataType, User} from "../../models/User";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
@@ -160,10 +160,83 @@ export class UserApiImpl implements UserApi {
     eventTypes: ("CREATE" | "UPDATE" | "DELETE")[],
     filter: Filter<User> | undefined,
     eventFired: (user: User) => Promise<void>,
-    options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
+    options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     return subscribeToEntityEvents(this.basePath, this.username!, this.password!, "User", eventTypes, filter, eventFired, options)
       .then((rs) => new ConnectionImpl(rs))
+  }
+
+  async shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+    const user = await this.userApi.getCurrentUser()
+
+    if (!user) {
+      throw new Error("Couldn't get current user")
+    }
+
+    let newDataSharing
+    if (user.autoDelegations?.[type]) {
+      const delegationsToAdd = user.autoDelegations[type].filter((item) => dataOwnerIds.indexOf(item) < 0)
+      if (delegationsToAdd.length > 0) {
+        newDataSharing = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+          return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? delegationsToAdd : [])))]}
+        }, {});
+      } else {
+        return UserMapper.toUser(user)!!
+      }
+    } else {
+      newDataSharing = {
+        ...Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
+          return {...accumulator, [key]: [...values]}
+        }, {}),
+        [type]: dataOwnerIds
+      }
+    }
+
+    const updatedUserDto = await this.userApi.modifyUser(
+      {
+        ...user,
+        autoDelegations: newDataSharing
+      }
+    )
+
+    if (updatedUserDto != undefined) {
+      return UserMapper.toUser(updatedUserDto)!
+    }
+
+    throw new Error("Couldn't add data sharing to user")
+  }
+
+  async stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+    const user = await this.userApi.getCurrentUser()
+
+    if (!user) {
+      throw new Error("Couldn't get current user")
+    }
+
+    const delegationsToRemove = user.autoDelegations?.[type]?.filter((item) => dataOwnerIds.indexOf(item) >= 0)
+
+    if (delegationsToRemove === undefined || delegationsToRemove.length === 0) {
+      return UserMapper.toUser(user)!!
+    }
+
+    const newDataSharing = Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
+      return {
+        ...accumulator,
+        [key]: (type === key ? [...values].filter((v) => !delegationsToRemove.includes(v)) : [...values])
+      };
+    }, {});
+
+    const updatedUserDto = await this.userApi.modifyUser(
+      {
+        ...user,
+        autoDelegations: newDataSharing
+      }
+    )
+
+    if (updatedUserDto != undefined) {
+      return UserMapper.toUser(updatedUserDto)!
+    }
+    throw new Error("Couldn't remove data sharing of user")
   }
 
 }
