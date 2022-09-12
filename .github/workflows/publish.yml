@@ -31,7 +31,7 @@ jobs:
         if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Patch') }}
         run: yarn version --patch
       - name: Publish package on NPM 📦
-        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` --dry-run
+        run: echo 'yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags`'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
