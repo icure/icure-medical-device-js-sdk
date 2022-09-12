@@ -1,6 +1,6 @@
 import {Filter} from '../filter/Filter';
 import {PaginatedListUser} from '../models/PaginatedListUser';
-import {DelegationTag, User} from '../models/User';
+import {SharedDataType, User} from '../models/User';
 import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
 import {EmailMessageFactory, SMSMessageFactory} from "../utils/messageGatewayUtils";
@@ -98,18 +98,16 @@ export interface UserApi {
   /**
    * Add autoDelegations values to the user.
    * @param type Type of AutoDelegation to add
-   * @param user User to update
-   * @param to Array of DataOwnerId to add
+   * @param dataOwnerIds Array of DataOwnerId to add
    * @return Updated user
    */
-  addAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User>
+  shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
 
   /**
    * Removes autoDelegations values to the user.
    * @param type Type of AutoDelegation to removes
-   * @param user User to update
-   * @param to Array of DataOwnerId to add
+   * @param dataOwnerIds Array of DataOwnerId to add
    * @return Updated user
    */
-  removeAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User>
+  stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
 }

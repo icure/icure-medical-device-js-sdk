@@ -1,4 +1,4 @@
-import {DelegationTag, User} from "../../models/User";
+import {SharedDataType, User} from "../../models/User";
 import {PaginatedListUser} from "../../models/PaginatedListUser";
 import {UserApi} from "../UserApi";
 import {
@@ -166,53 +166,66 @@ export class UserApiImpl implements UserApi {
       .then((rs) => new ConnectionImpl(rs))
   }
 
-  async addAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
-    let newAutoDelegations
-    if (user.autoDelegations[type]) {
-      newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
-        return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? to : [])))]}
+  async shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+    const user = await this.userApi.getCurrentUser()
+
+    if (!user) {
+      throw new Error("Couldn't get current user")
+    }
+
+    let newDataSharing
+    if (user.autoDelegations?.[type]) {
+      newDataSharing = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+        return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? dataOwnerIds : [])))]}
       }, {});
     } else {
-      newAutoDelegations = {
-        ...Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+      newDataSharing = {
+        ...Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
           return {...accumulator, [key]: [...values]}
         }, {}),
-        [type]: to
+        [type]: dataOwnerIds
       }
     }
 
     const updatedUserDto = await this.userApi.modifyUser(
-      UserMapper.toUserDto({
+      {
         ...user,
-        autoDelegations: newAutoDelegations as { [key in DelegationTag]: Set<string> }
-      })
+        autoDelegations: newDataSharing
+      }
     )
 
     if (updatedUserDto != undefined) {
       return UserMapper.toUser(updatedUserDto)!
     }
 
-    throw new Error("Couldn't add auto-delegations to user")
+    throw new Error("Couldn't add data sharing to user")
   }
 
-  async removeAutoDelegationsTo(type: DelegationTag, user: User, to: string[]): Promise<User> {
-    const newAutoDelegations = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
-      return {...accumulator, [key]: (type === key ? [...values].filter((v) => !to.includes(v)) : [...values])};
+  async stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+    const user = await this.userApi.getCurrentUser()
+
+    if (!user) {
+      throw new Error("Couldn't get current user")
+    }
+
+    const newDataSharing = Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
+      return {
+        ...accumulator,
+        [key]: (type === key ? [...values].filter((v) => !dataOwnerIds.includes(v)) : [...values])
+      };
     }, {});
 
     const updatedUserDto = await this.userApi.modifyUser(
-      UserMapper.toUserDto(
-        {
-          ...user,
-          autoDelegations: newAutoDelegations as { [key in DelegationTag]: Set<string> }
-        }
-      )
+      {
+        ...user,
+        autoDelegations: newDataSharing
+      }
     )
 
     if (updatedUserDto != undefined) {
       return UserMapper.toUser(updatedUserDto)!
     }
-    throw new Error("Couldn't remove auto-delegations of user")
+    throw new Error("Couldn't remove data sharing of user")
   }
 
 }
