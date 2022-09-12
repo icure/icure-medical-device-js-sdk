@@ -21,8 +21,17 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies and build 🔧
         run: yarn install && yarn run build
+      - name: Creation new version (Major) 🏷️
+        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Major') }}
+        run: yarn version --major
+      - name: Creation new version (Minor) 🏷️
+        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Minor') }}
+        run: yarn version --minor
+      - name: Creation new version (Patch) 🏷️
+        if: ${{ contains(github.event.issue.labels.*.name, 'SemVer.Patch') }}
+        run: yarn version --patch
       - name: Publish package on NPM 📦
-        run: yarn run publish
+        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
