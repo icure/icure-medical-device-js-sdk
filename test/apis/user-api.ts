@@ -12,7 +12,7 @@ describe('User API', () => {
     const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
     const delegation = uuid()
 
-    const {
+  const {
       api
     } = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId);
 
