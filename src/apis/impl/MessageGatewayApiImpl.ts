@@ -1,5 +1,5 @@
 import {MessageGatewayApi} from "../MessageGatewayApi";
-import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/messageGatewayUtils";
+import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/msgGtwMessageFactory";
 import {XHR} from "@icure/api";
 import Header = XHR.Header;
 
