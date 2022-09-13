@@ -2,6 +2,7 @@ import {Filter} from '../filter/Filter'
 import {PaginatedListPatient} from '../models/PaginatedListPatient'
 import {Patient} from '../models/Patient'
 import {Connection} from '../models/Connection'
+import {SharingResult} from "../utils/interfaces";
 
 export interface PatientApi {
   /**
@@ -55,7 +56,11 @@ export interface PatientApi {
      */
   giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>
 
-  shareOwnDataWith(patientId: string): Promise<any>
+  /**
+   * Service that allows a Data Owner to share all the data of a Patient with the patient itself
+   * @param patientId the id of the Patient
+   */
+  shareOwnDataWith(patientId: string): Promise<SharingResult>
 
   /**
    * Opens a WebSocket Connection in order to receive all the Patients corresponding to specific filter criteria.

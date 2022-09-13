@@ -12,7 +12,7 @@ import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {NotificationFilter} from "../../src/filter";
 import {NotificationTypeEnum} from "../../src/models/Notification";
 import {ICureRegistrationEmail} from "../../src/utils/msgGtwMessageFactory";
-import {HealthcareProfessional} from "../../dist";
+import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 
 setLocalStorage(fetch);
 
@@ -23,6 +23,7 @@ const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, h
 
 let hcp1Api: MedTechApi;
 let hcp1User: User;
+let hcp1: HealthcareProfessional;
 let hcp3Api: MedTechApi;
 let hcp3User: User;
 let patApi: MedTechApi;
@@ -45,6 +46,7 @@ describe("A Healthcare Party", () => {
       hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
       hex2ua(hcpPrivKey)
     );
+    hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!);
 
     const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
@@ -130,6 +132,7 @@ describe("A Healthcare Party", () => {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
       .withMsgGtwUrl(msgGtwUrl)
+      .withMsgGtwSpecId(specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessHcpId)
       .build();
@@ -188,8 +191,15 @@ describe("A Healthcare Party", () => {
     expect(!!ongoingStatusUpdate).to.eq(true);
     expect(ongoingStatusUpdate?.status).to.eq("ongoing");
 
-    const sharedData = await hcp1Api.patientApi.shareOwnDataWith(newPatient.id!)
-    expect(!!sharedData).to.eq(true)
+    const sharedData = await hcp1Api.patientApi.shareOwnDataWith(newPatient.id!);
+    expect(!!sharedData).to.eq(true);
+    expect(sharedData.patient?.id).to.eq(newPatient.id);
+    expect(sharedData.statuses.healthElements?.success).to.eq(true);
+    expect(!!sharedData.statuses.healthElements?.error).to.eq(false);
+    expect(sharedData.statuses.healthElements?.modified).to.eq(3);
+    expect(sharedData.statuses.contacts?.success).to.eq(true);
+    expect(!!sharedData.statuses.contacts?.error).to.eq(false);
+    expect(sharedData.statuses.contacts?.modified).to.eq(3);
 
     const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(ongoingStatusUpdate!, "completed");
     expect(!!completedStatusUpdate).to.eq(true);
@@ -197,51 +207,14 @@ describe("A Healthcare Party", () => {
 
     // Then PAT_1 may access data sample DATA_SAMPLE_1
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS2.id!);
     await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE1.id!);
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE2.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE3.id!);
   }).timeout(600000);
 
   /*
-  it("should not be able to create a new User if the Patient has no firstname", async () => {
-    const newPatient = new Patient({
-        lastName: "Specter"
-      });
-
-      let error = undefined;
-      try {
-        await userFromPatient(newPatient);
-      } catch (e) {
-        error = e;
-      }
-      assert(!!error);
-    });
-
-  it("should not be able to create a new User if the Patient has no lastname", async () => {
-    // Given
-    const apiWithoutMsgGtw = await medTechApi()
-      .withICureBasePath(iCureUrl)
-      .withUserName(hcpUserName)
-      .withPassword(hcpPassword)
-      .withMsgGtwUrl(undefined)
-      .withCrypto(webcrypto as any)
-      .build()
-
-    const newPatient = new Patient({
-      firstName: "Marc"
-    });
-
-    let error = undefined;
-    try {
-      await userFromPatient(apiWithoutMsgGtw, newPatient);
-      expect(true, "promise should fail").eq(false);
-    } catch (e) {
-      expect((e as Error).message).to.eq("Can not invite a user, as no msgGtwUrl and/or specId have been provided : Make sure to call .withMsgGtwUrl and .withMsgGtwSpecId when creating your MedTechApi");
-    }
-  })
-
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({
       firstName: "Marc",
@@ -249,190 +222,11 @@ describe("A Healthcare Party", () => {
     });
 
     try {
-      await userFromPatient(hcp1Api, newPatient);
+      await userFromPatient(hcp1Api, newPatient, hcp1);
       expect(true, "promise should fail").eq(false);
     } catch (e) {
       expect((e as Error).message).to.eq("No email or mobile phone information provided in patient");
     }
-  });
-
-  it("should not be able to create a new User if it already exists for that Patient", async () => {
-    const email = await TestUtils.getTempEmail();
-    const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "Marc",
-        lastName: "Specter"
-      })
-    );
-    assert(!!newPatient);
-
-    // The Patient has some delegations
-    const patientFirstDelegation = await hcp1Api.patientApi.giveAccessTo(newPatient, hcp3User.healthcarePartyId!);
-    assert(!!patientFirstDelegation);
-    const patientSecondDelegation = await hcp1Api.patientApi.giveAccessTo(patientFirstDelegation, patUser.patientId!);
-    assert(!!patientSecondDelegation);
-
-    // Some Data Samples and Healthcare Elements were created for the Patient
-    const newDS1 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
-    assert(!!newDS1);
-    const newDS2 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
-    assert(!!newDS2);
-    const newDS3 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
-    assert(!!newDS3);
-    const newHE1 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
-    assert(!!newHE1);
-    const newHE2 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
-    assert(!!newHE2);
-    const newHE3 = await TestUtils.getOrCreateHealthElement(hcp1Api, newPatient);
-    assert(!!newHE3);
-
-    // When HCP_1 creates user for patient PAT_1
-    // And HCP_1 is sending an invitation email to patient PAT_1
-    const messageFactory = new ICureTestEmail(newPatient);
-    await hcp1Api.userApi.createAndInviteUser(newPatient, messageFactory, false);
-
-    // Then the user can log in
-    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureUrlPath(iCureUrl)
-      .withCrypto(webcrypto as any)
-      .withAuthProcessId(authProcessHcpId)
-      .build();
-
-    const { publicKey, privateKey } =
-      await anonymousMedTechApi.cryptoApi.RSA.generateKeyPair();
-    const publicKeyHex = ua2hex(
-      await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey, 'spki')
-    );
-    const privateKeyHex = ua2hex(
-      await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8')
-    );
-    const loginAndPassword = (await TestUtils.getEmail(email, 0)).subject!
-
-    const authTimestamp = new Date().getTime();
-
-    // When PAT_1 generates a key pair for himself
-    // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
-    // Then PAT_1 is able to log as a user
-    const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskForAccess(
-      loginAndPassword.split('|')[0],
-      loginAndPassword.split('|')[1],
-      [privateKeyHex, publicKeyHex],
-      () => undefined
-    );
-
-    const userApi = authResult!.medTechApi;
-    const createdNotification = await userApi.notificationApi.filterNotifications(
-      await new NotificationFilter()
-        .afterDateFilter(authTimestamp)
-        .build()
-    );
-    assert(!!createdNotification);
-    assert(createdNotification.rows.length === 2);
-    const notificationDelegates = createdNotification.rows
-      .map( it => Object.keys(it.systemMetaData?.delegations ?? {}))
-      .flat();
-    assert(notificationDelegates.includes(hcp1User.healthcarePartyId!));
-    assert(notificationDelegates.includes(hcp3User.healthcarePartyId!));
-
-    // But PAT_1 may not access data sample DATA_SAMPLE_1
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS3.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE1.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE2.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
-
-    // When HCP_1 gives access to PAT_1
-    const newNotifications = await hcp1Api.notificationApi.getPendingNotificationsFromNewUsers();
-    expect(!!newNotifications).to.eq(true);
-    const newPatientNotification = newNotifications.filter( notification => notification.responsible === newPatient.id)[0];
-    expect(!!newPatientNotification).to.eq(true);
-
-    const ongoingStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(newPatientNotification, "ongoing");
-    expect(!!ongoingStatusUpdate).to.eq(true);
-    expect(ongoingStatusUpdate?.status).to.eq("ongoing");
-
-    const existingDS = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
-    expect(!!existingDS).to.eq(true);
-    expect(existingDS.rows.length).to.eq(3);
-
-    const sharedDSId = await hcp1Api.dataSampleApi.giveAccessToMany(
-      existingDS.rows.filter( ds => ds.id !== newDS2.id),
-      newPatient.id!
-    )
-    expect(sharedDSId.length).to.eq(2);
-    expect(sharedDSId).to.contain(newDS1.id);
-    expect(sharedDSId).to.not.contain(newDS2.id);
-    expect(sharedDSId).to.contain(newDS3.id);
-
-    const existingHE = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
-    expect(!!existingHE).to.eq(true);
-    expect(existingHE.rows.length).to.eq(3);
-
-    const sharedHEId = await hcp1Api.healthcareElementApi.giveAccessToMany(
-      existingHE.rows.filter( he => he.id !== newHE3.id),
-      newPatient.id!
-    )
-    expect(sharedHEId.length).to.eq(2);
-    expect(sharedHEId).to.contain(newHE1.id);
-    expect(sharedHEId).to.contain(newHE2.id);
-    expect(sharedHEId).to.not.contain(newHE3.id);
-
-    const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(ongoingStatusUpdate!, "completed");
-    expect(!!completedStatusUpdate).to.eq(true);
-    expect(completedStatusUpdate?.status).to.eq("completed");
-
-    // Then PAT_1 may access data sample DATA_SAMPLE_1
-    const test = await hcp1Api.dataSampleApi.getDataSample(newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE1.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE2.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
-  });
-
-  it("should not be able to create a new User if the Patient has no firstname", async () => {
-      const newPatient = new Patient({
-        lastName: "Specter"
-      });
-
-      let error = undefined;
-      try {
-        await userFromPatient(newPatient);
-      } catch (e) {
-        error = e;
-      }
-      assert(!!error);
-    });
-
-  it("should not be able to create a new User if the Patient has no lastname", async () => {
-    const newPatient = new Patient({
-      firstName: "Marc"
-    });
-
-    let error = undefined;
-    try {
-      await userFromPatient(newPatient);
-    } catch (e) {
-      error = e;
-    }
-    assert(!!error);
-  });
-
-  it("should not be able to create a new User if the Patient has no contact information", async () => {
-    const newPatient = new Patient({
-      firstName: "Marc",
-      lastName: "Specter"
-    });
-
-    let error = undefined;
-    try {
-      await userFromPatient(newPatient);
-    } catch (e) {
-      error = e;
-    }
-    assert(!!error);
   });
 
   it("should not be able to create a new User if it already exists for that Patient", async () => {
@@ -451,13 +245,12 @@ describe("A Healthcare Party", () => {
     }))
     assert(!!newUser)
 
-    let error = undefined;
     try {
       await hcp1Api.userApi.createAndInviteUser(newPatient, new ICureTestEmail(newPatient),3600);
+      expect(true, "promise should fail").eq(false);
     } catch (e) {
-      error = e;
+      expect((e as Error).message).to.eq("A User already exists for this Patient");
     }
-    assert(!!error);
   });
 */
 });

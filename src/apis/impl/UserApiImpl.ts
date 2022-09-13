@@ -22,7 +22,7 @@ import {Patient} from "../../models/Patient";
 import {UserFilter} from "../../filter";
 import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 import {MessageGatewayApi} from "../MessageGatewayApi";
-import {EmailMessageFactory, SMSMessageFactory} from "../../utils/messageGatewayUtils";
+import {EmailMessageFactory, SMSMessageFactory} from "../../utils/msgGtwMessageFactory";
 
 
 export class UserApiImpl implements UserApi {

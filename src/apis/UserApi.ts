@@ -3,7 +3,7 @@ import {PaginatedListUser} from '../models/PaginatedListUser';
 import {SharedDataType, User} from '../models/User';
 import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
-import {EmailMessageFactory, SMSMessageFactory} from "../utils/messageGatewayUtils";
+import {EmailMessageFactory, SMSMessageFactory} from "../utils/msgGtwMessageFactory";
 
 export interface UserApi {
   /**

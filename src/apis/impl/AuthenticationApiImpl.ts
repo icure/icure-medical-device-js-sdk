@@ -110,10 +110,10 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const authenticationResult = await this.initUserTokenAndCrypto(userLogin, shortLivedToken, dataOwnerKeyPair, tokenAndKeyPairProvider);
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
-    if (!loggedUser) throw new Error("User log in failed");
-    if (!loggedUser.patientId || !loggedUser.healthcarePartyId) throw new Error("User is not a DataOwner");
-
-    if (!!loggedUser.patientId) {
+    if (!loggedUser) {
+      throw new Error("User log in failed");
+    }
+    else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
       if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
       const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
@@ -141,9 +141,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         );
         if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
       }
-    } else {
+    } else if (!!loggedUser.healthcarePartyId) {
       const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId);
       if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
+    } else if (!!loggedUser.deviceId) {
+      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId);
+      if (!hcpDataOwner) throw new Error(`Medical Device with id ${loggedUser.deviceId} does not exist`);
+    } else {
+      throw new Error("User is not a Data Owner")
     }
 
     return authenticationResult;
