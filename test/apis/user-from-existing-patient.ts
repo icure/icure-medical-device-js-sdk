@@ -214,7 +214,6 @@ describe("A Healthcare Party", () => {
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE3.id!);
   }).timeout(600000);
 
-  /*
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({
       firstName: "Marc",
@@ -225,7 +224,7 @@ describe("A Healthcare Party", () => {
       await userFromPatient(hcp1Api, newPatient, hcp1);
       expect(true, "promise should fail").eq(false);
     } catch (e) {
-      expect((e as Error).message).to.eq("No email or mobile phone information provided in patient");
+      expect((e as Error).message).to.eq("HCP does not have a valid email!");
     }
   });
 
@@ -252,5 +251,5 @@ describe("A Healthcare Party", () => {
       expect((e as Error).message).to.eq("A User already exists for this Patient");
     }
   });
-*/
+
 });

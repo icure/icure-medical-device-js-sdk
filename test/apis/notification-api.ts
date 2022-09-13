@@ -382,20 +382,19 @@ describe('Notification API', async function () {
     expect(!!createdNotification).to.eq(true);
 
     const notifications = await hcp1Api!.notificationApi.getPendingNotifications();
-
-      expect(notifications.length).to.gt(0);
-      notifications.forEach( notification => {
-        expect(notification.status).to.eq("pending");
-        expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
-      });
+    expect(notifications.length).to.gt(0);
+    notifications.forEach( notification => {
+      expect(notification.status).to.eq("pending");
+      expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
     });
+  });
 
-    it('should be able to update the status of a Notification', async () => {
-      const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
-      expect(!!createdNotification).to.eq(true);
-      const updatedNotification = await hcp1Api?.notificationApi.updateNotificationStatus(createdNotification, "completed");
-      expect(!!updatedNotification).to.eq(true);
-      expect(updatedNotification!.status).to.eq("completed");
-    });
+  it('should be able to update the status of a Notification', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    expect(!!createdNotification).to.eq(true);
+    const updatedNotification = await hcp1Api?.notificationApi.updateNotificationStatus(createdNotification, "completed");
+    expect(!!updatedNotification).to.eq(true);
+    expect(updatedNotification!.status).to.eq("completed");
+  });
 
 });

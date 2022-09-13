@@ -217,16 +217,6 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       })
   }
 
-  async giveAccessToMany(healthElements: Array<HealthcareElement>, delegatedTo: string): Promise<Array<string>> {
-    return (await Promise.all(healthElements.map(async healthElement => {
-      try {
-        return (await this.giveAccessTo(healthElement, delegatedTo)).id
-      } catch(e) {
-        return null;
-      }
-    }))).filter( it => !!it ) as unknown as string[];
-  }
-
   async concatenateFilterResults(filter: Filter<HealthcareElement>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<HealthcareElement> = []): Promise<Array<HealthcareElement>> {
     const paginatedHealthcareElements = await this.filterHealthcareElement(filter, nextId, limit);
     return !paginatedHealthcareElements.nextKeyPair?.startKeyDocId
