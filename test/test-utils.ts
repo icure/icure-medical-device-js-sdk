@@ -51,7 +51,7 @@ export type TestVars = {
 export function getEnvVariables(): TestVars {
   return {
     iCureUrl: process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1",
-    msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud/ic",
+    msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? "https://msg-gw.icure.cloud",
     patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5",
     authProcessHcpId: process.env.ICURE_TS_TEST_AUTH_PROCESS_HCP_ID!,
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? "ic",
