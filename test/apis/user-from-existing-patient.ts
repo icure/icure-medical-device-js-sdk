@@ -11,6 +11,8 @@ import {assert, expect} from "chai";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {NotificationFilter} from "../../src/filter";
 import {NotificationTypeEnum} from "../../src/models/Notification";
+import {ICureRegistrationEmail} from "../../src/utils/msgGtwMessageFactory";
+import {HealthcareProfessional} from "../../dist";
 
 setLocalStorage(fetch);
 
@@ -61,7 +63,7 @@ describe("A Healthcare Party", () => {
     patUser = patApiAndUser.user;
   });
 
-  async function userFromPatient(api: MedTechApi, patient: Patient) {
+  async function userFromPatient(api: MedTechApi, patient: Patient, hcp: HealthcareProfessional) {
     const existingPatient = await api.patientApi.createOrModifyPatient(patient);
     assert(!!existingPatient);
 

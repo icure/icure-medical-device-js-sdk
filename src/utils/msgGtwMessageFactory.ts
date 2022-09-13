@@ -2,12 +2,20 @@ import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {Patient} from "../models/Patient";
 import {User} from "../models/User";
 import {filteredContactsFromAddresses} from "./addressUtils";
-import {MedicalDevice} from "../models/MedicalDevice";
 
 export type SMSMessage = {message: string};
 export type EmailMessage = {from: string, html: string, subject: string}
+export type AuthenticationProcessBody = {
+  'g-recaptcha-response': string,
+  'firstName': string,
+  'lastName': string,
+  'from': string | undefined,
+  'email': string | undefined,
+  'mobilePhone': string | undefined,
+  'hcpId': string | undefined
+}
 
-export interface MsgGtwMessageFactory<T> {
+export interface MsgGtwMessageFactory<T extends SMSMessage | EmailMessage> {
   hcp: HealthcareProfessional;
   link: string;
   patient: Patient;
