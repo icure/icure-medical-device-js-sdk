@@ -147,6 +147,23 @@ export class PatientApiImpl implements PatientApi {
       })
   }
 
+  async shareOwnDataWith(patientId: string) {
+    const currentUser = await this.userApi.getCurrentUser()
+    if (!currentUser){
+      throw new Error("There is no user currently logged in");
+    }
+    if (!this.dataOwnerApi.getDataOwnerOf(currentUser)){
+      throw new Error("Current User is not a Data Owner");
+    }
+    return this.patientApi.share(
+      currentUser,
+      patientId,
+      this.dataOwnerApi.getDataOwnerOf(currentUser),
+      [patientId],
+      { [patientId]: ["all"] }
+    )
+  }
+
   async subscribeToPatientEvents(
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient> | undefined,

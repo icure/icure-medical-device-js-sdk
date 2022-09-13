@@ -5,12 +5,12 @@ import {Patient} from "../../src/models/Patient";
 import {webcrypto} from "crypto";
 import {hex2ua, ua2hex} from "@icure/api";
 import {getEnvVariables, ICureTestEmail, setLocalStorage, TestUtils} from "../test-utils";
-import {v4 as uuid} from "uuid";
 import {Address} from "../../src/models/Address";
 import {Telecom} from "../../src/models/Telecom";
 import {assert, expect} from "chai";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
 import {NotificationFilter} from "../../src/filter";
+import {NotificationTypeEnum} from "../../src/models/Notification";
 
 setLocalStorage(fetch);
 
@@ -147,7 +147,7 @@ describe("A Healthcare Party", () => {
     // When PAT_1 generates a key pair for himself
     // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
     // Then PAT_1 is able to log as a user
-    const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskForAccess(
+    const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(
       loginAndPassword.split('|')[0],
       loginAndPassword.split('|')[1],
       [privateKeyHex, publicKeyHex],
@@ -177,40 +177,17 @@ describe("A Healthcare Party", () => {
     await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
 
     // When HCP_1 gives access to PAT_1
-    const newNotifications = await hcp1Api.notificationApi.getPendingNotificationsFromNewUsers();
+    const newNotifications = await hcp1Api.notificationApi.getPendingNotifications();
     expect(!!newNotifications).to.eq(true);
-    const newPatientNotification = newNotifications.filter( notification => notification.responsible === newPatient.id)[0];
+    const newPatientNotification = newNotifications.filter( notification => notification.type === NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS && notification.responsible === newPatient.id)[0];
     expect(!!newPatientNotification).to.eq(true);
 
     const ongoingStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(newPatientNotification, "ongoing");
     expect(!!ongoingStatusUpdate).to.eq(true);
     expect(ongoingStatusUpdate?.status).to.eq("ongoing");
 
-    const existingDS = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
-    expect(!!existingDS).to.eq(true);
-    expect(existingDS.length).to.eq(3);
-
-    const sharedDSId = await hcp1Api.dataSampleApi.giveAccessToMany(
-      existingDS.filter( ds => ds.id !== newDS2.id),
-      newPatient.id!
-    )
-    expect(sharedDSId.length).to.eq(2);
-    expect(sharedDSId).to.contain(newDS1.id);
-    expect(sharedDSId).to.not.contain(newDS2.id);
-    expect(sharedDSId).to.contain(newDS3.id);
-
-    const existingHE = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
-    expect(!!existingHE).to.eq(true);
-    expect(existingHE.length).to.eq(3);
-
-    const sharedHEId = await hcp1Api.healthcareElementApi.giveAccessToMany(
-      existingHE.filter( he => he.id !== newHE3.id),
-      newPatient.id!
-    )
-    expect(sharedHEId.length).to.eq(2);
-    expect(sharedHEId).to.contain(newHE1.id);
-    expect(sharedHEId).to.contain(newHE2.id);
-    expect(sharedHEId).to.not.contain(newHE3.id);
+    const sharedData = await hcp1Api.patientApi.shareOwnDataWith(newPatient.id!)
+    expect(!!sharedData).to.eq(true)
 
     const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(ongoingStatusUpdate!, "completed");
     expect(!!completedStatusUpdate).to.eq(true);
@@ -225,6 +202,7 @@ describe("A Healthcare Party", () => {
     await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
   }).timeout(600000);
 
+  /*
   it("should not be able to create a new User if the Patient has no firstname", async () => {
     const newPatient = new Patient({
         lastName: "Specter"
@@ -479,5 +457,5 @@ describe("A Healthcare Party", () => {
     }
     assert(!!error);
   });
-
+*/
 });

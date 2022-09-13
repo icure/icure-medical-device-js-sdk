@@ -5,6 +5,7 @@ import {assert} from 'chai';
 import {Patient} from '../../src/models/Patient';
 import {HealthcareElement} from '../../src/models/HealthcareElement';
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {PatientFilter} from "../../dist";
 
 setLocalStorage(fetch);
 

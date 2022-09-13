@@ -55,6 +55,8 @@ export interface PatientApi {
      */
   giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>
 
+  shareOwnDataWith(patientId: string): Promise<any>
+
   /**
    * Opens a WebSocket Connection in order to receive all the Patients corresponding to specific filter criteria.
    * @param eventTypes Type of event you would like to listen. It can be CREATE, UPDATE or DELETE
