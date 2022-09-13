@@ -129,7 +129,7 @@ describe("A Healthcare Party", () => {
     // And PAT_1 accepts this invitation and changes his credentials
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
-      .withAuthServerUrl(msgGtwUrl)
+      .withMsgGtwUrl(msgGtwUrl)
       .withCrypto(webcrypto as any)
       .withAuthProcessId(authProcessHcpId)
       .build();

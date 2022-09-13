@@ -54,7 +54,12 @@ describe("Authentication API", () => {
       .build();
 
     try {
-      await api.authenticationApi.startAuthentication("fake-prof-id", "firstname", "lastname", "recaptcha", false)
+      await api.authenticationApi.startAuthentication(
+        "fake-prof-id",
+        "firstname",
+        "lastname",
+        "recaptcha",
+        false)
       expect(true, "promise should fail").eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq("authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId")
