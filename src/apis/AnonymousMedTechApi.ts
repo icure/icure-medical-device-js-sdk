@@ -74,11 +74,6 @@ export class AnonymousMedTechApiBuilder {
     return this;
   }
 
-  withAuthSpecId(authSpecId: string): AnonymousMedTechApiBuilder {
-    this.authSpecId = authSpecId;
-    return this;
-  }
-
   withAuthProcessId(authProcessId: string): AnonymousMedTechApiBuilder {
     this.authProcessId = authProcessId;
     return this;

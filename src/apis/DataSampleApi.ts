@@ -122,8 +122,6 @@ export interface DataSampleApi {
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
 
-  giveAccessToMany(dataSamples: Array<DataSample>, delegatedTo: string): Promise<Array<string>>
-
   /**
    * Gets all the Data Samples associated to a Patient that the current dataOwner can access.
    * @param patient the Patient associated to the Data Samples to get

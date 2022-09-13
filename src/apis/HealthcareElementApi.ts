@@ -78,7 +78,6 @@ export interface HealthcareElementApi {
    */
   giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement>
 
-
   /**
    * Gets all the Healthcare Elements associated to a Patient that the current dataOwner can access.
    * @param patient the Patient associated to the Healthcare Elements to get
