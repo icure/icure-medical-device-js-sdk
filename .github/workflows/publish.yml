@@ -10,7 +10,7 @@ on:
 jobs:
   if_merged:
     name: Build & Publish to NPM
-    if: github.event.pull_request.merged == true && contains(fromJson('["SemVer.Major", "SemVer.Minor", "SemVer.Patch"]'), github.event.pull_request.labels.*.name)
+    if: github.event.pull_request.merged == true && (contains(github.event.pull_request.labels.*.name, 'SemVer.Major') || contains(github.event.pull_request.labels.*.name, 'SemVer.Minor') || contains(github.event.pull_request.labels.*.name, 'SemVer.Patch'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
