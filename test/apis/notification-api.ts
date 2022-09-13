@@ -381,12 +381,11 @@ describe('Notification API', async function () {
     )
     expect(!!createdNotification).to.eq(true);
 
-    const notifications = await hcp1Api!.notificationApi.getPendingNotificationsFromNewUsers();
+    const notifications = await hcp1Api!.notificationApi.getPendingNotifications();
 
       expect(notifications.length).to.gt(0);
       notifications.forEach( notification => {
         expect(notification.status).to.eq("pending");
-        expect(notification.type).to.eq(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
         expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
       });
     });
