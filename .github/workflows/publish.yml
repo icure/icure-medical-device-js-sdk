@@ -1,4 +1,4 @@
-name: Publish to NPM
+name: Release management
 
 on:
   pull_request:
@@ -9,18 +9,21 @@ on:
 
 jobs:
   if_merged:
-    if: github.event.pull_request.merged == true
+    name: Build & Publish to NPM
+    if: github.event.pull_request.merged == true && contains(fromJson('["SemVer.Major", "SemVer.Minor", "SemVer.Patch"]'), github.event.pull_request.labels.*.name)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Node
+      - run: git config --global user.email "dev@icure.com"
+      - run: git config --global user.name "iCure"
+      - name: Setup Node ⚙️
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Install dependencies and build 🔧
-        run: yarn install && yarn run build
+      - name: Install dependencies, test and build 🔧
+        run: yarn install && yarn run test && yarn run build
       - name: Creation new version (Major) 🏷️
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Major') }}
         run: yarn version --major
@@ -30,11 +33,34 @@ jobs:
       - name: Creation new version (Patch) 🏷️
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Patch') }}
         run: yarn version --patch
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Push commit and tag ↗️
+        run: git push --follow-tags
+      - name: Set LATEST_TAG environment variable ⚙️
+        run: |
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+
+          echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package on NPM 📦
-        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version ${{ steps.vars.outputs.tag }}
+        run: yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version $LATEST_TAG
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  release_note:
+    name: Release note
+    needs: [ if_merged ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set LATEST_TAG environment variable ⚙️
+        run: |
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
 
+          echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create a release 📝
+        run: gh api --method POST /repos/icure-io/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
