@@ -106,40 +106,44 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     return null
   }
 
-  async authenticateAndAskForAccess(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
+  async authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
     const authenticationResult = await this.initUserTokenAndCrypto(userLogin, shortLivedToken, dataOwnerKeyPair, tokenAndKeyPairProvider);
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
     if (!loggedUser) throw new Error("User log in failed");
-    if (!loggedUser.patientId) throw new Error("User is not associated to any Patient");
+    if (!loggedUser.patientId || !loggedUser.healthcarePartyId) throw new Error("User is not a DataOwner");
 
-    const patientUser = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
-    if (!patientUser) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+    if (!!loggedUser.patientId) {
+      const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
+      if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+      const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
+        .map( (keyValue) => Array.from(keyValue[1]))
+        .flat()
+        .filter( (delegation) => !!delegation.delegatedTo)
+        .map( (delegation) => delegation.delegatedTo!);
 
-    const delegates = Object.entries(patientUser.systemMetaData?.delegations ?? {})
-      .map( (keyValue) => Array.from(keyValue[1]))
-      .flat()
-      .filter( (delegation) => !!delegation.delegatedTo)
-      .map( (delegation) => delegation.delegatedTo!);
+      const hcpDelegates = await authenticationResult.medTechApi.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+        await new HealthcareProfessionalFilter()
+          .byIds(delegates)
+          .build()
+      )
 
-    const hcpDelegates = await authenticationResult.medTechApi.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
-        .byIds(delegates)
-        .build()
-    )
-
-    for (const delegate of hcpDelegates.rows.map( (it) => it.id)) {
-      const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
-        new Notification({
-          id: uuid(),
-          status: "pending",
-          author: loggedUser.id,
-          responsible: loggedUser.patientId,
-          type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
-        }),
-        delegate
-      );
-      if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+      for (const delegate of hcpDelegates.rows.map( (it) => it.id)) {
+        const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
+          new Notification({
+            id: uuid(),
+            status: "pending",
+            author: loggedUser.id,
+            responsible: loggedUser.patientId,
+            type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+          }),
+          delegate
+        );
+        if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+      }
+    } else {
+      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId);
+      if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
     }
 
     return authenticationResult;

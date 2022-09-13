@@ -2,11 +2,12 @@ import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {Patient} from "../models/Patient";
 import {User} from "../models/User";
 import {filteredContactsFromAddresses} from "./addressUtils";
+import {MedicalDevice} from "../models/MedicalDevice";
 
 export type SMSMessage = {message: string};
 export type EmailMessage = {from: string, html: string, subject: string}
 
-export interface GatewayMessageFactory<T> {
+export interface MsgGtwMessageFactory<T> {
   hcp: HealthcareProfessional;
   link: string;
   patient: Patient;
@@ -14,9 +15,9 @@ export interface GatewayMessageFactory<T> {
   get(recipient: User, recipientPassword: string): T;
 }
 
-export interface EmailMessageFactory extends GatewayMessageFactory<EmailMessage> {}
+export interface EmailMessageFactory extends MsgGtwMessageFactory<EmailMessage> {}
 
-export interface SMSMessageFactory extends GatewayMessageFactory<SMSMessage> {}
+export interface SMSMessageFactory extends MsgGtwMessageFactory<SMSMessage> {}
 
 export class ICureRegistrationEmail implements EmailMessageFactory {
   hcp: HealthcareProfessional;

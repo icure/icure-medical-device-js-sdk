@@ -36,10 +36,10 @@ export interface NotificationApi {
   getNotification(notificationId: string): Promise<Notification | undefined>;
 
   /**
-   * Gets all the Notifications with type NEW_USER_OWN_DATA_ACCESS and status "pending" that the current dataOwner can access
+   * Gets all the Notifications with status "pending" that the current dataOwner can access
    * @return an Array of the Notifications matching those criteria
    */
-  getPendingNotificationsFromNewUsers(): Promise<Array<Notification>>;
+  getPendingNotifications(): Promise<Array<Notification>>;
 
   /**
    * Updates the status of a Notification.

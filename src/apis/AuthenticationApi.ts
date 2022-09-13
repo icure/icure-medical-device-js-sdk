@@ -59,7 +59,7 @@ export interface AuthenticationApi {
    * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
    * user.
    */
-  authenticateAndAskForAccess(
+  authenticateAndAskAccessToItsExistingData(
     userLogin: string,
     shortLivedToken: string,
     userKeyPair: [string, string] | undefined,

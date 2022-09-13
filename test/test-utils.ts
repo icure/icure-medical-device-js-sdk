@@ -11,7 +11,7 @@ import {DataSample} from "../src/models/DataSample";
 import {CodingReference} from "../src/models/CodingReference";
 import {tmpdir} from "os";
 import {TextDecoder, TextEncoder} from "util";
-import {EmailMessage, EmailMessageFactory} from "../src/utils/gatewayMessageFactory";
+import {EmailMessage, EmailMessageFactory} from "../src/utils/msgGtwMessageFactory";
 import {HealthcareProfessional} from "../src/models/HealthcareProfessional";
 import {v4 as uuid} from "uuid";
 

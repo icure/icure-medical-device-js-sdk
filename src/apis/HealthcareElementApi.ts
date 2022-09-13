@@ -78,16 +78,6 @@ export interface HealthcareElementApi {
    */
   giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement>
 
-  /**
-   * Service where current user gives access to the information of a set of Healthcare Elements to another dataOwner (HCP, patient or device).
-   * For this, the current user data owner should be able to access the Healthcare Element provided in argument in order to provide access to another data owner.
-
-   * @param healthElements An Array of Healthcare Elements the current data owner would like to share with another data owner
-   * @param delegatedTo ID of the data owner to which current user would like to give access
-   *
-   * @return A list of id of the Healthcare Elements id that were successfully shared
-   */
-  giveAccessToMany(healthElements: Array<HealthcareElement>, delegatedTo: string): Promise<Array<string>>
 
   /**
    * Gets all the Healthcare Elements associated to a Patient that the current dataOwner can access.

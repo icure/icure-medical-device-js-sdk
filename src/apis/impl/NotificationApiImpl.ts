@@ -1,5 +1,5 @@
 import {NotificationApi} from "../NotificationApi";
-import {MaintenanceTaskStatusEnum, Notification, NotificationTypeEnum} from "../../models/Notification";
+import {MaintenanceTaskStatusEnum, Notification} from "../../models/Notification";
 import {FilterChainMaintenanceTask, IccHcpartyXApi, IccUserXApi, MaintenanceTask, User} from "@icure/api";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 import {NotificationMapper} from "../../mappers/notification";
@@ -9,14 +9,17 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {systemMetaDataEncryptedEquality} from "../../utils/equality";
 import {NotificationFilter} from "../../filter";
+import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
 
 export class NotificationApiImpl implements NotificationApi {
 
+  private readonly dataOwnerApi: IccDataOwnerXApi;
   private readonly userApi: IccUserXApi;
   private readonly maintenanceTaskApi: IccMaintenanceTaskXApi;
   private readonly hcpApi: IccHcpartyXApi;
 
-  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi}) {
+  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi, dataOwnerApi: IccDataOwnerXApi}) {
+    this.dataOwnerApi = api.dataOwnerApi;
     this.userApi = api.userApi;
     this.maintenanceTaskApi = api.maintenanceTaskApi;
     this.hcpApi = api.healthcarePartyApi;
@@ -101,13 +104,16 @@ export class NotificationApiImpl implements NotificationApi {
       : this.concatenateFilterResults(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedNotifications.rows))
   }
 
-  async getPendingNotificationsFromNewUsers(): Promise<Array<Notification>> {
+  async getPendingNotifications(): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser();
-    if (!user) throw new Error("There is no user currently logged in");
-    if (!user.healthcarePartyId) throw new Error("User is not a Healthcare Party");
+    if (!user){
+      throw new Error("There is no user currently logged in");
+    }
+    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+      throw new Error("User is not a Data Owner");
+    }
     const filter = await new NotificationFilter()
-      .forHcParty(user.healthcarePartyId)
-      .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+      .forHcParty(this.dataOwnerApi.getDataOwnerOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
   }
