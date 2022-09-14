@@ -89,9 +89,9 @@ export class MedTechApi {
     this._patientApi = new PatientApiImpl(api, basePath, username, password);
     this._baseApi = api;
     this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password);
-    this._healthcareElementApi = new HealthcareElementApiImpl(api);
+    this._healthcareElementApi = new HealthcareElementApiImpl(api, basePath, username, password);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
-    this._notificationApi = new NotificationApiImpl(api);
+    this._notificationApi = new NotificationApiImpl(api, basePath, username, password);
     this._cryptoApi = api.cryptoApi;
   }
 
