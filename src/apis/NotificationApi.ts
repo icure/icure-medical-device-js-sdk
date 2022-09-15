@@ -1,4 +1,4 @@
-import {Notification} from '../models/Notification'
+import {MaintenanceTaskStatusEnum, Notification} from '../models/Notification'
 import {Filter} from '../filter/Filter'
 import {PaginatedListNotification} from '../models/PaginatedListNotification'
 
@@ -33,5 +33,19 @@ export interface NotificationApi {
    * @param notificationId the id of the Notification to retrieve.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  getNotification(notificationId: string): Promise<Notification | undefined>
+  getNotification(notificationId: string): Promise<Notification | undefined>;
+
+  /**
+   * Gets all the Notifications with status "pending" that the current dataOwner can access
+   * @return an Array of the Notifications matching those criteria
+   */
+  getPendingNotifications(): Promise<Array<Notification>>;
+
+  /**
+   * Updates the status of a Notification.
+   * @param notification the Notification to update
+   * @param newStatus the new status
+   * @return the updated Notification
+   */
+  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>;
 }

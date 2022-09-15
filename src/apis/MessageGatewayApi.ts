@@ -1,5 +1,5 @@
 import {XHR} from "@icure/api";
-import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../utils/messageGatewayUtils";
+import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../utils/msgGtwMessageFactory";
 
 export interface MessageGatewayApi {
 

@@ -1,4 +1,4 @@
-import {Notification, notificationTypeEnum} from "../models/Notification";
+import {Notification, NotificationTypeEnum} from "../models/Notification";
 import {MaintenanceTask} from "@icure/api";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
 import {toMapArrayTransform, toMapSetTransform} from "./utils";
@@ -20,8 +20,8 @@ export namespace NotificationMapper {
     author: obj.author,
     responsible: obj.responsible,
     properties: obj.properties,
-    type: !!obj.taskType && Object.values(notificationTypeEnum).includes(obj.taskType as unknown as notificationTypeEnum) ?
-      notificationTypeEnum[obj.taskType as keyof typeof notificationTypeEnum] : notificationTypeEnum.OTHER,
+    type: !!obj.taskType && Object.values(NotificationTypeEnum).includes(obj.taskType as unknown as NotificationTypeEnum) ?
+      NotificationTypeEnum[obj.taskType as keyof typeof NotificationTypeEnum] : NotificationTypeEnum.OTHER,
     systemMetaData: new SystemMetaDataEncrypted({
       delegations: toMapSetTransform(obj.delegations, toDelegation),
       encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation)

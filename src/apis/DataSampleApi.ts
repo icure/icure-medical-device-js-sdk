@@ -3,7 +3,7 @@ import {Document} from '../models/Document'
 import {Filter} from '../filter/Filter'
 import {PaginatedListDataSample} from '../models/PaginatedListDataSample'
 import {Connection} from '../models/Connection'
-
+import {Patient} from "../models/Patient";
 
 export interface DataSampleApi {
   /**
@@ -121,6 +121,14 @@ export interface DataSampleApi {
    * @return The dataSample with updated access rights
    */
   giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample>
+
+  /**
+   * Gets all the Data Samples associated to a Patient that the current dataOwner can access.
+   * @param patient the Patient associated to the Data Samples to get
+   *
+   * @return an array containing the Data Samples
+   */
+  getDataSamplesForPatient(patient: Patient): Promise<Array<DataSample>>
 
   /**
    * Opens a WebSocket Connection in order to receive all the Data Samples corresponding to specific filter criteria.
