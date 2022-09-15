@@ -1,10 +1,6 @@
 import {NotificationApi} from "../NotificationApi";
-import {Notification} from "../../models/Notification";
-import {
-  FilterChainMaintenanceTask,
-  IccHcpartyXApi,
-  IccUserXApi, MaintenanceTask, User
-} from "@icure/api";
+import {MaintenanceTaskStatusEnum, Notification} from "../../models/Notification";
+import {FilterChainMaintenanceTask, IccHcpartyXApi, IccUserXApi, MaintenanceTask, User} from "@icure/api";
 import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
 import {NotificationMapper} from "../../mappers/notification";
 import {PaginatedListNotification} from "../../models/PaginatedListNotification";
@@ -12,14 +8,18 @@ import {Filter} from "../../filter/Filter";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {systemMetaDataEncryptedEquality} from "../../utils/equality";
+import {NotificationFilter} from "../../filter";
+import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
 
 export class NotificationApiImpl implements NotificationApi {
 
+  private readonly dataOwnerApi: IccDataOwnerXApi;
   private readonly userApi: IccUserXApi;
   private readonly maintenanceTaskApi: IccMaintenanceTaskXApi;
   private readonly hcpApi: IccHcpartyXApi;
 
-  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi}) {
+  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi, dataOwnerApi: IccDataOwnerXApi}) {
+    this.dataOwnerApi = api.dataOwnerApi;
     this.userApi = api.userApi;
     this.maintenanceTaskApi = api.maintenanceTaskApi;
     this.hcpApi = api.healthcarePartyApi;
@@ -95,6 +95,32 @@ export class NotificationApiImpl implements NotificationApi {
         return NotificationMapper.toNotification(task)
       });
     });
+  }
+
+  async concatenateFilterResults(filter: Filter<Notification>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<Notification> = []): Promise<Array<Notification>> {
+    const paginatedNotifications = await this.filterNotifications(filter, nextId, limit);
+    return !paginatedNotifications.nextKeyPair?.startKeyDocId
+      ? accumulator.concat(paginatedNotifications.rows)
+      : this.concatenateFilterResults(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedNotifications.rows))
+  }
+
+  async getPendingNotifications(): Promise<Array<Notification>> {
+    const user = await this.userApi.getCurrentUser();
+    if (!user){
+      throw new Error("There is no user currently logged in");
+    }
+    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+      throw new Error("User is not a Data Owner");
+    }
+    const filter = await new NotificationFilter()
+      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .build()
+    return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
+  }
+
+  async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
+    notification.status = newStatus;
+    return this.createOrModifyNotification(notification);
   }
 
 }
