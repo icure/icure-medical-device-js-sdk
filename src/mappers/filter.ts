@@ -4,7 +4,8 @@ import {
   AbstractFilterCode,
   AbstractFilterDevice,
   AbstractFilterHealthcareParty,
-  AbstractFilterHealthElement, AbstractFilterMaintenanceTask,
+  AbstractFilterHealthElement,
+  AbstractFilterMaintenanceTask,
   AbstractFilterPatient,
   AbstractFilterService,
   AbstractFilterUser,
@@ -47,9 +48,15 @@ import {
   User as UserDto,
   UserByIdsFilter as UserByIdsFilterDto,
 } from "@icure/api";
-import {MaintenanceTaskByIdsFilter as MaintenanceTaskByIdsFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByIdsFilter";
-import {MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
-import {MaintenanceTaskAfterDateFilter as MaintenanceTaskAfterDateFilterDto} from "@icure/api/icc-x-api/filters/MaintenanceTaskAfterDateFilter";
+import {
+  MaintenanceTaskByIdsFilter as MaintenanceTaskByIdsFilterDto
+} from "@icure/api/icc-x-api/filters/MaintenanceTaskByIdsFilter";
+import {
+  MaintenanceTaskByHcPartyAndTypeFilter as MaintenanceTaskByHcPartyAndTypeFilterDto
+} from "@icure/api/icc-x-api/filters/MaintenanceTaskByHcPartyAndTypeFilter";
+import {
+  MaintenanceTaskAfterDateFilter as MaintenanceTaskAfterDateFilterDto
+} from "@icure/api/icc-x-api/filters/MaintenanceTaskAfterDateFilter";
 import {UsersByPatientIdFilter as UsersByPatientIdFilterDto} from "@icure/api/icc-x-api/filters/UsersByPatientIdFilter"
 import {Coding} from "../models/Coding";
 import {ComplementFilter} from "../filter/ComplementFilter";
@@ -109,12 +116,12 @@ import {PatientByIdsFilter} from "../filter/patient/PatientByIdsFilter";
 import {
   DataSampleByHealthcarePartyHealthcareElementIdsFilter
 } from "../filter/datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
-import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 import {UsersByPatientIdFilter} from "../filter/user/UsersByPatientIdFilter";
 import {Notification} from "../models/Notification";
 import {NotificationsByIdFilter} from "../filter/notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "../filter/notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "../filter/notification/NotificationsAfterDateFilter";
+import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 
 
 export namespace FilterMapper {
@@ -592,6 +599,7 @@ const toPatientByHcPartyGenderEducationProfessionDto = (filter: PatientByHealthc
   const toMaintenanceTaskAfterDateFilterDto = (filter: NotificationsAfterDateFilter) =>
     new MaintenanceTaskAfterDateFilterDto({
       desc: filter.description,
+      healthcarePartyId: filter.healthcarePartyId,
       date: filter.date
     });
 }

@@ -148,7 +148,7 @@ export class PatientApiImpl implements PatientApi {
       })
   }
 
-  async shareOwnDataWith(patientId: string): Promise<SharingResult> {
+  async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {
     const currentUser = await this.userApi.getCurrentUser()
     if (!currentUser){
       throw new Error("There is no user currently logged in");
@@ -166,13 +166,8 @@ export class PatientApiImpl implements PatientApi {
       return {
         patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,
         statuses: {
-          contacts: !!res?.statuses.contacts ? (res.statuses.contacts as SharingStatus) : undefined,
-          forms: !!res?.statuses.forms ? (res.statuses.forms as SharingStatus) : undefined,
-          healthElements: !!res?.statuses.healthElements ? (res.statuses.healthElements as SharingStatus) : undefined,
-          invoices: !!res?.statuses.invoices ? (res.statuses.invoices as SharingStatus) : undefined,
-          documents: !!res?.statuses.documents ? (res.statuses.documents as SharingStatus) : undefined,
-          classifications: !!res?.statuses.classifications ? (res.statuses.classifications as SharingStatus) : undefined,
-          calendarItems: !!res?.statuses.calendarItems ? (res.statuses.calendarItems as SharingStatus) : undefined,
+          dataSamples: !!res?.statuses.contacts ? (res.statuses.contacts as SharingStatus) : undefined,
+          healthcareElements: !!res?.statuses.healthElements ? (res.statuses.healthElements as SharingStatus) : undefined,
           patient: !!res?.statuses.patient ? (res.statuses.patient as SharingStatus) : undefined
         }
       }

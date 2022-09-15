@@ -57,10 +57,15 @@ export interface PatientApi {
   giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>
 
   /**
-   * Service that allows a Data Owner to share all the data of a Patient with the patient itself
-   * @param patientId the id of the Patient
+   * Service that allows a Data Owner to share all the data of a Patient with the patient itself.
+   * This means this service is sharing :
+   * - The information of the patient;
+   * - All the data samples linked to the patient;
+   * - All the healthcare elements linked to the patient;
+   *
+   * @param patientId the id of the Patient to which we want to give access back to its own data
    */
-  shareOwnDataWith(patientId: string): Promise<SharingResult>
+  giveAccessToAllDataOf(patientId: string): Promise<SharingResult>
 
   /**
    * Opens a WebSocket Connection in order to receive all the Patients corresponding to specific filter criteria.

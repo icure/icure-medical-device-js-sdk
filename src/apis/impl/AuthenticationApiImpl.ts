@@ -6,7 +6,6 @@ import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {Notification, NotificationTypeEnum} from "../../models/Notification";
-import {HealthcareProfessionalFilter} from "../../filter";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -112,23 +111,19 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
     if (!loggedUser) {
       throw new Error("User log in failed");
-    }
-    else if (!!loggedUser.patientId) {
+
+    } else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
       if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+
       const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
         .map( (keyValue) => Array.from(keyValue[1]))
         .flat()
-        .filter( (delegation) => !!delegation.delegatedTo)
-        .map( (delegation) => delegation.delegatedTo!);
+        .filter((delegation) => !!delegation.delegatedTo)
+        .filter((delegation) => delegation.delegatedTo != patientDataOwner.id!)
+        .map( (delegation) => delegation.delegatedTo!)
 
-      const hcpDelegates = await authenticationResult.medTechApi.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-        await new HealthcareProfessionalFilter()
-          .byIds(delegates)
-          .build()
-      )
-
-      for (const delegate of hcpDelegates.rows.map( (it) => it.id)) {
+      for (const delegate of delegates) {
         const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
           new Notification({
             id: uuid(),
@@ -139,14 +134,18 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           }),
           delegate
         );
+        //TODO Return which delegates were warned to share back info & add retry mechanism
         if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
       }
+
     } else if (!!loggedUser.healthcarePartyId) {
       const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId);
       if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
+
     } else if (!!loggedUser.deviceId) {
       const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId);
       if (!hcpDataOwner) throw new Error(`Medical Device with id ${loggedUser.deviceId} does not exist`);
+
     } else {
       throw new Error("User is not a Data Owner")
     }
