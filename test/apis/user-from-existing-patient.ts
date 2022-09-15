@@ -3,13 +3,12 @@ import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
 import {User} from "../../src/models/User";
 import {Patient} from "../../src/models/Patient";
 import {webcrypto} from "crypto";
-import {hex2ua, ua2hex} from "@icure/api";
+import {hex2ua, sleep, ua2hex} from "@icure/api";
 import {getEnvVariables, ICureTestEmail, setLocalStorage, TestUtils} from "../test-utils";
 import {Address} from "../../src/models/Address";
 import {Telecom} from "../../src/models/Telecom";
 import {assert, expect} from "chai";
 import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
-import {NotificationFilter} from "../../src/filter";
 import {NotificationTypeEnum} from "../../src/models/Notification";
 import {ICureRegistrationEmail} from "../../src/utils/msgGtwMessageFactory";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
@@ -103,25 +102,15 @@ describe("A Healthcare Party", () => {
     );
     assert(!!newPatient);
 
-    // The Patient has some delegations
-    const patientFirstDelegation = await hcp1Api.patientApi.giveAccessTo(newPatient, hcp3User.healthcarePartyId!);
-    assert(!!patientFirstDelegation);
-    const patientSecondDelegation = await hcp1Api.patientApi.giveAccessTo(patientFirstDelegation, patUser.patientId!);
-    assert(!!patientSecondDelegation);
-
     // Some Data Samples and Healthcare Elements were created for the Patient
     const newDS1 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
     assert(!!newDS1);
     const newDS2 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
     assert(!!newDS2);
-    const newDS3 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
-    assert(!!newDS3);
     const newHE1 = await TestUtils.createHealthElementForPatient(hcp1Api, newPatient);
     assert(!!newHE1);
     const newHE2 = await TestUtils.createHealthElementForPatient(hcp1Api, newPatient);
     assert(!!newHE2);
-    const newHE3 = await TestUtils.createHealthElementForPatient(hcp1Api, newPatient);
-    assert(!!newHE3);
 
     // When HCP_1 creates user for patient PAT_1
     // And HCP_1 is sending an invitation email to patient PAT_1
@@ -147,8 +136,6 @@ describe("A Healthcare Party", () => {
     );
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
 
-    const authTimestamp = new Date().getTime();
-
     // When PAT_1 generates a key pair for himself
     // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
     // Then PAT_1 is able to log as a user
@@ -159,27 +146,15 @@ describe("A Healthcare Party", () => {
       () => undefined
     );
 
-    const userApi = authResult!.medTechApi;
-    const createdNotification = await userApi.notificationApi.filterNotifications(
-      await new NotificationFilter()
-        .afterDateFilter(authTimestamp)
-        .build()
-    );
-    assert(!!createdNotification);
-    assert(createdNotification.rows.length === 2);
-    const notificationDelegates = createdNotification.rows
-      .map( it => Object.keys(it.systemMetaData?.delegations ?? {}))
-      .flat();
-    assert(notificationDelegates.includes(hcp1User.healthcarePartyId!));
-    assert(notificationDelegates.includes(hcp3User.healthcarePartyId!));
+    await sleep(3000);
+
+    const newPatientApi = authResult!.medTechApi;
 
     // But PAT_1 may not access data sample DATA_SAMPLE_1
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS2.id!);
-    await TestUtils.retrieveDataSampleAndExpectError(userApi, newDS3.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE1.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE2.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectError(userApi, newHE3.id!);
+    await TestUtils.retrieveDataSampleAndExpectError(newPatientApi, newDS1.id!);
+    await TestUtils.retrieveDataSampleAndExpectError(newPatientApi, newDS2.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(newPatientApi, newHE1.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectError(newPatientApi, newHE2.id!);
 
     // When HCP_1 gives access to PAT_1
     const newNotifications = await hcp1Api.notificationApi.getPendingNotifications();
@@ -191,28 +166,33 @@ describe("A Healthcare Party", () => {
     expect(!!ongoingStatusUpdate).to.eq(true);
     expect(ongoingStatusUpdate?.status).to.eq("ongoing");
 
-    const sharedData = await hcp1Api.patientApi.shareOwnDataWith(newPatient.id!);
+    const sharedData = await hcp1Api.patientApi.giveAccessToAllDataOf(newPatient.id!);
     expect(!!sharedData).to.eq(true);
     expect(sharedData.patient?.id).to.eq(newPatient.id);
-    expect(sharedData.statuses.healthElements?.success).to.eq(true);
-    expect(!!sharedData.statuses.healthElements?.error).to.eq(false);
-    expect(sharedData.statuses.healthElements?.modified).to.eq(3);
-    expect(sharedData.statuses.contacts?.success).to.eq(true);
-    expect(!!sharedData.statuses.contacts?.error).to.eq(false);
-    expect(sharedData.statuses.contacts?.modified).to.eq(3);
+    expect(sharedData.statuses.healthcareElements?.success).to.eq(true);
+    expect(!!sharedData.statuses.healthcareElements?.error).to.eq(false);
+    expect(sharedData.statuses.healthcareElements?.modified).to.eq(2);
+    expect(sharedData.statuses.dataSamples?.success).to.eq(true);
+    expect(!!sharedData.statuses.dataSamples?.error).to.eq(false);
+    expect(sharedData.statuses.dataSamples?.modified).to.eq(2);
+
+    await sleep(3000);
 
     const completedStatusUpdate = await hcp1Api.notificationApi.updateNotificationStatus(ongoingStatusUpdate!, "completed");
     expect(!!completedStatusUpdate).to.eq(true);
     expect(completedStatusUpdate?.status).to.eq("completed");
 
     // Then PAT_1 may access data sample DATA_SAMPLE_1
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS1.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS2.id!);
-    await TestUtils.retrieveDataSampleAndExpectSuccess(userApi, newDS3.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE1.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE2.id!);
-    await TestUtils.retrieveHealthcareElementAndExpectSuccess(userApi, newHE3.id!);
-  }).timeout(600000);
+    // Be careful : We need to empty the cache of the hcPartyKeys otherwise, the previous API will use the key of the
+    // patient -> patient stocked in cache instead of the one created by the doctor when he gives access back to patient data
+    const updatedApi = (await medTechApi(newPatientApi).build())
+    await updatedApi.addKeyPair(newPatient.id!, {privateKey: privateKeyHex, publicKey: publicKeyHex})
+
+    await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE1.id!);
+    await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(updatedApi, newDS1.id!);
+    await TestUtils.retrieveDataSampleAndExpectSuccess(updatedApi, newDS2.id!);
+  }).timeout(6000000);
 
   it("should not be able to create a new User if the Patient has no contact information", async () => {
     const newPatient = new Patient({

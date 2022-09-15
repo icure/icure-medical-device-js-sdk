@@ -431,18 +431,19 @@ export class CodingFilter implements FilterBuilder<Coding> {
 export class NotificationFilter implements FilterBuilder<Notification> {
   _union?: NotificationFilter[];
   _intersection?: NotificationFilter[];
-  _byIds?: NotificationsByIdFilter;
-  _afterDate?: NotificationsAfterDateFilter;
-  _hcPartyId?: string;
+  _byIds?: string[];
+  _afterDate?: number;
+  _dataOwnerId?: string;
   _type?: NotificationTypeEnum;
 
   byIdFilter(ids: string[]): NotificationFilter {
-    this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
+    this._byIds = ids
+    //this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
     return this;
   }
 
-  forHcParty(hcPartyId: string): NotificationFilter {
-    this._hcPartyId = hcPartyId;
+  forDataOwner(dataOwnerId: string): NotificationFilter {
+    this._dataOwnerId = dataOwnerId;
     return this;
   }
 
@@ -454,7 +455,8 @@ export class NotificationFilter implements FilterBuilder<Notification> {
   afterDateFilter(
     date: number
   ): NotificationFilter {
-    this._afterDate = {date: date, '$type': 'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+    this._afterDate = date
+    //this._afterDate = {date: date, '$type': 'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
     return this;
   }
 
@@ -469,16 +471,20 @@ export class NotificationFilter implements FilterBuilder<Notification> {
   }
 
   async build(): Promise<Filter<Notification>> {
+    if (this._dataOwnerId == null) {
+      throw Error("DataOwner must be set for NotificationFilter.");
+    }
+
     const filters = [
-      this._byIds,
-      this._hcPartyId && this._type && ({healthcarePartyId: this._hcPartyId, type: this._type, '$type': 'NotificationsByHcPartyAndTypeFilter'} as NotificationsByHcPartyAndTypeFilter),
-      this._afterDate,
+      this._byIds && ({ids: this._byIds, '$type':'NotificationsByIdFilter'} as NotificationsByIdFilter),
+      this._type && ({healthcarePartyId: this._dataOwnerId, type: this._type, '$type': 'NotificationsByHcPartyAndTypeFilter'} as NotificationsByHcPartyAndTypeFilter),
+      this._afterDate && ({healthcarePartyId: this._dataOwnerId, date: this._afterDate, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Notification>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<Notification>),
     ].filter((x) => !!x) as Filter<Notification>[];
 
     if (!filters.length) {
-      return {date: 0, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+      return {healthcarePartyId: this._dataOwnerId, date: 0, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {

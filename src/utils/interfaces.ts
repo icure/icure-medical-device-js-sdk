@@ -1,4 +1,5 @@
 import {Patient} from "../models/Patient";
+
 export  interface SharingStatus {
   success: boolean | null;
   error: Error | null;
@@ -8,13 +9,8 @@ export  interface SharingStatus {
 export interface SharingResult {
   patient: Patient | undefined
   statuses: {
-    contacts: SharingStatus | undefined,
-    forms: SharingStatus | undefined,
-    healthElements: SharingStatus | undefined,
-    invoices: SharingStatus | undefined,
-    documents: SharingStatus | undefined,
-    classifications: SharingStatus | undefined,
-    calendarItems: SharingStatus | undefined,
+    dataSamples: SharingStatus | undefined,
+    healthcareElements: SharingStatus | undefined,
     patient: SharingStatus | undefined
   }
 }

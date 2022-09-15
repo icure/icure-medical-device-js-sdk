@@ -113,7 +113,7 @@ export class NotificationApiImpl implements NotificationApi {
       throw new Error("User is not a Data Owner");
     }
     const filter = await new NotificationFilter()
-      .forHcParty(this.dataOwnerApi.getDataOwnerOf(user))
+      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
   }
