@@ -57,6 +57,7 @@ import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
 import {UsersByPatientIdFilter} from "./user/UsersByPatientIdFilter";
+import {PatientByHealthcarePartySsinsFilter} from "./patient/PatientByHealthcarePartySsinsFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -182,29 +183,43 @@ export class PatientFilter implements FilterBuilder<Patient> {
     const dataOwnerId = this._forDataOwner!;
 
     const filters = [
-      this._byIds && ({ids: this._byIds, '$type':'PatientByIdsFilter'} as PatientByIdsFilter),
+      this._byIds && ({ids: this._byIds, '$type': 'PatientByIdsFilter'} as PatientByIdsFilter),
       this._byIdentifiers && ({
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
-        , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
+        , '$type': 'PatientByHealthcarePartyIdentifiersFilter'
+      } as PatientByHealthcarePartyIdentifiersFilter),
       this._withSsins && ({
         healthcarePartyId: dataOwnerId,
-        identifiers: this._byIdentifiers
-        , '$type':'PatientByHealthcarePartyDateOfBirthBetweenFilter'} as PatientByHealthcarePartyDateOfBirthBetweenFilter),
+        ssins: this._withSsins,
+        '$type': 'PatientByHealthcarePartySsinsFilter'
+      } as PatientByHealthcarePartySsinsFilter),
       this._dateOfBirthBetween && ({
         healthcarePartyId: dataOwnerId,
-        identifiers: this._byIdentifiers
-        , '$type':'PatientByHealthcarePartyGenderEducationProfessionFilter'} as PatientByHealthcarePartyGenderEducationProfessionFilter),
+        minDateOfBirth: this._dateOfBirthBetween[0],
+        maxDateOfBirth: this._dateOfBirthBetween[1],
+        '$type': 'PatientByHealthcarePartyDateOfBirthBetweenFilter'
+      } as PatientByHealthcarePartyDateOfBirthBetweenFilter),
       this._byGenderEducationProfession && ({
         healthcarePartyId: dataOwnerId,
-        identifiers: this._byIdentifiers
-        , '$type':'PatientByHealthcarePartyNameContainsFuzzyFilter'} as PatientByHealthcarePartyNameContainsFuzzyFilter),
+        gender: this._byGenderEducationProfession[0],
+        education: this._byGenderEducationProfession[1],
+        profession: this._byGenderEducationProfession[2],
+        '$type': 'PatientByHealthcarePartyGenderEducationProfessionFilter'
+      } as PatientByHealthcarePartyGenderEducationProfessionFilter),
       this._containsFuzzy && ({
         healthcarePartyId: dataOwnerId,
-        identifiers: this._byIdentifiers
-        , '$type':'PatientByHealthcarePartyIdentifiersFilter'} as PatientByHealthcarePartyIdentifiersFilter),
-      this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Patient>),
-      this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<Patient>),
+        searchString: this._containsFuzzy,
+        '$type': 'PatientByHealthcarePartyNameContainsFuzzyFilter'
+      } as PatientByHealthcarePartyNameContainsFuzzyFilter),
+      this._union && ({
+        filters: await Promise.all(this._union.map((f) => f.build())),
+        '$type': 'UnionFilter'
+      } as UnionFilter<Patient>),
+      this._intersection && ({
+        filters: await Promise.all(this._intersection.map((f) => f.build())),
+        '$type': 'IntersectionFilter'
+      } as IntersectionFilter<Patient>),
     ].filter((x) => !!x) as Filter<Patient>[];
 
 

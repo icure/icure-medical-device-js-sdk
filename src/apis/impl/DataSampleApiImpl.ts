@@ -34,9 +34,9 @@ import {Connection, ConnectionImpl} from "../../models/Connection";
 import {subscribeToEntityEvents} from "../../utils/rsocket";
 import {toMap, toMapArrayTransform} from "../../mappers/utils";
 import {DelegationMapper} from "../../mappers/delegation";
-import toDelegationDto = DelegationMapper.toDelegationDto;
 import {DataSampleFilter} from "../../filter";
 import {Patient} from "../../models/Patient";
+import toDelegationDto = DelegationMapper.toDelegationDto;
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -594,7 +594,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       patient,
       new ContactDto({
         id: this.crypto.randomUuid(),
-        serviceLinks: services.map(
+        services: services.map(
           (service) =>
             new ServiceDto({
               id: service.id,
@@ -894,7 +894,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     eventFired: (dataSample: DataSample) => Promise<void>,
     options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    let currentUser = await this.userApi.getCurrentUser();
+    const currentUser = await this.userApi.getCurrentUser();
     return subscribeToEntityEvents(
       this.basePath,
       this.username!,
