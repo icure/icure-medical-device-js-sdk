@@ -471,22 +471,22 @@ export namespace FilterMapper {
     if (filter['$type'] === 'IntersectionFilter') {
       return toIntersectionFilterPatientDto(filter as IntersectionFilter<Patient>);
     }
-    if (filter['$type'] === 'PatientByHcPartyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyFilter') {
       return toPatientByHcPartyFilterDto(filter as PatientByHealthcarePartyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndIdentifiersFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyIdentifiersFilter') {
       return toPatientByHcPartyAndIdentifiersFilterDto(filter as PatientByHealthcarePartyIdentifiersFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndSsinsFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartySsinsFilter') {
       return toPatientByHcPartyAndSsinsFilterDto(filter as PatientByHealthcarePartySsinsFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyDateOfBirthBetweenFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyDateOfBirthBetweenFilter') {
       return toPatientByHcPartyDateOfBirthBetweenFilterDto(filter as PatientByHealthcarePartyDateOfBirthBetweenFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyNameContainsFuzzyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyNameContainsFuzzyFilter') {
       return toPatientByHcPartyNameContainsFuzzyFilterDto(filter as PatientByHealthcarePartyNameContainsFuzzyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyGenderEducationProfessionFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyGenderEducationProfessionFilter') {
       return toPatientByHcPartyGenderEducationProfessionDto(filter as PatientByHealthcarePartyGenderEducationProfessionFilter);
     }
     if (filter['$type'] === 'PatientByIdsFilter') {

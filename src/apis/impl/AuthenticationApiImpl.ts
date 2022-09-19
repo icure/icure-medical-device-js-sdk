@@ -5,6 +5,7 @@ import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {Notification, NotificationTypeEnum} from "../../models/Notification";
+import {v4 as uuid} from "uuid";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
