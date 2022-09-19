@@ -57,7 +57,7 @@ jobs:
         run: git push --follow-tags
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
@@ -75,12 +75,12 @@ jobs:
         uses: actions/checkout@v3
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create a release 📝
-        run: gh api --method POST /repos/icure-io/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
+        run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
