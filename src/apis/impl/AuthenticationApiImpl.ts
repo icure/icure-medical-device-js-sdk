@@ -1,6 +1,7 @@
 import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
 import {AuthenticationApi} from "../AuthenticationApi";
+import {v4 as uuid} from 'uuid';
 import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
