@@ -5,15 +5,15 @@ import {hex2ua, ua2hex} from '@icure/api';
 import {AnonymousMedTechApiBuilder} from '../src/apis/AnonymousMedTechApi';
 import axios, {Method} from 'axios';
 import {Patient} from '../src/models/Patient';
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {HealthcareElement} from "../src/models/HealthcareElement";
 import {DataSample} from "../src/models/DataSample";
 import {CodingReference} from "../src/models/CodingReference";
 import {tmpdir} from "os";
 import {TextDecoder, TextEncoder} from "util";
-
-const delay = (delay: number) =>
-  new Promise<void>((resolve) => setTimeout(() => resolve(), delay));
+import {EmailMessage, EmailMessageFactory} from "../src/utils/msgGtwMessageFactory";
+import {HealthcareProfessional} from "../src/models/HealthcareProfessional";
+import {v4 as uuid} from "uuid";
 
 let cachedHcpApi: MedTechApi | undefined;
 let cachedHcpLoggedUser: User | undefined;
@@ -21,7 +21,7 @@ let cachedPatient: Patient | undefined;
 let cachedHealthcareElement: HealthcareElement | undefined;
 
 export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
-  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 * 1024 * 1024)
+  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024**3)
   ;(global as any).fetch = fetch
   ;(global as any).Storage = ''
   ;(global as any).TextDecoder = TextDecoder
@@ -70,6 +70,29 @@ export function getEnvVariables(): TestVars {
   }
 }
 
+export class ICureTestEmail implements EmailMessageFactory {
+  dataOwner: HealthcareProfessional | Patient;
+  link: string;
+  patient: Patient;
+
+  constructor(
+    patient: Patient
+  ) {
+    this.dataOwner = new HealthcareProfessional({});
+    this.link = "test";
+    this.patient = patient;
+  }
+
+  get(recipient: User, recipientPassword: string): EmailMessage {
+    return {
+      from: "nobody@nowhere.boh",
+      subject: `${recipient.login}|${recipientPassword}`,
+      html: `User: ${recipient.id}`
+    }
+  }
+
+}
+
 export class TestUtils {
 
   static async createDefaultPatient(medTechApi: MedTechApi): Promise<Patient> {
@@ -100,12 +123,7 @@ export class TestUtils {
   }
 
   static async getTempEmail(): Promise<string> {
-    const domainOptions = {
-      method: 'GET' as Method,
-      url: 'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1'
-    };
-    const { data: domains } = await axios.request(domainOptions);
-    return domains[0];
+    return `${uuid().substring(0,8)}@icure.com`
   }
 
   static async getEmail(email: string): Promise<any> {
@@ -221,5 +239,44 @@ export class TestUtils {
         content: {en: {stringValue: "Hello world"}},
       })
     );
+  }
+
+  static createHealthElementForPatient(medtechApi: MedTechApi, patient: Patient) {
+    return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
+      new HealthcareElement({
+        note: "Hero Syndrome",
+      }),
+      patient.id!
+    );
+  }
+
+  static async retrieveHealthcareElementAndExpectError(api: MedTechApi, healthcareElementId: string) {
+    try {
+      await api.healthcareElementApi.getHealthcareElement(healthcareElementId);
+      expect(true, "promise should fail").eq(false);
+    } catch (e) {
+      expect(!!e);
+    }
+  }
+
+  static async retrieveHealthcareElementAndExpectSuccess(api: MedTechApi, healthcareElementId: string) {
+    const retrievedHC = await api.healthcareElementApi.getHealthcareElement(healthcareElementId);
+    expect(!!retrievedHC).to.eq(true);
+    expect(retrievedHC.id).to.eq(healthcareElementId);
+  }
+
+  static async retrieveDataSampleAndExpectError(api: MedTechApi, dataSampleId: string) {
+    try {
+      await api.dataSampleApi.getDataSample(dataSampleId);
+      expect(true, "promise should fail").eq(false);
+    } catch (e) {
+      expect(!!e)
+    }
+  }
+
+  static async retrieveDataSampleAndExpectSuccess(api: MedTechApi, dataSampleId: string) {
+    const retrievedDataSample = await api.dataSampleApi.getDataSample(dataSampleId);
+    expect(!!retrievedDataSample).to.eq(true);
+    expect(retrievedDataSample.id).to.eq(dataSampleId);
   }
 }

@@ -21,6 +21,8 @@ import {PaginatedListMapper} from '../../mappers/paginatedList'
 import {FilterMapper} from '../../mappers/filter'
 import {HealthcareElementMapper} from '../../mappers/healthcareElement'
 import {firstOrNull} from '../../utils/functionalUtils'
+import {Patient} from "../../models/Patient";
+import {HealthcareElementFilter} from "../../filter";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -214,4 +216,28 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
       })
   }
+
+  async concatenateFilterResults(filter: Filter<HealthcareElement>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<HealthcareElement> = []): Promise<Array<HealthcareElement>> {
+    const paginatedHealthcareElements = await this.filterHealthcareElement(filter, nextId, limit);
+    return !paginatedHealthcareElements.nextKeyPair?.startKeyDocId
+      ? accumulator.concat(paginatedHealthcareElements.rows)
+      : this.concatenateFilterResults(filter, paginatedHealthcareElements.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedHealthcareElements.rows))
+  }
+
+  async getHealthcareElementsForPatient(patient: Patient): Promise<Array<HealthcareElement>> {
+    const user = await this.userApi.getCurrentUser();
+    if (!user) {
+      throw new Error("There is no user currently logged in");
+    }
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user);
+    if (!dataOwnerId) {
+      throw new Error("User is not a Data Owner");
+    }
+    const filter = await new HealthcareElementFilter()
+        .forDataOwner(dataOwnerId)
+        .forPatients(this.cryptoApi, [patient])
+        .build()
+    return await this.concatenateFilterResults(filter);
+  }
+
 }

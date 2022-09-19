@@ -17,6 +17,7 @@ import {Filter} from '../../filter/Filter'
 import {PatientMapper} from '../../mappers/patient'
 import {Connection, ConnectionImpl} from '../../models/Connection'
 import {subscribeToEntityEvents} from '../../utils/rsocket'
+import {SharingResult, SharingStatus} from "../../utils/interfaces";
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -145,6 +146,32 @@ export class PatientApiImpl implements PatientApi {
 
         return PatientMapper.toPatient(updatedPatient)!
       })
+  }
+
+  async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {
+    const currentUser = await this.userApi.getCurrentUser()
+    if (!currentUser){
+      throw new Error("There is no user currently logged in");
+    }
+    if (!this.dataOwnerApi.getDataOwnerOf(currentUser)){
+      throw new Error("Current User is not a Data Owner");
+    }
+    return this.patientApi.share(
+      currentUser,
+      patientId,
+      this.dataOwnerApi.getDataOwnerOf(currentUser),
+      [patientId],
+      { [patientId]: ["all"] }
+    ).then( res => {
+      return {
+        patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,
+        statuses: {
+          dataSamples: !!res?.statuses.contacts ? (res.statuses.contacts as SharingStatus) : undefined,
+          healthcareElements: !!res?.statuses.healthElements ? (res.statuses.healthElements as SharingStatus) : undefined,
+          patient: !!res?.statuses.patient ? (res.statuses.patient as SharingStatus) : undefined
+        }
+      }
+    });
   }
 
   async subscribeToPatientEvents(
