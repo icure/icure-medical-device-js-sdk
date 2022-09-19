@@ -136,6 +136,8 @@ export class NotificationApiImpl implements NotificationApi {
     eventFired: (dataSample: Notification) => Promise<void>,
     options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
+    const currentUser = await this.userApi.getCurrentUser()
+
     return subscribeToEntityEvents(
       this.basePath,
       this.username!,
@@ -145,6 +147,7 @@ export class NotificationApiImpl implements NotificationApi {
       filter,
       eventFired,
       options,
+      async (encrypted) => (await this.maintenanceTaskApi.decrypt(currentUser, [encrypted]))[0]
     ).then((rs) => new ConnectionImpl(rs))
   }
 

@@ -54,8 +54,9 @@ export function subscribeToEntityEvents(basePath: string, username: string, pass
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'Notification',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Notification> | undefined,
                                         eventFired: (entity: Notification) => Promise<void>,
-                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }): Promise<ICureRSocket<any, any>>
-export function subscribeToEntityEvents<O extends Patient | DataSample | User | HealthcareElement | Notification, T extends PatientDto | Service | HealthElement>(
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
+                                        decryptor: (encrypted: MaintenanceTask) => Promise<MaintenanceTask>): Promise<ICureRSocket<any, any>>
+export function subscribeToEntityEvents<O extends Patient | DataSample | User | HealthcareElement | Notification, T extends PatientDto | Service | HealthElement | MaintenanceTask>(
   basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User' | 'HealthcareElement' | 'Notification',
   eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<O> | undefined, eventFired: (entity: O) => Promise<void>,
   options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {},
@@ -142,13 +143,13 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User | 
               decryptor!(payload.data as PatientDto as T).then(p => eventFired(PatientMapper.toPatient(p)! as O)).catch(e => console.error(e))
             }
             if (entityClass === 'DataSample') {
-              decryptor!(payload.data as Service as T).then(ds => eventFired(DataSampleMapper.toDataSample(ds)! as O)).catch(e => console.error(e))
+              decryptor!(payload.data as Service as T).then(s => eventFired(DataSampleMapper.toDataSample(s as Service)! as O)).catch(e => console.error(e))
             }
             if (entityClass === 'HealthcareElement') {
-              decryptor!(payload.data as HealthElement as T).then(he => eventFired(HealthcareElementMapper.toHealthcareElement(he)! as O)).catch(e => console.error(e))
+              decryptor!(payload.data as HealthElement as T).then(he => eventFired(HealthcareElementMapper.toHealthcareElement(he as HealthElement)! as O)).catch(e => console.error(e))
             }
             if (entityClass === 'Notification') {
-              eventFired(NotificationMapper.toNotification(payload.data as MaintenanceTask)! as O).catch(e => console.error(e))
+              decryptor!(payload.data as MaintenanceTask as T).then(mt => eventFired(NotificationMapper.toNotification(mt as MaintenanceTask)! as O)).catch(e => console.error(e))
             }
           } catch (e) {
             console.error(e)
