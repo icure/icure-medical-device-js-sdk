@@ -4,6 +4,7 @@ import {AuthenticationApi} from "../AuthenticationApi";
 import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
+import {Notification, NotificationTypeEnum} from "../../models/Notification";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -81,7 +82,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     if (result) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
-        () => this.initApiAndUserAuthenticationToken(process, validationCode, tokenAndKeyPairProvider)
+        () => this.initApiAndUserAuthenticationToken(process.login, validationCode, tokenAndKeyPairProvider)
       )
 
       const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
@@ -102,10 +103,78 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     throw Error(`Could not validate authentication of user ${process.login}`)
   }
 
-  async initApiAndUserAuthenticationToken(process: AuthenticationProcess, validationCode: string, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<[MedTechApi, ApiInitialisationResult]> {
+  async authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
+    const authenticationResult = await this.initUserTokenAndCrypto(userLogin, shortLivedToken, dataOwnerKeyPair, tokenAndKeyPairProvider);
+
+    const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
+    if (!loggedUser) {
+      throw new Error("User log in failed");
+
+    } else if (!!loggedUser.patientId) {
+      const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
+      if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+
+      const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
+        .map( (keyValue) => Array.from(keyValue[1]))
+        .flat()
+        .filter((delegation) => !!delegation.delegatedTo)
+        .filter((delegation) => delegation.delegatedTo != patientDataOwner.id!)
+        .map( (delegation) => delegation.delegatedTo!)
+
+      for (const delegate of delegates) {
+        const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
+          new Notification({
+            id: uuid(),
+            status: "pending",
+            author: loggedUser.id,
+            responsible: loggedUser.patientId,
+            type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+          }),
+          delegate
+        );
+        //TODO Return which delegates were warned to share back info & add retry mechanism
+        if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+      }
+
+    } else if (!!loggedUser.healthcarePartyId) {
+      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId);
+      if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
+
+    } else if (!!loggedUser.deviceId) {
+      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId);
+      if (!hcpDataOwner) throw new Error(`Medical Device with id ${loggedUser.deviceId} does not exist`);
+
+    } else {
+      throw new Error("User is not a Data Owner")
+    }
+
+    return authenticationResult;
+  }
+
+  async initUserTokenAndCrypto(login: string, token: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult> {
+    const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
+      () => this.initApiAndUserAuthenticationToken(login, token, tokenAndKeyPairProvider)
+    )
+
+    const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
+    if (!dataOwnerInitialisedKeyPair) {
+      throw Error('A keypair must be provided either directly or through the provider')
+    }
+    const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
+
+    return new AuthenticationResult({
+      medTechApi: authenticatedApi,
+      keyPair: dataOwnerInitialisedKeyPair,
+      token: apiInitialisationResult.token,
+      groupId: apiInitialisationResult.user.groupId!,
+      userId: apiInitialisationResult.user.id
+    });
+  }
+
+  async initApiAndUserAuthenticationToken(login: string, validationCode: string, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<[MedTechApi, ApiInitialisationResult]> {
     const api = await medTechApi()
       .withICureBasePath(this.iCureBasePath)
-      .withUserName(process.login)
+      .withUserName(login)
       .withPassword(validationCode)
       .withMsgGtwUrl(this.msgGtwUrl)
       .withMsgGtwSpecId(this.msgGtwSpecId)
@@ -183,7 +252,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .then((patient) => apiWithNewKeyPair.baseApi.patientApi.initDelegations(patient, user))
       .then(async (patientWithDelegations) => {
         const currentPatient = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
-        return new Patient({...currentPatient, delegations: patientWithDelegations.delegations});
+        return new Patient({...currentPatient, delegations: Object.assign(patientWithDelegations.delegations ?? {}, currentPatient.delegations)});
       })
       .then((patientWithDelegations) => apiWithNewKeyPair.baseApi.patientApi.initEncryptionKeys(user, patientWithDelegations))
 

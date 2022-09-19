@@ -35,6 +35,8 @@ import {subscribeToEntityEvents} from "../../utils/rsocket";
 import {toMap, toMapArrayTransform} from "../../mappers/utils";
 import {DelegationMapper} from "../../mappers/delegation";
 import toDelegationDto = DelegationMapper.toDelegationDto;
+import {DataSampleFilter} from "../../filter";
+import {Patient} from "../../models/Patient";
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi;
@@ -861,6 +863,29 @@ export class DataSampleApiImpl implements DataSampleApi {
           updatedContact.id,
           updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined))!
       })
+  }
+
+  async concatenateFilterResults(filter: Filter<DataSample>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<DataSample> = []): Promise<Array<DataSample>> {
+    const paginatedDataSamples = await this.filterDataSample(filter, nextId, limit);
+    return !paginatedDataSamples.nextKeyPair?.startKeyDocId
+      ? accumulator.concat(paginatedDataSamples.rows)
+      : this.concatenateFilterResults(filter, paginatedDataSamples.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedDataSamples.rows))
+  }
+
+  async getDataSamplesForPatient(patient: Patient): Promise<Array<DataSample>> {
+    const user = await this.userApi.getCurrentUser();
+    if (!user) {
+      throw new Error("There is no user currently logged in");
+    }
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user);
+    if (!dataOwnerId) {
+      throw new Error("User is not a Data Owner");
+    }
+    const filter = await new DataSampleFilter()
+      .forDataOwner(dataOwnerId)
+      .forPatients(this.crypto, [patient])
+      .build()
+    return await this.concatenateFilterResults(filter);
   }
 
   async subscribeToDataSampleEvents(

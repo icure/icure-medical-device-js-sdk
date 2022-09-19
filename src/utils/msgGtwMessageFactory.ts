@@ -15,35 +15,35 @@ export type AuthenticationProcessBody = {
   'hcpId': string | undefined
 }
 
-export interface MessageGatewayUtils<T extends SMSMessage | EmailMessage> {
-  hcp: HealthcareProfessional;
+export interface MsgGtwMessageFactory<T extends SMSMessage | EmailMessage> {
+  dataOwner: HealthcareProfessional | Patient;
   link: string;
   patient: Patient;
 
   get(recipient: User, recipientPassword: string): T;
 }
 
-export interface EmailMessageFactory extends MessageGatewayUtils<EmailMessage> {}
+export interface EmailMessageFactory extends MsgGtwMessageFactory<EmailMessage> {}
 
-export interface SMSMessageFactory extends MessageGatewayUtils<SMSMessage> {}
+export interface SMSMessageFactory extends MsgGtwMessageFactory<SMSMessage> {}
 
 export class ICureRegistrationEmail implements EmailMessageFactory {
-  hcp: HealthcareProfessional;
+  dataOwner: HealthcareProfessional | Patient;
   hcpEmail: string;
   link: string;
   solutionName: string;
   patient: Patient;
 
   constructor(
-    hcp: HealthcareProfessional,
+    dataOwner: HealthcareProfessional | Patient,
     link: string,
     solutionName: string,
     patient: Patient
   ) {
-    this.hcp = hcp;
+    this.dataOwner = dataOwner;
     this.link = link;
     this.solutionName = solutionName
-    const availableHcpEmail = filteredContactsFromAddresses(this.hcp.addresses, "email")
+    const availableHcpEmail = filteredContactsFromAddresses(this.dataOwner.addresses, "email")
     if (!availableHcpEmail || !availableHcpEmail.telecomNumber)
       throw new Error("HCP does not have a valid email!")
     this.hcpEmail = availableHcpEmail.telecomNumber;
@@ -53,25 +53,25 @@ export class ICureRegistrationEmail implements EmailMessageFactory {
   get(recipient: User, recipientPassword: string): EmailMessage {
     return {
       from: this.hcpEmail,
-      html: `Dear ${this.patient.firstName}, you have been invited by ${this.hcp.lastName} to use ${this.solutionName}. Go to the link ${this.link} and use the following credentials : ${recipient.login} & ${recipientPassword}`,
+      html: `Dear ${this.patient.firstName}, you have been invited by ${this.dataOwner.lastName} to use ${this.solutionName}. Go to the link ${this.link} and use the following credentials : ${recipient.login} & ${recipientPassword}`,
       subject: `You have been invited to use ${this.solutionName}`
     }
   }
 }
 
 export class ICureRegistrationSMS implements SMSMessageFactory {
-  hcp: HealthcareProfessional;
+  dataOwner: HealthcareProfessional | Patient;
   link: string;
   solutionName: string;
   patient: Patient;
 
   constructor(
-    hcp: HealthcareProfessional,
+    dataOwner: HealthcareProfessional | Patient,
     link: string,
     solutionName: string,
     patient: Patient
     ) {
-    this.hcp = hcp;
+    this.dataOwner = dataOwner;
     this.link = link;
     this.solutionName = solutionName;
     this.patient = patient;
@@ -79,7 +79,7 @@ export class ICureRegistrationSMS implements SMSMessageFactory {
 
   get(recipient: User, recipientPassword: string): SMSMessage {
     return {
-      message: `Dear ${this.patient.firstName}, you have been invited by ${this.hcp.lastName} to use ${this.solutionName}. Go to the link ${this.link} and use the following credentials : ${recipient.login} & ${recipientPassword}`
+      message: `Dear ${this.patient.firstName}, you have been invited by ${this.dataOwner.lastName} to use ${this.solutionName}. Go to the link ${this.link} and use the following credentials : ${recipient.login} & ${recipientPassword}`
     }
   }
 
