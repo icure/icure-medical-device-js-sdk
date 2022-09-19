@@ -1,30 +1,26 @@
 import "mocha";
 import "isomorphic-fetch";
 
-import {DataSampleFilter} from "../../src/filter";
+import {DataSampleFilter, NotificationFilter} from "../../src/filter";
 
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
-import {setLocalStorage, TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {it} from "mocha";
+import {NotificationTypeEnum} from "../../src/models/Notification";
+import {NotificationApiImpl} from "../../src/apis/impl/NotificationApiImpl";
+import {DataSampleApiImpl} from "../../src/apis/impl/DataSampleApiImpl";
 
 setLocalStorage(fetch);
 
-const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
-const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
-const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;
-const hcpPrivKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
-const patUserName = process.env.ICURE_TS_TEST_PAT_USER!;
-const patPassword = process.env.ICURE_TS_TEST_PAT_PWD!;
-const patPrivKey = process.env.ICURE_TS_TEST_PAT_PRIV_KEY!;
-const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
-const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
-const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
-const hcp3UserName = process.env.ICURE_TS_TEST_HCP_3_USER!;
-const hcp3Password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
-const hcp3PrivKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
+  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 describe("Data Samples API", () => {
+
   it("Create Data Sample - Success", async () => {
     // Given
     const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey);
@@ -295,4 +291,33 @@ describe("Data Samples API", () => {
         (e) => assert(e != undefined)
       );
   });
+
+  it('Data Owner can filter all the Data Samples for a Patient - Success', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const newDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient);
+    expect(!!newDataSample).to.eq(true);
+
+    const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
+    expect(!!filteredSamples).to.eq(true);
+    expect(filteredSamples.length).to.eq(1);
+    expect(filteredSamples[0].id).to.eq(newDataSample.id);
+  });
+
+  it('getDataSamplesForPatient returns no Data Samples for a Patient with no Data Samples', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const filteredSamples = await hcp1Api.dataSampleApi.getDataSamplesForPatient(newPatient);
+    expect(!!filteredSamples).to.eq(true);
+    expect(filteredSamples.length).to.eq(0);
+  });
+
 });

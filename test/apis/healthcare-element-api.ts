@@ -2,29 +2,17 @@ import "mocha";
 import {MedTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
 
-import {LocalStorage} from "node-localstorage";
-import * as os from "os";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
-import {TestUtils} from "../test-utils";
+import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 
-const tmp = os.tmpdir();
-console.log('Saving keys in ' + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = '';
+setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1';
-const hcpUserName = process.env.ICURE_TS_TEST_HCP_USER!;
-const hcpPassword = process.env.ICURE_TS_TEST_HCP_PWD!;
-const hcpPrivKey = process.env.ICURE_TS_TEST_HCP_PRIV_KEY!;
-const patUserName = process.env.ICURE_TS_TEST_PAT_USER!;
-const patPassword = process.env.ICURE_TS_TEST_PAT_PWD!;
-const patPrivKey = process.env.ICURE_TS_TEST_PAT_PRIV_KEY!;
-const hcp2UserName = process.env.ICURE_TS_TEST_HCP_2_USER!;
-const hcp2Password = process.env.ICURE_TS_TEST_HCP_2_PWD!;
-const hcp2PrivKey = process.env.ICURE_TS_TEST_HCP_2_PRIV_KEY!;
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
+  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
   return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
@@ -138,5 +126,33 @@ describe('Healthcare Element API', () => {
         },
         (e) => assert(e != undefined)
       );
+  });
+
+  it('Data Owner can filter all the Healthcare Elements for a Patient - Success', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const newHealthElement = await createHealthcareElementForPatient(hcp1Api, newPatient);
+    expect(!!newHealthElement).to.eq(true);
+
+    const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
+    expect(!!filteredElements).to.eq(true);
+    expect(filteredElements.length).to.eq(1);
+    expect(filteredElements[0].id).to.eq(newHealthElement.id);
+  });
+
+  it('getHealthcareElementsForPatient returns no Healthcare Elements for a Patient with no Healthcare Elements', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const newPatient = await TestUtils.createDefaultPatient(hcp1Api);
+    expect(!!newPatient).to.eq(true);
+
+    const filteredElements = await hcp1Api.healthcareElementApi.getHealthcareElementsForPatient(newPatient);
+    expect(!!filteredElements).to.eq(true);
+    expect(filteredElements.length).to.eq(0);
   });
 });

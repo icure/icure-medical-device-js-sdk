@@ -1,14 +1,15 @@
 import {before, describe, it} from 'mocha'
 import 'isomorphic-fetch'
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {v4 as uuid} from "uuid";
 import {MedTechApi} from "../../src/apis/medTechApi";
-import {Notification, notificationTypeEnum} from "../../src/models/Notification";
+import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
 import {NotificationFilter} from "../../src/filter";
 import {PaginatedListNotification} from "../../src/models/PaginatedListNotification";
 import {SystemMetaDataEncrypted} from "../../src/models/SystemMetaDataEncrypted";
+import {NotificationApiImpl} from "../../src/apis/impl/NotificationApiImpl";
 
 setLocalStorage(fetch);
 
@@ -30,7 +31,7 @@ async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
   const notification = new Notification({
     id: notificationId,
     status: "pending",
-    type: notificationTypeEnum.KEY_PAIR_UPDATE
+    type: NotificationTypeEnum.KEY_PAIR_UPDATE
   })
   const createdNotification = await api.notificationApi.createOrModifyNotification(
     notification,
@@ -81,7 +82,7 @@ describe('Notification API', async function () {
       new Notification({
         id: uuid(),
         status: "pending",
-        type: notificationTypeEnum.KEY_PAIR_UPDATE
+        type: NotificationTypeEnum.KEY_PAIR_UPDATE
       }),
       hcp2User.healthcarePartyId
     )
@@ -90,7 +91,7 @@ describe('Notification API', async function () {
       new Notification({
         id: uuid(),
         status: "pending",
-        type: notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+        type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
       }),
       hcp2User.healthcarePartyId
     )
@@ -99,7 +100,7 @@ describe('Notification API', async function () {
       new Notification({
         id: uuid(),
         status: "pending",
-        type: notificationTypeEnum.OTHER
+        type: NotificationTypeEnum.OTHER
       }),
       hcp2User.healthcarePartyId
     )
@@ -112,7 +113,7 @@ describe('Notification API', async function () {
     const notification = new Notification({
       id: uuid(),
       status: "pending",
-      type: notificationTypeEnum.KEY_PAIR_UPDATE
+      type: NotificationTypeEnum.KEY_PAIR_UPDATE
     })
     const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
       notification,
@@ -233,7 +234,7 @@ describe('Notification API', async function () {
 
   it('should not be able to modify an existing Notification if type changes', async () => {
     const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
-    createdNotification.type = notificationTypeEnum.OTHER;
+    createdNotification.type = NotificationTypeEnum.OTHER;
     await modifyNotificationAndExpectFailure(hcp1Api!, createdNotification);
   });
 
@@ -277,6 +278,7 @@ describe('Notification API', async function () {
     async () => {
       const result = await hcp1Api!.notificationApi.filterNotifications(
         await new NotificationFilter()
+          .forDataOwner(hcp1User?.healthcarePartyId!)
           .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
           .build()
       );
@@ -286,6 +288,7 @@ describe('Notification API', async function () {
   it('should be able to filter Notifications by id as the delegate', async () => {
     const result = await hcp2Api!.notificationApi.filterNotifications(
       await new NotificationFilter()
+        .forDataOwner(hcp2User?.healthcarePartyId!)
         .byIdFilter([idFilterNotification1!.id!, idFilterNotification2!.id!])
         .build()
     );
@@ -295,13 +298,13 @@ describe('Notification API', async function () {
   it('should be able to filter Notifications by HcParty id and type as the creator', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
       await new NotificationFilter()
-        .forHcParty(hcp1User!.healthcarePartyId!)
-        .withType(notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .forDataOwner(hcp1User!.healthcarePartyId!)
+        .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
         .build()
     );
     assert(result.rows.length > 0);
     result.rows.forEach( notification => {
-      assert(notification.type === notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
+      assert(notification.type === NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
       assert(Object.keys(notification.systemMetaData?.delegations!).includes(hcp1User!.healthcarePartyId!));
     })
   });
@@ -309,13 +312,13 @@ describe('Notification API', async function () {
   it('should be able to filter Notifications by HcParty id and type as the delegate', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
       await new NotificationFilter()
-        .forHcParty(hcp2User!.healthcarePartyId!)
-        .withType(notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .forDataOwner(hcp2User!.healthcarePartyId!)
+        .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
         .build()
     );
     assert(result.rows.length > 0);
     result.rows.forEach( notification => {
-      assert(notification.type === notificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
+      assert(notification.type === NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS);
       assert(Object.keys(notification.systemMetaData?.delegations!).includes(hcp2User!.healthcarePartyId!));
     })
   });
@@ -324,6 +327,7 @@ describe('Notification API', async function () {
     const startTimestamp = new Date().getTime() - 100000;
     const result = await hcp1Api!.notificationApi.filterNotifications(
       await new NotificationFilter()
+        .forDataOwner(hcp1User?.healthcarePartyId!)
         .afterDateFilter(startTimestamp)
         .build()
     );
@@ -336,8 +340,65 @@ describe('Notification API', async function () {
   it('should be able to get all the Notifications as the creator', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
       await new NotificationFilter()
+        .forDataOwner(hcp1User?.healthcarePartyId!)
         .build()
     );
     assert(result.rows.length > 0);
   });
+
+  it('should be able to get all the Notifications from multiple paginated lists', async () => {
+    const filter = await new NotificationFilter()
+      .forDataOwner(hcp1User!.healthcarePartyId!)
+      .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+      .build()
+    let nextId = undefined;
+    let page = undefined;
+    let existingNotifications: string[] = [];
+    do {
+      page = await hcp1Api!.notificationApi.filterNotifications(
+        filter,
+        nextId
+      );
+      existingNotifications = existingNotifications.concat(page.rows.map(it => it.id!) ?? []);
+      nextId = page?.nextKeyPair?.startKeyDocId
+    } while (!!nextId);
+
+    const result = await (hcp1Api!.notificationApi as NotificationApiImpl).concatenateFilterResults(
+      filter,
+      undefined,
+      Math.floor(existingNotifications.length / 3)
+    );
+    expect(result.length).to.eq(existingNotifications.length);
+    result.forEach(notification => {
+      expect(existingNotifications).to.contain(notification.id);
+    });
+  });
+
+  it('should be able to get all the pending Notification of Users asking for data access', async() => {
+    const createdNotification = await hcp2Api!.notificationApi.createOrModifyNotification(
+      new Notification({
+        id: uuid(),
+        status: "pending",
+        type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
+      }),
+      hcp1User?.healthcarePartyId!
+    )
+    expect(!!createdNotification).to.eq(true);
+
+    const notifications = await hcp1Api!.notificationApi.getPendingNotifications();
+    expect(notifications.length).to.gt(0);
+    notifications.forEach( notification => {
+      expect(notification.status).to.eq("pending");
+      expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
+    });
+  });
+
+  it('should be able to update the status of a Notification', async () => {
+    const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
+    expect(!!createdNotification).to.eq(true);
+    const updatedNotification = await hcp1Api?.notificationApi.updateNotificationStatus(createdNotification, "completed");
+    expect(!!updatedNotification).to.eq(true);
+    expect(updatedNotification!.status).to.eq("completed");
+  });
+
 });

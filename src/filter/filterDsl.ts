@@ -52,7 +52,7 @@ import {DataSampleByHealthcarePartyFilter} from "./datasample/DataSampleByHealth
 import {
   DataSampleByHealthcarePartyHealthcareElementIdsFilter
 } from "./datasample/DataSampleByHealthcarePartyHealthcareElementIdsFilter";
-import {Notification} from "../models/Notification";
+import {Notification, NotificationTypeEnum} from "../models/Notification";
 import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
@@ -357,9 +357,12 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
         patientSecretForeignKeys: (await Promise.all(
           this._forPatients[1].map(async (p) =>
             (await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(dataOwnerId, p.id!, Object.entries(p.systemMetaData!.delegations!)
-              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]]).reduce((m, [k, v]) => {m[k] = v; return m}, {} as {[key: string]: Delegation[]})
+              .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]])
+              .reduce((m, [k, v]) => {
+                m[k] = v; return m}, {} as {[key: string]: Delegation[]
+              })
             )).map((x) => x.extractedKeys))
-        )).reduce((t,v) => t.concat(v[1]) ,[] as string[])
+        )).reduce((t,v) => t.concat(v[0]) ,[] as string[])
         , '$type':'HealthcareElementByHealthcarePartyPatientFilter'} as HealthcareElementByHealthcarePartyPatientFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<HealthcareElement>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<HealthcareElement>),
@@ -428,22 +431,23 @@ export class CodingFilter implements FilterBuilder<Coding> {
 export class NotificationFilter implements FilterBuilder<Notification> {
   _union?: NotificationFilter[];
   _intersection?: NotificationFilter[];
-  _byIds?: NotificationsByIdFilter;
-  _afterDate?: NotificationsAfterDateFilter;
-  _hcPartyId?: string;
-  _type?: string;
+  _byIds?: string[];
+  _afterDate?: number;
+  _dataOwnerId?: string;
+  _type?: NotificationTypeEnum;
 
   byIdFilter(ids: string[]): NotificationFilter {
-    this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
+    this._byIds = ids
+    //this._byIds = {ids: ids, '$type': 'NotificationsByIdFilter'} as NotificationsByIdFilter;
     return this;
   }
 
-  forHcParty(hcPartyId: string): NotificationFilter {
-    this._hcPartyId = hcPartyId;
+  forDataOwner(dataOwnerId: string): NotificationFilter {
+    this._dataOwnerId = dataOwnerId;
     return this;
   }
 
-  withType(type: string): NotificationFilter {
+  withType(type: NotificationTypeEnum): NotificationFilter {
     this._type = type;
     return this;
   }
@@ -451,7 +455,8 @@ export class NotificationFilter implements FilterBuilder<Notification> {
   afterDateFilter(
     date: number
   ): NotificationFilter {
-    this._afterDate = {date: date, '$type': 'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+    this._afterDate = date
+    //this._afterDate = {date: date, '$type': 'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
     return this;
   }
 
@@ -466,16 +471,20 @@ export class NotificationFilter implements FilterBuilder<Notification> {
   }
 
   async build(): Promise<Filter<Notification>> {
+    if (this._dataOwnerId == null) {
+      throw Error("DataOwner must be set for NotificationFilter.");
+    }
+
     const filters = [
-      this._byIds,
-      this._hcPartyId && this._type && ({healthcarePartyId: this._hcPartyId, type: this._type, '$type': 'NotificationsByHcPartyAndTypeFilter'} as NotificationsByHcPartyAndTypeFilter),
-      this._afterDate,
+      this._byIds && ({ids: this._byIds, '$type':'NotificationsByIdFilter'} as NotificationsByIdFilter),
+      this._type && ({healthcarePartyId: this._dataOwnerId, type: this._type, '$type': 'NotificationsByHcPartyAndTypeFilter'} as NotificationsByHcPartyAndTypeFilter),
+      this._afterDate && ({healthcarePartyId: this._dataOwnerId, date: this._afterDate, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter),
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<Notification>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<Notification>),
     ].filter((x) => !!x) as Filter<Notification>[];
 
     if (!filters.length) {
-      return {date: 0, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
+      return {healthcarePartyId: this._dataOwnerId, date: 0, '$type':'NotificationsAfterDateFilter'} as NotificationsAfterDateFilter;
     } else if (filters.length == 1) {
       return filters[0];
     } else {
