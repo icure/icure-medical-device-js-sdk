@@ -44,6 +44,7 @@ export class AnonymousMedTechApi {
 
 export class AnonymousMedTechApiBuilder {
   private iCureUrlPath: string;
+  private authSpecId: string | undefined;
   private msgGtwUrl: string;
   private msgGtwSpecId: string | undefined;
   private authProcessId: string | undefined;
@@ -54,6 +55,7 @@ export class AnonymousMedTechApiBuilder {
     this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
     this.msgGtwUrl = "https://msg-gw.icure.cloud";
     this.msgGtwSpecId = undefined;
+    this.authSpecId = undefined;
     this.authProcessId = undefined;
   }
 

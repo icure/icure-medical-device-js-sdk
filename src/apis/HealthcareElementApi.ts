@@ -1,6 +1,7 @@
 import {Filter} from '../filter/Filter'
 import {HealthcareElement} from '../models/HealthcareElement'
 import {PaginatedListHealthcareElement} from '../models/PaginatedListHealthcareElement'
+import {Patient} from "../models/Patient";
 
 export interface HealthcareElementApi {
   /**
@@ -76,4 +77,12 @@ export interface HealthcareElementApi {
    * @param delegatedTo ID of the data owner to which current user would like to give access
    */
   giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement>
+
+  /**
+   * Gets all the Healthcare Elements associated to a Patient that the current dataOwner can access.
+   * @param patient the Patient associated to the Healthcare Elements to get
+   *
+   * @return an array containing the Healthcare Elements
+   */
+  getHealthcareElementsForPatient(patient: Patient): Promise<Array<HealthcareElement>>
 }
