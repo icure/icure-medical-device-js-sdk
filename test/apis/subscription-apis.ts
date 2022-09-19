@@ -30,9 +30,19 @@ console.log("Saving keys in " + tmp);
 (global as any).Storage = "";
 
 const {
-  iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-  hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: userName, hcp3Password: password, hcp3PrivKey: privKey, specId: specId, msgGtwUrl: msgGtwUrl
+  iCureUrl: iCureUrl,
+  hcpUserName: hcpUserName,
+  hcpPassword: hcpPassword,
+  hcpPrivKey: hcpPrivKey,
+  hcp2UserName: hcp2UserName,
+  hcp2Password: hcp2Password,
+  hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: userName,
+  hcp3Password: password,
+  hcp3PrivKey: privKey,
+  specId: specId,
+  msgGtwUrl: msgGtwUrl,
+  patAuthProcessId: patAuthProcessId
 } = getEnvVariables()
 
 let medtechApi: MedTechApi | undefined = undefined;
@@ -121,7 +131,7 @@ describe("Subscription API", () => {
 
   async function createDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
     const loggedUser = await api.userApi.getLoggedUser();
-    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
@@ -243,8 +253,7 @@ describe("Subscription API", () => {
       .onConnected(() => statuses.push("CONNECTED"))
       .onClosed(() => statuses.push("CLOSED"));
 
-    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
-
+    await sleep(5000)
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, loggedUser.healthcarePartyId!);
 
@@ -321,7 +330,7 @@ describe("Subscription API", () => {
 
   async function deleteDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
     const loggedUser = await api.userApi.getLoggedUser();
-    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
