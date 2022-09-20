@@ -23,6 +23,7 @@ import {getEnvVariables, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
 import {v4 as uuid} from "uuid";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
+import {Connection} from "../../src/models/Connection";
 
 const tmp = os.tmpdir();
 console.log("Saving keys in " + tmp);
@@ -71,371 +72,342 @@ describe("Subscription API", () => {
     hcp1User = hcpApi1AndUser.user;
   });
 
-  async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
-    const notificationId = uuid();
-    const notification = new Notification({
-      id: notificationId,
-      status: "pending",
-      type: NotificationTypeEnum.KEY_PAIR_UPDATE
-    })
-    const createdNotification = await api.notificationApi.createOrModifyNotification(
-      notification,
-      delegateId
-    )
-    assert(!!createdNotification);
-    return createdNotification;
-  }
-
-  async function createNotificationAndSubscribe(api: MedTechApi, options: {}) {
-    const loggedUser = await api.userApi.getLoggedUser();
-
-    const hcp =
-      await api.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-
-    const events: Notification[] = [];
-    const statuses: string[] = [];
-
-    const connection = (await api.notificationApi.subscribeToNotificationEvents(
-        ["CREATE"],
-        await new NotificationFilter().forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
-        async (notification) => {
-          events.push(notification);
-        },
-        options
-      )
-    )
-      .onConnected(() => {
-        statuses.push("CONNECTED");
-      })
-      .onClosed(() => {
-        statuses.push("CLOSED");
-      });
-    await sleep(5000);
-
-    await createNotificationWithApi(
-      api,
-      hcp1User!.healthcarePartyId!
-    )
-
-    await sleep(10000);
-    await connection.close();
-
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
-
-  async function createDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
+  async function doXOnYAndSubscribe<Y>(api: MedTechApi, options: {}, connectionPromise: Promise<Connection>, x: () => Promise<Y>, statusListener: (status: string) => void) {
     const loggedUser = await api.userApi.getLoggedUser();
     await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       loggedUser.healthcarePartyId!,
       hex2ua(privKey)
     );
 
-    const hcp =
-      await api.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-    const events: DataSample[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await api.dataSampleApi.subscribeToDataSampleEvents(
-        ["CREATE"],
+    const connection = (await connectionPromise)
+      .onConnected(() => statusListener("CONNECTED"))
+      .onClosed(() => statusListener("CLOSED"));
+
+    await sleep(2000)
+
+    await x()
+
+    await sleep(10000)
+    connection.close()
+    await sleep(5000)
+  }
+
+  describe("Can subscribe to Data Samples", async () => {
+    const createDataSampleAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[], supplier: () => Promise<void>) => {
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (ds: DataSample) => Promise<void>) => medtechApi!.dataSampleApi.subscribeToDataSampleEvents(
+        eventTypes,
         await new DataSampleFilter()
-          .forDataOwner(hcp.id!)
+          .forDataOwner(dataOwnerId)
+          .build(),
+        eventListener,
+        options,
+      )
+
+      const loggedUser = await medtechApi!!.userApi.getLoggedUser();
+      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        loggedUser.healthcarePartyId!,
+        hex2ua(privKey)
+      );
+
+      const events: DataSample[] = [];
+      const statuses: string[] = [];
+
+      await doXOnYAndSubscribe(
+        medtechApi!!,
+        options,
+        connectionPromise({}, loggedUser.healthcarePartyId!, async (ds) => {
+          events.push(ds);
+        }),
+        supplier,
+        (status) => {
+          statuses.push(status)
+        }
+      )
+
+      events?.forEach((event) => console.log(`Event : ${event}`))
+      statuses?.forEach((status) => console.log(`Status : ${status}`))
+
+      assert(events.length === 1, "The events have not been recorded");
+      assert(statuses.length === 2, "The statuses have not been recorded");
+    }
+
+    const createDataSample = async () => {
+      const patient = await medtechApi!!.patientApi.createOrModifyPatient(
+        new Patient({
+          firstName: "John",
+          lastName: "Snow",
+          note: "Winter is coming",
+        })
+      );
+
+      return await medtechApi!!.dataSampleApi.createOrModifyDataSampleFor(
+        patient.id!,
+        new DataSample({
+          labels: new Set([
+            new CodingReference({type: testType, code: testCode}),
+          ]),
+          content: {en: {stringValue: "Hello world"}},
+        })
+      );
+    }
+
+    const deleteDataSample = async () => {
+      const ds = await createDataSample()
+
+      await medtechApi!!.dataSampleApi.deleteDataSample(ds.id!)
+    }
+
+    it("CREATE DataSample without options", async () => {
+      await createDataSampleAndSubscribe({}, ["CREATE"], async () => {
+        await createDataSample()
+      })
+    }).timeout(60000);
+
+    it("CREATE DataSample with options", async () => {
+      await createDataSampleAndSubscribe({
+          keepAlive: 100,
+          lifetime: 10000,
+        },
+        ["CREATE"],
+        async () => {
+          await createDataSample()
+        });
+    }).timeout(60000);
+
+    it("DELETE DataSample without options", async () => {
+      await createDataSampleAndSubscribe({}, ["DELETE"], async () => deleteDataSample())
+    }).timeout(60000);
+
+    it("DELETE DataSample with options", async () => {
+      await createDataSampleAndSubscribe({keepAlive: 100, lifetime: 10000}, ["DELETE"], async () => deleteDataSample())
+    }).timeout(60000);
+  })
+
+  describe("Can subscribe to Notifications", async () => {
+    const createNotificationAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (notification: Notification) => Promise<void>) => medtechApi!.notificationApi.subscribeToNotificationEvents(
+        eventTypes,
+        await new NotificationFilter().forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
+        eventListener,
+        options,
+      )
+
+      const loggedUser = await medtechApi!!.userApi.getLoggedUser()
+      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        loggedUser.healthcarePartyId!,
+        hex2ua(privKey)
+      );
+
+      const events: Notification[] = [];
+      const statuses: string[] = [];
+
+      await doXOnYAndSubscribe(
+        medtechApi!!,
+        options,
+        connectionPromise({}, loggedUser.healthcarePartyId!, async (notification) => {
+          events.push(notification);
+        }),
+        async () => {
+
+          const notificationId = uuid();
+          const notification = new Notification({
+            id: notificationId,
+            status: "pending",
+            type: NotificationTypeEnum.KEY_PAIR_UPDATE
+          })
+          const createdNotification = await medtechApi!!.notificationApi.createOrModifyNotification(
+            notification,
+            hcp1User!.healthcarePartyId!
+          )
+          assert(!!createdNotification);
+          return createdNotification;
+        },
+        (status) => {
+          statuses.push(status)
+        }
+      )
+
+      events?.forEach((event) => console.log(`Event : ${event}`))
+      statuses?.forEach((status) => console.log(`Status : ${status}`))
+
+      assert(events.length === 1, "The events have not been recorded");
+      assert(statuses.length === 2, "The statuses have not been recorded");
+    }
+
+    it("CREATE Notification without options", async () => {
+      await createNotificationAndSubscribe({}, ["CREATE"]);
+    }).timeout(60000);
+
+    it("CREATE Notification with options", async () => {
+      await createNotificationAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
+    }).timeout(60000);
+  });
+
+  describe("Can subscribe to HealthcareElements", async () => {
+    const createHealthcareElementAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (healthcareElement: HealthcareElement) => Promise<void>) => medtechApi!.healthcareElementApi.subscribeToHealthcareElementEvents(
+        eventTypes,
+        await new HealthcareElementFilter()
+          .forDataOwner(dataOwnerId)
           .byTagCodeFilter(testType, testCode)
           .build(),
-        async (ds) => {
-          events.push(ds);
-        },
-        options
+        eventListener,
+        options,
       )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
+      const loggedUser = await medtechApi!!.userApi.getLoggedUser()
+      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        loggedUser.healthcarePartyId!,
+        hex2ua(privKey)
+      );
 
-    await sleep(5000);
+      const events: HealthcareElement[] = [];
+      const statuses: string[] = [];
 
-    await api.dataSampleApi.createOrModifyDataSampleFor(
-      patient.id!,
-      new DataSample({
-        labels: new Set([
-          new CodingReference({type: testType, code: testCode}),
-        ]),
-        content: {en: {stringValue: "Hello world"}},
-      })
-    );
+      await doXOnYAndSubscribe(
+        medtechApi!!,
+        options,
+        connectionPromise({}, loggedUser.healthcarePartyId!, async (healthcareElement) => {
+          events.push(healthcareElement);
+        }),
+        async () => {
+          const patient = await medtechApi!!.patientApi.createOrModifyPatient(
+            new Patient({
+              firstName: "John",
+              lastName: "Snow",
+              note: "Winter is coming",
+            })
+          );
 
-    await sleep(5000);
-    connection.close();
+          await medtechApi!!.healthcareElementApi.createOrModifyHealthcareElement(
+            new HealthcareElement({
+              note: "Hero Syndrome",
+            }),
+            patient.id
+          );
+        },
+        (status) => {
+          statuses.push(status)
+        }
+      )
 
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
+      events?.forEach((event) => console.log(`Event : ${event}`))
+      statuses?.forEach((status) => console.log(`Status : ${status}`))
 
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
+      assert(events.length === 1, "The events have not been recorded");
+      assert(statuses.length === 2, "The statuses have not been recorded");
+    }
 
-  async function createPatientAndSubscribe(api: MedTechApi, options: {}) {
-    const loggedUser = await api.userApi.getLoggedUser();
-    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
+    it("CREATE HealthcareElement without options", async () => {
+      await createHealthcareElementAndSubscribe({}, ["CREATE"]);
+    }).timeout(60000);
 
-    const events: Patient[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await api.patientApi.subscribeToPatientEvents(
-        ["CREATE"],
+    it("CREATE HealthcareElement with options", async () => {
+      await createHealthcareElementAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
+    }).timeout(60000);
+  });
+
+  describe("Can subscribe to Patients", async () => {
+    const createPatientAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => medtechApi!.patientApi.subscribeToPatientEvents(
+        eventTypes,
         await new PatientFilter()
           .forDataOwner(loggedUser.healthcarePartyId!)
           .containsFuzzy("John")
           .build(),
-        async (pat) => {
-          events.push(pat);
-        },
-        options
+        eventListener,
+        options,
       )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
 
-    const patient = await api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    )
+      const loggedUser = await medtechApi!!.userApi.getLoggedUser()
+      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        loggedUser.healthcarePartyId!,
+        hex2ua(privKey)
+      );
 
-    await sleep(5000)
-    connection.close()
+      const events: Patient[] = [];
+      const statuses: string[] = [];
 
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
+      await doXOnYAndSubscribe(
+        medtechApi!!,
+        options,
+        connectionPromise(options, loggedUser.healthcarePartyId!, async (patient) => {
+          events.push(patient);
+        }),
+        async () => {
+          await medtechApi!!.patientApi.createOrModifyPatient(
+            new Patient({
+              firstName: "John",
+              lastName: "Snow",
+              note: "Winter is coming",
+            })
+          );
+        },
+        (status) => {
+          statuses.push(status)
+        }
+      )
 
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
+      events?.forEach((event) => console.log(`Event : ${event}`))
+      statuses?.forEach((status) => console.log(`Status : ${status}`))
 
-  async function createUserAndSubscribe(api: MedTechApi, options: {}) {
-    const loggedUser = await api.userApi.getLoggedUser();
-    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
+      assert(events.length === 1, "The events have not been recorded");
+      assert(statuses.length === 2, "The statuses have not been recorded");
+    }
 
-    const events: User[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await api.userApi.subscribeToUserEvents(
-        ["CREATE"],
+    it("CREATE Patient without option", async () => {
+      await createPatientAndSubscribe({}, ["CREATE"]);
+    }).timeout(60000);
+
+    it("CREATE Patient with options", async () => {
+      await createPatientAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
+    }).timeout(60000);
+  });
+
+  describe("Can subscribe to User", async () => {
+    const createUserAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => medtechApi!.userApi.subscribeToUserEvents(
+        eventTypes,
         await new UserFilter().build(),
-        async (user) => {
+        eventListener,
+        options,
+      )
+
+      const loggedUser = await medtechApi!!.userApi.getLoggedUser()
+
+      const events: User[] = [];
+      const statuses: string[] = [];
+
+      await doXOnYAndSubscribe(
+        medtechApi!!,
+        options,
+        connectionPromise({}, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user);
+        }),
+        async () => {
+          const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, loggedUser.healthcarePartyId!);
+
+          const currentUser = patApiAndUser.user;
+          assert(currentUser);
         },
-        options
+        (status) => {
+          statuses.push(status)
+        }
       )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
 
-    await sleep(5000)
-    // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, loggedUser.healthcarePartyId!);
+      events?.forEach((event) => console.log(`Event : ${event}`))
+      statuses?.forEach((status) => console.log(`Status : ${status}`))
 
-    // Then
-    const currentUser = patApiAndUser.user;
-    assert(currentUser);
+      assert(events.length === 1, "The events have not been recorded");
+      assert(statuses.length === 2, "The statuses have not been recorded");
+    }
 
-    await sleep(5000)
-    connection.close()
+    it("CREATE User without options", async () => {
+      await createUserAndSubscribe({}, ["CREATE"]);
+    }).timeout(60000);
 
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
-
-  async function createHealthcareElementAndSubscribe(api: MedTechApi, options: {}) {
-    const loggedUser = await api.userApi.getLoggedUser();
-    await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const hcp =
-      await api.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-    const events: HealthcareElement[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await api.healthcareElementApi.subscribeToHealthcareElementEvents(
-        ["CREATE"],
-        await new HealthcareElementFilter()
-          .forDataOwner(hcp.id!)
-          .byTagCodeFilter(testType, testCode)
-          .build(),
-        async (he) => {
-          events.push(he);
-        },
-        options
-      )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
-
-
-    const patient = await api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-
-    await sleep(5000);
-
-    await api.healthcareElementApi.createOrModifyHealthcareElement(
-      new HealthcareElement({
-        note: "Hero Syndrome",
-      }),
-      patient.id
-    );
-
-    await sleep(5000);
-    connection.close();
-
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
-
-  async function deleteDataSamplesAndSubscribe(api: MedTechApi, options: {}) {
-    const loggedUser = await api.userApi.getLoggedUser();
-    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      loggedUser.healthcarePartyId!,
-      hex2ua(privKey)
-    );
-
-    const hcp =
-      await api.healthcareProfessionalApi.getHealthcareProfessional(
-        loggedUser.healthcarePartyId!
-      );
-    const events: DataSample[] = [];
-    const statuses: string[] = [];
-    const connection = (
-      await api.dataSampleApi.subscribeToDataSampleEvents(
-        ["CREATE"], // TODO: A contact deleted is a CREATE event, because we replace it, should be a DELETE event
-        await new DataSampleFilter()
-          .forDataOwner(hcp.id!)
-          .byTagCodeFilter(testType, testCode)
-          .build(),
-        async (ds) => {
-          events.push(ds);
-        },
-        options
-      )
-    )
-      .onConnected(() => statuses.push("CONNECTED"))
-      .onClosed(() => statuses.push("CLOSED"));
-
-    const patient = await api.patientApi.createOrModifyPatient(
-      new Patient({
-        firstName: "John",
-        lastName: "Snow",
-        note: "Winter is coming",
-      })
-    );
-
-    await sleep(5000);
-
-    const dataSample = await api.dataSampleApi.createOrModifyDataSampleFor(
-      patient.id!,
-      new DataSample({
-        labels: new Set([
-          new CodingReference({type: testType, code: testCode}),
-        ]),
-        content: {en: {stringValue: "Hello world"}},
-      })
-    );
-
-    await sleep(5000);
-
-    await api.dataSampleApi.deleteDataSample(dataSample.id!);
-
-    await sleep(5000);
-    connection.close();
-
-    events?.forEach((event) => console.log(`Event : ${event}`))
-    statuses?.forEach((event) => console.log(`Status : ${event}`))
-
-    assert(events.length === 1, "The events have not been recorded");
-    assert(statuses.length === 2, "The statuses have not been recorded");
-  }
-
-  it("Can subscribe to Data Samples", async () => {
-    await createDataSamplesAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to Data Samples with options", async () => {
-    await createDataSamplesAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
-
-  it("Can subscribe to deleted Data Samples", async () => {
-    await deleteDataSamplesAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to deleted Data Samples with options", async () => {
-    await deleteDataSamplesAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
-
-  it("Can subscribe to Notifications", async () => {
-    await createNotificationAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to Notifications with options", async () => {
-    await createNotificationAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
-
-  it("Can subscribe to HealthcareElement", async () => {
-    await createHealthcareElementAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to HealthcareElement with options", async () => {
-    await createHealthcareElementAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
-
-  it("Can subscribe to Patient", async () => {
-    await createPatientAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to Patient with options", async () => {
-    await createPatientAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
-
-  it("Can subscribe to User", async () => {
-    await createUserAndSubscribe(medtechApi!, {});
-  }).timeout(60000);
-
-  it("Can subscribe to User with options", async () => {
-    await createUserAndSubscribe(medtechApi!, {keepAlive: 100, lifetime: 10000});
-  }).timeout(60000);
+    it("CREATE User with options", async () => {
+      await createUserAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
+    }).timeout(60000);
+  });
 });
