@@ -276,7 +276,7 @@ export namespace FilterMapper {
 
   const toServiceByHcPartyFilterDto = (filter: DataSampleByHealthcarePartyFilter) => new ServiceByHcPartyFilterDto({
     desc: filter.description,
-    healthcarePartyId: filter.hcpId
+    hcpId: filter.hcpId
   })
 
   const toServiceBySecretForeignKeysDto = (filter: DataSampleByHealthcarePartyPatientFilter) => new ServiceBySecretForeignKeysDto({
