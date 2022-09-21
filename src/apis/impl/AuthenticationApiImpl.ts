@@ -20,6 +20,16 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
+  private readonly errorHandler: ErrorHandler;
+
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+  private readonly iCureBasePath: string;
+  private readonly msgGtwUrl: string;
+  private readonly authProcessId: string;
+  private readonly msgGtwSpecId: string;
+  private readonly messageGatewayApi: MessageGatewayApi;
+  private readonly sanitizer: Sanitizer
+
   constructor(
     messageGatewayApi: MessageGatewayApi,
     iCureBasePath: string,
@@ -30,7 +40,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       ? window.fetch
       : typeof self !== 'undefined'
         ? self.fetch
-        : fetch
+        : fetch,
+    errorHandler: ErrorHandler,
+    sanitizer: Sanitizer,
   ) {
     this.iCureBasePath = iCureBasePath;
     this.msgGtwUrl = msgGtwUrl;
@@ -38,18 +50,22 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.authProcessId = authProcessId;
     this.fetchImpl = fetchImpl;
     this.messageGatewayApi = messageGatewayApi;
+    this.errorHandler = errorHandler;
+    this.sanitizer = sanitizer
   }
 
-  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
-  private readonly iCureBasePath: string;
-  private readonly msgGtwUrl: string;
-  private readonly authProcessId: string;
-  private readonly msgGtwSpecId: string;
-  private readonly messageGatewayApi: MessageGatewayApi;
-
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, bypassTokenCheck: boolean = false, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
+
     if (!email && !mobilePhone) {
-      throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
+      throw this.errorHandler.createErrorWithMessage(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
+    }
+
+    if (!!mobilePhone && !!this.sanitizer.validateMobilePhone(mobilePhone)) {
+      throw this.errorHandler.createErrorWithMessage(`Invalid mobile phone number provided`)
+    }
+
+    if (!!email && !!this.sanitizer.validateEmail(email)) {
+      throw this.errorHandler.createErrorWithMessage(`Invalid email provided`)
     }
 
     const requestId = await this.messageGatewayApi.startProcess(
@@ -69,7 +85,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck});
     }
 
-    throw Error(`Could not start authentication of user ${email ?? mobilePhone}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not start authentication process for user ${email ?? mobilePhone}`)
   }
 
   async completeAuthentication(process: AuthenticationProcess, validationCode: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
@@ -88,7 +104,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
       const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
       if (!dataOwnerInitialisedKeyPair) {
-        throw Error('A keypair must be provided either directly or through the provider')
+        throw this.errorHandler.createErrorWithMessage(`A keypair must be provided either directly or through the provider`)
       }
       const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
 
@@ -101,7 +117,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       });
     }
 
-    throw Error(`Could not validate authentication of user ${process.login}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not complete authentication process for user ${process.login}`)
   }
 
   async authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
@@ -109,11 +125,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser();
     if (!loggedUser) {
-      throw new Error("User log in failed");
+      throw this.errorHandler.createErrorWithMessage(`Could not retrieve logged user`)
 
     } else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId);
-      if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`);
+      if (!patientDataOwner) throw this.errorHandler.createErrorWithMessage(`Patient with id ${loggedUser.patientId} does not exist`);
 
       const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
         .map( (keyValue) => Array.from(keyValue[1]))
@@ -134,19 +150,19 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           delegate
         );
         //TODO Return which delegates were warned to share back info & add retry mechanism
-        if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+        if (!accessNotification) throw this.errorHandler.createErrorWithMessage(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
       }
 
     } else if (!!loggedUser.healthcarePartyId) {
       const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId);
-      if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
+      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`);
 
     } else if (!!loggedUser.deviceId) {
       const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId);
-      if (!hcpDataOwner) throw new Error(`Medical Device with id ${loggedUser.deviceId} does not exist`);
+      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Medical Device with id ${loggedUser.deviceId} does not exist`);
 
     } else {
-      throw new Error("User is not a Data Owner")
+      throw this.errorHandler.createErrorWithMessage(`User with id ${loggedUser.id} is not Data Owner (either a patient, a healthcare professional or a medical device)`)
     }
 
     return authenticationResult;
@@ -159,7 +175,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair;
     if (!dataOwnerInitialisedKeyPair) {
-      throw Error('A keypair must be provided either directly or through the provider')
+      throw this.errorHandler.createErrorWithMessage('A keypair must be provided either directly or through the provider')
     }
     const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
 
@@ -186,14 +202,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     try {
       const user = await api.baseApi.userApi.getCurrentUser();
       if (user == null) {
-        throw Error(`Your validation code ${validationCode} is expired - Couldn't login new user`);
+        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} is expired - Couldn't login new user`);
       }
 
       const [providedToken, keyPair] = tokenAndKeyPairProvider(user.groupId!, user.id!) ?? [undefined, undefined];
 
       const token = providedToken ?? await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10);
       if (token == null) {
-        throw Error(`Your validation code ${validationCode} is expired - Couldn't create new secured token`);
+        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} is expired - Couldn't create new secured token`);
       }
 
       return [api, new ApiInitialisationResult(user, token, keyPair)];
@@ -205,7 +221,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   async initUserCrypto(api: MedTechApi, token: string, user: User, patientKeyPair: [string, string]): Promise<MedTechApi> {
     const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
     if (!dataOwnerId) {
-      throw Error("Invalid user, no data owner id")
+      throw this.errorHandler.createErrorWithMessage("Invalid user, no data owner id")
     }
 
     const authenticatedApi = await medTechApi(api)
@@ -216,7 +232,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const dataOwner = await authenticatedApi.baseApi.cryptoApi.getDataOwner(dataOwnerId);
     if (dataOwner == null) {
-      throw Error("Your user is not a data owner");
+      throw this.errorHandler.createErrorWithMessage("Your user is not a data owner");
     }
 
     if (dataOwner.dataOwner.publicKey == undefined) {
