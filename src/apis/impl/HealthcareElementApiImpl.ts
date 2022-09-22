@@ -23,6 +23,7 @@ import {HealthcareElementMapper} from '../../mappers/healthcareElement'
 import {firstOrNull} from '../../utils/functionalUtils'
 import {Patient} from "../../models/Patient";
 import {HealthcareElementFilter} from "../../filter";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi

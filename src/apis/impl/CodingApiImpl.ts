@@ -8,6 +8,7 @@ import {CodingMapper} from "../../mappers/codeCoding";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class CodingApiImpl implements CodingApi {
   private readonly codeApi: IccCodeApi;

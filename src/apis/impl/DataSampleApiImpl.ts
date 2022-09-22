@@ -36,6 +36,7 @@ import {toMap, toMapArrayTransform} from "../../mappers/utils";
 import {DelegationMapper} from "../../mappers/delegation";
 import {DataSampleFilter} from "../../filter";
 import {Patient} from "../../models/Patient";
+import {ErrorHandler} from "../../services/ErrorHandler";
 import toDelegationDto = DelegationMapper.toDelegationDto;
 
 export class DataSampleApiImpl implements DataSampleApi {

@@ -10,6 +10,7 @@ import {FilterMapper} from "../../mappers/filter";
 import {systemMetaDataEncryptedEquality} from "../../utils/equality";
 import {NotificationFilter} from "../../filter";
 import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class NotificationApiImpl implements NotificationApi {
 

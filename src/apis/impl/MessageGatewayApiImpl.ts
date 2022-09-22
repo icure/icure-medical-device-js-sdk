@@ -2,17 +2,19 @@ import {MessageGatewayApi} from "../MessageGatewayApi";
 import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/msgGtwMessageFactory";
 import {XHR} from "@icure/api";
 import {v4 as uuid} from "uuid";
+import {ErrorHandler} from "../../services/ErrorHandler";
+import {Sanitizer} from "../../services/Sanitizer";
 import Header = XHR.Header;
 
 export class MessageGatewayApiImpl implements MessageGatewayApi {
 
-  private readonly errorHandler: ErrorHandler;
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   private readonly msgGtwUrl: string;
   private readonly specId: string;
   private readonly authHeader: XHR.Header | null;
   private readonly headers: Header[];
+  private readonly errorHandler: ErrorHandler;
   private readonly sanitizer: Sanitizer;
 
   constructor(

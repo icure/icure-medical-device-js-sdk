@@ -23,6 +23,7 @@ import {UserFilter} from "../../filter";
 import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {EmailMessageFactory, SMSMessageFactory} from "../../utils/msgGtwMessageFactory";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 
 export class UserApiImpl implements UserApi {
