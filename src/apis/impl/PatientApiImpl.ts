@@ -25,12 +25,15 @@ export class PatientApiImpl implements PatientApi {
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
 
+  private readonly errorHandler: ErrorHandler
+
   private readonly basePath: string
   private readonly username?: string
   private readonly password?: string
 
   constructor(
     api: { cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; dataOwnerApi: IccDataOwnerXApi; documentApi: IccDocumentXApi },
+    errorHandler: ErrorHandler,
     basePath: string,
     username: string | undefined,
     password: string | undefined
@@ -38,6 +41,7 @@ export class PatientApiImpl implements PatientApi {
     this.basePath = basePath
     this.username = username
     this.password = password
+    this.errorHandler = errorHandler
     this.userApi = api.userApi
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
@@ -45,27 +49,35 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
-    let currentUser = await this.userApi.getCurrentUser()
+    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
 
-    let createdOrUpdatedPatient = patient.rev
-      ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient))
-      : await this.patientApi.createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, PatientMapper.toPatientDto(patient)))
+    const createdOrUpdatedPatient = patient.rev
+      ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient)).catch(e => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      : await this.patientApi.createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, PatientMapper.toPatientDto(patient))).catch(e => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
 
     if (createdOrUpdatedPatient) {
       return PatientMapper.toPatient(createdOrUpdatedPatient)!
     }
 
-    throw Error(`Could not create / modify patient ${patient.id} with user ${currentUser.id}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not create / modify patient ${patient.id} with user ${currentUser.id}`)
   }
 
   async deletePatient(patientId: string): Promise<string> {
-    let deletedId = (await this.patientApi.deletePatient(patientId)).map((docIdentifier) => docIdentifier.id!).pop()
+    const deletedId = (await this.patientApi.deletePatient(patientId).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })).map((docIdentifier) => docIdentifier.id!).pop()
 
     if (deletedId) {
       return deletedId
     }
 
-    throw Error(`Could not delete patient ${patientId}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not delete patient ${patientId}`)
   }
 
   async getPatient(patientId: string): Promise<Patient> {
@@ -76,7 +88,7 @@ export class PatientApiImpl implements PatientApi {
       return PatientMapper.toPatient(foundPatient)!
     }
 
-    throw Error(`Could not find patient ${patientId} with user ${currentUser.id}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not find patient ${patientId} with user ${currentUser.id}`)
   }
 
   async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
@@ -91,21 +103,27 @@ export class PatientApiImpl implements PatientApi {
         new FilterChainPatient({
           filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
         })
-      )
+      ).catch(e => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
     )!
   }
 
   matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
-    return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'))
+    return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
   }
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
-    const currentUser = await this.userApi.getCurrentUser()
+    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const patientToModify = PatientMapper.toPatientDto(patient)!
 
     if (patientToModify.delegations == undefined || !patientToModify.delegations[dataOwnerId] || patientToModify.delegations[dataOwnerId].length == 0) {
-      throw Error(`User ${currentUser.id} may not access patient information`)
+      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient information`)
     }
 
     if (patientToModify.delegations[delegatedTo] != undefined) {
@@ -116,7 +134,7 @@ export class PatientApiImpl implements PatientApi {
       .extractDelegationsSFKs(patientToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}`)
         }
 
         return delKeys.extractedKeys.shift()!
@@ -125,7 +143,7 @@ export class PatientApiImpl implements PatientApi {
       .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
       .then((encKeys) => {
         if (encKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of patient ${patientToModify.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}`)
         }
 
         return encKeys.extractedKeys.shift()!
@@ -141,7 +159,7 @@ export class PatientApiImpl implements PatientApi {
       })
       .then((updatedPatient) => {
         if (!updatedPatient) {
-          throw Error(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
+          throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
         }
 
         return PatientMapper.toPatient(updatedPatient)!
@@ -149,20 +167,22 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {
-    const currentUser = await this.userApi.getCurrentUser()
+    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
     if (!currentUser){
-      throw new Error("There is no user currently logged in");
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
     }
     if (!this.dataOwnerApi.getDataOwnerOf(currentUser)){
-      throw new Error("Current User is not a Data Owner");
+      throw this.errorHandler.createErrorWithMessage("The current user is not a data owner")
     }
     return this.patientApi.share(
       currentUser,
       patientId,
       this.dataOwnerApi.getDataOwnerOf(currentUser),
       [patientId],
-      { [patientId]: ["all"] }
-    ).then( res => {
+      {[patientId]: ["all"]}
+    ).then(res => {
       return {
         patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,
         statuses: {
@@ -171,6 +191,8 @@ export class PatientApiImpl implements PatientApi {
           patient: !!res?.statuses.patient ? (res.statuses.patient as SharingStatus) : undefined
         }
       }
+    }).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
     });
   }
 
@@ -180,7 +202,9 @@ export class PatientApiImpl implements PatientApi {
     eventFired: (patient: Patient) => Promise<void>,
     options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    let currentUser = await this.userApi.getCurrentUser()
+    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
     return subscribeToEntityEvents(
       this.basePath,
       this.username!,
@@ -191,6 +215,8 @@ export class PatientApiImpl implements PatientApi {
       eventFired,
       options,
       async (encrypted) => (await this.patientApi.decrypt(currentUser, [encrypted]))[0]
-    ).then((rs) => new ConnectionImpl(rs))
+    ).then((rs) => new ConnectionImpl(rs)).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
   }
 }
