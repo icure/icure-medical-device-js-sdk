@@ -46,6 +46,7 @@ import {NotificationApiImpl} from "./impl/NotificationApiImpl";
 import {NotificationApi} from "./NotificationApi";
 import {MessageGatewayApi} from "./MessageGatewayApi";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
+import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
 
 
 export class MedTechApi {
@@ -66,6 +67,8 @@ export class MedTechApi {
   private readonly _msgGtwSpecId: string | undefined;
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private readonly _messageGatewayApi: MessageGatewayApi | undefined;
+  private readonly _errorHandler: ErrorHandler = new ErrorHandlerImpl();
+  private readonly _sanitizer: Sanitizer = new SanitizerImpl();
   private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
 
   constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi },
@@ -82,17 +85,17 @@ export class MedTechApi {
     this._msgGtwUrl = msgGtwUrl;
     this._authProcessId = authProcessId;
     this._msgGtwSpecId = msgGtwSpecId;
-    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined;
-    this._authenticationApi = msgGtwUrl && authProcessId && msgGtwSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, msgGtwUrl, msgGtwSpecId, authProcessId) : undefined;
-    this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
-    this._codingApi = new CodingApiImpl(api);
-    this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
-    this._patientApi = new PatientApiImpl(api, basePath, username, password);
+    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer, username, password) : undefined;
+    this._authenticationApi = msgGtwUrl && authProcessId && msgGtwSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, msgGtwUrl, msgGtwSpecId, authProcessId, this._errorHandler, this._sanitizer) : undefined;
+    this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password);
+    this._codingApi = new CodingApiImpl(api, this._errorHandler);
+    this._medicalDeviceApi = new MedicalDeviceApiImpl(api, this._errorHandler);
+    this._patientApi = new PatientApiImpl(api, this._errorHandler, basePath, username, password);
     this._baseApi = api;
-    this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password);
-    this._healthcareElementApi = new HealthcareElementApiImpl(api);
-    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
-    this._notificationApi = new NotificationApiImpl(api);
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, basePath, username, password);
+    this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler);
+    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler);
+    this._notificationApi = new NotificationApiImpl(api, this._errorHandler);
     this._cryptoApi = api.cryptoApi;
   }
 
