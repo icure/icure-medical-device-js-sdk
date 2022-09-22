@@ -1,7 +1,7 @@
 import {XHR} from "@icure/api";
 import XHRError = XHR.XHRError;
 
-class ErrorHandlerImpl extends ErrorHandler {
+export class ErrorHandlerImpl extends ErrorHandler {
   public createError(error: Error): Error {
     switch (error.constructor) {
       case XHRError:
