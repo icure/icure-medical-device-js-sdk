@@ -17,64 +17,44 @@ export class NotificationApiImpl implements NotificationApi {
   private readonly userApi: IccUserXApi;
   private readonly maintenanceTaskApi: IccMaintenanceTaskXApi;
   private readonly hcpApi: IccHcpartyXApi;
+  private readonly errorHandler: ErrorHandler;
 
-  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi, dataOwnerApi: IccDataOwnerXApi}) {
+  constructor(api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi, healthcarePartyApi: IccHcpartyXApi, dataOwnerApi: IccDataOwnerXApi }, errorHandler: ErrorHandler) {
     this.dataOwnerApi = api.dataOwnerApi;
     this.userApi = api.userApi;
     this.maintenanceTaskApi = api.maintenanceTaskApi;
     this.hcpApi = api.healthcarePartyApi;
-  }
-
-  private async createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
-    if(!delegate) throw new Error("No delegate provided for Notification creation");
-    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
-    return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
-      .then( task => {
-        return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task);
-      });
-  }
-
-  private async updateNotification(notification: Notification, user: User): Promise<any> {
-    if (!notification.id) throw new Error("Invalid notification");
-    const existingNotification = await this.getNotification(notification.id);
-    if (!existingNotification) throw new Error("Cannot modify a non-existing Notification");
-    if (existingNotification.rev !== notification.rev) throw new Error("Cannot modify rev field");
-    else if (existingNotification.created !== notification.created) throw new Error("Cannot modify created field");
-    else if (existingNotification.endOfLife !== notification.endOfLife) throw new Error("Cannot modify endOfLife field");
-    else if (existingNotification.deletionDate !== notification.deletionDate) throw new Error("Cannot modify deletionDate field");
-    else if (existingNotification.modified !== notification.modified) throw new Error("Cannot modify modified field");
-    else if (existingNotification.author !== notification.author) throw new Error("Cannot modify  author field");
-    else if (existingNotification.responsible !== notification.responsible) throw new Error("Cannot modify responsible field");
-    else if (existingNotification.type !== notification.type) throw new Error("Cannot modify type field");
-    else if (!systemMetaDataEncryptedEquality(existingNotification.systemMetaData, notification.systemMetaData)) throw new Error("Cannot modify systemMetaData field");
-    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
-    return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask);
+    this.errorHandler = errorHandler;
   }
 
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
-    return this.userApi.getCurrentUser().then( user => {
-      if(!user) throw new Error("There is no user currently logged in");
+    return this.userApi.getCurrentUser().then(user => {
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
       const notificationPromise = !notification?.rev ? this.createNotification(notification, user, delegate)
         : this.updateNotification(notification, user);
-      return notificationPromise.then( (createdTask) => {
+      return notificationPromise.then((createdTask) => {
         return NotificationMapper.toNotification(createdTask as MaintenanceTask);
       });
+    }).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
     });
   }
 
   async deleteNotification(notificationId: string): Promise<string | undefined> {
-    return this.userApi.getCurrentUser().then( user => {
-      if(!user) throw new Error("There is no user currently logged in");
+    return this.userApi.getCurrentUser().then(user => {
+      if (!user) throw new Error("There is no user currently logged in");
       return this.maintenanceTaskApi.deleteMaintenanceTaskWithUser(user, notificationId).then(identifiers => {
         if (!identifiers || identifiers.length == 0) return undefined;
         return identifiers[0].id;
       });
+    }).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
     });
   }
 
   async filterNotifications(filter: Filter<Notification>, nextNotificationId?: string, limit?: number): Promise<PaginatedListNotification> {
     return this.userApi.getCurrentUser().then( user => {
-      if (!user) throw new Error("There is no user currently logged in");
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
       return this.maintenanceTaskApi.filterMaintenanceTasksByWithUser(
         user,
         nextNotificationId,
@@ -82,19 +62,51 @@ export class NotificationApiImpl implements NotificationApi {
         new FilterChainMaintenanceTask({
           filter: FilterMapper.toAbstractFilterDto(filter, 'Notification')
         })
-      ).then( paginatedList => {
+      ).then(paginatedList => {
         return PaginatedListMapper.toPaginatedListNotification(paginatedList)!
+      }).catch(e => {
+        throw this.errorHandler.createErrorFromAny(e)
       });
     });
   }
 
   async getNotification(notificationId: string): Promise<Notification | undefined> {
-    return this.userApi.getCurrentUser().then( user => {
-      if(!user) throw new Error("There is no user currently logged in");
-      return this.maintenanceTaskApi.getMaintenanceTaskWithUser(user, notificationId).then( task => {
+    return this.userApi.getCurrentUser().then(user => {
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+      return this.maintenanceTaskApi.getMaintenanceTaskWithUser(user, notificationId).then(task => {
         return NotificationMapper.toNotification(task)
       });
+    }).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
     });
+  }
+
+  async getPendingNotifications(): Promise<Array<Notification>> {
+    const user = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    });
+    if (!user){
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+    }
+    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+      throw this.errorHandler.createErrorWithMessage("User is not a Data Owner");
+    }
+    const filter = await new NotificationFilter()
+      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .build()
+    return (await this.concatenateFilterResults(filter)).filter(it => it.status === "pending");
+  }
+
+  private async createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
+    if (!delegate) throw this.errorHandler.createErrorWithMessage("No delegate provided for Notification creation")
+    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
+    return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
+      .then(task => {
+        return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task);
+      })
+      .catch(e => {
+        throw this.errorHandler.createErrorFromAny(e)
+      });
   }
 
   async concatenateFilterResults(filter: Filter<Notification>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<Notification> = []): Promise<Array<Notification>> {
@@ -104,18 +116,23 @@ export class NotificationApiImpl implements NotificationApi {
       : this.concatenateFilterResults(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedNotifications.rows))
   }
 
-  async getPendingNotifications(): Promise<Array<Notification>> {
-    const user = await this.userApi.getCurrentUser();
-    if (!user){
-      throw new Error("There is no user currently logged in");
-    }
-    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
-      throw new Error("User is not a Data Owner");
-    }
-    const filter = await new NotificationFilter()
-      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
-      .build()
-    return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
+  private async updateNotification(notification: Notification, user: User): Promise<any> {
+    if (!notification.id) throw this.errorHandler.createErrorWithMessage("Invalid notification");
+    const existingNotification = await this.getNotification(notification.id);
+    if (!existingNotification) throw this.errorHandler.createErrorWithMessage("Cannot modify a non-existing Notification");
+    if (existingNotification.rev !== notification.rev) throw this.errorHandler.createErrorWithMessage("Cannot modify rev field");
+    else if (existingNotification.created !== notification.created) throw this.errorHandler.createErrorWithMessage("Cannot modify created field");
+    else if (existingNotification.endOfLife !== notification.endOfLife) throw this.errorHandler.createErrorWithMessage("Cannot modify endOfLife field");
+    else if (existingNotification.deletionDate !== notification.deletionDate) throw this.errorHandler.createErrorWithMessage("Cannot modify deletionDate field");
+    else if (existingNotification.modified !== notification.modified) throw this.errorHandler.createErrorWithMessage("Cannot modify modified field");
+    else if (existingNotification.author !== notification.author) throw this.errorHandler.createErrorWithMessage("Cannot modify  author field");
+    else if (existingNotification.responsible !== notification.responsible) throw this.errorHandler.createErrorWithMessage("Cannot modify responsible field");
+    else if (existingNotification.type !== notification.type) throw this.errorHandler.createErrorWithMessage("Cannot modify type field");
+    else if (!systemMetaDataEncryptedEquality(existingNotification.systemMetaData, notification.systemMetaData)) throw this.errorHandler.createErrorWithMessage("Cannot modify systemMetaData field");
+    const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
+    return this.maintenanceTaskApi.modifyMaintenanceTaskWithUser(user, inputMaintenanceTask).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    });
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
