@@ -3,6 +3,9 @@ import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
 import {Api, IccCryptoXApi} from "@icure/api";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
+import {ErrorHandler} from "../services/ErrorHandler";
+import {Sanitizer} from "../services/Sanitizer";
+import {SanitizerImpl} from "../services/impl/SanitizerImpl";
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;

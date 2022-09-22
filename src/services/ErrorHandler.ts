@@ -1,4 +1,4 @@
-abstract class ErrorHandler {
+export abstract class ErrorHandler {
   public createErrorWithMessage(message: string): Error {
     return this.createError(Error(message));
   }

@@ -1,4 +1,4 @@
-interface Sanitizer {
+export interface Sanitizer {
 
   /**
    * Function that validates an email address.

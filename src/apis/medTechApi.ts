@@ -47,6 +47,9 @@ import {NotificationApi} from "./NotificationApi";
 import {MessageGatewayApi} from "./MessageGatewayApi";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
 import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
+import {ErrorHandler} from "../services/ErrorHandler";
+import {Sanitizer} from "../services/Sanitizer";
+import {SanitizerImpl} from "../services/impl/SanitizerImpl";
 
 
 export class MedTechApi {
