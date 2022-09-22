@@ -11,61 +11,114 @@ import {firstOrNull} from "../../utils/functionalUtils";
 
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private readonly deviceApi: IccDeviceApi;
+  private readonly errorHandler: ErrorHandler;
+  private readonly sanitizer: Sanitizer;
 
-  constructor(api: { deviceApi: IccDeviceApi}) {
+  constructor(api: { deviceApi: IccDeviceApi }, errorHandler: ErrorHandler, sanitizer: Sanitizer) {
     this.deviceApi = api.deviceApi
+    this.errorHandler = errorHandler;
+    this.sanitizer = sanitizer;
   }
 
   async createOrModifyMedicalDevice(medicalDevice: MedicalDevice): Promise<MedicalDevice> {
-    const createdDevice = firstOrNull(await this.createOrModifyMedicalDevices([medicalDevice]));
-    if (createdDevice != undefined) {
-      return createdDevice;
-    } else {
-      throw new Error("Couldn't create medical device");
+    try {
+      const createdDevice = firstOrNull(await this.createOrModifyMedicalDevices([medicalDevice]));
+      if (createdDevice != undefined) {
+        return createdDevice;
+      } else {
+        throw this.errorHandler.createErrorWithMessage("Couldn't create medical device")
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
     }
   }
 
   async createOrModifyMedicalDevices(medicalDevice: Array<MedicalDevice>): Promise<Array<MedicalDevice>> {
-    const medicalDevicesToCreate = medicalDevice.filter(dev => !dev.rev);
-    const medicalDevicesToUpdate = medicalDevice.filter(dev => !!dev.rev);
+    try {
+      const medicalDevicesToCreate = medicalDevice.filter(dev => !dev.rev);
+      const medicalDevicesToUpdate = medicalDevice.filter(dev => !!dev.rev);
 
-    if (!medicalDevicesToUpdate.every(device => device.id != null && forceUuid(device.id))) {
-      throw Error("Update id should be provided as an UUID");
+      if (!medicalDevicesToUpdate.every(device => device.id != null && forceUuid(device.id))) {
+        throw this.errorHandler.createErrorWithMessage("Update id should be provided as an UUID");
+      }
+
+      const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+      const deviceToUpdate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
+
+      const createdDevices = await this.deviceApi.createDevices(deviceToCreate);
+      const updatedDevices = await this.deviceApi.updateDevices(deviceToUpdate);
+      const processedDeviceIds = [...createdDevices, ...updatedDevices].map(d => d.id!);
+
+      return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => MedicalDeviceMapper.toMedicalDevice(d));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
     }
-
-    const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
-    const deviceToUpdate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));
-
-    const createdDevices = await this.deviceApi.createDevices(deviceToCreate);
-    const updatedDevices = await this.deviceApi.updateDevices(deviceToUpdate);
-    const processedDeviceIds = [...createdDevices, ...updatedDevices].map(d => d.id!);
-
-    return (await this.deviceApi.getDevices(new ListOfIds({ids: processedDeviceIds}))).map(d => MedicalDeviceMapper.toMedicalDevice(d));
   }
 
   async deleteMedicalDevice(medicalDeviceId: string): Promise<string> {
-    const deletedDeviceRev = (await this.deviceApi.deleteDevice(medicalDeviceId)).rev
-    if (deletedDeviceRev != undefined) {
-      return deletedDeviceRev;
+    try {
+      const deletedDeviceRev = (await this.deviceApi.deleteDevice(medicalDeviceId)).rev
+      if (deletedDeviceRev != undefined) {
+        return deletedDeviceRev;
+      }
+      throw this.errorHandler.createErrorWithMessage(`Couldn't delete medical device ${medicalDeviceId}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
     }
-    throw Error("Invalid medical device id")
   }
 
   async deleteMedicalDevices(requestBody: Array<string>): Promise<Array<string>> {
-    return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => !!d.rev).map(d => d.rev!);
+    try {
+      return (await this.deviceApi.deleteDevices(new ListOfIds({ids: requestBody}))).filter(d => !!d.rev).map(d => d.rev!);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
+    }
   }
 
   async filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    return PaginatedListMapper.toPaginatedListMedicalDevice(await this.deviceApi.filterDevicesBy(nextDeviceId, limit, new FilterChainDevice({
-      filter: FilterMapper.toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice')
-    })))!
+    try {
+      return PaginatedListMapper.toPaginatedListMedicalDevice(await this.deviceApi.filterDevicesBy(nextDeviceId, limit, new FilterChainDevice({
+        filter: FilterMapper.toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice')
+      })))!
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
+    }
   }
 
   async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
-    return MedicalDeviceMapper.toMedicalDevice(await this.deviceApi.getDevice(medicalDeviceId));
+    try {
+      return MedicalDeviceMapper.toMedicalDevice(await this.deviceApi.getDevice(medicalDeviceId));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
+    }
   }
 
   async matchMedicalDevices(filter: Filter<MedicalDevice>): Promise<Array<string>> {
-    return this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User'));
+    try {
+      return this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User'));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw this.errorHandler.createError(error);
+      }
+      throw error;
+    }
   }
 }
