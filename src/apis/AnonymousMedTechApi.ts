@@ -27,7 +27,7 @@ export class AnonymousMedTechApi {
     this._authProcessId = authProcessId;
 
     this._authenticationApi = new AuthenticationApiImpl(
-      new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId),
+      new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer),
       this._iCureUrlPath,
       this._msgGtwUrl,
       this._msgGtwSpecId,
