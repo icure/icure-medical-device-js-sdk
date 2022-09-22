@@ -2,6 +2,7 @@ import {AuthenticationApi} from "./AuthenticationApi";
 import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
 import {Api, IccCryptoXApi} from "@icure/api";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
+import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
@@ -10,6 +11,8 @@ export class AnonymousMedTechApi {
   private readonly _msgGtwSpecId: string;
   private readonly _authenticationApi: AuthenticationApi;
   private readonly _cryptoApi: IccCryptoXApi;
+  private readonly _errorHandler: ErrorHandler = new ErrorHandlerImpl();
+  private readonly _sanitizer: Sanitizer = new SanitizerImpl();
 
   constructor(
     iCureUrlPath: string,
@@ -28,7 +31,9 @@ export class AnonymousMedTechApi {
       this._iCureUrlPath,
       this._msgGtwUrl,
       this._msgGtwSpecId,
-      this._authProcessId
+      this._authProcessId,
+      this._errorHandler,
+      this._sanitizer,
     );
     this._cryptoApi = api.cryptoApi;
   }

@@ -36,13 +36,13 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     msgGtwUrl: string,
     msgGtwSpecId: string,
     authProcessId: string,
+    errorHandler: ErrorHandler,
+    sanitizer: Sanitizer,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
         ? self.fetch
         : fetch,
-    errorHandler: ErrorHandler,
-    sanitizer: Sanitizer,
   ) {
     this.iCureBasePath = iCureBasePath;
     this.msgGtwUrl = msgGtwUrl;
