@@ -62,11 +62,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       throw this.errorHandler.createErrorWithMessage(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
 
-    if (!!mobilePhone && !!this.sanitizer.validateMobilePhone(mobilePhone)) {
+    if (!!mobilePhone && !this.sanitizer.validateMobilePhone(mobilePhone)) {
       throw this.errorHandler.createErrorWithMessage(`Invalid mobile phone number provided`)
     }
 
-    if (!!email && !!this.sanitizer.validateEmail(email)) {
+    if (!!email && !this.sanitizer.validateEmail(email)) {
       throw this.errorHandler.createErrorWithMessage(`Invalid email provided`)
     }
 
