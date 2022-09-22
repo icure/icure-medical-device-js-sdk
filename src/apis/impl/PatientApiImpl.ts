@@ -18,6 +18,7 @@ import {PatientMapper} from '../../mappers/patient'
 import {Connection, ConnectionImpl} from '../../models/Connection'
 import {subscribeToEntityEvents} from '../../utils/rsocket'
 import {SharingResult, SharingStatus} from "../../utils/interfaces";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi

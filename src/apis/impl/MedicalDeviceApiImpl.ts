@@ -8,6 +8,7 @@ import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {Filter} from "../../filter/Filter";
 import {firstOrNull} from "../../utils/functionalUtils";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private readonly deviceApi: IccDeviceApi;

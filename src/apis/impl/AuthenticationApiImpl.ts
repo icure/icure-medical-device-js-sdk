@@ -6,6 +6,8 @@ import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {Notification, NotificationTypeEnum} from "../../models/Notification";
+import {Sanitizer} from "../../services/Sanitizer";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {
@@ -20,7 +22,6 @@ class ApiInitialisationResult {
 }
 
 export class AuthenticationApiImpl implements AuthenticationApi {
-  private readonly errorHandler: ErrorHandler;
 
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
@@ -28,6 +29,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authProcessId: string;
   private readonly msgGtwSpecId: string;
   private readonly messageGatewayApi: MessageGatewayApi;
+  private readonly errorHandler: ErrorHandler;
   private readonly sanitizer: Sanitizer
 
   constructor(

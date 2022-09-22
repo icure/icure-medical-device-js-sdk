@@ -16,6 +16,7 @@ import {HealthcareProfessionalMapper} from "../../mappers/healthcareProfessional
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
 import {firstOrNull} from "../../utils/functionalUtils";
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   private readonly userApi: IccUserXApi;
