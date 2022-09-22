@@ -30,79 +30,108 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
+  private readonly errorHandler: ErrorHandler
+  private readonly sanitizer: Sanitizer
 
-  constructor(api: {
-    cryptoApi: IccCryptoXApi
-    userApi: IccUserXApi
-    patientApi: IccPatientXApi
-    contactApi: IccContactXApi
-    dataOwnerApi: IccDataOwnerXApi
-    documentApi: IccDocumentXApi
-    healthcarePartyApi: IccHcpartyXApi
-    healthcareElementApi: IccHelementXApi
-  }) {
+  constructor(
+    api: {
+      cryptoApi: IccCryptoXApi
+      userApi: IccUserXApi
+      patientApi: IccPatientXApi
+      contactApi: IccContactXApi
+      dataOwnerApi: IccDataOwnerXApi
+      documentApi: IccDocumentXApi
+      healthcarePartyApi: IccHcpartyXApi
+      healthcareElementApi: IccHelementXApi
+    },
+    errorHandler: ErrorHandler,
+    sanitizer: Sanitizer
+  ) {
     this.userApi = api.userApi
     this.heApi = api.healthcareElementApi
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
     this.dataOwnerApi = api.dataOwnerApi
+    this.errorHandler = errorHandler
+    this.sanitizer = sanitizer
   }
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser()
-    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
+    try {
+      const currentUser = await this.userApi.getCurrentUser()
+      const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
-    let createdOrUpdateHealthElement
-    if (healthcareElement.rev) {
-      createdOrUpdateHealthElement = await this.heApi.modifyHealthElementWithUser(
-        currentUser,
-        HealthcareElementMapper.toHealthElementDto(healthcareElement)
-      )
-    } else if (patient) {
-      createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(
-        currentUser,
-        await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true)
-      )
+      let createdOrUpdateHealthElement
+      if (healthcareElement.rev) {
+        createdOrUpdateHealthElement = await this.heApi.modifyHealthElementWithUser(
+          currentUser,
+          HealthcareElementMapper.toHealthElementDto(healthcareElement)
+        )
+      } else if (patient) {
+        createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(
+          currentUser,
+          await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true)
+        )
+      }
+
+      if (createdOrUpdateHealthElement) {
+        return HealthcareElementMapper.toHealthcareElement(createdOrUpdateHealthElement)!
+      }
+
+      throw this.errorHandler.createErrorWithMessage(`Could not create / modify healthElement ${healthcareElement.id}`)
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
     }
-
-    if (createdOrUpdateHealthElement) {
-      return HealthcareElementMapper.toHealthcareElement(createdOrUpdateHealthElement)!
-    }
-
-    throw Error(`Could not create / modify healthElement ${healthcareElement.id}`)
   }
 
   async createOrModifyHealthcareElements(healthcareElements: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
-    const heToCreate = healthcareElements.filter((he) => !he.rev)
-    const heToUpdate = healthcareElements.filter((he) => !!he.rev)
-    const currentUser = await this.userApi.getCurrentUser()
-    const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
+    try {
+      const heToCreate = healthcareElements.filter((he) => !he.rev)
+      const heToUpdate = healthcareElements.filter((he) => !!he.rev)
+      const currentUser = await this.userApi.getCurrentUser()
+      const patient = patientId ? await this.patientApi.getPatientWithUser(currentUser, patientId) : undefined
 
-    if (!heToUpdate.every((he) => he.id != null && forceUuid(he.id))) {
-      throw Error('Update id should be provided as an UUID')
+      if (!heToUpdate.every((he) => he.id != null && forceUuid(he.id))) {
+        throw this.errorHandler.createErrorWithMessage('Update id should be provided as an UUID')
+      }
+
+      if (!patient && heToCreate.length > 0) {
+        throw this.errorHandler.createErrorWithMessage('Patient id should be provided to create new healthcare elements')
+      }
+
+      const hesCreated = await Promise.all(
+        heToCreate.map((he) => HealthcareElementMapper.toHealthElementDto(he)).map((he) => this.heApi.newInstance(currentUser, patient, he, true))
+      ).then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
+      const hesUpdated = await this.heApi.modifyHealthElementsWithUser(
+        currentUser,
+        heToUpdate.map((he) => HealthcareElementMapper.toHealthElementDto(he))
+      )
+
+      return [...hesCreated, ...hesUpdated].map((he) => HealthcareElementMapper.toHealthcareElement(he))
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
     }
-
-    if (!patient && heToCreate.length > 0) {
-      throw Error('patientId is required when creating a new healthcare element')
-    }
-
-    const hesCreated = await Promise.all(
-      heToCreate.map((he) => HealthcareElementMapper.toHealthElementDto(he)).map((he) => this.heApi.newInstance(currentUser, patient, he, true))
-    ).then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
-    const hesUpdated = await this.heApi.modifyHealthElementsWithUser(
-      currentUser,
-      heToUpdate.map((he) => HealthcareElementMapper.toHealthElementDto(he))
-    )
-
-    return [...hesCreated, ...hesUpdated].map((he) => HealthcareElementMapper.toHealthcareElement(he))
   }
 
   async deleteHealthcareElement(id: string): Promise<string> {
-    const deletedHeRev = firstOrNull(await this.heApi.deleteHealthElements(id))?.rev
-    if (deletedHeRev) {
-      return deletedHeRev
+    try {
+      const deletedHeRev = firstOrNull(await this.heApi.deleteHealthElements(id))?.rev
+      if (deletedHeRev) {
+        return deletedHeRev
+      }
+      throw this.errorHandler.createErrorWithMessage(`Could not delete healthElement ${id}`)
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
     }
-    throw Error(`Could not delete healthcare element ${id}`)
   }
 
   async filterHealthcareElement(
@@ -110,31 +139,52 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     nextHealthElementId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareElement> {
-    return PaginatedListMapper.toPaginatedListHealthcareElement(
-      await this.heApi.filterHealthElementsBy(
-        nextHealthElementId,
-        limit,
-        new FilterChainPatient({
-          filter: FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'),
-        })
-      )
-    )!
+    try {
+      return PaginatedListMapper.toPaginatedListHealthcareElement(
+        await this.heApi.filterHealthElementsBy(
+          nextHealthElementId,
+          limit,
+          new FilterChainPatient({
+            filter: FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'),
+          })
+        )
+      )!
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
   async getHealthcareElement(id: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser()
-    return HealthcareElementMapper.toHealthcareElement(await this.heApi.getHealthElementWithUser(currentUser, id))
+    try {
+      const currentUser = await this.userApi.getCurrentUser()
+      return HealthcareElementMapper.toHealthcareElement(await this.heApi.getHealthElementWithUser(currentUser, id))
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'))
+    try {
+      return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'))
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
   async _getPatientOfHealthElement(
     currentUser: UserDto,
     healthElementDto: HealthElement
   ): Promise<PatientDto | undefined> {
-    let patientId = await this._getPatientIdOfHealthElement(currentUser, healthElementDto);
+    const patientId = await this._getPatientIdOfHealthElement(currentUser, healthElementDto);
     if (patientId) {
       return this.patientApi.getPatientWithUser(currentUser, patientId);
     } else {
@@ -146,7 +196,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     currentUser: UserDto,
     healthElement: HealthElement
   ): Promise<string | undefined> {
-    let keysFromDeleg =
+    const keysFromDeleg =
       await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
         this.dataOwnerApi.getDataOwnerOf(currentUser),
         healthElement.id!,
@@ -160,84 +210,108 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser()
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
-    const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
+    try {
+      const currentUser = await this.userApi.getCurrentUser()
+      const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+      const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
-    if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
-      throw Error(`User ${currentUser.id} may not access healthcare element information`)
-    }
+      if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
+        throw Error(`User ${currentUser.id} may not access healthcare element information`)
+      }
 
-    if (healthElementToModify.delegations[delegatedTo] != undefined) {
-      return healthcareElement;
-    }
+      if (healthElementToModify.delegations[delegatedTo] != undefined) {
+        return healthcareElement;
+      }
 
-    const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
-    if (healthcareElementPatient == undefined) {
-      throw Error(`User ${currentUser.id} may not access patient identifier of healthcare element ${healthElementToModify.id}`)
-    }
+      const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
+      if (healthcareElementPatient == undefined) {
+        throw Error(`User ${currentUser.id} may not access patient identifier of healthcare element ${healthElementToModify.id}`)
+      }
 
-    return this.cryptoApi
-      .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
-      .then((delKeys) => {
-        if (delKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
-        }
-        return delKeys.extractedKeys.shift()!
-      })
-      .then(async (secretKey) => {
-        const newKeys = await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(healthElementToModify, healthcareElementPatient, dataOwnerId, delegatedTo, secretKey);
-        return new HealthElement({
-          ...healthElementToModify,
-          delegations: newKeys.delegations,
-          cryptedForeignKeys: newKeys.cryptedForeignKeys
+      return this.cryptoApi
+        .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
+        .then((delKeys) => {
+          if (delKeys.extractedKeys.length == 0) {
+            throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+          }
+          return delKeys.extractedKeys.shift()!
         })
-      })
-      .then(async (heWithNewDelegationsAndCryptedFKeys) => {
-        return {
-          he: heWithNewDelegationsAndCryptedFKeys,
-          encKeys: await this.cryptoApi.extractEncryptionsSKs(heWithNewDelegationsAndCryptedFKeys, dataOwnerId)
-        }
-      })
-      .then(({he, encKeys}) => {
-        if (encKeys.extractedKeys.length == 0) {
-          throw Error(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
-        }
+        .then(async (secretKey) => {
+          const newKeys = await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(healthElementToModify, healthcareElementPatient, dataOwnerId, delegatedTo, secretKey);
+          return new HealthElement({
+            ...healthElementToModify,
+            delegations: newKeys.delegations,
+            cryptedForeignKeys: newKeys.cryptedForeignKeys
+          })
+        })
+        .then(async (heWithNewDelegationsAndCryptedFKeys) => {
+          return {
+            he: heWithNewDelegationsAndCryptedFKeys,
+            encKeys: await this.cryptoApi.extractEncryptionsSKs(heWithNewDelegationsAndCryptedFKeys, dataOwnerId)
+          }
+        })
+        .then(({he, encKeys}) => {
+          if (encKeys.extractedKeys.length == 0) {
+            throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+          }
 
-        return {he: he, encKey: encKeys.extractedKeys.shift()!}
-      })
-      .then(({he, encKey}) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
-      .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
-      .then((updatedHealthElement) => {
-        if (!updatedHealthElement) {
-          throw Error(`Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`)
-        }
+          return {he: he, encKey: encKeys.extractedKeys.shift()!}
+        })
+        .then(({
+                 he,
+                 encKey
+               }) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
+        .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
+        .then((updatedHealthElement) => {
+          if (!updatedHealthElement) {
+            throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`)
+          }
 
-        return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
-      })
+          return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
+        })
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
   async concatenateFilterResults(filter: Filter<HealthcareElement>, nextId?: string | undefined, limit?: number | undefined, accumulator: Array<HealthcareElement> = []): Promise<Array<HealthcareElement>> {
-    const paginatedHealthcareElements = await this.filterHealthcareElement(filter, nextId, limit);
-    return !paginatedHealthcareElements.nextKeyPair?.startKeyDocId
-      ? accumulator.concat(paginatedHealthcareElements.rows)
-      : this.concatenateFilterResults(filter, paginatedHealthcareElements.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedHealthcareElements.rows))
+    try {
+      const paginatedHealthcareElements = await this.filterHealthcareElement(filter, nextId, limit);
+      return !paginatedHealthcareElements.nextKeyPair?.startKeyDocId
+        ? accumulator.concat(paginatedHealthcareElements.rows)
+        : this.concatenateFilterResults(filter, paginatedHealthcareElements.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedHealthcareElements.rows))
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
   async getHealthcareElementsForPatient(patient: Patient): Promise<Array<HealthcareElement>> {
-    const user = await this.userApi.getCurrentUser();
-    if (!user) {
-      throw new Error("There is no user currently logged in");
-    }
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user);
-    if (!dataOwnerId) {
-      throw new Error("User is not a Data Owner");
-    }
-    const filter = await new HealthcareElementFilter()
+    try {
+      const user = await this.userApi.getCurrentUser();
+      if (!user) {
+        throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
+      }
+      const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user);
+      if (!dataOwnerId) {
+        throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
+      }
+      const filter = await new HealthcareElementFilter()
         .forDataOwner(dataOwnerId)
         .forPatients(this.cryptoApi, [patient])
         .build()
-    return await this.concatenateFilterResults(filter);
+      return await this.concatenateFilterResults(filter);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
   }
 
 }
