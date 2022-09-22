@@ -1,3 +1,5 @@
+import {Sanitizer} from "../Sanitizer";
+
 export class SanitizerImpl implements Sanitizer {
 
   validateEmail(email?: string): string | null {
