@@ -1,4 +1,5 @@
 import {XHR} from "@icure/api";
+import {ErrorHandler} from "../ErrorHandler";
 import XHRError = XHR.XHRError;
 
 export class ErrorHandlerImpl extends ErrorHandler {
