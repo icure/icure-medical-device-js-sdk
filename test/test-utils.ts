@@ -21,11 +21,12 @@ let cachedPatient: Patient | undefined;
 let cachedHealthcareElement: HealthcareElement | undefined;
 
 export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
-  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024**3)
+  (global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 ** 3)
   ;(global as any).fetch = fetch
   ;(global as any).Storage = ''
   ;(global as any).TextDecoder = TextDecoder
   ;(global as any).TextEncoder = TextEncoder
+  ;(global as any).headers = Headers
 }
 
 export type TestVars = {
