@@ -13,13 +13,6 @@ export class ErrorHandlerImpl extends ErrorHandler {
   }
 
   private handleXHRError(xhrError: XHR.XHRError, message?: string): Error {
-    return new Error(
-      `
-      ${xhrError.statusCode} - ${message ?? xhrError.message}\
-
-      X-Request-Id: ${xhrError.headers.get("X-Request-Id")}\
-      URL: ${xhrError.url}
-      `
-    );
+    return new Error(`${xhrError.statusCode} - ${message ?? xhrError.message}\nX-Request-Id: ${xhrError.headers.get("X-Request-Id")}\nURL: ${xhrError.url}`);
   }
 }
