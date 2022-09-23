@@ -6,7 +6,7 @@ import { DataSampleFilter } from '../../src/filter'
 import { assert, expect, use as chaiUse } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { CodingReference } from '../../src/models/CodingReference'
-import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
 import { it } from 'mocha'
 import { Patient } from '../../index'
 chaiUse(require('chai-as-promised'))
@@ -34,6 +34,12 @@ const {
 } = getEnvVariables()
 
 describe('Data Samples API', () => {
+
+  before(async () => {
+    const initializer = await getEnvironmentInitializer();
+    initializer.execute();
+  });
+
   it('Create Data Sample - Success', async () => {
     // Given
     const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)

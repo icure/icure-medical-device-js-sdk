@@ -12,12 +12,11 @@ import {
   UserFilter
 } from "../../src/filter";
 
-import {LocalStorage} from "node-localstorage";
-import * as os from "os";
 import {assert} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
+import {getEnvironmentInitializer, getEnvVariables, setLocalStorage} from "../test-utils";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {getEnvVariables, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
@@ -25,27 +24,13 @@ import {v4 as uuid} from "uuid";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {Connection} from "../../src/models/Connection";
 
-const tmp = os.tmpdir();
-console.log("Saving keys in " + tmp);
-(global as any).localStorage = new LocalStorage(tmp, 5 * 1024 * 1024 * 1024);
-(global as any).Storage = "";
+setLocalStorage(fetch);
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  hcp2UserName: hcp2UserName,
-  hcp2Password: hcp2Password,
-  hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: userName,
-  hcp3Password: password,
-  hcp3PrivKey: privKey,
-  specId: specId,
-  msgGtwUrl: msgGtwUrl,
-  patAuthProcessId: patAuthProcessId
-} = getEnvVariables()
-
+const iCureUrl =
+  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v2";
+const userName = process.env.ICURE_TS_TEST_HCP_3_USER!;
+const password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
+const privKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
 let medtechApi: MedTechApi | undefined = undefined;
 const testType = "IC-TEST";
 const testCode = "TEST";
@@ -56,10 +41,13 @@ let hcp1User: User | undefined = undefined;
 describe("Subscription API", () => {
 
   before(async () => {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+
     medtechApi = await medTechApi()
       .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withUserName(hcp3UserName)
+      .withPassword(hcp3Password)
       .withCrypto(webcrypto as any)
       .build();
 
@@ -106,7 +94,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser();
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(privKey)
+        hex2ua(hcp3PrivKey)
       );
 
       const events: DataSample[] = [];

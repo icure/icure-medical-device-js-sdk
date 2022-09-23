@@ -11,21 +11,24 @@ import { Patient } from '../../src/models/Patient'
 import { setLocalStorage } from '../test-utils'
 import * as os from 'os'
 import {jwk2spki} from "@icure/api";
+import {getEnvironmentInitializer, getEnvVariables} from "../test-utils";
 
-const tmp = os.tmpdir()
-console.log('Saving keys in ' + tmp)
 setLocalStorage(fetch)
 
-const iCureUrl = process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1'
-const userName = process.env.ICURE_TS_TEST_HCP_USER!
-const password = process.env.ICURE_TS_TEST_HCP_PWD!
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword} = getEnvVariables()
 
-describe('Healthcare professional', () => {
-  it('should be capable of creating a healthcare professional from scratch', async () => {
+describe("Healthcare professional", () => {
+
+  before(async () => {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+  });
+
+  it("should be capable of creating a healthcare professional from scratch", async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withUserName(hcpUserName)
+      .withPassword(hcpPassword)
       .withCrypto(webcrypto as any)
       .build()
 

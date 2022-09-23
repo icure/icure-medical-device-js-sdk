@@ -4,33 +4,31 @@ import 'isomorphic-fetch'
 import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
-import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  msgGtwUrl: msgGtwUrl,
-  patUserName: patUserName,
-  patPassword: patPassword,
-  patPrivKey: patPrivKey,
-  authProcessHcpId: authProcessHcpId,
-  specId: specId,
-  hcp2UserName: hcp2UserName,
-  hcp2Password: hcp2Password,
-  hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName,
-  hcp3Password: hcp3Password,
-  hcp3PrivKey: hcp3PrivKey,
-} = getEnvVariables()
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+  msgGtwUrl: msgGtwUrl, patUserName: patUserName, patPassword: patPassword, specId: specId, patAuthProcessId: patAuthProcessId,
+  patPrivKey: patPrivKey, hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey} = getEnvVariables()
 
-const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5' // pragma: allowlist secret
+let hcpId: string | undefined;
 
 describe('Patient API', () => {
+
+  before(async () => {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      iCureUrl,
+      hcpUserName,
+      hcpPassword,
+      hcpPrivKey)
+    hcpId = hcpApiAndUser.user.healthcarePartyId;
+  });
+
   it('Can create a patient and a related Healthcare Element', async () => {
     const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const medtechApi = apiAndUser.api
@@ -68,7 +66,7 @@ describe('Patient API', () => {
   })
 
   it('Patient sharing its own information with HCP', async () => {
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, hcpId!)
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
 
