@@ -1,7 +1,7 @@
 import 'isomorphic-fetch';
 import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
-import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {UserFilter} from "../../src/filter";
 import {assert, expect} from "chai";
 
@@ -18,6 +18,9 @@ let patUser: User | undefined = undefined;
 describe("User Filters Test", function () {
 
   before(async function () {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
       hcpUserName,

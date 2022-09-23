@@ -4,7 +4,7 @@ import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
-import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
 import { User } from '../../src/models/User'
 import { NotificationFilter } from '../../src/filter'
 import { PaginatedListNotification } from '../../src/models/PaginatedListNotification'
@@ -61,6 +61,9 @@ function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, e
 
 describe('Notification API', async function () {
   before(async function () {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+
     const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     hcp1Api = hcpApi1AndUser.api
     hcp1User = hcpApi1AndUser.user

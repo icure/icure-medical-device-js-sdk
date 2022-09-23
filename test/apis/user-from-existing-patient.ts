@@ -4,7 +4,7 @@ import { User } from '../../src/models/User'
 import { Patient } from '../../src/models/Patient'
 import { webcrypto } from 'crypto'
 import { hex2ua, sleep, ua2hex } from '@icure/api'
-import { getEnvVariables, ICureTestEmail, setLocalStorage, TestUtils } from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, ICureTestEmail, setLocalStorage, TestUtils} from '../test-utils'
 import { Address } from '../../src/models/Address'
 import { Telecom } from '../../src/models/Telecom'
 import { assert, expect } from 'chai'
@@ -15,19 +15,10 @@ import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 
 setLocalStorage(fetch)
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  hcp3UserName: hcp3UserName,
-  hcp3Password: hcp3Password,
-  hcp3PrivKey: hcp3PrivKey,
-  patUserName: patUserName,
-  patPassword: patPassword,
-  patPrivKey: patPrivKey,
-  msgGtwUrl: msgGtwUrl,
-  authProcessHcpId: authProcessHcpId,
+const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
+      hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
+      patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey, patAuthProcessId: patAuthProcessId,
+      msgGtwUrl: msgGtwUrl,
   specId: specId,
 } = getEnvVariables()
 
@@ -41,6 +32,9 @@ let patUser: User
 
 describe('A Healthcare Party', () => {
   before(async () => {
+    const initializer = await getEnvironmentInitializer();
+    await initializer.execute();
+
     hcp1Api = await medTechApi()
       .withICureBaseUrl(iCureUrl)
       .withUserName(hcpUserName)
@@ -123,7 +117,7 @@ describe('A Healthcare Party', () => {
       .withMsgGwSpecId(specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessHcpId)
-      .withAuthProcessBySmsId(authProcessHcpId)
+      .withAuthProcessBySmsId(patAuthProcessId)
       .build()
 
     const userKeyPair = await anonymousMedTechApi.generateRSAKeypair()
