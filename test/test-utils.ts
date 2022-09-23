@@ -14,12 +14,20 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
-import { ICURE_FREE_URL } from '../index'
+import {
+  CreateHcpComponent, CreatePatientComponent,
+  DockerComposeInitializer,
+  EnvInitializer,
+  GroupInitializer,
+  KrakenInitializer, NewMasterUserInitializerComposite, OldMasterUserInitializerComposite,
+  OssInitializer, SafeguardInitializer
+} from "./test-setup";
 
-let cachedHcpApi: MedTechApi | undefined
-let cachedHcpLoggedUser: User | undefined
-let cachedPatient: Patient | undefined
-let cachedHealthcareElement: HealthcareElement | undefined
+let cachedHcpApi: MedTechApi | undefined;
+let cachedHcpLoggedUser: User | undefined;
+let cachedPatient: Patient | undefined;
+let cachedHealthcareElement: HealthcareElement | undefined;
+let cachedInitializer: EnvInitializer | undefined;
 
 export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
   ;(global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 ** 3)
@@ -90,6 +98,41 @@ export class ICureTestEmail implements EmailMessageFactory {
       html: `User: ${recipient.id}`,
     }
   }
+}
+
+export async function InitTestEnvironment(): Promise<EnvInitializer> {
+  if (!cachedInitializer) {
+    const couchDbUrl = process.env.ICURE_COUCHDB_URL!;
+    const iCureUrl = process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v1";
+    const composeFileUrl = process.env.KRAKEN_DOCKER_URL!;
+    const adminLogin = process.env.ICURE_TEST_ADMIN_LOGIN!;
+    const groupId = uuid();
+    let bootstrapStep = null;
+    if (process.env.TEST_ENVIRONMENT === "docker") {
+      const setupStep = new DockerComposeInitializer(couchDbUrl, 'test/scratch', composeFileUrl);
+      bootstrapStep = process.env.BACKEND_TYPE === "oss"
+        ? new OssInitializer(setupStep, process.env.ICURE_TEST_ADMIN_ID!, couchDbUrl, adminLogin)
+        : new KrakenInitializer(setupStep, process.env.ICURE_TEST_ADMIN_ID!, couchDbUrl, adminLogin);
+    }
+    const groupStep = new GroupInitializer(bootstrapStep, adminLogin, process.env.ICURE_TEST_ADMIN_PWD!, groupId, fetch, iCureUrl);
+    const creationStep = !!process.env.ICURE_TEST_MASTER_PRIV
+      ? new OldMasterUserInitializerComposite(groupStep, process.env.ICURE_TEST_MASTER_LOGIN!, process.env.ICURE_TEST_MASTER_PWD!, process.env.ICURE_TEST_MASTER_ID!, process.env.ICURE_TEST_MASTER_PUB!, process.env.ICURE_TEST_MASTER_PRIV!, iCureUrl, fetch)
+      : new NewMasterUserInitializerComposite(groupStep, adminLogin, process.env.ICURE_TEST_ADMIN_PWD!, groupId, iCureUrl, fetch);
+    creationStep.add(
+      new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_USER!, process.env.ICURE_TS_TEST_HCP_PWD!, process.env.ICURE_TS_TEST_HCP_PUB!)
+    );
+    creationStep.add(
+      new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_2_USER!, process.env.ICURE_TS_TEST_HCP_2_PWD!, process.env.ICURE_TS_TEST_HCP_2_PUB!)
+    );
+    creationStep.add(
+      new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_3_USER!, process.env.ICURE_TS_TEST_HCP_3_PWD!, process.env.ICURE_TS_TEST_HCP_3_PUB!)
+    );
+    creationStep.add(
+      new CreatePatientComponent(process.env.ICURE_TS_TEST_PAT_USER!, process.env.ICURE_TS_TEST_PAT_PWD!, process.env.ICURE_TS_TEST_PAT_PUB!, process.env.ICURE_TS_TEST_PAT_PRIV!)
+    );
+    cachedInitializer = new SafeguardInitializer(creationStep);
+  }
+  return cachedInitializer;
 }
 
 export class TestUtils {
