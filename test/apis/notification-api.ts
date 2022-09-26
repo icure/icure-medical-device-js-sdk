@@ -4,7 +4,7 @@ import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
 import { User } from '../../src/models/User'
 import { NotificationFilter } from '../../src/filter'
 import { PaginatedListNotification } from '../../src/models/PaginatedListNotification'
@@ -13,32 +13,18 @@ import { NotificationApiImpl } from '../../src/apis/impl/NotificationApiImpl'
 
 setLocalStorage(fetch)
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  hcp2UserName: hcp2UserName,
-  hcp2Password: hcp2Password,
-  hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName,
-  hcp3Password: hcp3Password,
-  hcp3PrivKey: hcp3PrivKey,
-  patUserName: patUserName,
-  patPassword: patPassword,
-  patPrivKey: patPrivKey,
-} = getEnvVariables()
-let hcp1Api: MedTechApi | undefined = undefined
-let hcp1User: User | undefined = undefined
-let hcp2Api: MedTechApi | undefined = undefined
-let hcp2User: User | undefined = undefined
-let hcp3Api: MedTechApi | undefined = undefined
-let hcp3User: User | undefined = undefined
-let patApi: MedTechApi | undefined = undefined
-let patUser: User | undefined = undefined
-let idFilterNotification1: Notification | undefined = undefined
-let idFilterNotification2: Notification | undefined = undefined
-let idFilterNotification3: Notification | undefined = undefined
+let env: TestVars | undefined;
+let hcp1Api: MedTechApi | undefined = undefined;
+let hcp1User: User | undefined = undefined;
+let hcp2Api: MedTechApi | undefined = undefined;
+let hcp2User: User | undefined = undefined;
+let hcp3Api: MedTechApi | undefined = undefined;
+let hcp3User: User | undefined = undefined;
+let patApi: MedTechApi | undefined = undefined;
+let patUser: User | undefined = undefined;
+let idFilterNotification1: Notification | undefined = undefined;
+let idFilterNotification2: Notification | undefined = undefined;
+let idFilterNotification3: Notification | undefined = undefined;
 
 async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
   const notification = new Notification({
@@ -62,17 +48,17 @@ function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, e
 describe('Notification API', async function () {
   before(async function () {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
 
-    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcpDetails"].user, env.dataOwnerDetails["hcpDetails"].password, env.dataOwnerDetails["hcpDetails"].privateKey);
     hcp1Api = hcpApi1AndUser.api
     hcp1User = hcpApi1AndUser.user
 
-    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp2Details"].user, env.dataOwnerDetails["hcp2Details"].password, env.dataOwnerDetails["hcp2Details"].privateKey);
     hcp2Api = hcpApi2AndUser.api
     hcp2User = hcpApi2AndUser.user
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp3Details"].user, env.dataOwnerDetails["hcp3Details"].password, env.dataOwnerDetails["hcp3Details"].privateKey)
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 

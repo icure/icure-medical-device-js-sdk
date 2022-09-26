@@ -4,7 +4,14 @@ import { User } from '../../src/models/User'
 import { Patient } from '../../src/models/Patient'
 import { webcrypto } from 'crypto'
 import { hex2ua, sleep, ua2hex } from '@icure/api'
-import { getEnvironmentInitializer, getEnvVariables, ICureTestEmail, setLocalStorage, TestUtils} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+  ICureTestEmail,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { Address } from '../../src/models/Address'
 import { Telecom } from '../../src/models/Telecom'
 import { assert, expect } from 'chai'
@@ -15,47 +22,41 @@ import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 
 setLocalStorage(fetch)
 
-const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-      hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
-      patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey, patAuthProcessId: patAuthProcessId,
-      msgGtwUrl: msgGtwUrl,
-  specId: specId,
-} = getEnvVariables()
-
-let hcp1Api: MedTechApi
-let hcp1User: User
-let hcp1: HealthcareProfessional
-let hcp3Api: MedTechApi
-let hcp3User: User
-let patApi: MedTechApi
-let patUser: User
+let env: TestVars | undefined;
+let hcp1Api: MedTechApi;
+let hcp1User: User;
+let hcp1: HealthcareProfessional;
+let hcp3Api: MedTechApi;
+let hcp3User: User;
+let patApi: MedTechApi;
+let patUser: User;
 
 describe('A Healthcare Party', () => {
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
 
     hcp1Api = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(hcpUserName)
-      .withPassword(hcpPassword)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env.iCureUrl)
+      .withUserName(env.dataOwnerDetails["hcpDetails"].user)
+      .withPassword(env.dataOwnerDetails["hcpDetails"].password)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .build()
 
     hcp1User = await hcp1Api.userApi.getLoggedUser()
     await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
-      hex2ua(hcpPrivKey)
+      hex2ua(env.dataOwnerDetails["hcpDetails"].privateKey)
     )
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp3Details"].user, env.dataOwnerDetails["hcp3Details"].password, env.dataOwnerDetails["hcp3Details"].privateKey);
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["patDetails"].user, env.dataOwnerDetails["patDetails"].password, env.dataOwnerDetails["patDetails"].privateKey);
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
   })
@@ -112,12 +113,12 @@ describe('A Healthcare Party', () => {
 
     // And PAT_1 accepts this invitation and changes his credentials
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessHcpId)
-      .withAuthProcessBySmsId(patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
       .build()
 
     const userKeyPair = await anonymousMedTechApi.generateRSAKeypair()
