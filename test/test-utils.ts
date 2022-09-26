@@ -38,6 +38,13 @@ export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) 
   ;(global as any).headers = Headers
 }
 
+export type UserDetails = {
+  user: string,
+  password: string,
+  publicKey: string,
+  privateKey: string
+}
+
 export type TestVars = {
   iCureUrl: string,
   msgGtwUrl: string,
@@ -51,30 +58,20 @@ export type TestVars = {
   adminLogin: string,
   adminPassword: string,
   adminId: string,
-  masterHcpLogin: string | undefined,
-  masterHcpPassword: string | undefined,
+  masterHcp: UserDetails | undefined,
   masterHcpId: string | undefined,
-  masterHcpPubKey: string | undefined,
-  masterHcpPrivKey: string | undefined,
-  hcpUserName: string,
-  hcpPassword: string,
-  hcpPubKey: string,
-  hcpPrivKey: string
-  patUserName: string,
-  patPassword: string,
-  patPrivKey: string,
-  patPubKey: string,
-  hcp2UserName: string,
-  hcp2Password: string,
-  hcp2PubKey: string,
-  hcp2PrivKey: string,
-  hcp3UserName: string,
-  hcp3Password: string,
-  hcp3PubKey: string,
-  hcp3PrivKey: string
+  dataOwnerDetails: { [key: string]: UserDetails}
 }
 
 export function getEnvVariables(): TestVars {
+  const masterHcpDetails = !!process.env.ICURE_TEST_MASTER_LOGIN
+    ? {
+      user: process.env.ICURE_TEST_MASTER_LOGIN!,
+      password: process.env.ICURE_TEST_MASTER_PWD!,
+      privateKey: process.env.ICURE_TEST_MASTER_PRIV!,
+      publicKey: process.env.ICURE_TEST_MASTER_PUB!
+    }
+    : undefined
   return {
     iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1',
     msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'https://msg-gw.icure.cloud',
@@ -88,27 +85,34 @@ export function getEnvVariables(): TestVars {
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN!,
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD!,
     adminId: process.env.ICURE_TEST_ADMIN_ID!,
-    masterHcpLogin: process.env.ICURE_TEST_MASTER_LOGIN,
-    masterHcpPassword: process.env.ICURE_TEST_MASTER_PWD,
+    masterHcp: masterHcpDetails,
     masterHcpId: process.env.ICURE_TEST_MASTER_ID,
-    masterHcpPubKey: process.env.ICURE_TEST_MASTER_PUB,
-    masterHcpPrivKey: process.env.ICURE_TEST_MASTER_PRIV,
-    hcpUserName: process.env.ICURE_TS_TEST_HCP_USER!,
-    hcpPassword: process.env.ICURE_TS_TEST_HCP_PWD!,
-    hcpPubKey: process.env.ICURE_TS_TEST_HCP_PUB!,
-    hcpPrivKey: process.env.ICURE_TS_TEST_HCP_PRIV!,
-    patUserName: process.env.ICURE_TS_TEST_PAT_USER!,
-    patPassword: process.env.ICURE_TS_TEST_PAT_PWD!,
-    patPrivKey: process.env.ICURE_TS_TEST_PAT_PRIV!,
-    patPubKey: process.env.ICURE_TS_TEST_PAT_PUB!,
-    hcp2UserName: process.env.ICURE_TS_TEST_HCP_2_USER!,
-    hcp2Password: process.env.ICURE_TS_TEST_HCP_2_PWD!,
-    hcp2PubKey: process.env.ICURE_TS_TEST_HCP_2_PUB!,
-    hcp2PrivKey: process.env.ICURE_TS_TEST_HCP_2_PRIV!,
-    hcp3UserName: process.env.ICURE_TS_TEST_HCP_3_USER!,
-    hcp3Password: process.env.ICURE_TS_TEST_HCP_3_PWD!,
-    hcp3PubKey: process.env.ICURE_TS_TEST_HCP_3_PUB!,
-    hcp3PrivKey: process.env.ICURE_TS_TEST_HCP_3_PRIV!,
+    dataOwnerDetails: {
+      hcpDetails: {
+        user: process.env.ICURE_TS_TEST_HCP_USER!,
+        password: process.env.ICURE_TS_TEST_HCP_PWD!,
+        privateKey: process.env.ICURE_TS_TEST_HCP_PRIV!,
+        publicKey: process.env.ICURE_TS_TEST_HCP_PUB!
+      },
+      hcp2Details: {
+        user: process.env.ICURE_TS_TEST_HCP_2_USER!,
+        password: process.env.ICURE_TS_TEST_HCP_2_PWD!,
+        privateKey: process.env.ICURE_TS_TEST_HCP_2_PRIV!,
+        publicKey: process.env.ICURE_TS_TEST_HCP_2_PUB!
+      },
+      hcp3Details: {
+        user: process.env.ICURE_TS_TEST_HCP_3_USER!,
+        password: process.env.ICURE_TS_TEST_HCP_3_PWD!,
+        privateKey: process.env.ICURE_TS_TEST_HCP_3_PRIV!,
+        publicKey: process.env.ICURE_TS_TEST_HCP_3_PUB!
+      },
+      patDetails: {
+        user: process.env.ICURE_TS_TEST_PAT_USER!,
+        password: process.env.ICURE_TS_TEST_PAT_PWD!,
+        privateKey: process.env.ICURE_TS_TEST_PAT_PRIV!,
+        publicKey: process.env.ICURE_TS_TEST_PAT_PUB!
+      }
+    }
   }
 }
 
@@ -138,26 +142,30 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     const groupId = uuid();
     let bootstrapStep = null;
     if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer(env.couchDbUrl, 'test/scratch', env.composeFileUrl);
+      const setupStep = new DockerComposeInitializer( 'test/scratch');
       bootstrapStep = process.env.BACKEND_TYPE === "oss"
-        ? new OssInitializer(setupStep, env.adminId, env.couchDbUrl, env.adminLogin)
-        : new KrakenInitializer(setupStep, env.adminId, env.couchDbUrl, env.adminLogin);
+        ? new OssInitializer(setupStep)
+        : new KrakenInitializer(setupStep);
     }
-    const groupStep = new GroupInitializer(bootstrapStep, env.adminLogin, env.adminPassword, groupId, fetch, env.iCureUrl);
-    const creationStep = !!env.masterHcpPrivKey
-      ? new OldMasterUserInitializerComposite(groupStep, env.masterHcpLogin!, env.masterHcpPassword!, env.masterHcpId!, env.masterHcpPubKey!, env.masterHcpPrivKey!, env.iCureUrl, fetch)
-      : new NewMasterUserInitializerComposite(groupStep, env.adminLogin, env.adminPassword, groupId, env.iCureUrl, fetch);
+    const groupStep = new GroupInitializer(bootstrapStep, groupId, fetch);
+    const creationStep = !!env.masterHcp
+      ? new OldMasterUserInitializerComposite(groupStep, fetch)
+      : new NewMasterUserInitializerComposite(groupStep, groupId, fetch);
     creationStep.add(
-      new CreateHcpComponent(env.hcpUserName, env.hcpPassword, env.hcpPubKey)
+      new CreateHcpComponent(env.dataOwnerDetails["hcpDetails"].user, env.dataOwnerDetails["hcpDetails"].password, env.dataOwnerDetails["hcpDetails"].publicKey, env.dataOwnerDetails["hcpDetails"].privateKey),
+      "hcpDetails"
     );
     creationStep.add(
-      new CreateHcpComponent(env.hcp2UserName, env.hcp2Password, env.hcp2PubKey)
+      new CreateHcpComponent(env.dataOwnerDetails["hcp2Details"].user, env.dataOwnerDetails["hcp2Details"].password, env.dataOwnerDetails["hcp2Details"].publicKey, env.dataOwnerDetails["hcp2Details"].privateKey),
+      "hcp2Details"
     );
     creationStep.add(
-      new CreateHcpComponent(env.hcp3UserName, env.hcp3Password, env.hcp3PubKey)
+      new CreateHcpComponent(env.dataOwnerDetails["hcp3Details"].user, env.dataOwnerDetails["hcp3Details"].password, env.dataOwnerDetails["hcp3Details"].publicKey, env.dataOwnerDetails["hcp3Details"].privateKey),
+      "hcp3Details"
     );
     creationStep.add(
-      new CreatePatientComponent(env.patUserName, env.patPassword, env.patPubKey, env.patPrivKey)
+      new CreatePatientComponent(env.dataOwnerDetails["patDetails"].user, env.dataOwnerDetails["patDetails"].password, env.dataOwnerDetails["hcp3Details"].publicKey, env.dataOwnerDetails["hcp3Details"].privateKey),
+      "patDetails"
     );
     cachedInitializer = new SafeguardInitializer(creationStep);
   }

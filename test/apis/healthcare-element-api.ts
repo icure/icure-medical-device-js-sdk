@@ -6,29 +6,14 @@ import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { User} from "../../src/models/User";
 import {HealthcareElement } from '../../src/models/HealthcareElement'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
 import { HealthcareElementFilter } from '../../src/filter'
 import { it } from 'mocha'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  hcp2UserName: hcp2UserName,
-  hcp2Password: hcp2Password,
-  hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName,
-  hcp3Password: hcp3Password,
-  hcp3PrivKey: hcp3PrivKey,
-  patUserName: patUserName,
-  patPassword: patPassword,
-  patPrivKey: patPrivKey,
-} = getEnvVariables()
-
+let env: TestVars | undefined;
 let patApi: MedTechApi | undefined;
 let patUser: User | undefined;
 let hcp2Api: MedTechApi | undefined;
@@ -48,16 +33,28 @@ function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Pati
 describe('Healthcare Element API', () => {
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    env = await initializer.execute(getEnvVariables());
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails["patDetails"].user,
+      env.dataOwnerDetails["patDetails"].password,
+      env.dataOwnerDetails["patDetails"].privateKey);
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails["hcpDetails"].user,
+      env.dataOwnerDetails["hcpDetails"].password,
+      env.dataOwnerDetails["hcpDetails"].privateKey);
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails["hcp2Details"].user,
+      env.dataOwnerDetails["hcp2Details"].password,
+      env.dataOwnerDetails["hcp2Details"].privateKey);
     hcp2Api = hcp2ApiAndUser.api
     hcp2User = hcp2ApiAndUser.user
   })

@@ -1,34 +1,31 @@
-import { assert, expect } from 'chai'
-import { v4 as uuid } from 'uuid'
-import 'mocha'
-import { medTechApi } from '../../src/apis/MedTechApi'
-import 'isomorphic-fetch'
-import { webcrypto } from 'crypto'
-import { User } from '../../src/models/User'
-import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
-import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
-import { Patient } from '../../src/models/Patient'
-import { setLocalStorage } from '../test-utils'
-import * as os from 'os'
-import {jwk2spki} from "@icure/api";
-import {getEnvironmentInitializer, getEnvVariables} from "../test-utils";
+import {assert} from "chai";
+import {v4 as uuid} from "uuid";
+import "mocha";
+import {medTechApi} from "../../src/apis/medTechApi";
+import "isomorphic-fetch";
+import {webcrypto} from "crypto";
+import {User} from "../../src/models/User";
+import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
+import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
+import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestVars} from "../test-utils";
+import {jwk2spki} from "@icure/api"
 
 setLocalStorage(fetch)
 
-const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword} = getEnvVariables()
+let env: TestVars | undefined;
 
 describe("Healthcare professional", () => {
 
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
   });
 
   it("should be capable of creating a healthcare professional from scratch", async () => {
     const medtechApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(hcpUserName)
-      .withPassword(hcpPassword)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withUserName(env!.dataOwnerDetails["hcpDetails"].user)
+      .withPassword(env!.dataOwnerDetails["hcpDetails"].password)
       .withCrypto(webcrypto as any)
       .build()
 

@@ -16,7 +16,7 @@ import {assert} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
-import {getEnvironmentInitializer, getEnvVariables, setLocalStorage} from "../test-utils";
+import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestVars} from "../test-utils";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {getEnvVariables, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
@@ -26,11 +26,7 @@ import {Connection} from "../../src/models/Connection";
 
 setLocalStorage(fetch);
 
-const iCureUrl =
-  process.env.ICURE_TS_TEST_URL ?? "https://kraken.icure.dev/rest/v2";
-const userName = process.env.ICURE_TS_TEST_HCP_3_USER!;
-const password = process.env.ICURE_TS_TEST_HCP_3_PWD!;
-const privKey = process.env.ICURE_TS_TEST_HCP_3_PRIV_KEY!;
+let env: TestVars | undefined;
 let medtechApi: MedTechApi | undefined = undefined;
 const testType = "IC-TEST";
 const testCode = "TEST";
@@ -42,12 +38,12 @@ describe("Subscription API", () => {
 
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
 
     medtechApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(hcp3UserName)
-      .withPassword(hcp3Password)
+      .withICureBaseUrl(env.iCureUrl)
+      .withUserName(env.dataOwnerDetails["hcp3Details"].user)
+      .withPassword(env.dataOwnerDetails["hcp3Details"].password)
       .withCrypto(webcrypto as any)
       .build();
 
@@ -94,7 +90,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser();
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(hcp3PrivKey)
+        hex2ua(env!.dataOwnerDetails["hcp3Details"].privateKey)
       );
 
       const events: DataSample[] = [];

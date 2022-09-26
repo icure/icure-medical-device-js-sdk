@@ -13,48 +13,48 @@ import {
 } from "@icure/test-setup";
 import {Api, Apis, hex2ua} from "@icure/api";
 import {webcrypto} from "crypto";
+import {TestVars, UserDetails} from "./test-utils";
 
 export interface EnvInitializer {
-  execute(): void;
+  execute(env: TestVars): Promise<TestVars>;
 }
 
 export interface EnvComponent {
-  create(dataOwnerApi: Apis): void;
+  create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}>;
 }
 
 export class SafeguardInitializer implements EnvInitializer {
 
-  private executed = false;
+  private testVars: TestVars | undefined;
 
   constructor(
-    private initializer?: EnvInitializer
+    private initializer: EnvInitializer
   ) {}
 
-  async execute() {
-    if(!!this.initializer && !this.executed) {
-      await this.initializer.execute();
-      this.executed = true;
+  async execute(env: TestVars): Promise<TestVars> {
+    if(!this.testVars) {
+      this.testVars = await this.initializer.execute(env);
     }
+    return this.testVars;
   }
 }
 
 export class DockerComposeInitializer implements EnvInitializer {
 
   constructor(
-    private couchDbUrl: string,
     private scratchDir: string,
-    private compose: string,
     private profiles: string[] = [],
     private initializer?: EnvInitializer
   ) {}
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    await setup(this.scratchDir, this.compose, this.profiles);
-    await setupCouchDb(this.couchDbUrl);
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    await setup(this.scratchDir, env.composeFileUrl, this.profiles);
+    await setupCouchDb(env.couchDbUrl);
     await retry( async () => {
-      if (!(await checkIfDockerIsOnline(this.scratchDir, this.compose))) throw new Error("Docker not ready");
+      if (!(await checkIfDockerIsOnline(this.scratchDir, env.composeFileUrl))) throw new Error("Docker not ready");
     });
+    return !!updatedEnvs ? updatedEnvs : env;
   }
 
 }
@@ -63,15 +63,13 @@ export class OssInitializer implements EnvInitializer {
 
   constructor(
     private initializer: EnvInitializer | null,
-    private userId: string,
-    private couchDbUrl?: string,
-    private login?: string,
     private passwordHash?: string,
   ) {}
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    await bootstrapOssKraken(this.userId, this.login, this.passwordHash, this.couchDbUrl);
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    await bootstrapOssKraken(env.adminId, env.adminLogin, this.passwordHash, env.couchDbUrl);
+    return !!updatedEnvs ? updatedEnvs : env;
   }
 
 }
@@ -80,17 +78,15 @@ export class KrakenInitializer implements EnvInitializer {
 
   constructor(
     private initializer: EnvInitializer | null,
-    private userId: string,
-    private couchDbUrl?: string,
-    private login?: string,
     private passwordHash?: string,
     private masterGroupId?: string,
     private masterGroupPassword?: string,
   ) {}
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    await bootstrapCloudKraken(this.userId, this.login, this.passwordHash, this.masterGroupId, this.masterGroupPassword, this.couchDbUrl);
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    await bootstrapCloudKraken(env.adminId, env.adminLogin, this.passwordHash, this.masterGroupId, this.masterGroupPassword, env.couchDbUrl);
+    return !!updatedEnvs ? updatedEnvs : env;
   }
 }
 
@@ -98,87 +94,79 @@ export class GroupInitializer implements EnvInitializer {
 
   constructor(
     private initializer: EnvInitializer | null,
-    private adminLogin: string,
-    private adminPassword: string,
     private groupId: string,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
-    private backendUrl?: string
   ) {}
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    await createGroup(this.adminLogin, this.adminPassword, this.groupId, this.fetchImpl, this,this.backendUrl);
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    await createGroup(env.adminLogin, env.adminPassword, this.groupId, this.fetchImpl, env.iCureUrl);
+    return !!updatedEnvs ? updatedEnvs : env;
   }
 }
 
-export class NewMasterUserInitializerComposite implements EnvInitializer, EnvComponent {
+export abstract class CreationComposite implements EnvComponent {
+  private componentLeaves: { [key: string]: EnvComponent } = {}
 
-  private componentLeaves: EnvComponent[] = []
+  async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
+    return Promise.all(
+      Object.keys(this.componentLeaves).map( async (key): Promise<{ [key: string]: UserDetails }> => {
+        const result = await this.componentLeaves[key].create(dataOwnerApi);
+        return { [key]: result["leafResult"] }
+      })
+    ).then( (dataOwners) => {
+      return dataOwners.reduce(
+        (previous, current) => { return {...previous, ...current} },
+        {});
+    });
+  }
+
+  add(component: EnvComponent, label: string) {
+    this.componentLeaves = {...this.componentLeaves, [label]: component};
+  }
+
+}
+
+export class NewMasterUserInitializerComposite extends CreationComposite implements EnvInitializer {
 
   constructor(
     private initializer: EnvInitializer | null,
-    private adminLogin: string,
-    private adminPassword: string,
     private groupId: string,
-    private backendUrl: string,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
-  ) {}
+  ) { super(); }
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    const masterCredentials = await createMasterHcp(this.adminLogin, this.adminPassword, this.groupId, this.fetchImpl, this.backendUrl);
-    const api = await Api(this.backendUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, fetch);
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const masterCredentials = await createMasterHcp(env.adminLogin, env.adminPassword, this.groupId, this.fetchImpl, env.iCureUrl);
+    const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, fetch);
     api.cryptoApi.RSA.storeKeyPair(masterCredentials.hcpId, {
       publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(masterCredentials.publicKey)),
       privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(masterCredentials.privateKey))
     });
-    await this.create(api);
-  }
-
-  async create(dataOwnerApi: Apis) {
-    await Promise.all(this.componentLeaves.map(async (component) => {
-      await component.create(dataOwnerApi);
-    }))
-  }
-
-  add(component: EnvComponent) {
-    this.componentLeaves = [...this.componentLeaves, component];
+    const createdUsers = await this.create(api);
+    return !!updatedEnvs
+      ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
+      : {...env, dataOwnerDetails: { ...env.dataOwnerDetails, ...createdUsers }}
   }
 }
 
-export class OldMasterUserInitializerComposite implements EnvInitializer, EnvComponent {
-
-  private componentLeaves: EnvComponent[] = []
-
+export class OldMasterUserInitializerComposite extends CreationComposite implements EnvInitializer {
   constructor(
     private initializer: EnvInitializer | null,
-    private masterLogin: string,
-    private masterPassword: string,
-    private masterHcpId: string,
-    private publicKey: string,
-    private privateKey: string,
-    private backendUrl: string,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
-  ) {}
+  ) { super(); }
 
-  async execute() {
-    if(!!this.initializer) await this.initializer.execute();
-    const api = await Api(this.backendUrl, this.masterLogin, this.masterPassword, webcrypto as any, this.fetchImpl);
-    api.cryptoApi.RSA.storeKeyPair(this.masterHcpId, {
-      publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(this.publicKey)),
-      privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(this.privateKey))
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const api = await Api(env.iCureUrl, env.masterHcp?.user!, env.masterHcp?.password!, webcrypto as any, this.fetchImpl);
+    api.cryptoApi.RSA.storeKeyPair(env.masterHcpId!, {
+      publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(env.masterHcp?.publicKey!)),
+      privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(env.masterHcp?.privateKey!))
     });
-    await this.create(api);
-  }
-
-  async create(dataOwnerApi: Apis) {
-    await Promise.all(this.componentLeaves.map(async (component) => {
-      await component.create(dataOwnerApi);
-    }))
-  }
-
-  add(component: EnvComponent) {
-    this.componentLeaves = [...this.componentLeaves, component];
+    const createdUsers = await this.create(api);
+    return !!updatedEnvs
+      ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
+      : {...env, dataOwnerDetails: { ...env.dataOwnerDetails, ...createdUsers }}
   }
 }
 
@@ -188,11 +176,19 @@ export class CreatePatientComponent implements EnvComponent {
     private login: string,
     private authToken: string,
     private publicKey: string,
-    private privateKey: string,
+    private privateKey: string
   ) {}
 
-  async create(dataOwnerApi: Apis) {
-    await createPatient(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+  async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
+    const details = await createPatient(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+    return {
+      "leafResult": {
+        user: this.login,
+        password: details.password,
+        publicKey: this.publicKey,
+        privateKey: this.privateKey
+      }
+    }
   }
 
 }
@@ -202,11 +198,20 @@ export class CreateHcpComponent implements EnvComponent {
   constructor(
     private login: string,
     private authToken: string,
-    private publicKey: string
+    private publicKey: string,
+    private privateKey: string,
   ) {}
 
-  async create(dataOwnerApi: Apis) {
-    await createHealthcareParty(dataOwnerApi, this.login, this.authToken, this.publicKey);
+  async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
+    const details = await createHealthcareParty(dataOwnerApi, this.login, this.authToken, this.publicKey);
+    return {
+      "leafResult": {
+        user: this.login,
+        password: details.password,
+        publicKey: this.publicKey,
+        privateKey: this.privateKey
+      }
+    }
   }
 
 }
@@ -216,11 +221,20 @@ export class createDeviceComponent implements EnvComponent {
   constructor(
     private login: string,
     private authToken: string,
-    private publicKey: string
+    private publicKey: string,
+    private privateKey: string,
   ) {}
 
-  async create(dataOwnerApi: Apis) {
-    await createDevice(dataOwnerApi, this.login, this.authToken, this.publicKey);
+  async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
+    const details = await createDevice(dataOwnerApi, this.login, this.authToken, this.publicKey);
+    return {
+      "leafResult": {
+        user: this.login,
+        password: details.password,
+        publicKey: this.publicKey,
+        privateKey: this.privateKey
+      }
+    }
   }
 
 }

@@ -1,27 +1,24 @@
-  import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+  import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from "../test-utils";
 import {v4 as uuid} from 'uuid'
 import {assert} from "chai"
 import 'isomorphic-fetch'
 
 setLocalStorage(fetch)
 
-const {iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, specId: specId, patAuthProcessId: patAuthProcessId,
-  hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-} = getEnvVariables()
-
+let env: TestVars | undefined;
 let hcpId: string | undefined;
 
 describe('User API', () => {
 
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      iCureUrl,
-      hcpUserName,
-      hcpPassword,
-      hcpPrivKey)
+      env!.iCureUrl,
+      env!.dataOwnerDetails["hcpDetails"].user,
+      env!.dataOwnerDetails["hcpDetails"].password,
+      env!.dataOwnerDetails["hcpDetails"].privateKey);
     hcpId = hcpApiAndUser.user.healthcarePartyId;
   });
 
@@ -30,7 +27,7 @@ describe('User API', () => {
 
     const {
       api
-    } = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, hcpId!);
+    } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!);
 
     // When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only and no duplicates
     const userUpdatedWithUpdatedDelegationsOnMedicalInformation = await api.userApi.shareAllFutureDataWith('medicalInformation', [delegation])
@@ -48,7 +45,7 @@ describe('User API', () => {
 
   const {
       api
-    } = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, hcpId!);
+    } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!);
 
     // When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only on the right type
     const userUpdatedWithUpdatedDelegationsOnAll = await api.userApi.shareAllFutureDataWith('all', [delegation])

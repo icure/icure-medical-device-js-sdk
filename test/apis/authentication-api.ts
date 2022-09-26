@@ -2,7 +2,7 @@ import { assert, expect } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils} from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
@@ -11,33 +11,30 @@ import { NotificationTypeEnum } from '../../src/models/Notification'
 
 setLocalStorage(fetch)
 
-const { iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, specId: specId, hcpAuthProcessId: hcpAuthProcessId,
-  hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-  patAuthProcessId: patAuthProcessId} = getEnvVariables()
-
+let env: TestVars | undefined;
 let hcpId: string | undefined;
 
 describe('Authentication API', () => {
 
   before(async () => {
     const initializer = await getEnvironmentInitializer();
-    await initializer.execute();
+    env = await initializer.execute(getEnvVariables());
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      iCureUrl,
-      hcpUserName,
-      hcpPassword,
-      hcpPrivKey)
+      env.iCureUrl,
+      env.dataOwnerDetails["hcpDetails"].user,
+      env.dataOwnerDetails["hcpDetails"].password,
+      env.dataOwnerDetails["hcpDetails"].privateKey)
     hcpId = hcpApiAndUser.user.healthcarePartyId;
   });
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
     try {
       await new AnonymousMedTechApiBuilder()
-        .withICureBaseUrl(iCureUrl)
+        .withICureBaseUrl(env!.iCureUrl)
         .withCrypto(webcrypto as any)
-        .withMsgGwUrl(msgGtwUrl)
+        .withMsgGwUrl(env!.msgGtwUrl)
         .withAuthProcessByEmailId(authProcessId)
-        .withAuthProcessBySmsId(hcpAuthProcessId)
+        .withAuthProcessBySmsId(env!.hcpAuthProcessId)
         .build()
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
@@ -46,7 +43,7 @@ describe('Authentication API', () => {
 
     try {
       const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-        .withICureBaseUrl(iCureUrl)
+        .withICureBaseUrl(env!.iCureUrl)
         .withCrypto(webcrypto as any)
         .withMsgGwUrl(msgGtwUrl)
         .withMsgGwSpecId(specId)
@@ -65,8 +62,8 @@ describe('Authentication API', () => {
     let api = await new MedTechApiBuilder()
       .withUserName('fake-user-name')
       .withPassword('fake-pwd')
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
@@ -85,12 +82,12 @@ describe('Authentication API', () => {
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
     // Given
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
-      .withAuthProcessBySmsId(hcpAuthProcessId)
+      .withAuthProcessBySmsId(env!.hcpAuthProcessId)
       .build()
 
     // When
@@ -113,12 +110,12 @@ describe('Authentication API', () => {
   it('User should not be able to start authentication if he provided an empty email and mobilePhone', async () => {
     // Given
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
-      .withAuthProcessBySmsId(hcpAuthProcessId)
+      .withAuthProcessBySmsId(env!.hcpAuthProcessId)
       .build()
 
     // When
@@ -140,7 +137,7 @@ describe('Authentication API', () => {
 
   it("HCP should be capable of signing up using email", async () => {
     // When
-    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, hcpAuthProcessId, hcpId!)
+    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.hcpAuthProcessId, hcpId!)
     const currentUser = hcpApiAndUser.user
 
     // Then
@@ -156,7 +153,7 @@ describe('Authentication API', () => {
 
   it("Patient should be able to signing up through email", async () => {
     // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     // Then
     const currentUser = patApiAndUser.user
