@@ -15,14 +15,27 @@ import {Api, Apis, hex2ua} from "@icure/api";
 import {webcrypto} from "crypto";
 import {TestVars, UserDetails} from "./test-utils";
 
+/**
+ * Base interface for the decorator classes.
+ * The execute method gets a set of environment variables and returns a copy that could be modified
+ * The steps are executed in a FIFO fashion (the first istantiated is the first executed) with the exception of the
+ * SafeguardInitializer
+ */
 export interface EnvInitializer {
   execute(env: TestVars): Promise<TestVars>;
 }
 
+/**
+ * Base interface for the composite classes
+ */
 export interface EnvComponent {
   create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}>;
 }
 
+/**
+ * This decorator class ensures that the execute method is called only once.
+ * Any other call after the first will only return the variables as modified by the first call.
+ */
 export class SafeguardInitializer implements EnvInitializer {
 
   private testVars: TestVars | undefined;
@@ -39,8 +52,18 @@ export class SafeguardInitializer implements EnvInitializer {
   }
 }
 
+/**
+ * This step calls the original execute method and decorates it by setting up the docker with the given parameters.
+ */
 export class DockerComposeInitializer implements EnvInitializer {
 
+  /**
+   * Constructor method
+   *
+   * @param scratchDir the directory where to save the docker compose file
+   * @param profiles the profiles for the docker compose file
+   * @param initializer a previous step of the initialization pipeline
+   */
   constructor(
     private scratchDir: string,
     private profiles: string[] = [],
@@ -59,8 +82,17 @@ export class DockerComposeInitializer implements EnvInitializer {
 
 }
 
+/**
+ * This step calls the original execute method and then decorates it by initializing the OSS Kraken
+ */
 export class OssInitializer implements EnvInitializer {
 
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param passwordHash the password hash for the admin user
+   */
   constructor(
     private initializer: EnvInitializer | null,
     private passwordHash?: string,
@@ -74,8 +106,19 @@ export class OssInitializer implements EnvInitializer {
 
 }
 
+/**
+ * This step calls the original execute method and decorates it by initializing the Kraken
+ */
 export class KrakenInitializer implements EnvInitializer {
 
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param passwordHash the password hash for the admin user
+   * @param masterGroupId the master group id
+   * @param masterGroupPassword the master group password
+   */
   constructor(
     private initializer: EnvInitializer | null,
     private passwordHash?: string,
@@ -90,8 +133,18 @@ export class KrakenInitializer implements EnvInitializer {
   }
 }
 
+/**
+ * This step calls the original execute method and then decorates it by creating a group.
+ */
 export class GroupInitializer implements EnvInitializer {
 
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param groupId the id of the group to initialize
+   * @param fetchImpl an implementation of the fetch method
+   */
   constructor(
     private initializer: EnvInitializer | null,
     private groupId: string,
@@ -100,19 +153,30 @@ export class GroupInitializer implements EnvInitializer {
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
-    await createGroup(env.adminLogin, env.adminPassword, this.groupId, this.fetchImpl, env.iCureUrl);
+    const api = await Api(env.iCureUrl, env.adminLogin, env.adminPassword, webcrypto as any, this.fetchImpl);
+    await createGroup(api, this.groupId);
     return !!updatedEnvs ? updatedEnvs : env;
   }
 }
 
-export abstract class CreationComposite implements EnvComponent {
-  private componentLeaves: { [key: string]: EnvComponent } = {}
+/**
+ * Base abstract class for the Composite hierarchy.
+ */
+export abstract class UserCreationComposite implements EnvComponent {
 
+  private components: { [key: string]: EnvComponent } = {}
+
+  /**
+   * The create methods calls all the create methods of the components, await for all of them to be finished and then
+   * combines the results in a single object.
+   *
+   * @param dataOwnerApi an instance of the ICC Api capable of creating all types of users
+   */
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
     return Promise.all(
-      Object.keys(this.componentLeaves).map( async (key): Promise<{ [key: string]: UserDetails }> => {
-        const result = await this.componentLeaves[key].create(dataOwnerApi);
-        return { [key]: result["leafResult"] }
+      Object.keys(this.components).map( async (key): Promise<{ [key: string]: UserDetails }> => {
+        const result = await this.components[key].create(dataOwnerApi);
+        return { [key]: result[Object.keys(result)[0]] }
       })
     ).then( (dataOwners) => {
       return dataOwners.reduce(
@@ -121,14 +185,33 @@ export abstract class CreationComposite implements EnvComponent {
     });
   }
 
+  /**
+   * Adds one component to the components data structure
+   *
+   * @param component the component to add
+   * @param label a label to identify it
+   */
   add(component: EnvComponent, label: string) {
-    this.componentLeaves = {...this.componentLeaves, [label]: component};
+    this.components = {...this.components, [label]: component};
   }
 
 }
 
-export class NewMasterUserInitializerComposite extends CreationComposite implements EnvInitializer {
+/**
+ * This class is part both of the composite and the decorator hierarchy.
+ * It calls the original execute method, then decorates it by creating a master HCP user with the credentials passed
+ * in the env parameter, and finally use the master HCP to create all the other users passed in the add method of the
+ * composite.
+ */
+export class NewMasterUserInitializerComposite extends UserCreationComposite implements EnvInitializer {
 
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param groupId the group where the master HCP should be created
+   * @param fetchImpl an implementation of the fetch method
+   */
   constructor(
     private initializer: EnvInitializer | null,
     private groupId: string,
@@ -138,8 +221,8 @@ export class NewMasterUserInitializerComposite extends CreationComposite impleme
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
     const masterCredentials = await createMasterHcp(env.adminLogin, env.adminPassword, this.groupId, this.fetchImpl, env.iCureUrl);
-    const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, fetch);
-    api.cryptoApi.RSA.storeKeyPair(masterCredentials.hcpId, {
+    const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, this.fetchImpl);
+    api.cryptoApi.RSA.storeKeyPair(masterCredentials.dataOwnerId, {
       publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(masterCredentials.publicKey)),
       privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(masterCredentials.privateKey))
     });
@@ -150,7 +233,20 @@ export class NewMasterUserInitializerComposite extends CreationComposite impleme
   }
 }
 
-export class OldMasterUserInitializerComposite extends CreationComposite implements EnvInitializer {
+/**
+ * This class is part both of the composite and the decorator hierarchy.
+ * It calls the original execute method, then decorates it by creating an instance of the ICC API for an existing
+ * master HCP with the credentials passed in the env parameter, and finally use the master HCP to create all the other
+ * users passed in the add method of the composite.
+ */
+export class OldMasterUserInitializerComposite extends UserCreationComposite implements EnvInitializer {
+
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param fetchImpl an implementation of the fetch method
+   */
   constructor(
     private initializer: EnvInitializer | null,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
@@ -170,8 +266,19 @@ export class OldMasterUserInitializerComposite extends CreationComposite impleme
   }
 }
 
+/**
+ * Component class to create a new Patient User
+ */
 export class CreatePatientComponent implements EnvComponent {
 
+  /**
+   * Constructor method
+   *
+   * @param login the login for the user
+   * @param authToken the value for the authentication token. NOTE: If you are using the Kraken OSS version, this value won't be taken into account
+   * @param publicKey the public key for the user
+   * @param privateKey the private key for the user
+   */
   constructor(
     private login: string,
     private authToken: string,
@@ -183,18 +290,29 @@ export class CreatePatientComponent implements EnvComponent {
     const details = await createPatient(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
-        user: this.login,
+        user: details.login,
         password: details.password,
-        publicKey: this.publicKey,
-        privateKey: this.privateKey
+        publicKey: details.publicKey,
+        privateKey: details.privateKey
       }
     }
   }
 
 }
 
+/**
+ * Component class to create a new HCP User
+ */
 export class CreateHcpComponent implements EnvComponent {
 
+  /**
+   * Constructor method
+   *
+   * @param login the login for the user
+   * @param authToken the value for the authentication token. NOTE: If you are using the Kraken OSS version, this value won't be taken into account
+   * @param publicKey the public key for the user
+   * @param privateKey the private key for the user
+   */
   constructor(
     private login: string,
     private authToken: string,
@@ -203,21 +321,32 @@ export class CreateHcpComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createHealthcareParty(dataOwnerApi, this.login, this.authToken, this.publicKey);
+    const details = await createHealthcareParty(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
-        user: this.login,
+        user: details.login,
         password: details.password,
-        publicKey: this.publicKey,
-        privateKey: this.privateKey
+        publicKey: details.publicKey,
+        privateKey: details.privateKey
       }
     }
   }
 
 }
 
+/**
+ * Component class to create a new Device User
+ */
 export class createDeviceComponent implements EnvComponent {
 
+  /**
+   * Constructor method
+   *
+   * @param login the login for the user
+   * @param authToken the value for the authentication token. NOTE: If you are using the Kraken OSS version, this value won't be taken into account
+   * @param publicKey the public key for the user
+   * @param privateKey the private key for the user
+   */
   constructor(
     private login: string,
     private authToken: string,
@@ -226,13 +355,13 @@ export class createDeviceComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createDevice(dataOwnerApi, this.login, this.authToken, this.publicKey);
+    const details = await createDevice(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
-        user: this.login,
+        user: details.login,
         password: details.password,
-        publicKey: this.publicKey,
-        privateKey: this.privateKey
+        publicKey: details.publicKey,
+        privateKey: details.privateKey
       }
     }
   }

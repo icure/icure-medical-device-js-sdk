@@ -20,18 +20,14 @@ describe('Patient API', () => {
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["hcpDetails"].user,
-      env.dataOwnerDetails["hcpDetails"].password,
-      env.dataOwnerDetails["hcpDetails"].privateKey);
+      env.dataOwnerDetails["hcpDetails"]);
     hcpId = hcpApiAndUser.user.healthcarePartyId;
   });
 
   it('Can create a patient and a related Healthcare Element', async () => {
     const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcpDetails"].user,
-      env!.dataOwnerDetails["hcpDetails"].password,
-      env!.dataOwnerDetails["hcpDetails"].privateKey);
+      env!.dataOwnerDetails["hcpDetails"]);
     const medtechApi = apiAndUser.api
     const loggedUser = apiAndUser.user
 
@@ -73,9 +69,7 @@ describe('Patient API', () => {
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcp2Details"].user,
-      env!.dataOwnerDetails["hcp2Details"].password,
-      env!.dataOwnerDetails["hcp2Details"].privateKey);
+      env!.dataOwnerDetails["hcp2Details"]);
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
@@ -92,18 +86,10 @@ describe('Patient API', () => {
   }).timeout(60000)
 
   it("Patient may not access info of another patient if he doesn't have any delegation", async () => {
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails["hcpDetails"].user,
-      env!.dataOwnerDetails["hcpDetails"].password,
-      env!.dataOwnerDetails["hcpDetails"].privateKey);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor( env!.iCureUrl, env!.dataOwnerDetails["hcpDetails"]);
     const hcpApi = hcpApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails["patDetails"].user,
-      env!.dataOwnerDetails["patDetails"].password,
-      env!.dataOwnerDetails["patDetails"].privateKey);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails["patDetails"]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
@@ -141,16 +127,12 @@ describe('Patient API', () => {
   it('HCP sharing healthcare element with another HCP', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcpDetails"].user,
-      env!.dataOwnerDetails["hcpDetails"].password,
-      env!.dataOwnerDetails["hcpDetails"].privateKey);
+      env!.dataOwnerDetails["hcpDetails"]);
     const hcp1Api = hcp1ApiAndUser.api
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcp2Details"].user,
-      env!.dataOwnerDetails["hcp2Details"].password,
-      env!.dataOwnerDetails["hcp2Details"].privateKey);
+      env!.dataOwnerDetails["hcp2Details"]);
     const hcp2Api = hcp2ApiAndUser.api
     const hcp2User = hcp2ApiAndUser.user
 
@@ -168,14 +150,10 @@ describe('Patient API', () => {
   it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["patDetails"].user,
-      env!.dataOwnerDetails["patDetails"].password,
-      env!.dataOwnerDetails["patDetails"].privateKey);
+      env!.dataOwnerDetails["patDetails"]);
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcpDetails"].user,
-      env!.dataOwnerDetails["hcpDetails"].password,
-      env!.dataOwnerDetails["hcpDetails"].privateKey);
+      env!.dataOwnerDetails["hcpDetails"]);
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     console.log(patient.systemMetaData!.delegations)
@@ -190,23 +168,17 @@ describe('Patient API', () => {
   it('Delegator may not share info of Patient', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcpDetails"].user,
-      env!.dataOwnerDetails["hcpDetails"].password,
-      env!.dataOwnerDetails["hcpDetails"].privateKey);
+      env!.dataOwnerDetails["hcpDetails"]);
     const hcp1Api = hcp1ApiAndUser.api
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcp2Details"].user,
-      env!.dataOwnerDetails["hcp2Details"].password,
-      env!.dataOwnerDetails["hcp2Details"].privateKey);
+      env!.dataOwnerDetails["hcp2Details"]);
     const hcp2Api = hcp2ApiAndUser.api
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["patDetails"].user,
-      env!.dataOwnerDetails["patDetails"].password,
-      env!.dataOwnerDetails["patDetails"].privateKey);
+      env!.dataOwnerDetails["patDetails"]);
     const patUser = patApiAndUser.user
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api)

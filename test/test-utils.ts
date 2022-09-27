@@ -143,7 +143,7 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     let bootstrapStep = null;
     if (env.testEnvironment === "docker") {
       const setupStep = new DockerComposeInitializer( 'test/scratch');
-      bootstrapStep = process.env.BACKEND_TYPE === "oss"
+      bootstrapStep = env.backendType === "oss"
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
     }
@@ -185,20 +185,18 @@ export class TestUtils {
 
   static async createMedTechApiAndLoggedUserFor(
     iCureUrl: string,
-    userName: string,
-    password: string,
-    dataOwnerKey: string
+    credentials: UserDetails
   ): Promise<{ api: MedTechApi; user: User }> {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withUserName(credentials.user)
+      .withPassword(credentials.password)
       .withCrypto(webcrypto as any)
       .build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
     await medtechApi.cryptoApi
-      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(dataOwnerKey))
+      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(credentials.privateKey))
       .catch((error: any) => {
         console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
         console.error(error)
@@ -284,12 +282,10 @@ export class TestUtils {
 
   static async getOrCreateHcpApiAndLoggedUser(
     iCureUrl: string,
-    hcpUserName: string,
-    hcpPassword: string,
-    hcpPrivKey: string
+    credentials: UserDetails
   ): Promise<{ api: MedTechApi; user: User }> {
     if (cachedHcpApi == undefined && cachedHcpLoggedUser == undefined) {
-      const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+      const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, credentials)
       cachedHcpApi = apiAndUser.api
       cachedHcpLoggedUser = apiAndUser.user
     }
