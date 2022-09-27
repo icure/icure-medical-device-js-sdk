@@ -36,25 +36,19 @@ describe('Healthcare Element API', () => {
     env = await initializer.execute(getEnvVariables());
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["patDetails"].user,
-      env.dataOwnerDetails["patDetails"].password,
-      env.dataOwnerDetails["patDetails"].privateKey);
+      env.dataOwnerDetails["patDetails"]);
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["hcpDetails"].user,
-      env.dataOwnerDetails["hcpDetails"].password,
-      env.dataOwnerDetails["hcpDetails"].privateKey);
+      env.dataOwnerDetails["hcpDetails"]);
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["hcp2Details"].user,
-      env.dataOwnerDetails["hcp2Details"].password,
-      env.dataOwnerDetails["hcp2Details"].privateKey);
+      env.dataOwnerDetails["hcp2Details"]);
     hcp2Api = hcp2ApiAndUser.api
     hcp2User = hcp2ApiAndUser.user
   })
