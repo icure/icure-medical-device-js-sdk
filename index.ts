@@ -11,3 +11,7 @@ export * from "./src/apis/PatientApi"
 export * from "./src/apis/UserApi"
 export * from "./src/apis/medTechApi"
 export * from "./src/filter"
+
+export * from "@icure/api/icc-x-api/utils/binary-utils"
+export * from "@icure/api/icc-x-api/utils/formatting-util"
+export * from "@icure/api/icc-x-api/utils/uuid-encoder"
