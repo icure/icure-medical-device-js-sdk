@@ -1,6 +1,7 @@
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/msgGtwMessageFactory";
 import {XHR} from "@icure/api";
+import {v4 as uuid} from "uuid";
 import Header = XHR.Header;
 
 export class MessageGatewayApiImpl implements MessageGatewayApi {
@@ -32,8 +33,9 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   private readonly authHeader: XHR.Header | null;
   private readonly headers: Header[];
 
-  async sendEmail(recipientEmail: string, email: EmailMessage): Promise<XHR.Data | null> {
-    if (!this.authHeader) return null;
+  async sendEmail(recipientEmail: string, email: EmailMessage): Promise<boolean> {
+    if (!this.authHeader) return false;
+
     const res = await XHR.sendCommand('POST',
       `${this.msgGtwUrl}/${this.specId}/email/to/${recipientEmail}`,
       this.headers.concat([this.authHeader]),
@@ -41,12 +43,16 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     );
 
-    if (res.statusCode < 400) return res;
-    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    if (res.statusCode < 400) {
+      return true;
+    } else {
+      throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    }
   }
 
-  async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<XHR.Data | null> {
-    if (!this.authHeader) return null;
+  async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<boolean> {
+    if (!this.authHeader) return false;
+
     const res = await XHR.sendCommand('POST',
       `${this.msgGtwUrl}/${this.specId}/sms/to/${recipientMobileNumber}`,
       this.headers.concat([this.authHeader]),
@@ -54,11 +60,16 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     );
 
-    if (res.statusCode < 400) return res;
-    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    if (res.statusCode < 400) {
+      return true;
+    } else {
+      throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    }
   }
 
-  async startProcess(processId: string, requestId: string, processBody: AuthenticationProcessBody): Promise<XHR.Data | null> {
+  async startProcess(processId: string, processBody: AuthenticationProcessBody): Promise<string> {
+    const requestId = uuid()
+
     const res = await XHR.sendCommand('POST',
       `${this.msgGtwUrl}/${this.specId}/process/${processId}/${requestId}`,
       this.headers,
@@ -67,11 +78,14 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       "text/plain"
     )
 
-    if (res.statusCode < 400) return res;
-    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    if (res.statusCode < 400) {
+      return requestId;
+    } else {
+      throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    }
   }
 
-  async validateProcess(requestId: string, validationCode: string): Promise<XHR.Data | null> {
+  async validateProcess(requestId: string, validationCode: string): Promise<boolean> {
     const res = await XHR.sendCommand('GET',
       `${this.msgGtwUrl}/${this.specId}/process/validate/${requestId}-${validationCode}`,
       [],
@@ -79,8 +93,11 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.fetchImpl
     )
 
-    if (res.statusCode < 400) return res;
-    else throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    if (res.statusCode < 400) {
+      return true;
+    } else {
+      throw new Error(`Message Gateway returned error response ${res.statusCode}`);
+    }
   }
 
 }
