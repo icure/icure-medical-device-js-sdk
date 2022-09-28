@@ -51,11 +51,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     if (!email && !mobilePhone) {
       throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
-    const requestId = uuid()
 
-    const res = await this.messageGatewayApi.startProcess(
+    const requestId = await this.messageGatewayApi.startProcess(
       this.authProcessId,
-      requestId,
       {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
@@ -67,22 +65,23 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       }
     );
 
-    if (!!res) {
+    if (!!requestId) {
       return new AuthenticationProcess({requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck});
     }
 
-    return null;
+    throw Error(`Could not start authentication of user ${email ?? mobilePhone}`)
   }
 
   async completeAuthentication(process: AuthenticationProcess, validationCode: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
-    const res = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
+    const result = await this.messageGatewayApi.validateProcess(process.requestId, validationCode)
+      .catch((e) => {
         if (process.bypassTokenCheck) {
-          return {statusCode: 200, body: {}}
+          return true
         }
         throw e
-    })
+      })
 
-    if (!!res) {
+    if (result) {
       const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(
         () => this.initApiAndUserAuthenticationToken(process.login, validationCode, tokenAndKeyPairProvider)
       )
@@ -102,7 +101,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       });
     }
 
-    return null
+    throw Error(`Could not validate authentication of user ${process.login}`)
   }
 
   async authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string, dataOwnerKeyPair: [string, string] | undefined, tokenAndKeyPairProvider: (groupId: string, userId: string) => ([string, [string, string]] | undefined)): Promise<AuthenticationResult | null> {
