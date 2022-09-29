@@ -22,210 +22,301 @@ import {
   IccPatientXApi,
   IccReceiptXApi,
   IccTimeTableXApi,
-  IccUserXApi
-} from "@icure/api";
-import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
-import {DataSampleApi} from "./DataSampleApi";
-import {HealthcareProfessionalApi} from "./HealthcareProfessionalApi";
-import {MedicalDeviceApi} from "./MedicalDeviceApi";
-import {HealthcareElementApi} from "./HealthcareElementApi";
-import {PatientApi} from "./PatientApi";
-import {UserApi} from "./UserApi";
-import {CodingApi} from "./CodingApi";
-import {DataSampleApiImpl} from "./impl/DataSampleApiImpl";
-import {CodingApiImpl} from "./impl/CodingApiImpl";
-import {MedicalDeviceApiImpl} from "./impl/MedicalDeviceApiImpl";
-import {PatientApiImpl} from "./impl/PatientApiImpl";
-import {UserApiImpl} from "./impl/UserApiImpl";
-import {HealthcareElementApiImpl} from "./impl/HealthcareElementApiImpl";
-import {HealthcareProfessionalApiImpl} from "./impl/HealthcareProfessionalApiImpl";
-import {AuthenticationApi} from "./AuthenticationApi";
-import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
-import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
-import {NotificationApiImpl} from "./impl/NotificationApiImpl";
-import {NotificationApi} from "./NotificationApi";
-import {MessageGatewayApi} from "./MessageGatewayApi";
-import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
-
+  IccUserXApi,
+} from '@icure/api'
+import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
+import { DataSampleApi } from './DataSampleApi'
+import { HealthcareProfessionalApi } from './HealthcareProfessionalApi'
+import { MedicalDeviceApi } from './MedicalDeviceApi'
+import { HealthcareElementApi } from './HealthcareElementApi'
+import { PatientApi } from './PatientApi'
+import { UserApi } from './UserApi'
+import { CodingApi } from './CodingApi'
+import { DataSampleApiImpl } from './impl/DataSampleApiImpl'
+import { CodingApiImpl } from './impl/CodingApiImpl'
+import { MedicalDeviceApiImpl } from './impl/MedicalDeviceApiImpl'
+import { PatientApiImpl } from './impl/PatientApiImpl'
+import { UserApiImpl } from './impl/UserApiImpl'
+import { HealthcareElementApiImpl } from './impl/HealthcareElementApiImpl'
+import { HealthcareProfessionalApiImpl } from './impl/HealthcareProfessionalApiImpl'
+import { AuthenticationApi } from './AuthenticationApi'
+import { AuthenticationApiImpl } from './impl/AuthenticationApiImpl'
+import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
+import { NotificationApiImpl } from './impl/NotificationApiImpl'
+import { NotificationApi } from './NotificationApi'
+import { MessageGatewayApi } from './MessageGatewayApi'
+import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
+import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
+import { DataOwnerApi } from './DataOwnerApi'
 
 export class MedTechApi {
-  private readonly _codingApi: CodingApi;
-  private readonly _userApi: UserApi;
-  private readonly _patientApi: PatientApi;
-  private readonly _healthcareElementApi: HealthcareElementApi;
-  private readonly _notificationApi: NotificationApi;
-  private readonly _medicalDeviceApi: MedicalDeviceApi;
-  private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
-  private readonly _dataSampleApi: DataSampleApi;
-  private readonly _cryptoApi: IccCryptoXApi;
-  private readonly _basePath: string;
-  private readonly _username: string | undefined;
-  private readonly _password: string | undefined;
-  private readonly _msgGtwUrl: string | undefined;
-  private readonly _authProcessId: string | undefined;
-  private readonly _msgGtwSpecId: string | undefined;
-  private readonly _authenticationApi: AuthenticationApi | undefined;
-  private readonly _messageGatewayApi: MessageGatewayApi | undefined;
-  private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
+  private readonly _codingApi: CodingApi
+  private readonly _userApi: UserApi
+  private readonly _patientApi: PatientApi
+  private readonly _healthcareElementApi: HealthcareElementApi
+  private readonly _notificationApi: NotificationApi
+  private readonly _medicalDeviceApi: MedicalDeviceApi
+  private readonly _healthcareProfessionalApi: HealthcareProfessionalApi
+  private readonly _dataSampleApi: DataSampleApi
+  private readonly _dataOwnerApi: DataOwnerApi
+  private readonly _cryptoApi: IccCryptoXApi
 
-  constructor(api: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; codeApi: IccCodeXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; agendaApi: IccAgendaApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi },
-              basePath: string,
-              username: string | undefined,
-              password: string | undefined,
-              msgGtwUrl: string | undefined = undefined,
-              msgGtwSpecId: string | undefined = undefined,
-              authProcessId: string | undefined = undefined,
+  private readonly _basePath: string
+  private readonly _username: string | undefined
+  private readonly _password: string | undefined
+
+  private readonly _authenticationApi: AuthenticationApi | undefined
+  private readonly _messageGatewayApi: MessageGatewayApi | undefined
+  private readonly _baseApi: {
+    cryptoApi: IccCryptoXApi
+    authApi: IccAuthApi
+    userApi: IccUserXApi
+    codeApi: IccCodeXApi
+    patientApi: IccPatientXApi
+    healthcarePartyApi: IccHcpartyXApi
+    accessLogApi: IccAccesslogXApi
+    contactApi: IccContactXApi
+    healthcareElementApi: IccHelementXApi
+    deviceApi: IccDeviceApi
+    documentApi: IccDocumentXApi
+    formApi: IccFormXApi
+    invoiceApi: IccInvoiceXApi
+    insuranceApi: IccInsuranceApi
+    messageApi: IccMessageXApi
+    entityReferenceApi: IccEntityrefApi
+    receiptApi: IccReceiptXApi
+    calendarItemApi: IccCalendarItemXApi
+    classificationApi: IccClassificationXApi
+    timetableApi: IccTimeTableXApi
+    groupApi: IccGroupApi
+    maintenanceTaskApi: IccMaintenanceTaskXApi
+    dataOwnerApi: IccDataOwnerXApi
+  }
+
+  constructor(
+    api: {
+      cryptoApi: IccCryptoXApi
+      authApi: IccAuthApi
+      codeApi: IccCodeXApi
+      userApi: IccUserXApi
+      patientApi: IccPatientXApi
+      healthcarePartyApi: IccHcpartyXApi
+      deviceApi: IccDeviceApi
+      accessLogApi: IccAccesslogXApi
+      contactApi: IccContactXApi
+      healthcareElementApi: IccHelementXApi
+      documentApi: IccDocumentXApi
+      formApi: IccFormXApi
+      invoiceApi: IccInvoiceXApi
+      insuranceApi: IccInsuranceApi
+      messageApi: IccMessageXApi
+      entityReferenceApi: IccEntityrefApi
+      receiptApi: IccReceiptXApi
+      agendaApi: IccAgendaApi
+      calendarItemApi: IccCalendarItemXApi
+      classificationApi: IccClassificationXApi
+      timetableApi: IccTimeTableXApi
+      groupApi: IccGroupApi
+      maintenanceTaskApi: IccMaintenanceTaskXApi
+      dataOwnerApi: IccDataOwnerXApi
+    },
+    basePath: string,
+    username: string | undefined,
+    password: string | undefined,
+    msgGtwUrl: string | undefined = undefined,
+    msgGtwSpecId: string | undefined = undefined,
+    authProcessByEmailId: string | undefined = undefined,
+    authProcessBySmsId: string | undefined = undefined
   ) {
-    this._basePath = basePath;
-    this._username = username;
-    this._password = password;
-    this._msgGtwUrl = msgGtwUrl;
-    this._authProcessId = authProcessId;
-    this._msgGtwSpecId = msgGtwSpecId;
-    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined;
-    this._authenticationApi = msgGtwUrl && authProcessId && msgGtwSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, msgGtwUrl, msgGtwSpecId, authProcessId) : undefined;
-    this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
-    this._codingApi = new CodingApiImpl(api);
-    this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
-    this._patientApi = new PatientApiImpl(api, basePath, username, password);
-    this._baseApi = api;
-    this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password);
-    this._healthcareElementApi = new HealthcareElementApiImpl(api);
-    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
-    this._notificationApi = new NotificationApiImpl(api);
-    this._cryptoApi = api.cryptoApi;
+    this._basePath = basePath
+    this._username = username
+    this._password = password
+
+    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined
+    this._authenticationApi =
+      authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi
+        ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId)
+        : undefined
+    this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password)
+    this._codingApi = new CodingApiImpl(api)
+    this._medicalDeviceApi = new MedicalDeviceApiImpl(api)
+    this._patientApi = new PatientApiImpl(api, basePath, username, password)
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password)
+    this._healthcareElementApi = new HealthcareElementApiImpl(api)
+    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api)
+    this._notificationApi = new NotificationApiImpl(api)
+    this._dataOwnerApi = new DataOwnerApiImpl(api)
+
+    this._baseApi = api
+    this._cryptoApi = api.cryptoApi
   }
 
   get codingApi(): CodingApi {
-    return this._codingApi;
+    return this._codingApi
   }
 
   get userApi(): UserApi {
-    return this._userApi;
+    return this._userApi
   }
 
   get patientApi(): PatientApi {
-    return this._patientApi;
+    return this._patientApi
   }
 
   get healthcareElementApi(): HealthcareElementApi {
-    return this._healthcareElementApi;
+    return this._healthcareElementApi
   }
 
   get notificationApi(): NotificationApi {
-    return this._notificationApi;
+    return this._notificationApi
   }
 
   get medicalDeviceApi(): MedicalDeviceApi {
-    return this._medicalDeviceApi;
+    return this._medicalDeviceApi
   }
 
   get healthcareProfessionalApi(): HealthcareProfessionalApi {
-    return this._healthcareProfessionalApi;
+    return this._healthcareProfessionalApi
   }
 
   get dataSampleApi(): DataSampleApi {
-    return this._dataSampleApi;
+    return this._dataSampleApi
+  }
+
+  get dataOwnerApi(): DataOwnerApi {
+    return this._dataOwnerApi
   }
 
   get cryptoApi(): IccCryptoXApi {
-    return this._cryptoApi;
+    return this._cryptoApi
   }
 
   get authenticationApi(): AuthenticationApi {
     if (!this._authenticationApi) {
-      throw Error("authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId")
+      throw Error(
+        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId"
+      )
     }
 
-    return this._authenticationApi;
+    return this._authenticationApi
   }
 
   get basePath(): string {
-    return this._basePath;
+    return this._basePath
   }
 
   get username(): string | undefined {
-    return this._username;
+    return this._username
   }
 
   get password(): string | undefined {
-    return this._password;
+    return this._password
   }
 
-  get msgGtwUrl(): string | undefined {
-    return this._msgGtwUrl;
+  get baseApi(): {
+    cryptoApi: IccCryptoXApi
+    authApi: IccAuthApi
+    userApi: IccUserXApi
+    codeApi: IccCodeXApi
+    patientApi: IccPatientXApi
+    healthcarePartyApi: IccHcpartyXApi
+    accessLogApi: IccAccesslogXApi
+    contactApi: IccContactXApi
+    healthcareElementApi: IccHelementXApi
+    deviceApi: IccDeviceApi
+    documentApi: IccDocumentXApi
+    formApi: IccFormXApi
+    invoiceApi: IccInvoiceXApi
+    insuranceApi: IccInsuranceApi
+    messageApi: IccMessageXApi
+    entityReferenceApi: IccEntityrefApi
+    receiptApi: IccReceiptXApi
+    calendarItemApi: IccCalendarItemXApi
+    classificationApi: IccClassificationXApi
+    timetableApi: IccTimeTableXApi
+    groupApi: IccGroupApi
+  } {
+    return this._baseApi
   }
 
-  get authProcessId(): string | undefined {
-    return this._authProcessId;
-  }
-
-  get baseApi(): { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi } {
-    return this._baseApi;
-  }
-
-  async addKeyPair(keyId: string, keyPair: {publicKey: string, privateKey: string}): Promise<void> {
+  async addKeyPair(keyId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
     await this.cryptoApi.RSA.storeKeyPair(keyId, {
       publicKey: this.cryptoApi.utils.spkiToJwk(hex2ua(keyPair.publicKey)),
-      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(keyPair.privateKey))
+      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(keyPair.privateKey)),
     })
+  }
+
+  async initUserCrypto(
+    overwriteExistingKeys: boolean = false,
+    keyPair?: { publicKey: string; privateKey: string }
+  ): Promise<{ publicKey: string; privateKey: String }> {
+    const currentUser = await this.userApi.getLoggedUser()
+    const userKeyPair = await this._dataOwnerApi.initCryptoFor(currentUser, overwriteExistingKeys, keyPair)
+
+    await this.addKeyPair(this._dataOwnerApi.getDataOwnerIdOf(currentUser), userKeyPair)
+
+    return userKeyPair
   }
 }
 
 export class MedTechApiBuilder {
-  private iCureBasePath?: string;
-  private userName?: string;
-  private password?: string;
-  private crypto?: Crypto;
-  private msgGtwUrl?: string;
-  private msgGtwSpecId?: string;
-  private authProcessId?: string;
-  private _preventCookieUsage: boolean = false;
+  private iCureBasePath?: string
+  private userName?: string
+  private password?: string
+  private crypto?: Crypto
+  private msgGtwUrl?: string
+  private msgGtwSpecId?: string
+  private authProcessByEmailId?: string
+  private authProcessBySmsId?: string
+  private _preventCookieUsage: boolean = false
 
   withICureBasePath(newICureBasePath: string): MedTechApiBuilder {
-    this.iCureBasePath = newICureBasePath;
-    return this;
+    this.iCureBasePath = newICureBasePath
+    return this
   }
 
   withUserName(newUserName: string): MedTechApiBuilder {
-    this.userName = newUserName;
-    return this;
+    this.userName = newUserName
+    return this
   }
 
   withPassword(newPassword: string): MedTechApiBuilder {
-    this.password = newPassword;
-    return this;
+    this.password = newPassword
+    return this
   }
 
   withMsgGtwUrl(newMsgGtwUrl: string | undefined): MedTechApiBuilder {
-    this.msgGtwUrl = newMsgGtwUrl;
-    return this;
+    this.msgGtwUrl = newMsgGtwUrl
+    return this
   }
-
 
   withMsgGtwSpecId(newSpecId: string | undefined): MedTechApiBuilder {
-    this.msgGtwSpecId = newSpecId;
-    return this;
+    this.msgGtwSpecId = newSpecId
+    return this
   }
 
-  withAuthProcessId(newAuthProcessId: string | undefined): MedTechApiBuilder {
-    this.authProcessId = newAuthProcessId;
-    return this;
+  withAuthProcessByEmailId(authProcessByEmailId: string): MedTechApiBuilder {
+    this.authProcessByEmailId = authProcessByEmailId
+    return this
   }
 
+  withAuthProcessBySmsId(authProcessBySmsId: string): MedTechApiBuilder {
+    this.authProcessBySmsId = authProcessBySmsId
+    return this
+  }
 
   withCrypto(newCrypto: Crypto): MedTechApiBuilder {
-    this.crypto = newCrypto;
-    return this;
+    this.crypto = newCrypto
+    return this
   }
 
   preventCookieUsage(): MedTechApiBuilder {
-    this._preventCookieUsage = true;
-    return this;
+    this._preventCookieUsage = true
+    return this
   }
 
-  async build() : Promise<MedTechApi> {
-    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then(api => {
+  async build(): Promise<MedTechApi> {
+    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then((api) => {
       return new MedTechApi(
         api,
         this.iCureBasePath!,
@@ -233,19 +324,20 @@ export class MedTechApiBuilder {
         this.password,
         this.msgGtwUrl,
         this.msgGtwSpecId,
-        this.authProcessId
-      );
-    });
+        this.authProcessByEmailId,
+        this.authProcessBySmsId
+      )
+    })
   }
 }
 
 export const medTechApi = (api?: MedTechApi) => {
-  const apiBuilder = new MedTechApiBuilder();
+  const apiBuilder = new MedTechApiBuilder()
   if (api) {
     const apiBuilder1 = apiBuilder.withICureBasePath(api.basePath).withCrypto(api.cryptoApi.crypto)
     const apiBuilder2 = api.username ? apiBuilder1.withUserName(api.username) : apiBuilder1
     return api.password ? apiBuilder2.withPassword(api.password) : apiBuilder2
   }
 
-  return apiBuilder;
+  return apiBuilder
 }
