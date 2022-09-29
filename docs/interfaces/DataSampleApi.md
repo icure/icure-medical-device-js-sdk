@@ -46,7 +46,7 @@ Create or update a [DataSample] for a patient
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L18)
+[src/apis/DataSampleApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L18)
 
 ___
 
@@ -70,7 +70,7 @@ Create or update a batch of [DataSample] for a patient
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L26)
+[src/apis/DataSampleApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L26)
 
 ___
 
@@ -94,7 +94,7 @@ Delete an attachment of a DataSample
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L34)
+[src/apis/DataSampleApi.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L34)
 
 ___
 
@@ -117,7 +117,7 @@ Delete a [DataSample] by its id
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L41)
+[src/apis/DataSampleApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L41)
 
 ___
 
@@ -140,7 +140,7 @@ Delete a batch of [Data Samples]
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L48)
+[src/apis/DataSampleApi.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L48)
 
 ___
 
@@ -160,7 +160,7 @@ ___
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:154](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L154)
+[src/apis/DataSampleApi.ts:154](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L154)
 
 ___
 
@@ -193,7 +193,7 @@ Find data samples using the provided [filter].
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L65)
+[src/apis/DataSampleApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L65)
 
 ___
 
@@ -216,7 +216,7 @@ Get a [DataSample] by its id
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L72)
+[src/apis/DataSampleApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L72)
 
 ___
 
@@ -241,7 +241,7 @@ Get attachment content of a DataSample
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L81)
+[src/apis/DataSampleApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L81)
 
 ___
 
@@ -265,7 +265,7 @@ Get document metadata of a DataSample attachment
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:89](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L89)
+[src/apis/DataSampleApi.ts:89](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L89)
 
 ___
 
@@ -289,7 +289,7 @@ an array containing the Data Samples
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:134](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L134)
+[src/apis/DataSampleApi.ts:134](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L134)
 
 ___
 
@@ -315,7 +315,7 @@ The dataSample with updated access rights
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:126](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L126)
+[src/apis/DataSampleApi.ts:126](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L126)
 
 ___
 
@@ -338,7 +338,7 @@ Find data samples ids using the provided Filter.
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L96)
+[src/apis/DataSampleApi.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L96)
 
 ___
 
@@ -366,7 +366,7 @@ Add or update the attachment of a DataSample
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:108](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L108)
+[src/apis/DataSampleApi.ts:108](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L108)
 
 ___
 
@@ -395,4 +395,4 @@ Opens a WebSocket Connection in order to receive all the Data Samples correspond
 
 #### Defined in
 
-[src/apis/DataSampleApi.ts:147](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/DataSampleApi.ts#L147)
+[src/apis/DataSampleApi.ts:147](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/DataSampleApi.ts#L147)

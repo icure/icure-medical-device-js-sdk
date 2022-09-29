@@ -44,7 +44,7 @@ This service allows you to create a healthcare element linked to a specific pati
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L22)
+[src/apis/HealthcareElementApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L22)
 
 ___
 
@@ -73,7 +73,7 @@ This service permits you to create multiple healthcare elements for a specific p
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L36)
+[src/apis/HealthcareElementApi.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L36)
 
 ___
 
@@ -95,7 +95,7 @@ Delete a Healthcare Element from the iCure database
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L42)
+[src/apis/HealthcareElementApi.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L42)
 
 ___
 
@@ -127,7 +127,7 @@ Load healthcare elements from the database by filtering them using the provided 
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L58)
+[src/apis/HealthcareElementApi.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L58)
 
 ___
 
@@ -149,7 +149,7 @@ Retrieves the information of a specific Healthcare Element
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L64)
+[src/apis/HealthcareElementApi.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L64)
 
 ___
 
@@ -173,7 +173,7 @@ an array containing the Healthcare Elements
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:90](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L90)
+[src/apis/HealthcareElementApi.ts:90](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L90)
 
 ___
 
@@ -197,7 +197,7 @@ For this, the current user data owner should be able to access the healthcare El
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L82)
+[src/apis/HealthcareElementApi.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L82)
 
 ___
 
@@ -221,4 +221,4 @@ the ids of the healthcare elements satisfying the provided filter
 
 #### Defined in
 
-[src/apis/HealthcareElementApi.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareElementApi.ts#L73)
+[src/apis/HealthcareElementApi.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareElementApi.ts#L73)
