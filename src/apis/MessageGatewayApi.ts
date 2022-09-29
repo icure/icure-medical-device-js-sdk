@@ -1,12 +1,11 @@
-import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../utils/msgGtwMessageFactory";
+import { AuthenticationProcessBody, EmailMessage, SMSMessage } from '../utils/msgGtwMessageFactory'
 
 export interface MessageGatewayApi {
+  sendEmail(recipientEmail: string, email: EmailMessage): Promise<boolean>
 
-  sendEmail(recipientEmail: string, email: EmailMessage): Promise<boolean>;
+  sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<boolean>
 
-  sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<boolean>;
+  startProcess(processId: string, processBody: AuthenticationProcessBody): Promise<string>
 
-  startProcess(processId: string, processBody: AuthenticationProcessBody): Promise<string>;
-
-  validateProcess(requestId: string, validationCode: string): Promise<boolean>;
+  validateProcess(requestId: string, validationCode: string): Promise<boolean>
 }
