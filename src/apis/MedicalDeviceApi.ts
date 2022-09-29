@@ -2,6 +2,9 @@ import {Filter} from '../filter/Filter';
 import {MedicalDevice} from '../models/MedicalDevice';
 import {PaginatedListMedicalDevice} from '../models/PaginatedListMedicalDevice';
 
+/**
+ * The MedicalDeviceApi interface provides methods to manage medical devices.
+ */
 export interface MedicalDeviceApi {
 
     /**

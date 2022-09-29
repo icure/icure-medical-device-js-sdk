@@ -2,6 +2,9 @@ import {Filter} from '../filter/Filter';
 import {HealthcareProfessional} from '../models/HealthcareProfessional';
 import {PaginatedListHealthcareProfessional} from '../models/PaginatedListHealthcareProfessional';
 
+/**
+ * The HealthcareProfessionalApi interface provides methods to manage healthcare professionals.
+ */
 export interface HealthcareProfessionalApi {
 
     /**
