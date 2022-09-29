@@ -39,7 +39,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L15)
+[src/models/SystemMetaDataOwner.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L15)
 
 ## Properties
 
@@ -53,7 +53,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L22)
+[src/models/SystemMetaDataOwner.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L22)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L20)
+[src/models/SystemMetaDataOwner.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L20)
 
 ___
 
@@ -81,7 +81,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L21)
+[src/models/SystemMetaDataOwner.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L21)
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L19)
+[src/models/SystemMetaDataOwner.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L19)
 
 ___
 
@@ -105,4 +105,4 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwner.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/SystemMetaDataOwner.ts#L23)
+[src/models/SystemMetaDataOwner.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/SystemMetaDataOwner.ts#L23)
