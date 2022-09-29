@@ -1,0 +1,159 @@
+[@icure/medical-device-sdk](../modules.md) / NotificationApi
+
+# Interface: NotificationApi
+
+The NotificationApi interface provides methods to subscribe to notifications.
+
+## Table of contents
+
+### Methods
+
+- [createOrModifyNotification](NotificationApi.md#createormodifynotification)
+- [deleteNotification](NotificationApi.md#deletenotification)
+- [filterNotifications](NotificationApi.md#filternotifications)
+- [getNotification](NotificationApi.md#getnotification)
+- [getPendingNotifications](NotificationApi.md#getpendingnotifications)
+- [updateNotificationStatus](NotificationApi.md#updatenotificationstatus)
+
+## Methods
+
+### createOrModifyNotification
+
+▸ **createOrModifyNotification**(`notification`, `delegate?`): `Promise`<`undefined` \| `Notification`\>
+
+This method creates a Notification if the rev field is undefined, otherwise it updates an existing one.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `notification` | `Notification` | the Notification to create or modify. |
+| `delegate?` | `string` | the id of the Healthcare Party to delegate. |
+
+#### Returns
+
+`Promise`<`undefined` \| `Notification`\>
+
+a Promise containing the Notification or undefined if something goes wrong.
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L15)
+
+___
+
+### deleteNotification
+
+▸ **deleteNotification**(`notificationId`): `Promise`<`undefined` \| `string`\>
+
+This method deletes the Notification with the provided id.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `notificationId` | `string` | the id of the Notification to delete |
+
+#### Returns
+
+`Promise`<`undefined` \| `string`\>
+
+a Promise containing the id of the Notification or undefined if something goes wrong.
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L22)
+
+___
+
+### filterNotifications
+
+▸ **filterNotifications**(`filter`, `nextNotificationId?`, `limit?`): `Promise`<`PaginatedListNotification`\>
+
+Filters are complex selectors that are built by combining basic building blocks. This method returns a paginated list of Notification (with a cursor that lets you query the following items).
+Load notifications from the database by filtering them using the provided [filter].
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `filter` | `Filter`<`Notification`\> | The Filter object that describes which condition(s) the elements which the ids should be returned must fulfill |
+| `nextNotificationId?` | `string` | The id of the first notification in the next page |
+| `limit?` | `number` | The number of patients to return in the queried page |
+
+#### Returns
+
+`Promise`<`PaginatedListNotification`\>
+
+a Promise containing the PaginatedList of Notification objects
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L32)
+
+___
+
+### getNotification
+
+▸ **getNotification**(`notificationId`): `Promise`<`undefined` \| `Notification`\>
+
+This method returns a Promise containing the Notification with the specified id.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `notificationId` | `string` | the id of the Notification to retrieve. |
+
+#### Returns
+
+`Promise`<`undefined` \| `Notification`\>
+
+a Promise containing the Notification or undefined if something goes wrong.
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L39)
+
+___
+
+### getPendingNotifications
+
+▸ **getPendingNotifications**(): `Promise`<`Notification`[]\>
+
+Gets all the Notifications with status "pending" that the current dataOwner can access
+
+#### Returns
+
+`Promise`<`Notification`[]\>
+
+an Array of the Notifications matching those criteria
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L45)
+
+___
+
+### updateNotificationStatus
+
+▸ **updateNotificationStatus**(`notification`, `newStatus`): `Promise`<`undefined` \| `Notification`\>
+
+Updates the status of a Notification.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `notification` | `Notification` | the Notification to update |
+| `newStatus` | `MaintenanceTaskStatusEnum` | the new status |
+
+#### Returns
+
+`Promise`<`undefined` \| `Notification`\>
+
+the updated Notification
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L53)
