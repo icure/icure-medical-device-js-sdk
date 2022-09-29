@@ -30,7 +30,7 @@ List of partners, or persons of contact (of class Partnership, see below).
 
 #### Defined in
 
-[src/models/Partnership.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Partnership.ts#L18)
+[src/models/Partnership.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L18)
 
 ## Properties
 
@@ -40,7 +40,7 @@ List of partners, or persons of contact (of class Partnership, see below).
 
 #### Defined in
 
-[src/models/Partnership.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Partnership.ts#L24)
+[src/models/Partnership.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L24)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[src/models/Partnership.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Partnership.ts#L23)
+[src/models/Partnership.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L23)
 
 ___
 
@@ -60,4 +60,4 @@ ___
 
 #### Defined in
 
-[src/models/Partnership.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Partnership.ts#L22)
+[src/models/Partnership.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L22)

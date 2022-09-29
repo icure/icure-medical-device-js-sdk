@@ -48,7 +48,7 @@ A Data Sample represents a medical information, provided by a Data Owner concern
 
 #### Defined in
 
-[src/models/DataSample.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L22)
+[src/models/DataSample.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L22)
 
 ## Properties
 
@@ -60,7 +60,7 @@ The id of the [User] that created this data sample. When creating the data sampl
 
 #### Defined in
 
-[src/models/DataSample.ts:85](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L85)
+[src/models/DataSample.ts:85](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L85)
 
 ___
 
@@ -72,7 +72,7 @@ Id of the batch that embeds this data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L41)
+[src/models/DataSample.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L41)
 
 ___
 
@@ -84,7 +84,7 @@ List of Ids of all canvases linked to the Data sample. Only used when the Data s
 
 #### Defined in
 
-[src/models/DataSample.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L49)
+[src/models/DataSample.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L49)
 
 ___
 
@@ -96,7 +96,7 @@ The date (YYYYMMDDhhmmss) marking the end of the Data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:69](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L69)
+[src/models/DataSample.ts:69](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L69)
 
 ___
 
@@ -108,7 +108,7 @@ A code is an item from a codification system that qualifies the content of this 
 
 #### Defined in
 
-[src/models/DataSample.ts:101](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L101)
+[src/models/DataSample.ts:101](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L101)
 
 ___
 
@@ -120,7 +120,7 @@ Text, comments on the Data sample provided
 
 #### Defined in
 
-[src/models/DataSample.ts:93](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L93)
+[src/models/DataSample.ts:93](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L93)
 
 ___
 
@@ -136,7 +136,7 @@ Information contained in the data sample (Measure, number, ...). Content is loca
 
 #### Defined in
 
-[src/models/DataSample.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L57)
+[src/models/DataSample.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L57)
 
 ___
 
@@ -148,7 +148,7 @@ The timestamp (unix epoch in ms) of creation of this data sample in iCure system
 
 #### Defined in
 
-[src/models/DataSample.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L73)
+[src/models/DataSample.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L73)
 
 ___
 
@@ -160,7 +160,7 @@ Soft delete (unix epoch in ms) timestamp of the data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L81)
+[src/models/DataSample.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L81)
 
 ___
 
@@ -172,7 +172,7 @@ List of IDs of all healthcare elements for which the data sample is provided. On
 
 #### Defined in
 
-[src/models/DataSample.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L45)
+[src/models/DataSample.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L45)
 
 ___
 
@@ -184,7 +184,7 @@ The Id of the Data sample. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/DataSample.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L29)
+[src/models/DataSample.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L29)
 
 ___
 
@@ -196,7 +196,7 @@ Typically used for business / client identifiers. An identifier should identify 
 
 #### Defined in
 
-[src/models/DataSample.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L37)
+[src/models/DataSample.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L37)
 
 ___
 
@@ -208,7 +208,7 @@ Used for sorting data samples inside an upper object (A batch, a transaction, a 
 
 #### Defined in
 
-[src/models/DataSample.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L53)
+[src/models/DataSample.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L53)
 
 ___
 
@@ -220,7 +220,7 @@ A label is an item from a codification system that qualifies a data sample as be
 
 #### Defined in
 
-[src/models/DataSample.ts:105](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L105)
+[src/models/DataSample.ts:105](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L105)
 
 ___
 
@@ -232,7 +232,7 @@ The timestamp (unix epoch in ms) of the latest modification of this data sample 
 
 #### Defined in
 
-[src/models/DataSample.ts:77](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L77)
+[src/models/DataSample.ts:77](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L77)
 
 ___
 
@@ -244,7 +244,7 @@ The date (YYYYMMDDhhmmss) of the start of the Data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L65)
+[src/models/DataSample.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L65)
 
 ___
 
@@ -260,7 +260,7 @@ Links towards related data samples (possibly in other batches)
 
 #### Defined in
 
-[src/models/DataSample.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L97)
+[src/models/DataSample.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L97)
 
 ___
 
@@ -272,7 +272,7 @@ The id of the data owner that is responsible of this data sample. When creating 
 
 #### Defined in
 
-[src/models/DataSample.ts:89](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L89)
+[src/models/DataSample.ts:89](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L89)
 
 ___
 
@@ -282,7 +282,7 @@ ___
 
 #### Defined in
 
-[src/models/DataSample.ts:106](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L106)
+[src/models/DataSample.ts:106](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L106)
 
 ___
 
@@ -294,7 +294,7 @@ The transactionId is used when a single data sample had to be split into parts f
 
 #### Defined in
 
-[src/models/DataSample.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L33)
+[src/models/DataSample.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L33)
 
 ___
 
@@ -306,4 +306,4 @@ The date (YYYYMMDDhhmmss) when the Data sample is noted to have started and also
 
 #### Defined in
 
-[src/models/DataSample.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/DataSample.ts#L61)
+[src/models/DataSample.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L61)

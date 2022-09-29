@@ -45,7 +45,7 @@
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L20)
+[src/models/HealthcareProfessional.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L20)
 
 ## Properties
 
@@ -57,7 +57,7 @@ The list of addresses (with address type).
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:79](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L79)
+[src/models/HealthcareProfessional.ts:79](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L79)
 
 ___
 
@@ -69,7 +69,7 @@ Mr., Ms., Pr., Dr. ...
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L67)
+[src/models/HealthcareProfessional.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L67)
 
 ___
 
@@ -81,7 +81,7 @@ creation timestamp of the object.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L35)
+[src/models/HealthcareProfessional.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L35)
 
 ___
 
@@ -93,7 +93,7 @@ the soft delete timestamp. When a user is ”deleted“, this is set to a non nu
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L43)
+[src/models/HealthcareProfessional.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L43)
 
 ___
 
@@ -105,7 +105,7 @@ the firstname (name) of the healthcare party.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:55](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L55)
+[src/models/HealthcareProfessional.ts:55](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L55)
 
 ___
 
@@ -117,7 +117,7 @@ the gender of the healthcare party: male, female, indeterminate, changed, change
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L63)
+[src/models/HealthcareProfessional.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L63)
 
 ___
 
@@ -129,7 +129,7 @@ the Id of the healthcare party. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L27)
+[src/models/HealthcareProfessional.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L27)
 
 ___
 
@@ -141,7 +141,7 @@ The list of languages spoken by the patient ordered by fluency (alpha-2 code htt
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:83](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L83)
+[src/models/HealthcareProfessional.ts:83](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L83)
 
 ___
 
@@ -153,7 +153,7 @@ the lastname (surname) of the healthcare party. This is the official lastname th
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L51)
+[src/models/HealthcareProfessional.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L51)
 
 ___
 
@@ -165,7 +165,7 @@ last modification timestamp of the object.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L39)
+[src/models/HealthcareProfessional.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L39)
 
 ___
 
@@ -177,7 +177,7 @@ The full name of the healthcare party, used mainly when the healthcare party is 
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L47)
+[src/models/HealthcareProfessional.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L47)
 
 ___
 
@@ -189,7 +189,7 @@ the list of all names of the healthcare party, also containing the official full
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L59)
+[src/models/HealthcareProfessional.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L59)
 
 ___
 
@@ -201,7 +201,7 @@ Text notes.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:95](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L95)
+[src/models/HealthcareProfessional.ts:95](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L95)
 
 ___
 
@@ -213,7 +213,7 @@ Id of parent of the user representing the healthcare party.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:75](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L75)
+[src/models/HealthcareProfessional.ts:75](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L75)
 
 ___
 
@@ -225,7 +225,7 @@ A picture usually saved in JPEG format.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:87](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L87)
+[src/models/HealthcareProfessional.ts:87](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L87)
 
 ___
 
@@ -235,7 +235,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L96)
+[src/models/HealthcareProfessional.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L96)
 
 ___
 
@@ -247,7 +247,7 @@ the revision of the healthcare party in the database, used for conflict manageme
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L31)
+[src/models/HealthcareProfessional.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L31)
 
 ___
 
@@ -259,7 +259,7 @@ Medical specialty of the healthcare party
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L71)
+[src/models/HealthcareProfessional.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L71)
 
 ___
 
@@ -271,7 +271,7 @@ Medical specialty of the healthcare party codified using FHIR or Kmehr codificai
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L91)
+[src/models/HealthcareProfessional.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L91)
 
 ___
 
@@ -281,4 +281,4 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/HealthcareProfessional.ts#L97)
+[src/models/HealthcareProfessional.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L97)
