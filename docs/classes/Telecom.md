@@ -37,7 +37,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Telecom.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Telecom.ts#L15)
+[src/models/Telecom.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L15)
 
 ## Properties
 
@@ -47,7 +47,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Telecom.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Telecom.ts#L21)
+[src/models/Telecom.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L21)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[src/models/Telecom.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Telecom.ts#L20)
+[src/models/Telecom.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L20)
 
 ___
 
@@ -67,4 +67,4 @@ ___
 
 #### Defined in
 
-[src/models/Telecom.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Telecom.ts#L19)
+[src/models/Telecom.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L19)

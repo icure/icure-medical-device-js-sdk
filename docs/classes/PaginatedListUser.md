@@ -29,7 +29,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PaginatedListUser.ts#L17)
+[src/models/PaginatedListUser.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListUser.ts#L17)
 
 ## Properties
 
@@ -39,7 +39,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PaginatedListUser.ts#L24)
+[src/models/PaginatedListUser.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListUser.ts#L24)
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PaginatedListUser.ts#L21)
+[src/models/PaginatedListUser.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListUser.ts#L21)
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PaginatedListUser.ts#L23)
+[src/models/PaginatedListUser.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListUser.ts#L23)
 
 ___
 
@@ -69,4 +69,4 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PaginatedListUser.ts#L22)
+[src/models/PaginatedListUser.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListUser.ts#L22)

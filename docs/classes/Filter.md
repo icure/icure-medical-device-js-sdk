@@ -35,7 +35,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Filter.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Filter.ts#L15)
+[src/models/Filter.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Filter.ts#L15)
 
 ## Properties
 
@@ -45,4 +45,4 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Filter.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Filter.ts#L19)
+[src/models/Filter.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Filter.ts#L19)

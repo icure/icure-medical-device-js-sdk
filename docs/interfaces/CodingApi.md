@@ -35,7 +35,7 @@ Create or update a [Coding]
 
 #### Defined in
 
-[src/apis/CodingApi.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/CodingApi.ts#L14)
+[src/apis/CodingApi.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/CodingApi.ts#L14)
 
 ___
 
@@ -58,7 +58,7 @@ Create or update a batch of [Coding]
 
 #### Defined in
 
-[src/apis/CodingApi.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/CodingApi.ts#L20)
+[src/apis/CodingApi.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/CodingApi.ts#L20)
 
 ___
 
@@ -83,7 +83,7 @@ Load codings from the database by filtering them using the provided [filter].
 
 #### Defined in
 
-[src/apis/CodingApi.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/CodingApi.ts#L28)
+[src/apis/CodingApi.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/CodingApi.ts#L28)
 
 ___
 
@@ -106,7 +106,7 @@ Get a [Coding]
 
 #### Defined in
 
-[src/apis/CodingApi.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/CodingApi.ts#L34)
+[src/apis/CodingApi.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/CodingApi.ts#L34)
 
 ___
 
@@ -129,4 +129,4 @@ Load coding ids from the database by filtering them using the provided [filter].
 
 #### Defined in
 
-[src/apis/CodingApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/CodingApi.ts#L40)
+[src/apis/CodingApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/CodingApi.ts#L40)

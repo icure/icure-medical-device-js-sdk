@@ -41,7 +41,7 @@ user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AuthenticationApi.ts#L65)
+[src/apis/AuthenticationApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L65)
 
 ___
 
@@ -71,7 +71,7 @@ user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AuthenticationApi.ts#L45)
+[src/apis/AuthenticationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L45)
 
 ___
 
@@ -102,4 +102,4 @@ The AuthenticationProcess information needed to complete the authentication in t
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AuthenticationApi.ts#L23)
+[src/apis/AuthenticationApi.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L23)
