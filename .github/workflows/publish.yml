@@ -24,26 +24,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies and build 🔧
         run: yarn install && yarn run build
-        env:
-          ICURE_TS_TEST_URL: 'https://kraken.icure.dev/rest/v1'
-          ICURE_TS_TEST_MSG_GTW_URL: 'https://mock.icure.dev'
-          ICURE_TS_TEST_MSG_GTW_SPEC_ID: 'ic'
-          ICURE_TS_TEST_HCP_AUTH_PROCESS_ID: ${{ secrets.TEST_HCP_AUTH_PROCESS_ID }}
-          ICURE_TS_TEST_PAT_AUTH_PROCESS_ID: ${{ secrets.TEST_PAT_AUTH_PROCESS_ID }}
-          ICURE_TS_TEST_AUTH_PROCESS_HCP_ID: '80a5e4de-97be-4b2b-848c-247bea8fcae2'
-          ICURE_TS_TEST_RAPID_API_KEY: ${{ secrets.TEST_RAPID_API_KEY }}
-          ICURE_TS_TEST_HCP_USER: ${{ secrets.TEST_HCP_USER }}
-          ICURE_TS_TEST_HCP_PWD: ${{ secrets.TEST_HCP_PWD }}
-          ICURE_TS_TEST_HCP_PRIV_KEY: ${{ secrets.TEST_HCP_PRIV_KEY }}
-          ICURE_TS_TEST_PAT_USER: ${{ secrets.TEST_PAT_USER }}
-          ICURE_TS_TEST_PAT_PWD: ${{ secrets.TEST_PAT_PWD }}
-          ICURE_TS_TEST_PAT_PRIV_KEY: ${{ secrets.TEST_PAT_PRIV_KEY }}
-          ICURE_TS_TEST_HCP_2_USER: ${{ secrets.TEST_HCP_2_USER }}
-          ICURE_TS_TEST_HCP_2_PWD: ${{ secrets.TEST_HCP_2_PWD }}
-          ICURE_TS_TEST_HCP_2_PRIV_KEY: ${{ secrets.TEST_HCP_2_PRIV_KEY }}
-          ICURE_TS_TEST_HCP_3_USER: ${{ secrets.TEST_HCP_3_USER }}
-          ICURE_TS_TEST_HCP_3_PWD: ${{ secrets.TEST_HCP_3_PWD }}
-          ICURE_TS_TEST_HCP_3_PRIV_KEY: ${{ secrets.TEST_HCP_3_PRIV_KEY }}
       - name: Creation new version (Major) 🏷️
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Major') }}
         run: yarn version --major
