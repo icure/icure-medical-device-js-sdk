@@ -22,7 +22,8 @@ describe("Authentication API", () => {
         .withICureUrlPath(iCureUrl)
         .withCrypto(webcrypto as any)
         .withMsgGtwUrl(msgGtwUrl)
-        .withAuthProcessId(authProcessId)
+        .withAuthProcessByEmailId(authProcessId)
+        .withAuthProcessBySmsId(authProcessId)
         .build();
       expect(true, "promise should fail").eq(false)
     } catch (e) {
@@ -34,8 +35,9 @@ describe("Authentication API", () => {
         .withICureUrlPath(iCureUrl)
         .withCrypto(webcrypto as any)
         .withMsgGtwUrl(msgGtwUrl)
-        .withAuthProcessId(authProcessId)
         .withMsgGtwSpecId(specId)
+        .withAuthProcessByEmailId('fake-process-id')
+        .withAuthProcessBySmsId('fake-process-id')
         .build();
 
       expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").not.null
@@ -50,7 +52,8 @@ describe("Authentication API", () => {
       .withICureBasePath(iCureUrl)
       .withMsgGtwUrl(msgGtwUrl)
       .withCrypto(webcrypto as any)
-      .withAuthProcessId("fake-process-id")
+      .withAuthProcessByEmailId('fake-process-id')
+      .withAuthProcessBySmsId('fake-process-id')
       .build();
 
     try {
@@ -76,7 +79,8 @@ describe("Authentication API", () => {
       .withMsgGtwUrl(msgGtwUrl)
       .withMsgGtwSpecId(specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessId(authProcessId)
+      .withAuthProcessByEmailId(authProcessId)
+      .withAuthProcessBySmsId(authProcessId)
       .build();
 
     // When
@@ -98,7 +102,8 @@ describe("Authentication API", () => {
       .withMsgGtwUrl(msgGtwUrl)
       .withMsgGtwSpecId(specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessId(authProcessId)
+      .withAuthProcessByEmailId(authProcessId)
+      .withAuthProcessBySmsId(authProcessId)
       .build();
 
     // When

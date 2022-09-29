@@ -142,7 +142,8 @@ export class TestUtils {
       .withMsgGtwUrl(msgGtwUrl)
       .withMsgGtwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessId(authProcessId)
+      .withAuthProcessByEmailId(authProcessId)
+      .withAuthProcessBySmsId(authProcessId)
       .build();
 
     const email = await this.getTempEmail();
