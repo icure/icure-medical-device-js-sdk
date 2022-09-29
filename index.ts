@@ -16,5 +16,3 @@ export * from './src/filter'
 export * from '@icure/api/icc-x-api/utils/binary-utils'
 export * from '@icure/api/icc-x-api/utils/formatting-util'
 export * from '@icure/api/icc-x-api/utils/uuid-encoder'
-
-export * from './src/utils/msgGtwMessageFactory'
