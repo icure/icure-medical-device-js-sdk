@@ -38,7 +38,7 @@ Create or update a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L16)
+[src/apis/PatientApi.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L16)
 
 ___
 
@@ -61,7 +61,7 @@ Delete a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L22)
+[src/apis/PatientApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L22)
 
 ___
 
@@ -95,7 +95,7 @@ Load patients from the database by filtering them using the provided [filter].
 
 #### Defined in
 
-[src/apis/PatientApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L39)
+[src/apis/PatientApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L39)
 
 ___
 
@@ -118,7 +118,7 @@ Get a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L45)
+[src/apis/PatientApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L45)
 
 ___
 
@@ -142,7 +142,7 @@ For this, the current user data owner should be able to access the patient provi
 
 #### Defined in
 
-[src/apis/PatientApi.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L60)
+[src/apis/PatientApi.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L60)
 
 ___
 
@@ -168,7 +168,7 @@ This means this service is sharing :
 
 #### Defined in
 
-[src/apis/PatientApi.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L71)
+[src/apis/PatientApi.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L71)
 
 ___
 
@@ -191,7 +191,7 @@ Load patient ids from the database by filtering them using the provided [filter]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L51)
+[src/apis/PatientApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L51)
 
 ___
 
@@ -220,4 +220,4 @@ Opens a WebSocket Connection in order to receive all the Patients corresponding 
 
 #### Defined in
 
-[src/apis/PatientApi.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/PatientApi.ts#L84)
+[src/apis/PatientApi.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L84)

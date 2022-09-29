@@ -42,7 +42,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L15)
+[src/models/InlineResponse403.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L15)
 
 ## Properties
 
@@ -52,7 +52,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L20)
+[src/models/InlineResponse403.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L20)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L24)
+[src/models/InlineResponse403.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L24)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L23)
+[src/models/InlineResponse403.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L23)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L21)
+[src/models/InlineResponse403.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L21)
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L22)
+[src/models/InlineResponse403.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L22)
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L19)
+[src/models/InlineResponse403.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L19)
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L25)
+[src/models/InlineResponse403.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L25)
 
 ___
 
@@ -122,4 +122,4 @@ ___
 
 #### Defined in
 
-[src/models/InlineResponse403.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/InlineResponse403.ts#L26)
+[src/models/InlineResponse403.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/InlineResponse403.ts#L26)
