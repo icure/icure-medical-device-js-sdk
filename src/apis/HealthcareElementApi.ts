@@ -3,6 +3,9 @@ import {HealthcareElement} from '../models/HealthcareElement'
 import {PaginatedListHealthcareElement} from '../models/PaginatedListHealthcareElement'
 import {Patient} from "../models/Patient";
 
+/**
+ * The HealthcareElementApi interface provides methods to manage healthcare elements.
+ */
 export interface HealthcareElementApi {
   /**
    * A Healthcare Element is a data giving some medical context to a series of measures, symptoms, ...

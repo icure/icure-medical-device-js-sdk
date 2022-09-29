@@ -2,6 +2,9 @@ import {MaintenanceTaskStatusEnum, Notification} from '../models/Notification'
 import {Filter} from '../filter/Filter'
 import {PaginatedListNotification} from '../models/PaginatedListNotification'
 
+/**
+ * The NotificationApi interface provides methods to subscribe to notifications.
+ */
 export interface NotificationApi {
   /**
    * This method creates a Notification if the rev field is undefined, otherwise it updates an existing one.
