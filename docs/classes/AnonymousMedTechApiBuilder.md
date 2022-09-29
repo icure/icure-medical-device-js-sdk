@@ -11,8 +11,7 @@
 ### Properties
 
 - [\_preventCookieUsage](AnonymousMedTechApiBuilder.md#_preventcookieusage)
-- [authProcessByEmailId](AnonymousMedTechApiBuilder.md#authprocessbyemailid)
-- [authProcessBySmsId](AnonymousMedTechApiBuilder.md#authprocessbysmsid)
+- [authProcessId](AnonymousMedTechApiBuilder.md#authprocessid)
 - [authSpecId](AnonymousMedTechApiBuilder.md#authspecid)
 - [crypto](AnonymousMedTechApiBuilder.md#crypto)
 - [iCureUrlPath](AnonymousMedTechApiBuilder.md#icureurlpath)
@@ -23,8 +22,7 @@
 
 - [build](AnonymousMedTechApiBuilder.md#build)
 - [preventCookieUsage](AnonymousMedTechApiBuilder.md#preventcookieusage)
-- [withAuthProcessByEmailId](AnonymousMedTechApiBuilder.md#withauthprocessbyemailid)
-- [withAuthProcessBySmsId](AnonymousMedTechApiBuilder.md#withauthprocessbysmsid)
+- [withAuthProcessId](AnonymousMedTechApiBuilder.md#withauthprocessid)
 - [withCrypto](AnonymousMedTechApiBuilder.md#withcrypto)
 - [withICureUrlPath](AnonymousMedTechApiBuilder.md#withicureurlpath)
 - [withMsgGtwSpecId](AnonymousMedTechApiBuilder.md#withmsggtwspecid)
@@ -38,7 +36,7 @@
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L53)
+[src/apis/AnonymousMedTechApi.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L54)
 
 ## Properties
 
@@ -48,27 +46,17 @@
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L51)
+[src/apis/AnonymousMedTechApi.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L52)
 
 ___
 
-### authProcessByEmailId
+### authProcessId
 
-• `Private` **authProcessByEmailId**: `undefined` \| `string`
-
-#### Defined in
-
-[src/apis/AnonymousMedTechApi.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L48)
-
-___
-
-### authProcessBySmsId
-
-• `Private` **authProcessBySmsId**: `undefined` \| `string`
+• `Private` **authProcessId**: `undefined` \| `string`
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L49)
+[src/apis/AnonymousMedTechApi.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L50)
 
 ___
 
@@ -78,7 +66,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L45)
+[src/apis/AnonymousMedTechApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L47)
 
 ___
 
@@ -88,7 +76,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L50)
+[src/apis/AnonymousMedTechApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L51)
 
 ___
 
@@ -98,7 +86,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L44)
+[src/apis/AnonymousMedTechApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L46)
 
 ___
 
@@ -108,7 +96,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L47)
+[src/apis/AnonymousMedTechApi.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L49)
 
 ___
 
@@ -118,7 +106,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L46)
+[src/apis/AnonymousMedTechApi.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L48)
 
 ## Methods
 
@@ -132,7 +120,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L97)
+[src/apis/AnonymousMedTechApi.ts:92](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L92)
 
 ___
 
@@ -146,19 +134,19 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:92](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L92)
+[src/apis/AnonymousMedTechApi.ts:87](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L87)
 
 ___
 
-### withAuthProcessByEmailId
+### withAuthProcessId
 
-▸ **withAuthProcessByEmailId**(`authProcessByEmailId`): [`AnonymousMedTechApiBuilder`](AnonymousMedTechApiBuilder.md)
+▸ **withAuthProcessId**(`authProcessId`): [`AnonymousMedTechApiBuilder`](AnonymousMedTechApiBuilder.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `authProcessByEmailId` | `string` |
+| `authProcessId` | `string` |
 
 #### Returns
 
@@ -166,27 +154,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:77](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L77)
-
-___
-
-### withAuthProcessBySmsId
-
-▸ **withAuthProcessBySmsId**(`authProcessBySmsId`): [`AnonymousMedTechApiBuilder`](AnonymousMedTechApiBuilder.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `authProcessBySmsId` | `string` |
-
-#### Returns
-
-[`AnonymousMedTechApiBuilder`](AnonymousMedTechApiBuilder.md)
-
-#### Defined in
-
-[src/apis/AnonymousMedTechApi.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L82)
+[src/apis/AnonymousMedTechApi.ts:77](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L77)
 
 ___
 
@@ -206,7 +174,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:87](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L87)
+[src/apis/AnonymousMedTechApi.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L82)
 
 ___
 
@@ -226,7 +194,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:62](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L62)
+[src/apis/AnonymousMedTechApi.ts:62](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L62)
 
 ___
 
@@ -246,7 +214,7 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L72)
+[src/apis/AnonymousMedTechApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L72)
 
 ___
 
@@ -266,4 +234,4 @@ ___
 
 #### Defined in
 
-[src/apis/AnonymousMedTechApi.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AnonymousMedTechApi.ts#L67)
+[src/apis/AnonymousMedTechApi.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/AnonymousMedTechApi.ts#L67)
