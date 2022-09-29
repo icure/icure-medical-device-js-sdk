@@ -22,8 +22,8 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Install dependencies, test and build 🔧
-        run: yarn install && yarn run test && yarn run build
+      - name: Install dependencies and build 🔧
+        run: yarn install && yarn run build
         env:
           ICURE_TS_TEST_URL: 'https://kraken.icure.dev/rest/v1'
           ICURE_TS_TEST_MSG_GTW_URL: 'https://mock.icure.dev'
