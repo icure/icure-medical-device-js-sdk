@@ -46,7 +46,7 @@
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L19)
+[src/models/MedicalDevice.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L19)
 
 ## Properties
 
@@ -58,7 +58,7 @@ The id of the [User] that created this medical device. When creating the device,
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L50)
+[src/models/MedicalDevice.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L50)
 
 ___
 
@@ -70,7 +70,7 @@ Brand of the device recording the data
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L82)
+[src/models/MedicalDevice.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L82)
 
 ___
 
@@ -82,7 +82,7 @@ A code is an item from a codification system that qualifies the content of this 
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:62](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L62)
+[src/models/MedicalDevice.ts:62](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L62)
 
 ___
 
@@ -94,7 +94,7 @@ the creation date of the medical device (encoded as epoch).
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L42)
+[src/models/MedicalDevice.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L42)
 
 ___
 
@@ -106,7 +106,7 @@ the soft delete timestamp. When a medical device is ”deleted“, this is set t
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L34)
+[src/models/MedicalDevice.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L34)
 
 ___
 
@@ -118,7 +118,7 @@ Soft delete (unix epoch in ms) timestamp of the medical device
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L66)
+[src/models/MedicalDevice.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L66)
 
 ___
 
@@ -130,7 +130,7 @@ An external (from another source) id with no guarantee or requirement for unicit
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:70](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L70)
+[src/models/MedicalDevice.ts:70](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L70)
 
 ___
 
@@ -142,7 +142,7 @@ The Id of the MedicalDevice. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L26)
+[src/models/MedicalDevice.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L26)
 
 ___
 
@@ -154,7 +154,7 @@ Typically used for business / client identifiers. An identifier should identify 
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L38)
+[src/models/MedicalDevice.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L38)
 
 ___
 
@@ -166,7 +166,7 @@ A label is an item from a codification system that qualifies a medical device as
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L58)
+[src/models/MedicalDevice.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L58)
 
 ___
 
@@ -178,7 +178,7 @@ Model of the device recording the data
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:86](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L86)
+[src/models/MedicalDevice.ts:86](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L86)
 
 ___
 
@@ -190,7 +190,7 @@ the last modification date of the medical device (encoded as epoch).
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L46)
+[src/models/MedicalDevice.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L46)
 
 ___
 
@@ -202,7 +202,7 @@ Name of the device/application recording the data
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L74)
+[src/models/MedicalDevice.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L74)
 
 ___
 
@@ -212,7 +212,7 @@ ___
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L91)
+[src/models/MedicalDevice.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L91)
 
 ___
 
@@ -224,7 +224,7 @@ Picture of the device/application
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:95](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L95)
+[src/models/MedicalDevice.ts:95](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L95)
 
 ___
 
@@ -234,7 +234,7 @@ ___
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L96)
+[src/models/MedicalDevice.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L96)
 
 ___
 
@@ -246,7 +246,7 @@ The id of the data owner that is responsible of this medical device. When creati
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L54)
+[src/models/MedicalDevice.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L54)
 
 ___
 
@@ -258,7 +258,7 @@ the revision of the medical device in the database, used for conflict management
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L30)
+[src/models/MedicalDevice.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L30)
 
 ___
 
@@ -270,7 +270,7 @@ Serial number of the device recording the data
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:90](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L90)
+[src/models/MedicalDevice.ts:90](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L90)
 
 ___
 
@@ -280,7 +280,7 @@ ___
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L97)
+[src/models/MedicalDevice.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L97)
 
 ___
 
@@ -292,4 +292,4 @@ Type of device/application recording the data. (eg. \"smartphone\", \"watch\",..
 
 #### Defined in
 
-[src/models/MedicalDevice.ts:78](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/MedicalDevice.ts#L78)
+[src/models/MedicalDevice.ts:78](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/MedicalDevice.ts#L78)

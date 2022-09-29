@@ -38,7 +38,7 @@ a Promise containing the Notification or undefined if something goes wrong.
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L15)
+[src/apis/NotificationApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L15)
 
 ___
 
@@ -62,7 +62,7 @@ a Promise containing the id of the Notification or undefined if something goes w
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L22)
+[src/apis/NotificationApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L22)
 
 ___
 
@@ -89,7 +89,7 @@ a Promise containing the PaginatedList of Notification objects
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L32)
+[src/apis/NotificationApi.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L32)
 
 ___
 
@@ -113,7 +113,7 @@ a Promise containing the Notification or undefined if something goes wrong.
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L39)
+[src/apis/NotificationApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L39)
 
 ___
 
@@ -131,7 +131,7 @@ an Array of the Notifications matching those criteria
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L45)
+[src/apis/NotificationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L45)
 
 ___
 
@@ -156,4 +156,4 @@ the updated Notification
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/NotificationApi.ts#L53)
+[src/apis/NotificationApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L53)

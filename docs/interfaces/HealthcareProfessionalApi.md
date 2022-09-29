@@ -35,7 +35,7 @@ Create a new Healthcare professional or modify an existing one.
 
 #### Defined in
 
-[src/apis/HealthcareProfessionalApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareProfessionalApi.ts#L15)
+[src/apis/HealthcareProfessionalApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareProfessionalApi.ts#L15)
 
 ___
 
@@ -58,7 +58,7 @@ Delete an existing healthcare professional.
 
 #### Defined in
 
-[src/apis/HealthcareProfessionalApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareProfessionalApi.ts#L21)
+[src/apis/HealthcareProfessionalApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareProfessionalApi.ts#L21)
 
 ___
 
@@ -83,7 +83,7 @@ Load healthcare professionals from the database by filtering them using the prov
 
 #### Defined in
 
-[src/apis/HealthcareProfessionalApi.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareProfessionalApi.ts#L29)
+[src/apis/HealthcareProfessionalApi.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareProfessionalApi.ts#L29)
 
 ___
 
@@ -106,7 +106,7 @@ Get a Healthcare professional by id.
 
 #### Defined in
 
-[src/apis/HealthcareProfessionalApi.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareProfessionalApi.ts#L35)
+[src/apis/HealthcareProfessionalApi.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareProfessionalApi.ts#L35)
 
 ___
 
@@ -129,4 +129,4 @@ Load healthcare professional ids from the database by filtering them using the p
 
 #### Defined in
 
-[src/apis/HealthcareProfessionalApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/HealthcareProfessionalApi.ts#L41)
+[src/apis/HealthcareProfessionalApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/HealthcareProfessionalApi.ts#L41)

@@ -44,7 +44,7 @@ Check token validity for a user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L18)
+[src/apis/UserApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L18)
 
 ___
 
@@ -60,7 +60,7 @@ credentials and the link to complete the signup.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `patient` | [`Patient`](../classes/Patient.md) | the Patient to create the user for. |
-| `messageFactory` | `EmailMessageFactory` \| `SMSMessageFactory` | a MessageFactory that generates an EmailMessage or a SMSMessage. |
+| `messageFactory` | [`EmailMessageFactory`](EmailMessageFactory.md) \| [`SMSMessageFactory`](SMSMessageFactory.md) | a MessageFactory that generates an EmailMessage or a SMSMessage. |
 | `tokenDuration?` | `number` | the validity duration of the short-lived token, in seconds (default 48 hours) |
 
 #### Returns
@@ -69,7 +69,7 @@ credentials and the link to complete the signup.
 
 #### Defined in
 
-[src/apis/UserApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L26)
+[src/apis/UserApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L26)
 
 ___
 
@@ -92,7 +92,7 @@ Create a new user or modify an existing one.
 
 #### Defined in
 
-[src/apis/UserApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L33)
+[src/apis/UserApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L33)
 
 ___
 
@@ -116,7 +116,7 @@ Create a token for a user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L40)
+[src/apis/UserApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L40)
 
 ___
 
@@ -139,7 +139,7 @@ Delete an existing user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L46)
+[src/apis/UserApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L46)
 
 ___
 
@@ -164,7 +164,7 @@ Load users from the database by filtering them using the provided Filter.
 
 #### Defined in
 
-[src/apis/UserApi.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L54)
+[src/apis/UserApi.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L54)
 
 ___
 
@@ -181,7 +181,7 @@ Get the details of the logged User.
 
 #### Defined in
 
-[src/apis/UserApi.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L59)
+[src/apis/UserApi.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L59)
 
 ___
 
@@ -204,7 +204,7 @@ Get a User by id.
 
 #### Defined in
 
-[src/apis/UserApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L65)
+[src/apis/UserApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L65)
 
 ___
 
@@ -228,7 +228,7 @@ Each user is uniquely identified by an email
 
 #### Defined in
 
-[src/apis/UserApi.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L74)
+[src/apis/UserApi.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L74)
 
 ___
 
@@ -251,7 +251,7 @@ Load user ids from the database by filtering them using the provided Filter.
 
 #### Defined in
 
-[src/apis/UserApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L81)
+[src/apis/UserApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L81)
 
 ___
 
@@ -276,7 +276,7 @@ Updated user
 
 #### Defined in
 
-[src/apis/UserApi.ts:107](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L107)
+[src/apis/UserApi.ts:107](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L107)
 
 ___
 
@@ -301,7 +301,7 @@ Updated user
 
 #### Defined in
 
-[src/apis/UserApi.ts:115](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L115)
+[src/apis/UserApi.ts:115](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L115)
 
 ___
 
@@ -330,4 +330,4 @@ Opens a WebSocket Connection in order to receive all the Users corresponding to 
 
 #### Defined in
 
-[src/apis/UserApi.ts:94](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/UserApi.ts#L94)
+[src/apis/UserApi.ts:94](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L94)
