@@ -15,7 +15,7 @@ export interface DataOwnerApi {
    * @param user The User for which we want to create a keyPair
    * @param overwriteExistingKeys When this flag is set to true, the service will create and assign a new RSA Key Pair
    * to the user, even if he already has one. This should therefore be activated ONLY when the user lost his key or starts
-   * the solution on a new terminal. This flag is false by defaut.
+   * the solution on a new terminal. This flag is false by default.
    * @param userKeyPair KeyPair to use to init the cryptography scheme of a user. If no keyPair is provided,
    * the service will create one
    *
