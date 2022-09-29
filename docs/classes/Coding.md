@@ -42,7 +42,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Coding.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L15)
+[src/models/Coding.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L15)
 
 ## Properties
 
@@ -52,7 +52,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Coding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L28)
+[src/models/Coding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L28)
 
 ___
 
@@ -68,7 +68,7 @@ Description (ex: {en: Rheumatic Aortic Stenosis, fr: Sténose rhumatoïde de l'A
 
 #### Defined in
 
-[src/models/Coding.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L36)
+[src/models/Coding.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L36)
 
 ___
 
@@ -80,7 +80,7 @@ the Id of the coding. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/Coding.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L22)
+[src/models/Coding.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L22)
 
 ___
 
@@ -96,7 +96,7 @@ Links towards related codes
 
 #### Defined in
 
-[src/models/Coding.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L40)
+[src/models/Coding.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L40)
 
 ___
 
@@ -108,7 +108,7 @@ the revision of the coding in the database, used for conflict management / optim
 
 #### Defined in
 
-[src/models/Coding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L26)
+[src/models/Coding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L26)
 
 ___
 
@@ -124,7 +124,7 @@ Extra search terms/ language
 
 #### Defined in
 
-[src/models/Coding.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L44)
+[src/models/Coding.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L44)
 
 ___
 
@@ -134,7 +134,7 @@ ___
 
 #### Defined in
 
-[src/models/Coding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L27)
+[src/models/Coding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L27)
 
 ___
 
@@ -146,4 +146,4 @@ Must be lexicographically searchable
 
 #### Defined in
 
-[src/models/Coding.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/Coding.ts#L32)
+[src/models/Coding.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L32)

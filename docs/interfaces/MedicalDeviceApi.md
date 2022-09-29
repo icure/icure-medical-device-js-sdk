@@ -37,7 +37,7 @@ Create or update a [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L15)
+[src/apis/MedicalDeviceApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L15)
 
 ___
 
@@ -60,7 +60,7 @@ Create or update a batch of [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L21)
+[src/apis/MedicalDeviceApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L21)
 
 ___
 
@@ -83,7 +83,7 @@ Delete a [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L27)
+[src/apis/MedicalDeviceApi.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L27)
 
 ___
 
@@ -106,7 +106,7 @@ Delete a batch of [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L33)
+[src/apis/MedicalDeviceApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L33)
 
 ___
 
@@ -131,7 +131,7 @@ Load devices from the database by filtering them using the provided [filter].
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L41)
+[src/apis/MedicalDeviceApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L41)
 
 ___
 
@@ -154,7 +154,7 @@ Get a Medical Device
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L47)
+[src/apis/MedicalDeviceApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L47)
 
 ___
 
@@ -177,4 +177,4 @@ Load medical device ids from the database by filtering them using the provided F
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/apis/MedicalDeviceApi.ts#L53)
+[src/apis/MedicalDeviceApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L53)

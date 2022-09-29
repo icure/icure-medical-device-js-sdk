@@ -44,7 +44,7 @@
 
 #### Defined in
 
-[src/models/User.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L17)
+[src/models/User.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L17)
 
 ## Properties
 
@@ -60,7 +60,7 @@ Encrypted and time-limited Authentication tokens used for inter-applications aut
 
 #### Defined in
 
-[src/models/User.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L96)
+[src/models/User.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L96)
 
 ___
 
@@ -72,7 +72,7 @@ the creation date of the user (encoded as epoch).
 
 #### Defined in
 
-[src/models/User.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L36)
+[src/models/User.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L36)
 
 ___
 
@@ -84,7 +84,7 @@ the soft delete timestamp. When a user is ”deleted“, this is set to a non nu
 
 #### Defined in
 
-[src/models/User.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L32)
+[src/models/User.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L32)
 
 ___
 
@@ -96,7 +96,7 @@ Id of the patient if the user is a patient
 
 #### Defined in
 
-[src/models/User.ts:80](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L80)
+[src/models/User.ts:80](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L80)
 
 ___
 
@@ -108,7 +108,7 @@ email address of the user (used for token exchange or password recovery).
 
 #### Defined in
 
-[src/models/User.ts:88](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L88)
+[src/models/User.ts:88](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L88)
 
 ___
 
@@ -120,7 +120,7 @@ id of the group (practice/hospital) the user is member of
 
 #### Defined in
 
-[src/models/User.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L68)
+[src/models/User.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L68)
 
 ___
 
@@ -132,7 +132,7 @@ Id of the healthcare party if the user is a healthcare party.
 
 #### Defined in
 
-[src/models/User.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L72)
+[src/models/User.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L72)
 
 ___
 
@@ -144,7 +144,7 @@ the Id of the user. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/User.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L24)
+[src/models/User.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L24)
 
 ___
 
@@ -156,7 +156,7 @@ Username for this user. We encourage using an email address
 
 #### Defined in
 
-[src/models/User.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L52)
+[src/models/User.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L52)
 
 ___
 
@@ -168,7 +168,7 @@ mobile phone of the user (used for token exchange or password recovery).
 
 #### Defined in
 
-[src/models/User.ts:92](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L92)
+[src/models/User.ts:92](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L92)
 
 ___
 
@@ -180,7 +180,7 @@ Last name of the user. This is the official last name that should be used for of
 
 #### Defined in
 
-[src/models/User.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L40)
+[src/models/User.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L40)
 
 ___
 
@@ -192,7 +192,7 @@ Hashed version of the password (BCrypt is used for hashing)
 
 #### Defined in
 
-[src/models/User.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L56)
+[src/models/User.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L56)
 
 ___
 
@@ -204,7 +204,7 @@ Id of the patient if the user is a patient
 
 #### Defined in
 
-[src/models/User.ts:76](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L76)
+[src/models/User.ts:76](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L76)
 
 ___
 
@@ -216,7 +216,7 @@ Extra properties for the user. Those properties are typed (see class Property)
 
 #### Defined in
 
-[src/models/User.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L44)
+[src/models/User.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L44)
 
 ___
 
@@ -228,7 +228,7 @@ the revision of the user in the database, used for conflict management / optimis
 
 #### Defined in
 
-[src/models/User.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L28)
+[src/models/User.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L28)
 
 ___
 
@@ -240,7 +240,7 @@ Roles assigned to this user
 
 #### Defined in
 
-[src/models/User.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L48)
+[src/models/User.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L48)
 
 ___
 
@@ -252,7 +252,7 @@ Secret token used to verify 2fa
 
 #### Defined in
 
-[src/models/User.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L60)
+[src/models/User.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L60)
 
 ___
 
@@ -276,7 +276,7 @@ Ids of the dataOwners with who the user is sharing all new data he is creating i
 
 #### Defined in
 
-[src/models/User.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L84)
+[src/models/User.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L84)
 
 ___
 
@@ -288,4 +288,4 @@ Whether the user has activated two factors authentication
 
 #### Defined in
 
-[src/models/User.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/User.ts#L64)
+[src/models/User.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/User.ts#L64)

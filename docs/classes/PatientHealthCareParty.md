@@ -29,7 +29,7 @@ Links (usually for therapeutic reasons) between this patient and healthcare part
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PatientHealthCareParty.ts#L18)
+[src/models/PatientHealthCareParty.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L18)
 
 ## Properties
 
@@ -39,7 +39,7 @@ Links (usually for therapeutic reasons) between this patient and healthcare part
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PatientHealthCareParty.ts#L23)
+[src/models/PatientHealthCareParty.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L23)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/e20bfa1/src/models/PatientHealthCareParty.ts#L22)
+[src/models/PatientHealthCareParty.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L22)
