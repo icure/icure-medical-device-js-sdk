@@ -46,6 +46,8 @@ import {NotificationApiImpl} from "./impl/NotificationApiImpl";
 import {NotificationApi} from "./NotificationApi";
 import {MessageGatewayApi} from "./MessageGatewayApi";
 import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
+import {DataOwnerApiImpl} from "./impl/DataOwnerApiImpl";
+import {DataOwnerApi} from "./DataOwnerApi";
 
 
 export class MedTechApi {
@@ -57,13 +59,13 @@ export class MedTechApi {
   private readonly _medicalDeviceApi: MedicalDeviceApi;
   private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
   private readonly _dataSampleApi: DataSampleApi;
+  private readonly _dataOwnerApi: DataOwnerApi;
   private readonly _cryptoApi: IccCryptoXApi;
+
   private readonly _basePath: string;
   private readonly _username: string | undefined;
   private readonly _password: string | undefined;
-  private readonly _msgGtwUrl: string | undefined;
-  private readonly _authProcessId: string | undefined;
-  private readonly _msgGtwSpecId: string | undefined;
+
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private readonly _messageGatewayApi: MessageGatewayApi | undefined;
   private readonly _baseApi: { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi, maintenanceTaskApi: IccMaintenanceTaskXApi, dataOwnerApi: IccDataOwnerXApi };
@@ -74,25 +76,26 @@ export class MedTechApi {
               password: string | undefined,
               msgGtwUrl: string | undefined = undefined,
               msgGtwSpecId: string | undefined = undefined,
-              authProcessId: string | undefined = undefined,
+              authProcessByEmailId: string | undefined = undefined,
+              authProcessBySmsId: string | undefined = undefined,
   ) {
     this._basePath = basePath;
     this._username = username;
     this._password = password;
-    this._msgGtwUrl = msgGtwUrl;
-    this._authProcessId = authProcessId;
-    this._msgGtwSpecId = msgGtwSpecId;
+
     this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined;
-    this._authenticationApi = msgGtwUrl && authProcessId && msgGtwSpecId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, msgGtwUrl, msgGtwSpecId, authProcessId) : undefined;
+    this._authenticationApi = authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId) : undefined;
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password);
     this._codingApi = new CodingApiImpl(api);
     this._medicalDeviceApi = new MedicalDeviceApiImpl(api);
     this._patientApi = new PatientApiImpl(api, basePath, username, password);
-    this._baseApi = api;
     this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api);
     this._notificationApi = new NotificationApiImpl(api);
+    this._dataOwnerApi = new DataOwnerApiImpl(api);
+
+    this._baseApi = api;
     this._cryptoApi = api.cryptoApi;
   }
 
@@ -128,6 +131,10 @@ export class MedTechApi {
     return this._dataSampleApi;
   }
 
+  get dataOwnerApi(): DataOwnerApi {
+    return this._dataOwnerApi;
+  }
+
   get cryptoApi(): IccCryptoXApi {
     return this._cryptoApi;
   }
@@ -152,14 +159,6 @@ export class MedTechApi {
     return this._password;
   }
 
-  get msgGtwUrl(): string | undefined {
-    return this._msgGtwUrl;
-  }
-
-  get authProcessId(): string | undefined {
-    return this._authProcessId;
-  }
-
   get baseApi(): { cryptoApi: IccCryptoXApi; authApi: IccAuthApi; userApi: IccUserXApi; codeApi: IccCodeXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; accessLogApi: IccAccesslogXApi; contactApi: IccContactXApi; healthcareElementApi: IccHelementXApi; deviceApi: IccDeviceApi; documentApi: IccDocumentXApi; formApi: IccFormXApi; invoiceApi: IccInvoiceXApi; insuranceApi: IccInsuranceApi; messageApi: IccMessageXApi; entityReferenceApi: IccEntityrefApi; receiptApi: IccReceiptXApi; calendarItemApi: IccCalendarItemXApi; classificationApi: IccClassificationXApi; timetableApi: IccTimeTableXApi; groupApi: IccGroupApi } {
     return this._baseApi;
   }
@@ -170,6 +169,15 @@ export class MedTechApi {
       privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(keyPair.privateKey))
     })
   }
+
+  async initUserCrypto(overwriteExistingKeys: boolean = false, keyPair?: {publicKey: string, privateKey: string}): Promise<{ publicKey: string, privateKey: String }> {
+    const currentUser = await this.userApi.getLoggedUser()
+    const userKeyPair = await this._dataOwnerApi.initCryptoFor(currentUser, overwriteExistingKeys, keyPair)
+
+    await this.addKeyPair(this._dataOwnerApi.getDataOwnerIdOf(currentUser), userKeyPair)
+
+    return userKeyPair
+  }
 }
 
 export class MedTechApiBuilder {
@@ -179,7 +187,8 @@ export class MedTechApiBuilder {
   private crypto?: Crypto;
   private msgGtwUrl?: string;
   private msgGtwSpecId?: string;
-  private authProcessId?: string;
+  private authProcessByEmailId?: string;
+  private authProcessBySmsId?: string;
   private _preventCookieUsage: boolean = false;
 
   withICureBasePath(newICureBasePath: string): MedTechApiBuilder {
@@ -208,11 +217,15 @@ export class MedTechApiBuilder {
     return this;
   }
 
-  withAuthProcessId(newAuthProcessId: string | undefined): MedTechApiBuilder {
-    this.authProcessId = newAuthProcessId;
+  withAuthProcessByEmailId(authProcessByEmailId: string): MedTechApiBuilder {
+    this.authProcessByEmailId = authProcessByEmailId;
     return this;
   }
 
+  withAuthProcessBySmsId(authProcessBySmsId: string): MedTechApiBuilder {
+    this.authProcessBySmsId = authProcessBySmsId;
+    return this;
+  }
 
   withCrypto(newCrypto: Crypto): MedTechApiBuilder {
     this.crypto = newCrypto;
@@ -233,7 +246,8 @@ export class MedTechApiBuilder {
         this.password,
         this.msgGtwUrl,
         this.msgGtwSpecId,
-        this.authProcessId
+        this.authProcessByEmailId,
+        this.authProcessBySmsId
       );
     });
   }

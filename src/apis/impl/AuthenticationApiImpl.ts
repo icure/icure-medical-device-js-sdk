@@ -1,8 +1,10 @@
 import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
+import {User} from "../../models/User";
+
 import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
-import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
+import {retry} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {Notification, NotificationTypeEnum} from "../../models/Notification";
@@ -23,9 +25,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   constructor(
     messageGatewayApi: MessageGatewayApi,
     iCureBasePath: string,
-    msgGtwUrl: string,
-    msgGtwSpecId: string,
-    authProcessId: string,
+    authProcessByEmailId: string,
+    authProcessBySmsId: string,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -33,19 +34,17 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         : fetch
   ) {
     this.iCureBasePath = iCureBasePath;
-    this.msgGtwUrl = msgGtwUrl;
-    this.msgGtwSpecId = msgGtwSpecId;
-    this.authProcessId = authProcessId;
-    this.fetchImpl = fetchImpl;
     this.messageGatewayApi = messageGatewayApi;
+    this.authProcessByEmailId = authProcessByEmailId;
+    this.authProcessBySmsId = authProcessBySmsId;
+    this.fetchImpl = fetchImpl;
   }
 
-  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string;
-  private readonly msgGtwUrl: string;
-  private readonly authProcessId: string;
-  private readonly msgGtwSpecId: string;
+  private readonly authProcessByEmailId: string;
+  private readonly authProcessBySmsId: string;
   private readonly messageGatewayApi: MessageGatewayApi;
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 
   async startAuthentication(healthcareProfessionalId: string | undefined, firstName: string, lastName: string, recaptcha: string, bypassTokenCheck: boolean = false, email?: string, mobilePhone?: string): Promise<AuthenticationProcess | null> {
     if (!email && !mobilePhone) {
@@ -53,7 +52,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     }
 
     const requestId = await this.messageGatewayApi.startProcess(
-      this.authProcessId,
+      (email != undefined) ? this.authProcessByEmailId : this.authProcessBySmsId,
       {
         'g-recaptcha-response': recaptcha,
         'firstName': firstName,
@@ -90,7 +89,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       if (!dataOwnerInitialisedKeyPair) {
         throw Error('A keypair must be provided either directly or through the provider')
       }
-      const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
+
+      const authenticatedApi: MedTechApi = await this._initUserCryptoAndAddItToApi(api, apiInitialisationResult.token, dataOwnerInitialisedKeyPair);
 
       return new AuthenticationResult({
         medTechApi: authenticatedApi,
@@ -161,7 +161,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     if (!dataOwnerInitialisedKeyPair) {
       throw Error('A keypair must be provided either directly or through the provider')
     }
-    const authenticatedApi: MedTechApi = await this.initUserCrypto(api, apiInitialisationResult.token, apiInitialisationResult.user, dataOwnerInitialisedKeyPair);
+    const authenticatedApi: MedTechApi = await this._initUserCryptoAndAddItToApi(api, apiInitialisationResult.token, dataOwnerInitialisedKeyPair);
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
@@ -177,14 +177,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withICureBasePath(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
-      .withMsgGtwUrl(this.msgGtwUrl)
-      .withMsgGtwSpecId(this.msgGtwSpecId)
-      .withAuthProcessId(this.authProcessId)
       .withCrypto(require('crypto').webcrypto)
       .build();
 
     try {
-      const user = await api.baseApi.userApi.getCurrentUser();
+      const user = await api.userApi.getLoggedUser();
       if (user == null) {
         throw Error(`Your validation code ${validationCode} is expired - Couldn't login new user`);
       }
@@ -202,62 +199,12 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     }
   }
 
-  async initUserCrypto(api: MedTechApi, token: string, user: User, patientKeyPair: [string, string]): Promise<MedTechApi> {
-    const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId;
-    if (!dataOwnerId) {
-      throw Error("Invalid user, no data owner id")
-    }
-
+  private async _initUserCryptoAndAddItToApi(api: MedTechApi, token: string, dataOwnerKeyPair: [string, string]): Promise<MedTechApi> {
     const authenticatedApi = await medTechApi(api)
       .withPassword(token)
       .build();
 
-    await authenticatedApi.addKeyPair(dataOwnerId, {privateKey: patientKeyPair[0], publicKey: patientKeyPair[1]})
-
-    const dataOwner = await authenticatedApi.baseApi.cryptoApi.getDataOwner(dataOwnerId);
-    if (dataOwner == null) {
-      throw Error("Your user is not a data owner");
-    }
-
-    if (dataOwner.dataOwner.publicKey == undefined) {
-      await this.updateUserToAddNewlyCreatedPublicKey(dataOwner.type, dataOwner.dataOwner, patientKeyPair, authenticatedApi, user);
-    } else if (dataOwner.dataOwner.publicKey != patientKeyPair[1]) {
-      //TODO User lost his key
-    }
-
+    await authenticatedApi.initUserCrypto(true, {privateKey: dataOwnerKeyPair[0], publicKey: dataOwnerKeyPair[1]})
     return authenticatedApi;
-  }
-
-  private async updateUserToAddNewlyCreatedPublicKey(dataOwnerType: string, dataOwner: Patient | Device | HealthcareParty, patientKeyPair: [string, string], authenticatedApi: MedTechApi, user: User) {
-    dataOwner.publicKey = patientKeyPair[1];
-
-    if (dataOwnerType === 'patient') {
-      await authenticatedApi.baseApi.patientApi.modifyPatientRaw(dataOwner)
-    } else if (dataOwnerType === 'hcp') {
-      await authenticatedApi.baseApi.healthcarePartyApi.modifyHealthcareParty(dataOwner)
-    } else if (dataOwnerType === 'device') {
-      await authenticatedApi.baseApi.deviceApi.updateDevice(dataOwner)
-    } else {
-      console.log(`Could not update user ${dataOwner.id} because it is not a data owner (and so, is not authorized to access protected data)`);
-    }
-
-    authenticatedApi.baseApi.cryptoApi.emptyHcpCache(dataOwner.id!)
-
-    if (user.patientId != null) {
-      await this.initPatientDelegationsAndSave(authenticatedApi, user);
-    }
-  }
-
-  async initPatientDelegationsAndSave(apiWithNewKeyPair: MedTechApi, user: User) {
-    const patientToUpdate = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
-      .then((patient) => apiWithNewKeyPair.baseApi.patientApi.initDelegations(patient, user))
-      .then(async (patientWithDelegations) => {
-        const currentPatient = await apiWithNewKeyPair.baseApi.patientApi.getPatientRaw(user.patientId!)
-        return new Patient({...currentPatient, delegations: Object.assign(patientWithDelegations.delegations ?? {}, currentPatient.delegations)});
-      })
-      .then((patientWithDelegations) => apiWithNewKeyPair.baseApi.patientApi.initEncryptionKeys(user, patientWithDelegations))
-
-    await apiWithNewKeyPair.baseApi.patientApi.modifyPatientWithUser(user, patientToUpdate)
-    apiWithNewKeyPair.baseApi.cryptoApi.emptyHcpCache(patientToUpdate.id!)
   }
 }

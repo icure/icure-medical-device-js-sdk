@@ -6,7 +6,7 @@ import Header = XHR.Header;
 
 export class MessageGatewayApiImpl implements MessageGatewayApi {
 
-  constructor(
+   constructor(
     msgGtwUrl: string,
     specId: string,
     username?: string,

@@ -123,7 +123,8 @@ describe("A Healthcare Party", () => {
       .withMsgGtwUrl(msgGtwUrl)
       .withMsgGtwSpecId(specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessId(authProcessHcpId)
+      .withAuthProcessByEmailId(authProcessHcpId)
+      .withAuthProcessBySmsId(authProcessHcpId)
       .build();
 
     const { publicKey, privateKey } =
