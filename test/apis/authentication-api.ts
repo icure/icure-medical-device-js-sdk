@@ -1,21 +1,19 @@
-import {assert, expect} from "chai";
-import "mocha";
-import "isomorphic-fetch";
+import { assert, expect } from 'chai'
+import 'mocha'
+import 'isomorphic-fetch'
 
-import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
-import {AnonymousMedTechApiBuilder} from "../../src/apis/AnonymousMedTechApi";
-import {webcrypto} from "crypto";
-import {MedTechApiBuilder} from "../../src/apis/medTechApi";
+import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
+import { webcrypto } from 'crypto'
+import { MedTechApiBuilder } from '../../src/apis/medTechApi'
 
-setLocalStorage(fetch);
+setLocalStorage(fetch)
 
-const {iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId, specId: specId } = getEnvVariables()
+const { iCureUrl: iCureUrl, msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId, specId: specId } = getEnvVariables()
 
-describe("Authentication API", () => {
-
+describe('Authentication API', () => {
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
-    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
-      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     try {
       await new AnonymousMedTechApiBuilder()
@@ -24,10 +22,10 @@ describe("Authentication API", () => {
         .withMsgGtwUrl(msgGtwUrl)
         .withAuthProcessByEmailId(authProcessId)
         .withAuthProcessBySmsId(authProcessId)
-        .build();
-      expect(true, "promise should fail").eq(false)
+        .build()
+      expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq("msgGtwSpecId is required")
+      expect((e as Error).message).to.eq('msgGtwSpecId is required')
     }
 
     try {
@@ -38,11 +36,11 @@ describe("Authentication API", () => {
         .withMsgGtwSpecId(specId)
         .withAuthProcessByEmailId('fake-process-id')
         .withAuthProcessBySmsId('fake-process-id')
-        .build();
+        .build()
 
       expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").not.null
     } catch (e) {
-      expect(true, "promise should not fail").eq(false)
+      expect(true, 'promise should not fail').eq(false)
     }
   })
 
@@ -54,25 +52,21 @@ describe("Authentication API", () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
-      .build();
+      .build()
 
     try {
-      await api.authenticationApi.startAuthentication(
-        "fake-prof-id",
-        "firstname",
-        "lastname",
-        "recaptcha",
-        false)
-      expect(true, "promise should fail").eq(false)
+      await api.authenticationApi.startAuthentication('fake-prof-id', 'firstname', 'lastname', 'recaptcha', false)
+      expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq("authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId")
+      expect((e as Error).message).to.eq(
+        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId"
+      )
     }
   })
 
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
     // Given
-    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
-      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
@@ -81,21 +75,28 @@ describe("Authentication API", () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
-      .build();
+      .build()
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false, undefined, undefined);
-      expect(true, "promise should fail").eq(false)
+      await anonymousMedTechApi.authenticationApi.startAuthentication(
+        authProcessHcpId,
+        'Tom',
+        'Gideon',
+        'process.env.ICURE_RECAPTCHA',
+        false,
+        undefined,
+        undefined
+      )
+      expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
+      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its mobilePhone')
     }
-  });
+  })
 
-  it("User should not be able to start authentication if he provided an empty email and mobilePhone", async () => {
+  it('User should not be able to start authentication if he provided an empty email and mobilePhone', async () => {
     // Given
-    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
-      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureUrlPath(iCureUrl)
@@ -104,59 +105,58 @@ describe("Authentication API", () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
-      .build();
+      .build()
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(authProcessHcpId, 'Tom', 'Gideon', 'process.env.ICURE_RECAPTCHA', false,'', '');
-      expect(true, "promise should fail").eq(false)
+      await anonymousMedTechApi.authenticationApi.startAuthentication(
+        authProcessHcpId,
+        'Tom',
+        'Gideon',
+        'process.env.ICURE_RECAPTCHA',
+        false,
+        '',
+        ''
+      )
+      expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq("In order to start authentication of a user, you should at least provide its email OR its mobilePhone")
+      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its mobilePhone')
     }
-  });
+  })
 
-  it("HCP should be capable of signing up using email", async () => {
+  it('HCP should be capable of signing up using email', async () => {
     // Given
-    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ??
-      "6a355458dbfa392cb5624403190c6a19"; // pragma: allowlist secret
+    const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     // When
-    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, authProcessId, authProcessHcpId);
-    const currentUser = hcpApiAndUser.user;
+    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, authProcessId, authProcessHcpId)
+    const currentUser = hcpApiAndUser.user
 
     // Then
-    assert(currentUser);
-    assert(currentUser.healthcarePartyId != null);
+    assert(currentUser)
+    assert(currentUser.healthcarePartyId != null)
 
-    const currentHcp =
-      await hcpApiAndUser.api.healthcareProfessionalApi.getHealthcareProfessional(
-        currentUser.healthcarePartyId!
-      );
-    assert(currentHcp);
-    assert(currentHcp.firstName == "Antoine");
-    assert(currentHcp.lastName == "Duchâteau");
-  }).timeout(60000);
+    const currentHcp = await hcpApiAndUser.api.healthcareProfessionalApi.getHealthcareProfessional(currentUser.healthcarePartyId!)
+    assert(currentHcp)
+    assert(currentHcp.firstName == 'Antoine')
+    assert(currentHcp.lastName == 'Duchâteau')
+  }).timeout(60000)
 
-
-
-  it("Patient should be able to signing up through email", async () => {
+  it('Patient should be able to signing up through email', async () => {
     // Given
-    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c39e5";
+    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
 
     // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId);
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
 
     // Then
-    const currentUser = patApiAndUser.user;
-    assert(currentUser);
-    assert(currentUser.patientId != null);
+    const currentUser = patApiAndUser.user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
 
-    const currentPatient =
-      await patApiAndUser.api.patientApi.getPatient(
-        currentUser.patientId!
-      );
-    assert(currentPatient);
-    assert(currentPatient.firstName == "Antoine");
-    assert(currentPatient.lastName == "Duchâteau");
-  }).timeout(60000);
-});
+    const currentPatient = await patApiAndUser.api.patientApi.getPatient(currentUser.patientId!)
+    assert(currentPatient)
+    assert(currentPatient.firstName == 'Antoine')
+    assert(currentPatient.lastName == 'Duchâteau')
+  }).timeout(60000)
+})
