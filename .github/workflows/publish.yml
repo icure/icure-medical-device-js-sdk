@@ -54,7 +54,7 @@ jobs:
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Patch') }}
         run: yarn version --patch
       - name: Push commit and tag ↗️
-        run: git push --follow-tags
+        run: git push --follow-tags -f
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
           latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
