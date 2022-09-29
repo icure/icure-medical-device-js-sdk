@@ -1,7 +1,6 @@
-import {User} from "../models/User";
+import { User } from '../models/User'
 
 export interface DataOwnerApi {
-
   /**
    * Returns the data owner id of the provided user
    * @param user User for which we want to know the data owner id
@@ -22,5 +21,9 @@ export interface DataOwnerApi {
    *
    * @return The response will contain the RSA keyPair generated for the provided user;
    */
-  initCryptoFor(user: User, overwriteExistingKeys: boolean, userKeyPair?: { publicKey: string, privateKey: string}): Promise<{ publicKey: string, privateKey: string}>;
+  initCryptoFor(
+    user: User,
+    overwriteExistingKeys: boolean,
+    userKeyPair?: { publicKey: string; privateKey: string }
+  ): Promise<{ publicKey: string; privateKey: string }>
 }

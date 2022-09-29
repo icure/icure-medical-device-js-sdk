@@ -1,29 +1,23 @@
-import {
-  Device,
-  HealthcareParty,
-  hex2ua,
-  IccCryptoXApi,
-  IccDeviceApi,
-  IccHcpartyXApi,
-  IccPatientXApi,
-  Patient,
-  ua2hex
-} from "@icure/api";
-import {DataOwnerApi} from "../DataOwnerApi";
-import {User} from "../../models/User";
-import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
-import {UserMapper} from "../../mappers/user";
-
+import { Device, HealthcareParty, hex2ua, IccCryptoXApi, IccDeviceApi, IccHcpartyXApi, IccPatientXApi, Patient, ua2hex } from '@icure/api'
+import { DataOwnerApi } from '../DataOwnerApi'
+import { User } from '../../models/User'
+import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
+import { UserMapper } from '../../mappers/user'
 
 export class DataOwnerApiImpl implements DataOwnerApi {
-  private readonly cryptoApi: IccCryptoXApi;
-  private readonly dataOwnerApi: IccDataOwnerXApi;
-  private readonly patientApi: IccPatientXApi;
-  private readonly hcPartyApi: IccHcpartyXApi;
-  private readonly deviceApi: IccDeviceApi;
+  private readonly cryptoApi: IccCryptoXApi
+  private readonly dataOwnerApi: IccDataOwnerXApi
+  private readonly patientApi: IccPatientXApi
+  private readonly hcPartyApi: IccHcpartyXApi
+  private readonly deviceApi: IccDeviceApi
 
-  constructor(api: { cryptoApi: IccCryptoXApi, dataOwnerApi: IccDataOwnerXApi, patientApi: IccPatientXApi,
-    healthcarePartyApi: IccHcpartyXApi, deviceApi: IccDeviceApi }) {
+  constructor(api: {
+    cryptoApi: IccCryptoXApi
+    dataOwnerApi: IccDataOwnerXApi
+    patientApi: IccPatientXApi
+    healthcarePartyApi: IccHcpartyXApi
+    deviceApi: IccDeviceApi
+  }) {
     this.dataOwnerApi = api.dataOwnerApi
     this.cryptoApi = api.cryptoApi
     this.patientApi = api.patientApi
@@ -32,38 +26,42 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   }
 
   getDataOwnerIdOf(user: User): string {
-    const dataOwnerId = user.healthcarePartyId?? user.patientId ?? user.deviceId
+    const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId
     if (dataOwnerId == undefined) {
-      throw Error(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`);
+      throw Error(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
     }
-    return dataOwnerId;
+    return dataOwnerId
   }
 
-  async initCryptoFor(user: User, overwriteExistingKeys: boolean = false, keyPair?: { publicKey: string, privateKey: string}): Promise<{ publicKey: string, privateKey: string}> {
-    const dataOwnerId = this.getDataOwnerIdOf(user);
+  async initCryptoFor(
+    user: User,
+    overwriteExistingKeys: boolean = false,
+    keyPair?: { publicKey: string; privateKey: string }
+  ): Promise<{ publicKey: string; privateKey: string }> {
+    const dataOwnerId = this.getDataOwnerIdOf(user)
 
-    const { publicKey, privateKey } = keyPair ?? await this._generateKeyPair()
+    const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
     await this.cryptoApi.RSA.storeKeyPair(dataOwnerId, {
       publicKey: this.cryptoApi.utils.spkiToJwk(hex2ua(publicKey)),
-      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(privateKey))
+      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(privateKey)),
     })
 
-    const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId);
+    const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId)
     if (dataOwner == null) {
-      throw Error("User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device");
+      throw Error('User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device')
     }
 
     if (dataOwner.dataOwner.publicKey == undefined) {
-      await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey);
+      await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
     } else if (dataOwner.dataOwner.publicKey != publicKey && overwriteExistingKeys) {
       console.log(`Generating a new RSA Key Pair for user ${user.id}`)
       //TODO User lost his key
     }
 
-    return { publicKey: publicKey, privateKey: privateKey};
+    return { publicKey: publicKey, privateKey: privateKey }
   }
 
-  private async _generateKeyPair(): Promise<{ publicKey: string, privateKey: string}> {
+  private async _generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
     const { publicKey, privateKey } = await this.cryptoApi.RSA.generateKeyPair()
     const publicKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
     const privKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
@@ -72,7 +70,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   }
 
   private async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
-    dataOwner.publicKey = dataOwnerPublicKey;
+    dataOwner.publicKey = dataOwnerPublicKey
 
     if (dataOwner instanceof Patient) {
       await this.patientApi.modifyPatientRaw(dataOwner)
@@ -85,7 +83,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     this.cryptoApi.emptyHcpCache(dataOwner.id!)
 
     if (user.patientId != undefined) {
-      await this._initPatientDelegationsAndSave(user);
+      await this._initPatientDelegationsAndSave(user)
     }
   }
 
@@ -95,11 +93,12 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       throw Error(`Could not map user to iCure Base User version : Make sure your user info are valid`)
     }
 
-    const patientToUpdate = await this.patientApi.getPatientRaw(user.patientId!)
+    const patientToUpdate = await this.patientApi
+      .getPatientRaw(user.patientId!)
       .then((patient) => this.patientApi.initDelegations(patient, userDto))
       .then(async (patientWithDelegations) => {
         const currentPatient = await this.patientApi.getPatientRaw(user.patientId!)
-        return new Patient({...currentPatient, delegations: Object.assign(patientWithDelegations.delegations ?? {}, currentPatient.delegations)});
+        return new Patient({ ...currentPatient, delegations: Object.assign(patientWithDelegations.delegations ?? {}, currentPatient.delegations) })
       })
       .then((patientWithDelegations) => this.patientApi.initEncryptionKeys(userDto, patientWithDelegations))
 
