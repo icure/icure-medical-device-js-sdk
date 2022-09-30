@@ -1,7 +1,7 @@
 import "mocha";
 import {MedTechApi} from "../../src/apis/medTechApi";
 import "isomorphic-fetch";
-
+import { v4 as uuid } from 'uuid'
 import {assert, expect} from "chai";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
@@ -11,7 +11,6 @@ setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
   hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
   patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
@@ -155,4 +154,37 @@ describe('Healthcare Element API', () => {
     expect(!!filteredElements).to.eq(true);
     expect(filteredElements.length).to.eq(0);
   });
+
+  it('if no healthcareElement is specified, then it should be set to the Healthcare Element id', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const patient = await TestUtils.getOrCreatePatient(hcp1Api);
+    const newHE = await hcp1Api.healthcareElementApi.createOrModifyHealthcareElement(
+      new HealthcareElement({
+        description: 'DUMMY_DESCRIPTION'
+      }),
+      patient.id
+    )
+    expect(!!newHE).to.eq(true)
+    expect(newHE.id).to.eq(newHE.healthcareElementId)
+  })
+
+  it('if an healthcareElement is specified, then it should be different from the Healthcare Element id', async () => {
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1Api = hcp1ApiAndUser.api;
+
+    const elementId = uuid()
+    const patient = await TestUtils.getOrCreatePatient(hcp1Api);
+    const newHE = await hcp1Api.healthcareElementApi.createOrModifyHealthcareElement(
+      new HealthcareElement({
+        description: 'DUMMY_DESCRIPTION',
+        healthcareElementId: elementId
+      }),
+      patient.id
+    )
+    expect(!!newHE).to.eq(true)
+    expect(newHE.healthcareElementId).to.eq(elementId)
+    expect(newHE.id).not.to.eq(elementId)
+  })
 });
