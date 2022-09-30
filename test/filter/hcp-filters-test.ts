@@ -16,7 +16,7 @@ let hcp1User: User | undefined = undefined;
 let patApi: MedTechApi | undefined = undefined;
 let patUser: User | undefined = undefined;
 
-describe("User Filters Test", function () {
+describe("HealthcareProfessional Filters Test", function () {
 
   before(async function () {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
