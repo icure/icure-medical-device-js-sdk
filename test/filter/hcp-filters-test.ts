@@ -36,19 +36,19 @@ describe("HealthcareProfessional Filters Test", function () {
     patUser = patApiAndUser.user;
 
     //Create more hcps
-    hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_01',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `gastroenterologist-${id}`}])
     }))
 
-    hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_02',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
     }))
 
-    hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_03',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
