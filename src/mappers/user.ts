@@ -38,7 +38,7 @@ export namespace UserMapper {
         id: forceUuid(obj.id),
         properties: mapSetToArray(obj.properties, toPropertyStubDto),
         roles: [...obj?.roles ?? []],
-        autoDelegations: obj.sharingDataWith,
+        autoDelegations: mapReduce(obj.sharingDataWith, (elements: Set<String>) => mapSetToArray(elements, (e) => e)),
         authenticationTokens: mapReduce(obj.authenticationTokens, toAuthenticationTokenDto),
         rev: obj.rev,
         deletionDate: obj.deletionDate,
