@@ -5,7 +5,7 @@ import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {HealthcareProfessionalFilter, UserFilter} from "../../src/filter";
 import {assert, expect} from "chai";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
-
+import {v4 as uuid} from "uuid";
 setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
@@ -17,7 +17,7 @@ let patApi: MedTechApi | undefined = undefined;
 let patUser: User | undefined = undefined;
 
 describe("HealthcareProfessional Filters Test", function () {
-
+  const id = uuid();
   before(async function () {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       iCureUrl,
@@ -38,20 +38,20 @@ describe("HealthcareProfessional Filters Test", function () {
     //Create more hcps
     hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_01',
-      labels: new Set([{type: 'hcp-type', code: 'physician'}]),
-      codes: new Set([{type: 'practitioner-specialty', code: 'gastroenterologist'}])
+      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
+      codes: new Set([{type: 'practitioner-specialty', code: `gastroenterologist-${id}`}])
     }))
 
     hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_02',
-      labels: new Set([{type: 'hcp-type', code: 'physician'}]),
-      codes: new Set([{type: 'practitioner-specialty', code: 'cardiologist'}])
+      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
+      codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
     }))
 
     hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_03',
-      labels: new Set([{type: 'hcp-type', code: 'physician'}]),
-      codes: new Set([{type: 'practitioner-specialty', code: 'cardiologist'}])
+      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
+      codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
     }))
 
   });
@@ -59,42 +59,42 @@ describe("HealthcareProfessional Filters Test", function () {
   it("HcpsByPatientIdFilter test - Success", async function () {
     const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
-        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', 'cardiologist')
+        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
         .build()
     );
 
     expect(!!hcps).to.equal(true);
     expect(hcps.rows.length).to.equal(2);
     hcps.rows.forEach( (hcp) => {
-      expect([...hcp.codes][0].code).to.eq('cardiologist')
+      expect([...hcp.codes][0].code).to.eq(`cardiologist-${id}`)
     });
   })
 
   it("HcpsByPatientIdFilter by type test - Success", async function () {
     const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
-        .byLabelCodeFilter('hcp-type', 'physician')
+        .byLabelCodeFilter('hcp-type', `physician-${id}`)
         .build()
     );
 
     expect(!!hcps).to.equal(true);
     expect(hcps.rows.length).to.equal(3);
     hcps.rows.forEach( (hcp) => {
-      expect([...hcp.labels][0].code).to.eq('physician')
+      expect([...hcp.labels][0].code).to.eq(`physician-${id}`)
     });
   })
 
   it("HcpsByPatientIdFilter by combination test - Success", async function () {
     const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
-        .byLabelCodeFilter('hcp-type', 'physician', 'practitioner-specialty', 'gastroenterologist')
+        .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
         .build()
     );
 
     expect(!!hcps).to.equal(true);
     expect(hcps.rows.length).to.equal(1);
     hcps.rows.forEach( (hcp) => {
-      expect([...hcp.codes][0].code).to.eq('gastroenterologist')
+      expect([...hcp.codes][0].code).to.eq(`gastroenterologist-${id}`)
     });
   })
 
