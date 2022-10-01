@@ -175,10 +175,11 @@ export class UserApiImpl implements UserApi {
     }
 
     let newDataSharing
-    if (user.autoDelegations?.[type]) {
-      const delegationsToAdd = user.autoDelegations[type].filter((item) => dataOwnerIds.indexOf(item) < 0)
+    const currentAutoDelegationsForType = user.autoDelegations?.[type]
+    if (currentAutoDelegationsForType) {
+      const delegationsToAdd = dataOwnerIds.filter((item) => !currentAutoDelegationsForType.includes(item))
       if (delegationsToAdd.length > 0) {
-        newDataSharing = Object.entries(user.autoDelegations).reduce((accumulator, [key, values]) => {
+        newDataSharing = Object.entries(user.autoDelegations ?? []).reduce((accumulator, [key, values]) => {
           return {...accumulator, [key]: [...new Set(Array.of(...values, ...(type === key ? delegationsToAdd : [])))]}
         }, {});
       } else {
