@@ -57,6 +57,7 @@ import {NotificationsByIdFilter} from "./notification/NotificationsByIdFilter";
 import {NotificationsByHcPartyAndTypeFilter} from "./notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "./notification/NotificationsAfterDateFilter";
 import {UsersByPatientIdFilter} from "./user/UsersByPatientIdFilter";
+import {HealthcareProfessionalByLabelCodeFilter} from "./hcp/HealthcareProfessionalByLabelCodeFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>> ;
@@ -223,9 +224,15 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
   _byIds?: string[]
   _union?: HealthcareProfessionalFilter[]
   _intersection?: HealthcareProfessionalFilter[]
+  _byLabelCodeFilter?: HealthcareProfessionalByLabelCodeFilter
 
   byIds(byIds: string[]):   HealthcareProfessionalFilter {
     this._byIds = byIds;
+    return this;
+  }
+
+  byLabelCodeFilter(labelType?: string, labelCode?: string, codeType?: string, codeCode?: string): HealthcareProfessionalFilter {
+    this._byLabelCodeFilter = {labelType, labelCode, codeType, codeCode, '$type':'HealthcareProfessionalByLabelCodeFilter'} as HealthcareProfessionalByLabelCodeFilter
     return this;
   }
 
@@ -242,6 +249,7 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
   async build(): Promise<Filter<HealthcareProfessional>> {
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'HealthcareProfessionalByIdsFilter'} as HealthcareProfessionalByIdsFilter),
+      this._byLabelCodeFilter,
       this._union && ({filters: await Promise.all(this._union.map((f) => f.build())), '$type':'UnionFilter'} as UnionFilter<HealthcareProfessional>),
       this._intersection && ({filters: await Promise.all(this._intersection.map((f) => f.build())), '$type':'IntersectionFilter'} as IntersectionFilter<HealthcareProfessional>),
     ].filter((x) => !!x) as Filter<HealthcareProfessional>[];
@@ -300,7 +308,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
 
   _byIds?: string[]
   _byIdentifiers?: Identifier[]
-  _byTagCodeFilter?: HealthcareElementByHealthcarePartyLabelCodeFilter
+  _byLabelCodeFilter?: HealthcareElementByHealthcarePartyLabelCodeFilter
   _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: HealthcareElementFilter[]
   _intersection?: HealthcareElementFilter[]
@@ -320,8 +328,8 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     return this;
   }
 
-  byTagCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string): HealthcareElementFilter {
-    this._byTagCodeFilter = {tagType, tagCode, codeType, codeCode, '$type':'HealthcareElementByHealthcarePartyLabelCodeFilter'} as HealthcareElementByHealthcarePartyLabelCodeFilter
+  byLabelCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string): HealthcareElementFilter {
+    this._byLabelCodeFilter = {tagType, tagCode, codeType, codeCode, '$type':'HealthcareElementByHealthcarePartyLabelCodeFilter'} as HealthcareElementByHealthcarePartyLabelCodeFilter
     return this;
   }
 
@@ -351,7 +359,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
         healthcarePartyId: dataOwnerId,
         identifiers: this._byIdentifiers
         , '$type':'HealthcareElementByHealthcarePartyIdentifiersFilter'} as HealthcareElementByHealthcarePartyIdentifiersFilter),
-      this._byTagCodeFilter,
+      this._byLabelCodeFilter,
       this._forPatients && ({
         healthcarePartyId: dataOwnerId,
         patientSecretForeignKeys: (await Promise.all(
@@ -501,7 +509,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   _byIds?: string[]
   _byHealthcareElementIds?: string[]
   _byIdentifiers?: Identifier[]
-  _byTagCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
+  _byLabelCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter;
   _forPatients?: [IccCryptoXApi, Patient[]]
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
@@ -521,8 +529,8 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this;
   }
 
-  byTagCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string, startValueDate?: number, endValueDate?: number): DataSampleFilter {
-    this._byTagCodeDateFilter = {tagType, tagCode, codeType, codeCode, startValueDate, endValueDate, '$type':'DataSampleByHealthcarePartyTagCodeDateFilter'} as DataSampleByHealthcarePartyTagCodeDateFilter
+  byLabelCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string, startValueDate?: number, endValueDate?: number): DataSampleFilter {
+    this._byLabelCodeDateFilter = {tagType, tagCode, codeType, codeCode, startValueDate, endValueDate, '$type':'DataSampleByHealthcarePartyTagCodeDateFilter'} as DataSampleByHealthcarePartyTagCodeDateFilter
     return this;
   }
 
@@ -551,7 +559,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
       throw Error("Hcp must be set for patient filter.");
     }
     const doId = this._forDataOwner!;
-    this._byTagCodeDateFilter && (this._byTagCodeDateFilter.healthcarePartyId = doId)
+    this._byLabelCodeDateFilter && (this._byLabelCodeDateFilter.healthcarePartyId = doId)
 
     const filters = [
       this._byIds && ({ids: this._byIds, '$type':'DataSampleByIdsFilter'} as DataSampleByIdsFilter),
@@ -563,7 +571,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
         healthcarePartyId: doId,
         identifiers: this._byIdentifiers
         , '$type':'DataSampleByHealthcarePartyIdentifiersFilter'} as DataSampleByHealthcarePartyIdentifiersFilter),
-      this._byTagCodeDateFilter,
+      this._byLabelCodeDateFilter,
 
       this._forPatients && ({
         healthcarePartyId: doId,

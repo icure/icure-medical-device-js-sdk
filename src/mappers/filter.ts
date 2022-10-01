@@ -20,7 +20,7 @@ import {
   Device as DeviceDto,
   DeviceByIdsFilter as DeviceByIdsFilterDto,
   HealthcareParty as HealthcarePartyDto,
-  HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto,
+  HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto, HealthcarePartyByTagCodeFilter,
   HealthElement as HealthElementDto,
   HealthElementByHcPartyFilter as HealthElementByHcPartyFilterDto,
   HealthElementByHcPartyIdentifiersFilter as HealthElementByHcPartyIdentifiersFilterDto,
@@ -122,6 +122,7 @@ import {NotificationsByIdFilter} from "../filter/notification/NotificationsByIdF
 import {NotificationsByHcPartyAndTypeFilter} from "../filter/notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "../filter/notification/NotificationsAfterDateFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+import {HealthcareProfessionalByLabelCodeFilter} from "../filter/hcp/HealthcareProfessionalByLabelCodeFilter";
 
 
 export namespace FilterMapper {
@@ -334,6 +335,9 @@ export namespace FilterMapper {
     if (filter['$type'] === 'HealthcareProfessionalByIdsFilter') {
       return toHealthcarePartyByIdsFilterDto(filter as HealthcareProfessionalByIdsFilter);
     }
+    if (filter['$type'] === 'HealthcareProfessionalByLabelCodeFilter') {
+      return toHealthcarePartyByTagCodeFilterDto(filter as HealthcareProfessionalByLabelCodeFilter);
+    }
     throw Error(`No mapper for ${filter['$type']}`);
   }
 
@@ -351,6 +355,8 @@ export namespace FilterMapper {
   const toHealthcarePartyByIdsFilterDto = (filter: HealthcareProfessionalByIdsFilter) =>
     new HealthcarePartyByIdsFilterDto({desc: filter.description, ids: filter.ids})
 
+  const toHealthcarePartyByTagCodeFilterDto = (filter: HealthcareProfessionalByLabelCodeFilter) =>
+    new HealthcarePartyByTagCodeFilter({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
 
   function toAbstractFilterHealthElementDto(filter: Filter<HealthcareElement>): AbstractFilter<HealthElementDto> {
     if (filter['$type'] === 'ComplementFilter') {
