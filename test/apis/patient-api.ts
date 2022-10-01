@@ -133,11 +133,13 @@ describe('Patient API', () => {
     assert(hcp2Patient.id == sharedPatient.id);
   });
 
-  it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+  it(
+    'Optimization - No delegation sharing if delegated already has access to patient', async () => {
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, "ic", patAuthProcessId, authProcessHcpId)
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
+    console.log(patient.systemMetaData!.delegations)
 
     // When
     const sharedPatient = await patApiAndUser.api.patientApi.giveAccessTo(patient, hcp1ApiAndUser.user.healthcarePartyId!)
