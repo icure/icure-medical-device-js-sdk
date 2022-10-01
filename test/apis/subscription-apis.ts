@@ -56,7 +56,7 @@ describe("Subscription API", () => {
         ["CREATE"],
         await new DataSampleFilter()
           .forDataOwner(hcp.id!)
-          .byTagCodeFilter(testType, testCode)
+          .byLabelCodeFilter(testType, testCode)
           .build(),
         async (ds) => {
           events.push(ds);
