@@ -1,6 +1,6 @@
 {
   "name": "@icure/medical-device-sdk",
-  "version": "0.5.0",
+  "version": "0.6.2",
   "description": "OpenAPI client for ",
   "author": "OpenAPI-Generator Contributors",
   "keywords": [
@@ -17,6 +17,8 @@
     "prepare": "rimraf dist && npm run build && jq '{name:.name, version:.version, description:.description, main:\"index.js\", types:\"index.d.ts\", dependencies:.dependencies, author:.author, license:.license, bugs:.bugs, homepage:.homepage}' < package.json > dist/package.json",
     "publish": "yarn version && yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` && cd ..",
     "precommit": "pretty-quick --staged",
+    "make-doc": "yarn run typedoc --excludeInternal --out docs index.ts && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(../README.md\\) / \\[Exports\\]\\(../modules.md\\)#[\\@icure/medical-device-sdk](../modules.md)#' `find ./docs -name '*.md'` && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(README.md\\) / Exports##' ./docs/modules.md && rm ./docs/README.md",
+    "sync-doc": "rsync --exclude README.md --exclude .nojekyll -va docs/ ../medtech-docs/sdks/references/",
     "test": "nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive"
   },
   "prettier": {
@@ -39,7 +41,7 @@
     "all": true
   },
   "dependencies": {
-    "@icure/api": "4.2.38",
+    "@icure/api": "4.2.39",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
     "node-jq": "^2.3.3",
@@ -70,6 +72,8 @@
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.7.0",
+    "typedoc": "^0.23.15",
+    "typedoc-plugin-markdown": "^3.13.6",
     "typescript": "^4.5.5"
   }
 }

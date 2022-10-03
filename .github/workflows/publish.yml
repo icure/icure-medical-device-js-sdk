@@ -22,28 +22,8 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Install dependencies, test and build 🔧
-        run: yarn install && yarn run test && yarn run build
-        env:
-          ICURE_TS_TEST_URL: "https://kraken.icure.dev/rest/v1"
-          ICURE_TS_TEST_MSG_GTW_URL: "https://mock.icure.dev"
-          ICURE_TS_TEST_MSG_GTW_SPEC_ID: "ic"
-          ICURE_TS_TEST_HCP_AUTH_PROCESS_ID: ${{ secrets.TEST_HCP_AUTH_PROCESS_ID }}
-          ICURE_TS_TEST_PAT_AUTH_PROCESS_ID: ${{ secrets.TEST_PAT_AUTH_PROCESS_ID }}
-          ICURE_TS_TEST_AUTH_PROCESS_HCP_ID: "80a5e4de-97be-4b2b-848c-247bea8fcae2"
-          ICURE_TS_TEST_RAPID_API_KEY: ${{ secrets.TEST_RAPID_API_KEY }}
-          ICURE_TS_TEST_HCP_USER: ${{ secrets.TEST_HCP_USER }}
-          ICURE_TS_TEST_HCP_PWD: ${{ secrets.TEST_HCP_PWD }}
-          ICURE_TS_TEST_HCP_PRIV_KEY: ${{ secrets.TEST_HCP_PRIV_KEY }}
-          ICURE_TS_TEST_PAT_USER: ${{ secrets.TEST_PAT_USER }}
-          ICURE_TS_TEST_PAT_PWD: ${{ secrets.TEST_PAT_PWD }}
-          ICURE_TS_TEST_PAT_PRIV_KEY: ${{ secrets.TEST_PAT_PRIV_KEY }}
-          ICURE_TS_TEST_HCP_2_USER: ${{ secrets.TEST_HCP_2_USER }}
-          ICURE_TS_TEST_HCP_2_PWD: ${{ secrets.TEST_HCP_2_PWD }}
-          ICURE_TS_TEST_HCP_2_PRIV_KEY: ${{ secrets.TEST_HCP_2_PRIV_KEY }}
-          ICURE_TS_TEST_HCP_3_USER: ${{ secrets.TEST_HCP_3_USER }}
-          ICURE_TS_TEST_HCP_3_PWD: ${{ secrets.TEST_HCP_3_PWD }}
-          ICURE_TS_TEST_HCP_3_PRIV_KEY: ${{ secrets.TEST_HCP_3_PRIV_KEY }}
+      - name: Install dependencies and build 🔧
+        run: yarn install && yarn run build
       - name: Creation new version (Major) 🏷️
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Major') }}
         run: yarn version --major
@@ -54,10 +34,10 @@ jobs:
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Patch') }}
         run: yarn version --patch
       - name: Push commit and tag ↗️
-        run: git push --follow-tags
+        run: git push --follow-tags -f
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
@@ -68,19 +48,19 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   release_note:
     name: Release note
-    needs: [ if_merged ]
+    needs: [if_merged]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure-io/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create a release 📝
-        run: gh api --method POST /repos/icure-io/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
+        run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
