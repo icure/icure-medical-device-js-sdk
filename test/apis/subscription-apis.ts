@@ -407,11 +407,11 @@ describe("Subscription API", () => {
       assert(statuses.length === 2, "The statuses have not been recorded");
     }
 
-    it.only("CREATE User without options", async () => {
+    it("CREATE User without options", async () => {
       await createUserAndSubscribe({}, ["CREATE"]);
     }).timeout(60000);
 
-    it.only("CREATE User with options", async () => {
+    it("CREATE User with options", async () => {
       await createUserAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
     }).timeout(60000);
   });
