@@ -155,7 +155,7 @@ describe('Healthcare Element API', () => {
     expect(filteredElements.length).to.eq(0);
   });
 
-  it('if no healthcareElement is specified, then it should be set to the Healthcare Element id', async () => {
+  it('if no Healthcare Element healthcareElementId is specified, then it should be set to the Healthcare Element id', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const hcp1Api = hcp1ApiAndUser.api;
 
@@ -167,10 +167,11 @@ describe('Healthcare Element API', () => {
       patient.id
     )
     expect(!!newHE).to.eq(true)
+    expect(!!newHE.id).to.eq(true)
     expect(newHE.id).to.eq(newHE.healthcareElementId)
   })
 
-  it('if an healthcareElement is specified, then it should be different from the Healthcare Element id', async () => {
+  it('if a Healthcare Element healthcareElementId is specified, then it should be different from the Healthcare Element id', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const hcp1Api = hcp1ApiAndUser.api;
 
