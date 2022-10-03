@@ -2,6 +2,9 @@ import {Coding} from '../models/Coding'
 import {Filter} from '../filter/Filter'
 import {PaginatedListCoding} from '../models/PaginatedListCoding'
 
+/**
+ * The CodingApi interface provides methods to manage codings and terminologies (like ATC, ICD-10, LOINC, SNOMED-CT,… ).
+ */
 export interface CodingApi {
   /**
    * When modifying a coding, you must ensure that the rev obtained when getting or creating the coding is present as the rev is used to guarantee that the coding has not been modified by a third party.

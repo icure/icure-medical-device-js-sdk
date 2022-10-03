@@ -5,6 +5,9 @@ import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
 import {EmailMessageFactory, SMSMessageFactory} from "../utils/msgGtwMessageFactory";
 
+/**
+ * The UserApi interface provides methods to manage users.
+ */
 export interface UserApi {
   /**
    * Checks that the provided token is (still) valid for the provided user id (or user login).

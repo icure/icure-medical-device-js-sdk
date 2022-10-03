@@ -1,6 +1,9 @@
 import {AuthenticationProcess} from "../models/AuthenticationProcess";
 import {AuthenticationResult} from "../models/AuthenticationResult";
 
+/**
+ * The AuthenticationApi interface provides methods to authenticate and register users.
+ */
 export interface AuthenticationApi {
 
   /**
