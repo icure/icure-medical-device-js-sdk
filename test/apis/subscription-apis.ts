@@ -83,7 +83,7 @@ describe("Subscription API", () => {
       .onConnected(() => statusListener("CONNECTED"))
       .onClosed(() => statusListener("CLOSED"));
 
-    await sleep(2000)
+    await sleep(5000)
 
     await x()
 
@@ -249,7 +249,7 @@ describe("Subscription API", () => {
         eventTypes,
         await new HealthcareElementFilter()
           .forDataOwner(dataOwnerId)
-          .byTagCodeFilter(testType, testCode)
+          .byLabelCodeFilter(testType, testCode)
           .build(),
         eventListener,
         options,
