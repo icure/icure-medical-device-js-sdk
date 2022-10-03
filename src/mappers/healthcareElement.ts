@@ -28,7 +28,7 @@ export namespace HealthcareElementMapper {
       medicalLocationId: dto.medicalLocationId,
       endOfLife: dto.endOfLife,
       deletionDate: dto.deletionDate,
-      healthcareElementId: dto.healthElementId,
+      healthcareElementId: dto.healthElementId ?? dto.id,
       valueDate: dto.valueDate,
       openingDate: dto.openingDate,
       closingDate: dto.closingDate,
