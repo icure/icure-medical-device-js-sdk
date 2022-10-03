@@ -83,7 +83,7 @@ describe("Subscription API", () => {
       .onConnected(() => statusListener("CONNECTED"))
       .onClosed(() => statusListener("CLOSED"));
 
-    await sleep(5000)
+    await sleep(3000)
 
     await x()
 
@@ -366,14 +366,19 @@ describe("Subscription API", () => {
 
   describe("Can subscribe to User", async () => {
     const createUserAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
-      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => medtechApi!.userApi.subscribeToUserEvents(
-        eventTypes,
-        await new UserFilter().build(),
-        eventListener,
-        options,
-      )
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => {
+        await sleep(2000)
+        return medtechApi!.userApi.subscribeToUserEvents(
+          eventTypes,
+          await new UserFilter().build(),
+          eventListener,
+          options,
+        )
+      }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
+
+      await sleep(2000)
 
       const events: User[] = [];
       const statuses: string[] = [];
@@ -381,7 +386,7 @@ describe("Subscription API", () => {
       await doXOnYAndSubscribe(
         medtechApi!!,
         options,
-        connectionPromise({}, loggedUser.healthcarePartyId!, async (user) => {
+        connectionPromise(options, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user);
         }),
         async () => {
@@ -402,11 +407,11 @@ describe("Subscription API", () => {
       assert(statuses.length === 2, "The statuses have not been recorded");
     }
 
-    it("CREATE User without options", async () => {
+    it.only("CREATE User without options", async () => {
       await createUserAndSubscribe({}, ["CREATE"]);
     }).timeout(60000);
 
-    it("CREATE User with options", async () => {
+    it.only("CREATE User with options", async () => {
       await createUserAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
     }).timeout(60000);
   });
