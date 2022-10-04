@@ -1,5 +1,5 @@
 import "mocha";
-import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
+import {medTechApi, MedTechApi} from "../../src/apis/MedTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
 
@@ -31,7 +31,7 @@ describe("Subscription API", () => {
 
   before(async () => {
     medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)

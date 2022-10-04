@@ -2,7 +2,7 @@ import {before, describe, it} from 'mocha'
 import 'isomorphic-fetch'
 import {assert, expect} from "chai";
 import {v4 as uuid} from "uuid";
-import {MedTechApi} from "../../src/apis/medTechApi";
+import {MedTechApi} from "../../src/apis/MedTechApi";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";

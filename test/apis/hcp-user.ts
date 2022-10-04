@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import 'mocha'
-import { medTechApi } from '../../src/apis/medTechApi'
+import { medTechApi } from '../../src/apis/MedTechApi'
 import 'isomorphic-fetch'
 import { webcrypto } from 'crypto'
 import { User } from '../../src/models/User'
@@ -22,7 +22,7 @@ const password = process.env.ICURE_TS_TEST_HCP_PWD!
 describe('Healthcare professional', () => {
   it('should be capable of creating a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -64,7 +64,7 @@ describe('Healthcare professional', () => {
 
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -101,7 +101,7 @@ describe('Healthcare professional', () => {
 
     // When HCP wants to init a RSA KeyPair
     const hcpApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)
