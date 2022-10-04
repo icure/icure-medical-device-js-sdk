@@ -23,6 +23,8 @@ import {HealthcareElementMapper} from '../../mappers/healthcareElement'
 import {firstOrNull} from '../../utils/functionalUtils'
 import {Patient} from "../../models/Patient";
 import {HealthcareElementFilter} from "../../filter";
+import {Connection, ConnectionImpl} from '../../models/Connection'
+import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -31,16 +33,28 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
 
-  constructor(api: {
-    cryptoApi: IccCryptoXApi
-    userApi: IccUserXApi
-    patientApi: IccPatientXApi
-    contactApi: IccContactXApi
-    dataOwnerApi: IccDataOwnerXApi
-    documentApi: IccDocumentXApi
-    healthcarePartyApi: IccHcpartyXApi
-    healthcareElementApi: IccHelementXApi
-  }) {
+  private readonly basePath: string
+  private readonly username?: string
+  private readonly password?: string
+
+  constructor(
+    api: {
+      cryptoApi: IccCryptoXApi
+      userApi: IccUserXApi
+      patientApi: IccPatientXApi
+      contactApi: IccContactXApi
+      dataOwnerApi: IccDataOwnerXApi
+      documentApi: IccDocumentXApi
+      healthcarePartyApi: IccHcpartyXApi
+      healthcareElementApi: IccHelementXApi
+    },
+    basePath: string,
+    username: string | undefined,
+    password: string | undefined
+  ) {
+    this.basePath = basePath
+    this.username = username
+    this.password = password
     this.userApi = api.userApi
     this.heApi = api.healthcareElementApi
     this.patientApi = api.patientApi
@@ -206,7 +220,10 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
         return {he: he, encKey: encKeys.extractedKeys.shift()!}
       })
-      .then(({he, encKey}) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
+      .then(({
+               he,
+               encKey
+             }) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
       .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
       .then((updatedHealthElement) => {
         if (!updatedHealthElement) {
@@ -240,4 +257,25 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     return await this.concatenateFilterResults(filter);
   }
 
+
+  async subscribeToHealthcareElementEvents(
+    eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
+    filter: Filter<HealthcareElement> | undefined,
+    eventFired: (dataSample: HealthcareElement) => Promise<void>,
+    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+  ): Promise<Connection> {
+    const currentUser = await this.userApi.getCurrentUser()
+
+    return subscribeToEntityEvents(
+      this.basePath,
+      this.username!,
+      this.password!,
+      'HealthcareElement',
+      eventTypes,
+      filter,
+      eventFired,
+      options,
+      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerOf(currentUser), [encrypted]))[0]
+    ).then((rs) => new ConnectionImpl(rs))
+  }
 }

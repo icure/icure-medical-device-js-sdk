@@ -20,32 +20,46 @@ import {Filter} from "../filter/Filter";
 import {Patient} from "../models/Patient";
 import {DataSample} from "../models/DataSample";
 import {User} from "../models/User";
+import {Notification} from "../models/Notification";
 import {FilterMapper} from "../mappers/filter";
 import {UserMapper} from "../mappers/user";
-import {Patient as PatientDto, Service, sleep, User as UserDto} from "@icure/api";
+import {HealthElement, MaintenanceTask, Patient as PatientDto, Service, sleep, User as UserDto} from "@icure/api";
 import {PatientMapper} from "../mappers/patient";
 import {DataSampleMapper} from "../mappers/serviceDataSample";
+import {HealthcareElement} from "../models/HealthcareElement";
+import {HealthcareElementMapper} from "../mappers/healthcareElement";
+import {NotificationMapper} from "../mappers/notification";
 
 export const MAX_REQUEST_N = 2147483647;
 
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'Patient',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Patient> | undefined,
                                         eventFired: (entity: Patient) => Promise<void>,
-                                        options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
                                         decryptor: (encrypted: PatientDto) => Promise<PatientDto>): Promise<ICureRSocket<any, any>>
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'DataSample',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<DataSample> | undefined,
                                         eventFired: (entity: DataSample) => Promise<void>,
-                                        options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
                                         decryptor: (encrypted: Service) => Promise<Service>): Promise<ICureRSocket<any, any>>
+export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'HealthcareElement',
+                                        eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<HealthcareElement> | undefined,
+                                        eventFired: (entity: HealthcareElement) => Promise<void>,
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
+                                        decryptor: (encrypted: HealthElement) => Promise<HealthElement>): Promise<ICureRSocket<any, any>>
 export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'User',
                                         eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<User> | undefined,
                                         eventFired: (entity: User) => Promise<void>,
-                                        options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }): Promise<ICureRSocket<any, any>>
-export function subscribeToEntityEvents<O extends Patient | DataSample | User, T extends PatientDto | Service>(
-  basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User',
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number }): Promise<ICureRSocket<any, any>>
+export function subscribeToEntityEvents(basePath: string, username: string, password: string, entityClass: 'Notification',
+                                        eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<Notification> | undefined,
+                                        eventFired: (entity: Notification) => Promise<void>,
+                                        options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number },
+                                        decryptor: (encrypted: MaintenanceTask) => Promise<MaintenanceTask>): Promise<ICureRSocket<any, any>>
+export function subscribeToEntityEvents<O extends Patient | DataSample | User | HealthcareElement | Notification, T extends PatientDto | Service | HealthElement | MaintenanceTask>(
+  basePath: string, username: string, password: string, entityClass: 'Patient' | 'DataSample' | 'User' | 'HealthcareElement' | 'Notification',
   eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[], filter: Filter<O> | undefined, eventFired: (entity: O) => Promise<void>,
-  options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {},
+  options: { keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {},
   decryptor?: (encrypted: T) => Promise<T>): Promise<ICureRSocket<any, any>> {
 
   const auth = encodeSimpleAuthMetadata(username, password)
@@ -76,21 +90,25 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
     }, BufferEncoders)
   });
 
-  const requestStreamFlowable = <O>(socket: ICureRSocket<unknown, string | Buffer | Uint8Array>, eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], entityClass: "Patient" | "DataSample" | "User", filter: Filter<O> | undefined, auth: Buffer) => {
+  const requestStreamFlowable = <O>(socket: ICureRSocket<unknown, string | Buffer | Uint8Array>, eventTypes: ("CREATE" | "UPDATE" | "DELETE")[], entityClass: "Patient" | "DataSample" | "User" | "HealthcareElement" | "Notification", filter: Filter<O> | undefined, auth: Buffer) => {
     return new Flowable((subscriber) => {
       socket.requestStream({
-          data: {
-            eventTypes,
-            entityClass: (
-              entityClass === 'User' ? 'org.taktik.icure.entities.User' :
-                entityClass === 'Patient' ? 'org.taktik.icure.entities.Patient' :
-                  entityClass === 'DataSample' ? 'org.taktik.icure.entities.embed.Service' : undefined
+        data: {
+          eventTypes,
+          entityClass: (
+            entityClass === 'User' ? 'org.taktik.icure.entities.User' :
+              entityClass === 'Patient' ? 'org.taktik.icure.entities.Patient' :
+                entityClass === 'DataSample' ? 'org.taktik.icure.entities.embed.Service' :
+                  entityClass === 'HealthcareElement' ? 'org.taktik.icure.entities.HealthElement' :
+                    entityClass === 'Notification' ? 'org.taktik.icure.entities.MaintenanceTask' : undefined
             ),
             filter: filter ? {
               filter: (
                 entityClass === 'User' ? FilterMapper.toAbstractFilterDto<User>(filter, 'User') :
                   entityClass === 'Patient' ? FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient') :
-                    entityClass === 'DataSample' ? FilterMapper.toAbstractFilterDto<DataSample>(filter, 'DataSample') : undefined
+                    entityClass === 'DataSample' ? FilterMapper.toAbstractFilterDto<DataSample>(filter, 'DataSample') :
+                      entityClass === 'HealthcareElement' ? FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement') :
+                        entityClass === 'Notification' ? FilterMapper.toAbstractFilterDto<Notification>(filter, 'Notification') : undefined
               )
             } : undefined
           },
@@ -125,7 +143,13 @@ export function subscribeToEntityEvents<O extends Patient | DataSample | User, T
               decryptor!(payload.data as PatientDto as T).then(p => eventFired(PatientMapper.toPatient(p)! as O)).catch(e => console.error(e))
             }
             if (entityClass === 'DataSample') {
-              decryptor!(payload.data as Service as T).then(ds => eventFired(DataSampleMapper.toDataSample(ds)! as O)).catch(e => console.error(e))
+              decryptor!(payload.data as Service as T).then(s => eventFired(DataSampleMapper.toDataSample(s as Service)! as O)).catch(e => console.error(e))
+            }
+            if (entityClass === 'HealthcareElement') {
+              decryptor!(payload.data as HealthElement as T).then(he => eventFired(HealthcareElementMapper.toHealthcareElement(he as HealthElement)! as O)).catch(e => console.error(e))
+            }
+            if (entityClass === 'Notification') {
+              decryptor!(payload.data as MaintenanceTask as T).then(mt => eventFired(NotificationMapper.toNotification(mt as MaintenanceTask)! as O)).catch(e => console.error(e))
             }
           } catch (e) {
             console.error(e)
