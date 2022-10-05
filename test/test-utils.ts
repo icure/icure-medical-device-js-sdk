@@ -54,6 +54,7 @@ export type TestVars = {
   hcpAuthProcessId: string,
   specId: string,
   testEnvironment: string,
+  testGroupId: string,
   backendType: string,
   adminLogin: string,
   adminPassword: string,
@@ -81,6 +82,7 @@ export function getEnvVariables(): TestVars {
     hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c6a19",
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
     testEnvironment: process.env.TEST_ENVIRONMENT!,
+    testGroupId: process.env.ICURE_TEST_GROUP_ID ?? uuid(),
     backendType: process.env.BACKEND_TYPE ?? "oss",
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN!,
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD!,
@@ -139,18 +141,17 @@ export class ICureTestEmail implements EmailMessageFactory {
 export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
   if (!cachedInitializer) {
     const env = getEnvVariables();
-    const groupId = uuid();
     let bootstrapStep = null;
     if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer( 'test/scratch');
+      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock']);
       bootstrapStep = env.backendType === "oss"
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
     }
-    const groupStep = new GroupInitializer(bootstrapStep, groupId, fetch);
+    const groupStep = new GroupInitializer(bootstrapStep, fetch);
     const creationStep = !!env.masterHcp
       ? new OldMasterUserInitializerComposite(groupStep, fetch)
-      : new NewMasterUserInitializerComposite(groupStep, groupId, fetch);
+      : new NewMasterUserInitializerComposite(groupStep, fetch);
     creationStep.add(
       new CreateHcpComponent(env.dataOwnerDetails["hcpDetails"].user, env.dataOwnerDetails["hcpDetails"].password, env.dataOwnerDetails["hcpDetails"].publicKey, env.dataOwnerDetails["hcpDetails"].privateKey),
       "hcpDetails"

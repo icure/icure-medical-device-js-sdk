@@ -4,21 +4,23 @@ import {
   setup,
   setupCouchDb,
   checkIfDockerIsOnline,
-  bootstrapCloudKraken,
-  createGroup,
-  createMasterHcp,
-  createPatient,
-  createHealthcareParty,
-  createDevice
+  bootstrapCloudKraken
 } from "@icure/test-setup";
 import {Api, Apis, hex2ua} from "@icure/api";
 import {webcrypto} from "crypto";
 import {TestVars, UserDetails} from "./test-utils";
+import {createGroup} from "@icure/test-setup/groups";
+import {
+  createDeviceUser,
+  createHealthcarePartyUser,
+  createMasterHcpUser,
+  createPatientUser
+} from "@icure/test-setup/creation";
 
 /**
  * Base interface for the decorator classes.
  * The execute method gets a set of environment variables and returns a copy that could be modified
- * The steps are executed in a FIFO fashion (the first istantiated is the first executed) with the exception of the
+ * The steps are executed in a FIFO fashion (the first istantiated is the first executed) except for the
  * SafeguardInitializer
  */
 export interface EnvInitializer {
@@ -72,7 +74,7 @@ export class DockerComposeInitializer implements EnvInitializer {
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
-    await setup(this.scratchDir, env.composeFileUrl, this.profiles);
+    await setup(this.scratchDir, env.composeFileUrl, ...this.profiles);
     await setupCouchDb(env.couchDbUrl);
     await retry( async () => {
       if (!(await checkIfDockerIsOnline(this.scratchDir, env.composeFileUrl))) throw new Error("Docker not ready");
@@ -142,19 +144,17 @@ export class GroupInitializer implements EnvInitializer {
    * Constructor method
    *
    * @param initializer a previous step of the initialization pipeline
-   * @param groupId the id of the group to initialize
    * @param fetchImpl an implementation of the fetch method
    */
   constructor(
     private initializer: EnvInitializer | null,
-    private groupId: string,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
   ) {}
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
     const api = await Api(env.iCureUrl, env.adminLogin, env.adminPassword, webcrypto as any, this.fetchImpl);
-    await createGroup(api, this.groupId);
+    await createGroup(api, env.testGroupId);
     return !!updatedEnvs ? updatedEnvs : env;
   }
 }
@@ -209,18 +209,16 @@ export class NewMasterUserInitializerComposite extends UserCreationComposite imp
    * Constructor method
    *
    * @param initializer a previous step of the initialization pipeline
-   * @param groupId the group where the master HCP should be created
    * @param fetchImpl an implementation of the fetch method
    */
   constructor(
     private initializer: EnvInitializer | null,
-    private groupId: string,
     private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
   ) { super(); }
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
-    const masterCredentials = await createMasterHcp(env.adminLogin, env.adminPassword, this.groupId, this.fetchImpl, env.iCureUrl);
+    const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
     const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, this.fetchImpl);
     api.cryptoApi.RSA.storeKeyPair(masterCredentials.dataOwnerId, {
       publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(masterCredentials.publicKey)),
@@ -287,7 +285,7 @@ export class CreatePatientComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createPatient(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+    const details = await createPatientUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
         user: details.login,
@@ -321,7 +319,7 @@ export class CreateHcpComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createHealthcareParty(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+    const details = await createHealthcarePartyUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
         user: details.login,
@@ -355,7 +353,7 @@ export class createDeviceComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createDevice(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+    const details = await createDeviceUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
       "leafResult": {
         user: details.login,

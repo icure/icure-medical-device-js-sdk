@@ -206,7 +206,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('if no Healthcare Element healthcareElementId is specified, then it should be set to the Healthcare Element id', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails["hcpDetails"])
     const hcp1Api = hcp1ApiAndUser.api
 
     const patient = await TestUtils.getOrCreatePatient(hcp1Api)
@@ -222,7 +222,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('if a Healthcare Element healthcareElementId is specified, then it should be different from the Healthcare Element id', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails["hcpDetails"])
     const hcp1Api = hcp1ApiAndUser.api
 
     const elementId = uuid()
