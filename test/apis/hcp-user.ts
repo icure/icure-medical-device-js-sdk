@@ -1,4 +1,4 @@
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {v4 as uuid} from "uuid";
 import "mocha";
 import {medTechApi} from "../../src/apis/medTechApi";
@@ -8,6 +8,7 @@ import {User} from "../../src/models/User";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
 import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestVars} from "../test-utils";
+import {Patient} from "../../src/models/Patient"
 import {jwk2spki} from "@icure/api"
 
 setLocalStorage(fetch)
@@ -65,9 +66,9 @@ describe("Healthcare professional", () => {
 
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withUserName(env!.dataOwnerDetails["hcpDetails"].user)
+      .withPassword(env!.dataOwnerDetails["hcpDetails"].password)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -102,7 +103,7 @@ describe("Healthcare professional", () => {
 
     // When HCP wants to init a RSA KeyPair
     const hcpApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
+      .withICureBaseUrl(env!.iCureUrl)
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)

@@ -117,7 +117,7 @@ describe('A Healthcare Party', () => {
       .withMsgGwUrl(env!.msgGtwUrl)
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId(authProcessHcpId)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
       .build()
 

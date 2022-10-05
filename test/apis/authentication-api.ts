@@ -16,7 +16,8 @@ let hcpId: string | undefined;
 
 describe('Authentication API', () => {
 
-  before(async () => {
+  before(async function () {
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
@@ -29,7 +30,7 @@ describe('Authentication API', () => {
         .withICureBaseUrl(env!.iCureUrl)
         .withCrypto(webcrypto as any)
         .withMsgGwUrl(env!.msgGtwUrl)
-        .withAuthProcessByEmailId(authProcessId)
+        .withAuthProcessByEmailId(env!.hcpAuthProcessId)
         .withAuthProcessBySmsId(env!.hcpAuthProcessId)
         .build()
       expect(true, 'promise should fail').eq(false)
@@ -82,7 +83,7 @@ describe('Authentication API', () => {
       .withMsgGwUrl(env!.msgGtwUrl)
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId(authProcessId)
+      .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
       .build()
 
@@ -110,7 +111,7 @@ describe('Authentication API', () => {
       .withMsgGwUrl(env!.msgGtwUrl)
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId(authProcessId)
+      .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
       .build()
 
