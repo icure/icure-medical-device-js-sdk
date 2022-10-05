@@ -6,11 +6,13 @@ import {assert, expect} from "chai";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
+import {HealthcareElementFilter} from "../../src/filter";
 
 setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
   hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
   patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 
 function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
@@ -23,6 +25,7 @@ function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Pati
 }
 
 describe('Healthcare Element API', () => {
+
   it('Patient sharing healthcare element with HCP', async () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
     const patApi = patApiAndUser.api;
@@ -154,6 +157,38 @@ describe('Healthcare Element API', () => {
     expect(!!filteredElements).to.eq(true);
     expect(filteredElements.length).to.eq(0);
   });
+
+  it('Data Owner can filter all his Health Elements', async () => {
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3Api = hcp3ApiAndUser.api;
+
+    const filter = await new HealthcareElementFilter()
+      .forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!)
+      .build()
+
+    const filterResult = await hcp3Api.healthcareElementApi.filterHealthcareElement(filter)
+    expect(filterResult.rows.length).to.gt(0)
+    filterResult.rows.forEach( (he) => {
+      expect(Object.keys(he.systemMetaData?.delegations ?? {})).to.contain(hcp3ApiAndUser.user.healthcarePartyId!)
+    });
+  });
+
+  it('Data Owner can match all his Health Elements', async () => {
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3Api = hcp3ApiAndUser.api;
+
+    const filter = await new HealthcareElementFilter()
+      .forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!)
+      .build()
+
+    const filterResult = await hcp3Api.healthcareElementApi.filterHealthcareElement(filter)
+    const matchResult = await hcp3Api.healthcareElementApi.matchHealthcareElement(filter)
+    expect(matchResult.length).to.eq(filterResult.rows.length)
+    filterResult.rows.forEach( (he) => {
+      expect(matchResult).to.contain(he.id)
+    })
+  })
+
 
   it('if no Healthcare Element healthcareElementId is specified, then it should be set to the Healthcare Element id', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
