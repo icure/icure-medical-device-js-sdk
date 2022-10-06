@@ -10,6 +10,7 @@ import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
 import { Patient } from '../../src/models/Patient'
 import { setLocalStorage } from '../test-utils'
 import * as os from 'os'
+import {jwk2spki} from "@icure/api";
 
 const tmp = os.tmpdir()
 console.log('Saving keys in ' + tmp)
@@ -35,7 +36,7 @@ describe('Healthcare professional', () => {
       new HealthcareProfessional({
         name: `Med-ts-ic-test-${uuid()}`,
         systemMetaData: new SystemMetaDataOwner({
-          publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
+          publicKey: jwk2spki(keyPair.publicKey),
           hcPartyKeys: {},
           privateKeyShamirPartitions: {},
         }),

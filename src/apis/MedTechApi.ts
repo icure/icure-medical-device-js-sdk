@@ -22,7 +22,7 @@ import {
   IccPatientXApi,
   IccReceiptXApi,
   IccTimeTableXApi,
-  IccUserXApi,
+  IccUserXApi, pkcs8ToJwk, spkiToJwk,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { DataSampleApi } from './DataSampleApi'
@@ -213,11 +213,13 @@ export class MedTechApi {
     return this._password
   }
 
-  async addKeyPair(keyId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
-    await this.cryptoApi.RSA.storeKeyPair(keyId, {
-      publicKey: this.cryptoApi.utils.spkiToJwk(hex2ua(keyPair.publicKey)),
-      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(keyPair.privateKey)),
-    })
+  async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
+      privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
+    };
+    await this.cryptoApi.cacheKeyPair(jwk)
+    await this.cryptoApi.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
   }
 
   async initUserCrypto(
