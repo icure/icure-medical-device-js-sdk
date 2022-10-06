@@ -72,8 +72,8 @@ export class MedTechApi {
 
   private readonly _authenticationApi: AuthenticationApi | undefined;
   private readonly _messageGatewayApi: MessageGatewayApi | undefined;
-  private readonly _errorHandler: ErrorHandler = new ErrorHandlerImpl();
-  private readonly _sanitizer: Sanitizer = new SanitizerImpl();
+  private readonly _errorHandler: ErrorHandler;
+  private readonly _sanitizer: Sanitizer;
   private readonly _baseApi: {
     cryptoApi: IccCryptoXApi
     authApi: IccAuthApi
@@ -139,6 +139,9 @@ export class MedTechApi {
     this._username = username;
     this._password = password;
 
+    this._errorHandler = new ErrorHandlerImpl();
+    this._sanitizer = new SanitizerImpl(this._errorHandler);
+
     this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer, username, password) : undefined;
     this._authenticationApi =
       authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi
@@ -148,8 +151,9 @@ export class MedTechApi {
     this._codingApi = new CodingApiImpl(api, this._errorHandler);
     this._medicalDeviceApi = new MedicalDeviceApiImpl(api, this._errorHandler);
     this._patientApi = new PatientApiImpl(api, this._errorHandler, basePath, username, password);
-    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, basePath, username, password);
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, this._sanitizer, basePath, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler, basePath, username, password);
+
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler);
     this._notificationApi = new NotificationApiImpl(api, this._errorHandler, basePath, username, password);
     this._dataOwnerApi = new DataOwnerApiImpl(api, this._errorHandler)

@@ -82,14 +82,18 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async getPatient(patientId: string): Promise<Patient> {
-    let currentUser = await this.userApi.getCurrentUser()
-    let foundPatient = await this.patientApi.getPatientWithUser(currentUser, patientId)
+    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+    const foundPatient = await this.patientApi.getPatientWithUser(currentUser, patientId).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
 
     if (foundPatient) {
       return PatientMapper.toPatient(foundPatient)!
     }
 
-    throw this.errorHandler.createErrorWithMessage(`Could not find patient ${patientId} with user ${currentUser.id}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not find patient ${patientId} with current user ${currentUser.id}`)
   }
 
   async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
@@ -124,7 +128,7 @@ export class PatientApiImpl implements PatientApi {
     const patientToModify = PatientMapper.toPatientDto(patient)!
 
     if (patientToModify.delegations == undefined || !patientToModify.delegations[dataOwnerId] || patientToModify.delegations[dataOwnerId].length == 0) {
-      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient information`)
+      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient information. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`)
     }
 
     if (patientToModify.delegations[delegatedTo] != undefined) {
@@ -135,7 +139,7 @@ export class PatientApiImpl implements PatientApi {
       .extractDelegationsSFKs(patientToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`)
         }
 
         return delKeys.extractedKeys.shift()!
@@ -144,7 +148,7 @@ export class PatientApiImpl implements PatientApi {
       .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
       .then((encKeys) => {
         if (encKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`)
         }
 
         return encKeys.extractedKeys.shift()!
@@ -172,10 +176,10 @@ export class PatientApiImpl implements PatientApi {
       throw this.errorHandler.createErrorFromAny(e)
     })
     if (!currentUser){
-      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi")
     }
     if (!this.dataOwnerApi.getDataOwnerOf(currentUser)){
-      throw this.errorHandler.createErrorWithMessage("The current user is not a data owner")
+      throw this.errorHandler.createErrorWithMessage("The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.")
     }
     return this.patientApi.share(
       currentUser,

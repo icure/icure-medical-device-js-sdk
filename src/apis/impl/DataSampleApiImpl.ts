@@ -107,7 +107,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
 
     if (distinctBy(dataSamples, (ds) => ds.batchId).size > 1) {
-      throw this.errorHandler.createErrorWithMessage("Only data samples of a same batch can be processed together");
+      throw this.errorHandler.createErrorWithMessage("Only data samples of a same batch (with the same batchId) can be processed together");
     }
 
     // Arbitrary : 1 service = 1K
@@ -115,13 +115,13 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage("Too many data samples to process. Can't process more than 1000 data samples in the same batch");
     }
 
-    let currentUser = await this.userApi.getCurrentUser();
-    let [contactCached, existingContact] = await this._getContactOfDataSample(
+    const currentUser = await this.userApi.getCurrentUser();
+    const [contactCached, existingContact] = await this._getContactOfDataSample(
       currentUser,
       dataSamples[0]
     );
 
-    let contactPatientId = existingContact
+    const contactPatientId = existingContact
       ? await this._getPatientIdOfContact(currentUser, existingContact)
       : undefined;
 

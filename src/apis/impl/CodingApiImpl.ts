@@ -36,7 +36,7 @@ export class CodingApiImpl implements CodingApi {
     const codingsToUpdate = coding.filter(dev => !!dev.rev);
 
     if (!codingsToUpdate.every(c => c.id != null && forceUuid(c.id))) {
-      throw this.errorHandler.createErrorWithMessage("Update id should be provided as an UUID");
+      throw this.errorHandler.createErrorWithMessage("Update id should be provided as an UUID v4 (String)");
     }
 
     const codesToCreate = codingsToCreate.map(d => CodingMapper.toCode(d));
