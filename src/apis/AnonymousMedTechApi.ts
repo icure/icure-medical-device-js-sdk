@@ -13,8 +13,8 @@ export class AnonymousMedTechApi {
   private readonly _msgGtwSpecId: string;
   private readonly _authenticationApi: AuthenticationApi;
   private readonly _cryptoApi: IccCryptoXApi;
-  private readonly _errorHandler: ErrorHandler = new ErrorHandlerImpl();
-  private readonly _sanitizer: Sanitizer = new SanitizerImpl();
+  private readonly _errorHandler: ErrorHandler;
+  private readonly _sanitizer: Sanitizer;
 
   constructor(
     iCureUrlPath: string,
@@ -27,6 +27,9 @@ export class AnonymousMedTechApi {
     this._iCureUrlPath = iCureUrlPath
     this._msgGtwUrl = msgGtwUrl
     this._msgGtwSpecId = msgGtwSpecId
+
+    this._errorHandler = new ErrorHandlerImpl()
+    this._sanitizer = new SanitizerImpl(this._errorHandler)
 
     this._authenticationApi = new AuthenticationApiImpl(
       new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer),
