@@ -14,6 +14,7 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
+import {ICURE_FREE_URL} from "../index";
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -118,7 +119,10 @@ export class TestUtils {
     await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
       hex2ua(dataOwnerKey)
-    )
+    ).catch((error: any) => {
+      console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
+      console.error(error)
+    })
 
     return { api: medtechApi, user: foundUser }
   }
