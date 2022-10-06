@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import 'mocha'
-import { medTechApi } from '../../src/apis/medTechApi'
+import { medTechApi } from '../../src/apis/MedTechApi'
 import 'isomorphic-fetch'
 import { webcrypto } from 'crypto'
 import { User } from '../../src/models/User'
@@ -10,6 +10,7 @@ import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
 import { Patient } from '../../src/models/Patient'
 import { setLocalStorage } from '../test-utils'
 import * as os from 'os'
+import {jwk2spki} from "@icure/api";
 
 const tmp = os.tmpdir()
 console.log('Saving keys in ' + tmp)
@@ -22,7 +23,7 @@ const password = process.env.ICURE_TS_TEST_HCP_PWD!
 describe('Healthcare professional', () => {
   it('should be capable of creating a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -35,7 +36,7 @@ describe('Healthcare professional', () => {
       new HealthcareProfessional({
         name: `Med-ts-ic-test-${uuid()}`,
         systemMetaData: new SystemMetaDataOwner({
-          publicKey: medtechApi.cryptoApi.utils.jwk2spki(keyPair.publicKey),
+          publicKey: jwk2spki(keyPair.publicKey),
           hcPartyKeys: {},
           privateKeyShamirPartitions: {},
         }),
@@ -64,7 +65,7 @@ describe('Healthcare professional', () => {
 
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -101,7 +102,7 @@ describe('Healthcare professional', () => {
 
     // When HCP wants to init a RSA KeyPair
     const hcpApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)
