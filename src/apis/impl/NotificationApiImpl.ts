@@ -42,12 +42,14 @@ export class NotificationApiImpl implements NotificationApi {
 
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then(user => {
-      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
       const notificationPromise = !notification?.rev ? this.createNotification(notification, user, delegate)
         : this.updateNotification(notification, user);
       return notificationPromise.then((createdTask) => {
         return NotificationMapper.toNotification(createdTask as MaintenanceTask);
       });
+    }).catch(e => {
+      throw this.errorHandler.createErrorFromAny(e)
     });
   }
 
@@ -72,7 +74,7 @@ export class NotificationApiImpl implements NotificationApi {
 
   async deleteNotification(notificationId: string): Promise<string | undefined> {
     return this.userApi.getCurrentUser().then(user => {
-      if (!user) throw new Error("There is no user currently logged in");
+      if (!user) throw new Error("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
       return this.maintenanceTaskApi.deleteMaintenanceTaskWithUser(user, notificationId).then(identifiers => {
         if (!identifiers || identifiers.length == 0) return undefined;
         return identifiers[0].id;
@@ -84,7 +86,7 @@ export class NotificationApiImpl implements NotificationApi {
 
   async filterNotifications(filter: Filter<Notification>, nextNotificationId?: string, limit?: number): Promise<PaginatedListNotification> {
     return this.userApi.getCurrentUser().then(user => {
-      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
       return this.maintenanceTaskApi.filterMaintenanceTasksByWithUser(
         user,
         nextNotificationId,
@@ -102,7 +104,7 @@ export class NotificationApiImpl implements NotificationApi {
 
   async getNotification(notificationId: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then(user => {
-      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+      if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
       return this.maintenanceTaskApi.getMaintenanceTaskWithUser(user, notificationId).then(task => {
         return NotificationMapper.toNotification(task)
       });
@@ -116,10 +118,10 @@ export class NotificationApiImpl implements NotificationApi {
       throw this.errorHandler.createErrorFromAny(e)
     });
     if (!user){
-      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in");
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
     }
     if (!this.dataOwnerApi.getDataOwnerOf(user)) {
-      throw this.errorHandler.createErrorWithMessage("User is not a Data Owner");
+      throw this.errorHandler.createErrorWithMessage("The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.");
     }
     const filter = await new NotificationFilter()
       .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
@@ -128,7 +130,7 @@ export class NotificationApiImpl implements NotificationApi {
   }
 
   private async createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
-    if (!delegate) throw this.errorHandler.createErrorWithMessage("No delegate provided for Notification creation")
+    if (!delegate) throw this.errorHandler.createErrorWithMessage("No delegate provided for Notification creation. You must provide a delegate to create a Notification. The delegate is the data owner id you want to notify.");
     const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
     return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
       .then(task => {

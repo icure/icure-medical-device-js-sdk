@@ -68,19 +68,13 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       throw this.errorHandler.createErrorWithMessage(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
     }
 
-    if (!!mobilePhone && !this.sanitizer.validateMobilePhone(mobilePhone)) {
-      throw this.errorHandler.createErrorWithMessage(`Invalid mobile phone number provided`)
-    }
+    const processId = email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId
 
-    if (!!email && !this.sanitizer.validateEmail(email)) {
-      throw this.errorHandler.createErrorWithMessage(`Invalid email provided`)
-    }
-
-    const requestId = await this.messageGatewayApi.startProcess(email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId, {
+    const requestId = await this.messageGatewayApi.startProcess(processId, {
       'g-recaptcha-response': recaptcha,
       firstName: firstName,
       lastName: lastName,
-      from: email ?? mobilePhone,
+      from: email != undefined ? this.sanitizer.validateEmail(email) : this.sanitizer.validateMobilePhone(mobilePhone!),
       email: email,
       mobilePhone: mobilePhone,
       hcpId: healthcareProfessionalId,
@@ -90,7 +84,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       return new AuthenticationProcess({ requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck })
     }
 
-    throw this.errorHandler.createErrorWithMessage(`Could not start authentication process for user ${email ?? mobilePhone}`)
+    throw this.errorHandler.createErrorWithMessage(`iCure could not start the authentication process ${processId} for user ${email ?? mobilePhone}. Try again later`)
   }
 
   async completeAuthentication(
@@ -127,7 +121,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       })
     }
 
-    throw this.errorHandler.createErrorWithMessage(`Could not complete authentication process for user ${process.login}`)
+    throw this.errorHandler.createErrorWithMessage(`iCure could not complete authentication process with requestId ${process.requestId}`)
   }
 
   async authenticateAndAskAccessToItsExistingData(
@@ -140,11 +134,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser()
     if (!loggedUser) {
-      throw this.errorHandler.createErrorWithMessage(`Could not retrieve logged user`)
+      throw this.errorHandler.createErrorWithMessage(`Impossible to log the new user and find their information. Try again to authenticate them`)
 
     } else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId)
-      if (!patientDataOwner) throw this.errorHandler.createErrorWithMessage(`Patient with id ${loggedUser.patientId} does not exist`)
+      if (!patientDataOwner) throw this.errorHandler.createErrorWithMessage(`Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`)
 
       const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
         .map((keyValue) => Array.from(keyValue[1]))
@@ -165,16 +159,20 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           delegate
         )
         //TODO Return which delegates were warned to share back info & add retry mechanism
-        if (!accessNotification) throw this.errorHandler.createErrorWithMessage(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+        if (!accessNotification) console.error(`iCure could not create a notification to healthcare party ${delegate} to ask access back to ${loggedUser.patientId} data. Make sure to create a notification for the healthcare party so that he gives back access to ${loggedUser.patientId} data.`)
       }
     } else if (!!loggedUser.healthcarePartyId) {
-      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId)
-      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`)
+      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Impossible to find the healthcare party ${loggedUser.healthcarePartyId} apparently linked to user ${loggedUser.id}. Are you sure this healthcarePartyId is correct ?`)
     } else if (!!loggedUser.deviceId) {
-      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId)
-      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Medical Device with id ${loggedUser.deviceId} does not exist`)
+      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      if (!hcpDataOwner) throw this.errorHandler.createErrorWithMessage(`Impossible to find the device ${loggedUser.deviceId} apparently linked to the user ${loggedUser.id}. Are you sure this deviceId is correct ?`)
     } else {
-      throw this.errorHandler.createErrorWithMessage(`User with id ${loggedUser.id} is not Data Owner (either a patient, a healthcare professional or a medical device)`)
+      throw this.errorHandler.createErrorWithMessage(`User with id ${loggedUser.id} is not a Data Owner. To be a Data Owner, your user needs to have either patientId, healthcarePartyId or deviceId filled in`)
     }
 
     return authenticationResult
@@ -220,14 +218,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     try {
       const user = await api.userApi.getLoggedUser()
       if (user == null) {
-        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} is expired - Couldn't login new user`)
+        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} expired. Start a new authentication process for your user`)
       }
 
       const [providedToken, keyPair] = tokenAndKeyPairProvider(user.groupId!, user.id!) ?? [undefined, undefined]
 
       const token = providedToken ?? (await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10))
       if (token == null) {
-        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} is expired - Couldn't create new secured token`)
+        throw this.errorHandler.createErrorWithMessage(`Your validation code ${validationCode} expired. Start a new authentication process for your user`)
       }
 
       return [api, new ApiInitialisationResult(user, token, keyPair)]

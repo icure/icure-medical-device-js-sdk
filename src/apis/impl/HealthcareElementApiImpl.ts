@@ -109,11 +109,11 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     }) : undefined
 
     if (!heToUpdate.every((he) => he.id != null && forceUuid(he.id))) {
-      throw this.errorHandler.createErrorWithMessage('Update id should be provided as an UUID')
+      throw this.errorHandler.createErrorWithMessage('Error while updating: HealthcareElement id should be provided as an UUID v4 (String)')
     }
 
     if (!patient && heToCreate.length > 0) {
-      throw this.errorHandler.createErrorWithMessage('Patient id should be provided to create new healthcare elements')
+      throw this.errorHandler.createErrorWithMessage('Error while creating: patientId should be provided to create new healthcare elements')
     }
 
     const hesCreated = await Promise.all(
@@ -139,7 +139,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     if (deletedHeRev) {
       return deletedHeRev
     }
-    throw this.errorHandler.createErrorWithMessage(`Could not delete healthElement ${id}`)
+    throw this.errorHandler.createErrorWithMessage(`An error occurred when deleting this HealthcareElement. Id: ${id}`)
   }
 
   async filterHealthcareElement(
@@ -214,7 +214,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
     if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
-      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access healthcare element`)
+      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access healthcare element. Check that the healthcare element is owned by/shared to the actual user.`)
     }
 
     if (healthElementToModify.delegations[delegatedTo] != undefined) {
@@ -223,14 +223,14 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
     const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
     if (healthcareElementPatient == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access healthcare element ${healthElementToModify.id}`)
+      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`)
     }
 
     return this.cryptoApi
       .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
       .then((delKeys) => {
         if (delKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`)
         }
         return delKeys.extractedKeys.shift()!
       })
@@ -250,7 +250,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       })
       .then(({he, encKeys}) => {
         if (encKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}`)
+          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`)
         }
 
         return {he: he, encKey: encKeys.extractedKeys.shift()!}
@@ -281,11 +281,11 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       throw this.errorHandler.createErrorFromAny(e)
     });
     if (!user) {
-      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi.")
     }
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user);
     if (!dataOwnerId) {
-      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in")
+      throw this.errorHandler.createErrorWithMessage("The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.")
     }
     const filter = await new HealthcareElementFilter()
       .forDataOwner(dataOwnerId)

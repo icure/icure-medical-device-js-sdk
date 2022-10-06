@@ -24,6 +24,7 @@ import {filteredContactsFromAddresses} from "../../utils/addressUtils";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {EmailMessageFactory, SMSMessageFactory} from "../../utils/msgGtwMessageFactory";
 import {ErrorHandler} from "../../services/ErrorHandler";
+import {Sanitizer} from "../../services/Sanitizer";
 
 
 export class UserApiImpl implements UserApi {
@@ -34,10 +35,12 @@ export class UserApiImpl implements UserApi {
   private readonly password: string | undefined;
   private readonly messageGatewayApi: MessageGatewayApi | undefined;
   private readonly errorHandler: ErrorHandler;
+  private readonly sanitizer: Sanitizer;
 
   constructor(api: { healthcarePartyApi: IccHcpartyXApi, cryptoApi: IccCryptoXApi; userApi: IccUserXApi; patientApi: IccPatientXApi; contactApi: IccContactXApi; documentApi: IccDocumentXApi },
               messageGatewayApi: MessageGatewayApi | undefined,
               errorHandler: ErrorHandler,
+              sanitizer: Sanitizer,
               basePath: string,
               username: string | undefined,
               password: string | undefined) {
@@ -45,6 +48,7 @@ export class UserApiImpl implements UserApi {
     this.username = username;
     this.password = password;
     this.errorHandler = errorHandler;
+    this.sanitizer = sanitizer;
     this.userApi = api.userApi;
     this.hcpApi = api.healthcarePartyApi;
     this.messageGatewayApi = messageGatewayApi;
@@ -172,7 +176,7 @@ export class UserApiImpl implements UserApi {
   }
 
   async getUserByEmail(email:string): Promise<User> {
-    return UserMapper.toUser(await this.userApi.getUserByEmail(email).catch(e => {
+    return UserMapper.toUser(await this.userApi.getUserByEmail(this.sanitizer.validateEmail(email)).catch(e => {
       throw this.errorHandler.createErrorFromAny(e)
     }))!;
   }
@@ -201,7 +205,7 @@ export class UserApiImpl implements UserApi {
     })
 
     if (!user) {
-      throw this.errorHandler.createErrorWithMessage("Couldn't get current user")
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi")
     }
 
     let newDataSharing
@@ -246,7 +250,7 @@ export class UserApiImpl implements UserApi {
     })
 
     if (!user) {
-      throw this.errorHandler.createErrorWithMessage("Couldn't get current user")
+      throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi")
     }
 
     const delegationsToRemove = user.autoDelegations?.[type]?.filter((item) => dataOwnerIds.indexOf(item) >= 0)

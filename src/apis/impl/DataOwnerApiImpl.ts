@@ -21,6 +21,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly patientApi: IccPatientXApi
   private readonly hcPartyApi: IccHcpartyXApi
   private readonly deviceApi: IccDeviceApi
+  private readonly errorHandler: ErrorHandler
 
   constructor(api: { cryptoApi: IccCryptoXApi; dataOwnerApi: IccDataOwnerXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi }, errorHandler: ErrorHandler) {
     this.dataOwnerApi = api.dataOwnerApi
@@ -28,12 +29,13 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     this.patientApi = api.patientApi
     this.hcPartyApi = api.healthcarePartyApi
     this.deviceApi = api.deviceApi
+    this.errorHandler = errorHandler
   }
 
   getDataOwnerIdOf(user: User): string {
     const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId
     if (dataOwnerId == undefined) {
-      throw Error(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
+      throw this.errorHandler.createErrorWithMessage(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
     }
     return dataOwnerId
   }
@@ -51,9 +53,11 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(privateKey)),
     })
 
-    const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId)
+    const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
     if (dataOwner == null) {
-      throw Error('User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device')
+      throw this.errorHandler.createErrorWithMessage(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
     }
 
     if (dataOwner.dataOwner.publicKey == undefined) {
@@ -78,11 +82,17 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     dataOwner.publicKey = dataOwnerPublicKey
 
     if (dataOwner instanceof Patient) {
-      await this.patientApi.modifyPatientRaw(dataOwner)
+      await this.patientApi.modifyPatientRaw(dataOwner).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
     } else if (dataOwner instanceof HealthcareParty) {
-      await this.hcPartyApi.modifyHealthcareParty(dataOwner)
+      await this.hcPartyApi.modifyHealthcareParty(dataOwner).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
     } else {
-      await this.deviceApi.updateDevice(dataOwner)
+      await this.deviceApi.updateDevice(dataOwner).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
     }
 
     this.cryptoApi.emptyHcpCache(dataOwner.id!)
@@ -95,7 +105,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   private async _initPatientDelegationsAndSave(user: User) {
     const userDto = UserMapper.toUserDto(user)
     if (userDto == undefined) {
-      throw Error(`Could not map user to iCure Base User version : Make sure your user info are valid`)
+      throw this.errorHandler.createErrorWithMessage(`Could not map user to iCure Base User version : Make sure your user info are valid`)
     }
 
     const patientToUpdate = await this.patientApi
