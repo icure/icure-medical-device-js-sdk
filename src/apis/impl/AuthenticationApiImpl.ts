@@ -5,21 +5,9 @@ import { User } from '../../models/User'
 import { AuthenticationApi } from '../AuthenticationApi'
 import { v4 as uuid } from 'uuid'
 import { retry } from '@icure/api'
-import { medTechApi, MedTechApi } from '../medTechApi'
+import { medTechApi, MedTechApi } from '../MedTechApi'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
-
-class ApiInitialisationResult {
-  constructor(user: User, token: string, keyPair?: [string, string]) {
-    this.user = user
-    this.token = token
-    this.keyPair = keyPair
-  }
-
-  user: User
-  token: string
-  keyPair?: [string, string]
-}
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   constructor(
@@ -30,8 +18,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
-      ? self.fetch
-      : fetch
+        ? self.fetch
+        : fetch
   ) {
     this.iCureBasePath = iCureBasePath
     this.messageGatewayApi = messageGatewayApi
@@ -47,41 +35,41 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 
   async startAuthentication(
-    healthcareProfessionalId: string | undefined,
-    firstName: string,
-    lastName: string,
     recaptcha: string,
-    bypassTokenCheck: boolean = false,
     email?: string,
-    mobilePhone?: string
-  ): Promise<AuthenticationProcess | null> {
-    if (!email && !mobilePhone) {
-      throw Error(`In order to start authentication of a user, you should at least provide its email OR its mobilePhone`)
+    phoneNumber?: string,
+    firstName: string = '',
+    lastName: string = '',
+    healthcareProfessionalId: string = '',
+    bypassTokenCheck: boolean = false,
+  ): Promise<AuthenticationProcess> {
+    if (!email && !phoneNumber) {
+      throw Error(`In order to start authentication of a user, you should at least provide its email OR its phone number`)
     }
 
     const requestId = await this.messageGatewayApi.startProcess(email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId, {
       'g-recaptcha-response': recaptcha,
       firstName: firstName,
       lastName: lastName,
-      from: email ?? mobilePhone,
+      from: email ?? phoneNumber,
       email: email,
-      mobilePhone: mobilePhone,
+      mobilePhone: phoneNumber,
       hcpId: healthcareProfessionalId,
     })
 
     if (!!requestId) {
-      return new AuthenticationProcess({ requestId, login: (email ?? mobilePhone)!, bypassTokenCheck: bypassTokenCheck })
+      return new AuthenticationProcess({ requestId, login: (email ?? phoneNumber)!, bypassTokenCheck: bypassTokenCheck })
     }
 
-    throw Error(`Could not start authentication of user ${email ?? mobilePhone}`)
+    throw Error(`Could not start authentication of user ${email ?? phoneNumber}`)
   }
+
 
   async completeAuthentication(
     process: AuthenticationProcess,
     validationCode: string,
-    dataOwnerKeyPair: [string, string] | undefined,
-    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
-  ): Promise<AuthenticationResult | null> {
+    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
+  ): Promise<AuthenticationResult> {
     const result = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
       if (process.bypassTokenCheck) {
         return true
@@ -90,24 +78,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     })
 
     if (result) {
-      const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(() =>
-        this.initApiAndUserAuthenticationToken(process.login, validationCode, tokenAndKeyPairProvider)
-      )
-
-      const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair
-      if (!dataOwnerInitialisedKeyPair) {
-        throw Error('A keypair must be provided either directly or through the provider')
-      }
-
-      const authenticatedApi: MedTechApi = await this._initUserCryptoAndAddItToApi(api, apiInitialisationResult.token, dataOwnerInitialisedKeyPair)
-
-      return new AuthenticationResult({
-        medTechApi: authenticatedApi,
-        keyPair: dataOwnerInitialisedKeyPair,
-        token: apiInitialisationResult.token,
-        groupId: apiInitialisationResult.user.groupId!,
-        userId: apiInitialisationResult.user.id,
-      })
+      return this._initUserAuthTokenAndCrypto(process.login, validationCode, getUserKeypair)
     }
 
     throw Error(`Could not validate authentication of user ${process.login}`)
@@ -116,10 +87,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   async authenticateAndAskAccessToItsExistingData(
     userLogin: string,
     shortLivedToken: string,
-    dataOwnerKeyPair: [string, string] | undefined,
-    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
-  ): Promise<AuthenticationResult | null> {
-    const authenticationResult = await this.initUserTokenAndCrypto(userLogin, shortLivedToken, dataOwnerKeyPair, tokenAndKeyPairProvider)
+    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
+  ): Promise<AuthenticationResult> {
+    const authenticationResult = await this._initUserAuthTokenAndCrypto(userLogin, shortLivedToken, getUserKeypair)
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser()
     if (!loggedUser) {
@@ -162,66 +132,51 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     return authenticationResult
   }
 
-  async initUserTokenAndCrypto(
+  private async _initUserAuthTokenAndCrypto(
     login: string,
     token: string,
-    dataOwnerKeyPair: [string, string] | undefined,
-    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
+    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>)
   ): Promise<AuthenticationResult> {
-    const [api, apiInitialisationResult]: [MedTechApi, ApiInitialisationResult] = await retry(() =>
-      this.initApiAndUserAuthenticationToken(login, token, tokenAndKeyPairProvider)
+    const { authenticatedApi, user } = await retry(() =>
+      this._generateAndAssignAuthenticationToken(login, token)
     )
 
-    const dataOwnerInitialisedKeyPair = apiInitialisationResult.keyPair ?? dataOwnerKeyPair
-    if (!dataOwnerInitialisedKeyPair) {
-      throw Error('A keypair must be provided either directly or through the provider')
-    }
-    const authenticatedApi: MedTechApi = await this._initUserCryptoAndAddItToApi(api, apiInitialisationResult.token, dataOwnerInitialisedKeyPair)
+    const userKeyPair = await getUserKeypair(user.id!)
+    await authenticatedApi.initUserCrypto(true, userKeyPair)
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
-      keyPair: dataOwnerInitialisedKeyPair,
-      token: apiInitialisationResult.token,
-      groupId: apiInitialisationResult.user.groupId!,
-      userId: apiInitialisationResult.user.id,
+      keyPair: userKeyPair,
+      token: authenticatedApi.password,
+      groupId: user.groupId!,
+      userId: user.id,
     })
   }
 
-  async initApiAndUserAuthenticationToken(
+  private async _generateAndAssignAuthenticationToken(
     login: string,
-    validationCode: string,
-    tokenAndKeyPairProvider: (groupId: string, userId: string) => [string, [string, string]] | undefined
-  ): Promise<[MedTechApi, ApiInitialisationResult]> {
+    validationCode: string
+  ): Promise<{ authenticatedApi: MedTechApi, user: User }> {
     const api = await medTechApi()
-      .withICureBasePath(this.iCureBasePath)
+      .withICureBaseUrl(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
       .withCrypto(require('crypto').webcrypto)
       .build()
 
-    try {
-      const user = await api.userApi.getLoggedUser()
-      if (user == null) {
-        throw Error(`Your validation code ${validationCode} is expired - Couldn't login new user`)
-      }
-
-      const [providedToken, keyPair] = tokenAndKeyPairProvider(user.groupId!, user.id!) ?? [undefined, undefined]
-
-      const token = providedToken ?? (await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10))
-      if (token == null) {
-        throw Error(`Your validation code ${validationCode} is expired - Couldn't create new secured token`)
-      }
-
-      return [api, new ApiInitialisationResult(user, token, keyPair)]
-    } catch (e) {
-      throw e
+    const user = await api.userApi.getLoggedUser()
+    if (user == null) {
+      throw Error(`Your validation code ${validationCode} is expired - Couldn't login new user`)
     }
-  }
 
-  private async _initUserCryptoAndAddItToApi(api: MedTechApi, token: string, dataOwnerKeyPair: [string, string]): Promise<MedTechApi> {
-    const authenticatedApi = await medTechApi(api).withPassword(token).build()
+    const token = await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10)
+    if (token == null) {
+      throw Error(`Your validation code ${validationCode} is expired - Couldn't create new secured token`)
+    }
 
-    await authenticatedApi.initUserCrypto(true, { privateKey: dataOwnerKeyPair[0], publicKey: dataOwnerKeyPair[1] })
-    return authenticatedApi
+    return {
+      authenticatedApi: await medTechApi(api).withPassword(token).build(),
+      user: user
+    }
   }
 }

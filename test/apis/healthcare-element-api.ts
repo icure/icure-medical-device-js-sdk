@@ -1,5 +1,5 @@
 import "mocha";
-import {MedTechApi} from "../../src/apis/medTechApi";
+import {MedTechApi} from "../../src/apis/MedTechApi";
 import "isomorphic-fetch";
 import { v4 as uuid } from 'uuid'
 import {assert, expect} from "chai";

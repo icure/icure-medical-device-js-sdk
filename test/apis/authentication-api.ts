@@ -5,7 +5,7 @@ import 'isomorphic-fetch'
 import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
-import { MedTechApiBuilder } from '../../src/apis/medTechApi'
+import { MedTechApiBuilder } from '../../src/apis/MedTechApi'
 
 setLocalStorage(fetch)
 
@@ -17,9 +17,9 @@ describe('Authentication API', () => {
 
     try {
       await new AnonymousMedTechApiBuilder()
-        .withICureUrlPath(iCureUrl)
+        .withICureBaseUrl(iCureUrl)
         .withCrypto(webcrypto as any)
-        .withMsgGtwUrl(msgGtwUrl)
+        .withMsgGwUrl(msgGtwUrl)
         .withAuthProcessByEmailId(authProcessId)
         .withAuthProcessBySmsId(authProcessId)
         .build()
@@ -30,10 +30,10 @@ describe('Authentication API', () => {
 
     try {
       const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-        .withICureUrlPath(iCureUrl)
+        .withICureBaseUrl(iCureUrl)
         .withCrypto(webcrypto as any)
-        .withMsgGtwUrl(msgGtwUrl)
-        .withMsgGtwSpecId(specId)
+        .withMsgGwUrl(msgGtwUrl)
+        .withMsgGwSpecId(specId)
         .withAuthProcessByEmailId('fake-process-id')
         .withAuthProcessBySmsId('fake-process-id')
         .build()
@@ -47,19 +47,28 @@ describe('Authentication API', () => {
   it("Impossible to use authenticationApi if msgGtwUrl, msgGtwSpecId and authProcessId haven't been provided", async () => {
     // Given
     let api = await new MedTechApiBuilder()
-      .withICureBasePath(iCureUrl)
-      .withMsgGtwUrl(msgGtwUrl)
+      .withUserName('fake-user-name')
+      .withPassword('fake-pwd')
+      .withICureBaseUrl(iCureUrl)
+      .withMsgGwUrl(msgGtwUrl)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
       .build()
 
     try {
-      await api.authenticationApi.startAuthentication('fake-prof-id', 'firstname', 'lastname', 'recaptcha', false)
+      await api.authenticationApi.startAuthentication('recaptcha',
+        'email',
+        undefined,
+        'firstname',
+        'lastname',
+        'fake-prof-id',
+        false
+      )
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq(
-        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId"
+        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, authProcessByEmailId and authProcessBySMSId"
       )
     }
   })
@@ -69,9 +78,9 @@ describe('Authentication API', () => {
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureUrlPath(iCureUrl)
-      .withMsgGtwUrl(msgGtwUrl)
-      .withMsgGtwSpecId(specId)
+      .withICureBaseUrl(iCureUrl)
+      .withMsgGwUrl(msgGtwUrl)
+      .withMsgGwSpecId(specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
@@ -80,17 +89,17 @@ describe('Authentication API', () => {
     // When
     try {
       await anonymousMedTechApi.authenticationApi.startAuthentication(
-        authProcessHcpId,
+        'process.env.ICURE_RECAPTCHA',
+        undefined,
+        undefined,
         'Tom',
         'Gideon',
-        'process.env.ICURE_RECAPTCHA',
+        authProcessHcpId,
         false,
-        undefined,
-        undefined
       )
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its mobilePhone')
+      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its phone number')
     }
   })
 
@@ -99,9 +108,9 @@ describe('Authentication API', () => {
     const authProcessId = process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c6a19' // pragma: allowlist secret
 
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureUrlPath(iCureUrl)
-      .withMsgGtwUrl(msgGtwUrl)
-      .withMsgGtwSpecId(specId)
+      .withICureBaseUrl(iCureUrl)
+      .withMsgGwUrl(msgGtwUrl)
+      .withMsgGwSpecId(specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
@@ -110,17 +119,17 @@ describe('Authentication API', () => {
     // When
     try {
       await anonymousMedTechApi.authenticationApi.startAuthentication(
-        authProcessHcpId,
+        'process.env.ICURE_RECAPTCHA',
+        '',
+        '',
         'Tom',
         'Gideon',
-        'process.env.ICURE_RECAPTCHA',
+        authProcessHcpId,
         false,
-        '',
-        ''
       )
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its mobilePhone')
+      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its phone number')
     }
   })
 

@@ -10,7 +10,7 @@ export * from './src/apis/NotificationApi'
 export * from './src/apis/PatientApi'
 export * from './src/apis/UserApi'
 export * from './src/apis/DataOwnerApi'
-export * from './src/apis/medTechApi'
+export * from './src/apis/MedTechApi'
 export * from './src/filter'
 
 export * from '@icure/api/icc-x-api/utils/binary-utils'
@@ -18,3 +18,7 @@ export * from '@icure/api/icc-x-api/utils/formatting-util'
 export * from '@icure/api/icc-x-api/utils/uuid-encoder'
 
 export * from './src/utils/msgGtwMessageFactory'
+
+export const ICURE_CLOUD_URL = 'https://kraken.icure.cloud'
+export const ICURE_FREE_URL = 'http://localhost:16043'
+export const MSG_GW_CLOUD_URL = 'https://msg-gw.icure.cloud'

@@ -1,5 +1,5 @@
 import 'isomorphic-fetch'
-import { medTechApi, MedTechApi } from '../../src/apis/medTechApi'
+import { medTechApi, MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { Patient } from '../../src/models/Patient'
 import { webcrypto } from 'crypto'
@@ -42,11 +42,11 @@ let patUser: User
 describe('A Healthcare Party', () => {
   before(async () => {
     hcp1Api = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(hcpUserName)
       .withPassword(hcpPassword)
-      .withMsgGtwUrl(msgGtwUrl)
-      .withMsgGtwSpecId(specId)
+      .withMsgGwUrl(msgGtwUrl)
+      .withMsgGwSpecId(specId)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -118,17 +118,16 @@ describe('A Healthcare Party', () => {
 
     // And PAT_1 accepts this invitation and changes his credentials
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureUrlPath(iCureUrl)
-      .withMsgGtwUrl(msgGtwUrl)
-      .withMsgGtwSpecId(specId)
+      .withICureBaseUrl(iCureUrl)
+      .withMsgGwUrl(msgGtwUrl)
+      .withMsgGwSpecId(specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessHcpId)
       .withAuthProcessBySmsId(authProcessHcpId)
       .build()
 
-    const { publicKey, privateKey } = await anonymousMedTechApi.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey, 'spki'))
-    const privateKeyHex = ua2hex(await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8'))
+    const userKeyPair = await anonymousMedTechApi.generateRSAKeypair()
+
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
 
     // When PAT_1 generates a key pair for himself
@@ -137,8 +136,7 @@ describe('A Healthcare Party', () => {
     const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(
       loginAndPassword.split('|')[0],
       loginAndPassword.split('|')[1],
-      [privateKeyHex, publicKeyHex],
-      () => undefined
+      async () => userKeyPair
     )
 
     await sleep(3000)
@@ -183,7 +181,7 @@ describe('A Healthcare Party', () => {
     // Be careful : We need to empty the cache of the hcPartyKeys otherwise, the previous API will use the key of the
     // patient -> patient stocked in cache instead of the one created by the doctor when he gives access back to patient data
     const updatedApi = await medTechApi(newPatientApi).build()
-    await updatedApi.addKeyPair(newPatient.id!, { privateKey: privateKeyHex, publicKey: publicKeyHex })
+    await updatedApi.addKeyPair(newPatient.id!, userKeyPair)
 
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE1.id!)
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!)
