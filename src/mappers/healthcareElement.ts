@@ -28,7 +28,7 @@ export namespace HealthcareElementMapper {
       medicalLocationId: dto.medicalLocationId,
       endOfLife: dto.endOfLife,
       deletionDate: dto.deletionDate,
-      healthElementId: dto.healthElementId,
+      healthcareElementId: dto.healthElementId ?? dto.id,
       valueDate: dto.valueDate,
       openingDate: dto.openingDate,
       closingDate: dto.closingDate,
@@ -42,9 +42,10 @@ export namespace HealthcareElementMapper {
       })
     });
 
-  export const toHealthElementDto = (obj: HealthcareElement) =>
-    new HealthElement({
-      id: forceUuid(obj.id),
+  export const toHealthElementDto = (obj: HealthcareElement) => {
+    const id = forceUuid(obj.id);
+    return new HealthElement({
+      id: id,
       identifiers: map(obj.identifiers, toIdentifierDto),
       tags: mapSetToArray(obj.tags, toCodeStub),
       codes: mapSetToArray(obj.codes, toCodeStub),
@@ -56,7 +57,7 @@ export namespace HealthcareElementMapper {
       medicalLocationId: obj.medicalLocationId,
       endOfLife: obj.endOfLife,
       deletionDate: obj.deletionDate,
-      healthElementId: obj.healthElementId,
+      healthElementId: obj.healthcareElementId ?? id,
       valueDate: obj.valueDate,
       openingDate: obj.openingDate,
       closingDate: obj.closingDate,
@@ -69,4 +70,5 @@ export namespace HealthcareElementMapper {
       delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
       encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
     });
+  };
 }
