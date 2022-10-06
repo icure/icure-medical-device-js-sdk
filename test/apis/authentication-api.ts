@@ -5,7 +5,7 @@ import 'isomorphic-fetch'
 import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
-import { MedTechApiBuilder } from '../../src/apis/medTechApi'
+import { MedTechApiBuilder } from '../../src/apis/MedTechApi'
 
 setLocalStorage(fetch)
 
