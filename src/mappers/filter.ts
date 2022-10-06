@@ -21,7 +21,7 @@ import {
   DeviceByIdsFilter as DeviceByIdsFilterDto,
   HealthcareParty as HealthcarePartyDto,
   HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto,
-  HealthcarePartyByTagCodeFilter,
+  HealthcarePartyByTagCodeFilter as HealthcarePartyByTagCodeFilterDto,
   HealthElement as HealthElementDto,
   HealthElementByHcPartyFilter as HealthElementByHcPartyFilterDto,
   HealthElementByHcPartyIdentifiersFilter as HealthElementByHcPartyIdentifiersFilterDto,
@@ -278,7 +278,7 @@ export namespace FilterMapper {
 
   const toServiceByHcPartyFilterDto = (filter: DataSampleByHealthcarePartyFilter) => new ServiceByHcPartyFilterDto({
     desc: filter.description,
-    healthcarePartyId: filter.hcpId
+    hcpId: filter.hcpId
   })
 
   const toServiceBySecretForeignKeysDto = (filter: DataSampleByHealthcarePartyPatientFilter) => new ServiceBySecretForeignKeysDto({
@@ -357,7 +357,7 @@ export namespace FilterMapper {
     new HealthcarePartyByIdsFilterDto({desc: filter.description, ids: filter.ids})
 
   const toHealthcarePartyByTagCodeFilterDto = (filter: HealthcareProfessionalByLabelCodeFilter) =>
-    new HealthcarePartyByTagCodeFilter({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
+    new HealthcarePartyByTagCodeFilterDto({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
 
   function toAbstractFilterHealthElementDto(filter: Filter<HealthcareElement>): AbstractFilter<HealthElementDto> {
     if (filter['$type'] === 'ComplementFilter') {
@@ -478,22 +478,22 @@ export namespace FilterMapper {
     if (filter['$type'] === 'IntersectionFilter') {
       return toIntersectionFilterPatientDto(filter as IntersectionFilter<Patient>);
     }
-    if (filter['$type'] === 'PatientByHcPartyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyFilter') {
       return toPatientByHcPartyFilterDto(filter as PatientByHealthcarePartyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndIdentifiersFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyIdentifiersFilter') {
       return toPatientByHcPartyAndIdentifiersFilterDto(filter as PatientByHealthcarePartyIdentifiersFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndSsinsFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartySsinsFilter') {
       return toPatientByHcPartyAndSsinsFilterDto(filter as PatientByHealthcarePartySsinsFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyDateOfBirthBetweenFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyDateOfBirthBetweenFilter') {
       return toPatientByHcPartyDateOfBirthBetweenFilterDto(filter as PatientByHealthcarePartyDateOfBirthBetweenFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyNameContainsFuzzyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyNameContainsFuzzyFilter') {
       return toPatientByHcPartyNameContainsFuzzyFilterDto(filter as PatientByHealthcarePartyNameContainsFuzzyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyGenderEducationProfessionFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyGenderEducationProfessionFilter') {
       return toPatientByHcPartyGenderEducationProfessionDto(filter as PatientByHealthcarePartyGenderEducationProfessionFilter);
     }
     if (filter['$type'] === 'PatientByIdsFilter') {

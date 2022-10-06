@@ -1,5 +1,5 @@
 import 'isomorphic-fetch';
-import {MedTechApi} from "../../src/apis/medTechApi";
+import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {HealthcareProfessionalFilter, UserFilter} from "../../src/filter";

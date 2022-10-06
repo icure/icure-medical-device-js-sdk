@@ -1,23 +1,21 @@
 import "mocha";
 import "isomorphic-fetch";
 
-import {DataSampleFilter, NotificationFilter} from "../../src/filter";
+import {DataSampleFilter} from "../../src/filter";
 
 import {assert, expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {it} from "mocha";
-import {NotificationTypeEnum} from "../../src/models/Notification";
-import {NotificationApiImpl} from "../../src/apis/impl/NotificationApiImpl";
-import {DataSampleApiImpl} from "../../src/apis/impl/DataSampleApiImpl";
+import {ICURE_FREE_URL} from "../../index";
 
 setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
   hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
   hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
-  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
+  msgGtwUrl: msgGtwUrl, authProcessHcpId: authProcessHcpId, specId: specId, patAuthProcessId: patAuthProcessId} = getEnvVariables()
 
 describe("Data Samples API", () => {
 
@@ -190,7 +188,7 @@ describe("Data Samples API", () => {
 
   it('Patient sharing data sample with HCP', async () => {
     // Given
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
     const patApi = patApiAndUser.api;
     const patUser = patApiAndUser.user;
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
@@ -213,10 +211,10 @@ describe("Data Samples API", () => {
 
   it('HCP sharing data sample with patient', async () => {
     // Given
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
     const hcpApi = hcpApiAndUser.api;
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
     const patApi = patApiAndUser.api;
     const patUser = patApiAndUser.user;
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!);
@@ -256,7 +254,8 @@ describe("Data Samples API", () => {
   });
 
   it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    // Patient is created by hcp1 and so, has already a delegation to it
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!);
@@ -276,7 +275,7 @@ describe("Data Samples API", () => {
     const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
     const hcp3Api = hcp3ApiAndUser.api;
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
     const patUser = patApiAndUser.user;
 
     const patient = await TestUtils.createDefaultPatient(hcp1Api);
