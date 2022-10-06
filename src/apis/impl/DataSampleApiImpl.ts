@@ -508,7 +508,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       patient,
       new ContactDto({
         id: this.crypto.randomUuid(),
-        serviceLinks: services.map(
+        services: services.map(
           (service) =>
             new ServiceDto({
               id: service.id,

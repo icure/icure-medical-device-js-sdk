@@ -203,14 +203,15 @@ export class PatientApiImpl implements PatientApi {
     eventFired: (patient: Patient) => Promise<void>,
     options: {keepAlive?: number, lifetime?: number, connectionMaxRetry?: number, connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    const currentUser = await this.userApi.getCurrentUser().catch(e => {
+    const currentUser = await this.userApi.getCurrentUser()
+.catch(e => {
       throw this.errorHandler.createErrorFromAny(e)
     })
     return subscribeToEntityEvents(
       this.basePath,
       this.username!,
       this.password!,
-      'Patient',
+      "Patient",
       eventTypes,
       filter,
       eventFired,

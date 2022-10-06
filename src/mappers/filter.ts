@@ -21,6 +21,7 @@ import {
   DeviceByIdsFilter as DeviceByIdsFilterDto,
   HealthcareParty as HealthcarePartyDto,
   HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto,
+  HealthcarePartyByTagCodeFilter,
   HealthElement as HealthElementDto,
   HealthElementByHcPartyFilter as HealthElementByHcPartyFilterDto,
   HealthElementByHcPartyIdentifiersFilter as HealthElementByHcPartyIdentifiersFilterDto,
@@ -122,6 +123,7 @@ import {NotificationsByIdFilter} from "../filter/notification/NotificationsByIdF
 import {NotificationsByHcPartyAndTypeFilter} from "../filter/notification/NotificationsByHcPartyAndTypeFilter";
 import {NotificationsAfterDateFilter} from "../filter/notification/NotificationsAfterDateFilter";
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+import {HealthcareProfessionalByLabelCodeFilter} from "../filter/hcp/HealthcareProfessionalByLabelCodeFilter";
 
 
 export namespace FilterMapper {
@@ -276,7 +278,7 @@ export namespace FilterMapper {
 
   const toServiceByHcPartyFilterDto = (filter: DataSampleByHealthcarePartyFilter) => new ServiceByHcPartyFilterDto({
     desc: filter.description,
-    healthcarePartyId: filter.hcpId
+    hcpId: filter.hcpId
   })
 
   const toServiceBySecretForeignKeysDto = (filter: DataSampleByHealthcarePartyPatientFilter) => new ServiceBySecretForeignKeysDto({
@@ -334,6 +336,9 @@ export namespace FilterMapper {
     if (filter['$type'] === 'HealthcareProfessionalByIdsFilter') {
       return toHealthcarePartyByIdsFilterDto(filter as HealthcareProfessionalByIdsFilter);
     }
+    if (filter['$type'] === 'HealthcareProfessionalByLabelCodeFilter') {
+      return toHealthcarePartyByTagCodeFilterDto(filter as HealthcareProfessionalByLabelCodeFilter);
+    }
     throw Error(`No mapper for ${filter['$type']}`);
   }
 
@@ -351,6 +356,8 @@ export namespace FilterMapper {
   const toHealthcarePartyByIdsFilterDto = (filter: HealthcareProfessionalByIdsFilter) =>
     new HealthcarePartyByIdsFilterDto({desc: filter.description, ids: filter.ids})
 
+  const toHealthcarePartyByTagCodeFilterDto = (filter: HealthcareProfessionalByLabelCodeFilter) =>
+    new HealthcarePartyByTagCodeFilter({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
 
   function toAbstractFilterHealthElementDto(filter: Filter<HealthcareElement>): AbstractFilter<HealthElementDto> {
     if (filter['$type'] === 'ComplementFilter') {
@@ -471,22 +478,22 @@ export namespace FilterMapper {
     if (filter['$type'] === 'IntersectionFilter') {
       return toIntersectionFilterPatientDto(filter as IntersectionFilter<Patient>);
     }
-    if (filter['$type'] === 'PatientByHcPartyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyFilter') {
       return toPatientByHcPartyFilterDto(filter as PatientByHealthcarePartyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndIdentifiersFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyIdentifiersFilter') {
       return toPatientByHcPartyAndIdentifiersFilterDto(filter as PatientByHealthcarePartyIdentifiersFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyAndSsinsFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartySsinsFilter') {
       return toPatientByHcPartyAndSsinsFilterDto(filter as PatientByHealthcarePartySsinsFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyDateOfBirthBetweenFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyDateOfBirthBetweenFilter') {
       return toPatientByHcPartyDateOfBirthBetweenFilterDto(filter as PatientByHealthcarePartyDateOfBirthBetweenFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyNameContainsFuzzyFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyNameContainsFuzzyFilter') {
       return toPatientByHcPartyNameContainsFuzzyFilterDto(filter as PatientByHealthcarePartyNameContainsFuzzyFilter);
     }
-    if (filter['$type'] === 'PatientByHcPartyGenderEducationProfessionFilter') {
+    if (filter['$type'] === 'PatientByHealthcarePartyGenderEducationProfessionFilter') {
       return toPatientByHcPartyGenderEducationProfessionDto(filter as PatientByHealthcarePartyGenderEducationProfessionFilter);
     }
     if (filter['$type'] === 'PatientByIdsFilter') {

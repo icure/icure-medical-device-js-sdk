@@ -10,7 +10,6 @@ import {SanitizerImpl} from "../services/impl/SanitizerImpl";
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string;
   private readonly _msgGtwUrl: string;
-  private readonly _authProcessId: string;
   private readonly _msgGtwSpecId: string;
   private readonly _authenticationApi: AuthenticationApi;
   private readonly _cryptoApi: IccCryptoXApi;
@@ -21,20 +20,19 @@ export class AnonymousMedTechApi {
     iCureUrlPath: string,
     msgGtwUrl: string,
     msgGtwSpecId: string,
-    authProcessId: string,
+    authProcessByEmailId: string,
+    authProcessBySmsId: string,
     api: { cryptoApi: IccCryptoXApi }
   ) {
-    this._iCureUrlPath = iCureUrlPath;
-    this._msgGtwUrl = msgGtwUrl;
-    this._msgGtwSpecId = msgGtwSpecId;
-    this._authProcessId = authProcessId;
+    this._iCureUrlPath = iCureUrlPath
+    this._msgGtwUrl = msgGtwUrl
+    this._msgGtwSpecId = msgGtwSpecId
 
     this._authenticationApi = new AuthenticationApiImpl(
       new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer),
       this._iCureUrlPath,
-      this._msgGtwUrl,
-      this._msgGtwSpecId,
-      this._authProcessId,
+      authProcessByEmailId,
+      authProcessBySmsId,
       this._errorHandler,
       this._sanitizer,
     );
@@ -42,76 +40,80 @@ export class AnonymousMedTechApi {
   }
 
   get cryptoApi(): IccCryptoXApi {
-    return this._cryptoApi;
+    return this._cryptoApi
   }
 
   get authenticationApi(): AuthenticationApi {
-    return this._authenticationApi;
+    return this._authenticationApi
   }
 }
 
 export class AnonymousMedTechApiBuilder {
-  private iCureUrlPath: string;
-  private authSpecId: string | undefined;
-  private msgGtwUrl: string;
-  private msgGtwSpecId: string | undefined;
-  private authProcessId: string | undefined;
-  private crypto?: Crypto;
-  private _preventCookieUsage: boolean = false;
+  private iCureUrlPath: string
+  private authSpecId: string | undefined
+  private msgGtwUrl: string
+  private msgGtwSpecId: string | undefined
+  private authProcessByEmailId: string | undefined
+  private authProcessBySmsId: string | undefined
+  private crypto?: Crypto
+  private _preventCookieUsage: boolean = false
 
   constructor() {
-    this.iCureUrlPath = "https://kraken.icure.dev/rest/v2";
-    this.msgGtwUrl = "https://msg-gw.icure.cloud";
-    this.msgGtwSpecId = undefined;
-    this.authSpecId = undefined;
-    this.authProcessId = undefined;
+    this.iCureUrlPath = 'https://kraken.icure.dev/rest/v2'
+    this.msgGtwUrl = 'https://msg-gw.icure.cloud'
+    this.msgGtwSpecId = undefined
+    this.authSpecId = undefined
+    this.authProcessByEmailId = undefined
+    this.authProcessBySmsId = undefined
   }
 
   withICureUrlPath(iCureUrlPath: string): AnonymousMedTechApiBuilder {
-    this.iCureUrlPath = iCureUrlPath;
-    return this;
+    this.iCureUrlPath = iCureUrlPath
+    return this
   }
 
   withMsgGtwUrl(msgGtwUrl: string): AnonymousMedTechApiBuilder {
-    this.msgGtwUrl = msgGtwUrl;
-    return this;
+    this.msgGtwUrl = msgGtwUrl
+    return this
   }
 
   withMsgGtwSpecId(msgGtwSpecId: string): AnonymousMedTechApiBuilder {
-    this.msgGtwSpecId = msgGtwSpecId;
-    return this;
+    this.msgGtwSpecId = msgGtwSpecId
+    return this
   }
 
-  withAuthProcessId(authProcessId: string): AnonymousMedTechApiBuilder {
-    this.authProcessId = authProcessId;
-    return this;
+  withAuthProcessByEmailId(authProcessByEmailId: string): AnonymousMedTechApiBuilder {
+    this.authProcessByEmailId = authProcessByEmailId
+    return this
+  }
+
+  withAuthProcessBySmsId(authProcessBySmsId: string): AnonymousMedTechApiBuilder {
+    this.authProcessBySmsId = authProcessBySmsId
+    return this
   }
 
   withCrypto(crypto: Crypto): AnonymousMedTechApiBuilder {
-    this.crypto = crypto;
-    return this;
+    this.crypto = crypto
+    return this
   }
 
   preventCookieUsage(): AnonymousMedTechApiBuilder {
-    this._preventCookieUsage = true;
-    return this;
+    this._preventCookieUsage = true
+    return this
   }
 
   async build(): Promise<AnonymousMedTechApi> {
-    return Api(this.iCureUrlPath!, null!, null!, this.crypto, fetch, this._preventCookieUsage).then( api => {
-      if (!this.authProcessId) {
-        throw new Error("authProcessId is required");
+    return Api(this.iCureUrlPath!, null!, null!, this.crypto, fetch, this._preventCookieUsage).then((api) => {
+      if (!this.authProcessByEmailId) {
+        throw new Error('authProcessIdByEmail is required')
+      }
+      if (!this.authProcessBySmsId) {
+        throw new Error('authProcessIdBySms is required')
       }
       if (!this.msgGtwSpecId) {
-        throw new Error("msgGtwSpecId is required");
+        throw new Error('msgGtwSpecId is required')
       }
-      return new AnonymousMedTechApi(
-        this.iCureUrlPath,
-        this.msgGtwUrl,
-        this.msgGtwSpecId,
-        this.authProcessId,
-        api
-      );
-    });
+      return new AnonymousMedTechApi(this.iCureUrlPath, this.msgGtwUrl, this.msgGtwSpecId, this.authProcessByEmailId, this.authProcessBySmsId, api)
+    })
   }
 }

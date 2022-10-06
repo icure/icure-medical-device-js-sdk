@@ -1,10 +1,10 @@
-import {MessageGatewayApi} from "../MessageGatewayApi";
-import {AuthenticationProcessBody, EmailMessage, SMSMessage} from "../../utils/msgGtwMessageFactory";
-import {XHR} from "@icure/api";
-import {v4 as uuid} from "uuid";
+import { MessageGatewayApi } from '../MessageGatewayApi'
+import { AuthenticationProcessBody, EmailMessage, SMSMessage } from '../../utils/msgGtwMessageFactory'
+import { XHR } from '@icure/api'
+import { v4 as uuid } from 'uuid'
 import {ErrorHandler} from "../../services/ErrorHandler";
 import {Sanitizer} from "../../services/Sanitizer";
-import Header = XHR.Header;
+import Header = XHR.Header
 
 export class MessageGatewayApiImpl implements MessageGatewayApi {
 
@@ -27,23 +27,22 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
-        ? self.fetch
-        : fetch
+      ? self.fetch
+      : fetch
   ) {
-    this.fetchImpl = fetchImpl;
-    this.msgGtwUrl = msgGtwUrl;
-    this.specId = specId;
-    this.authHeader = (!!username && !!password) ? new Header(
-      "Authorization",
-      "Basic " + Buffer.from(`${username}:${password}`).toString('base64')
-    ) : null;
-    this.headers = [new Header("Content-Type", "application/json")];
+    this.fetchImpl = fetchImpl
+    this.msgGtwUrl = msgGtwUrl
+    this.specId = specId
+    this.authHeader =
+      !!username && !!password ? new Header('Authorization', 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
+    ) : null
+    this.headers = [new Header('Content-Type', 'application/json')];
     this.errorHandler = errorHandler;
     this.sanitizer = sanitizer;
   }
 
   async sendEmail(recipientEmail: string, email: EmailMessage): Promise<boolean> {
-    if (!this.authHeader) return false;
+    if (!this.authHeader) return false
 
     const emailTo = this.sanitizer.validateEmail(recipientEmail)
 
@@ -51,7 +50,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       throw this.errorHandler.createErrorWithMessage(`Invalid email address ${recipientEmail}`)
     }
 
-    const res = await XHR.sendCommand('POST',
+    const res = await XHR.sendCommand(
+      'POST',
       `${this.msgGtwUrl}/${this.specId}/email/to/${emailTo}`,
       this.headers.concat([this.authHeader]),
       email,
@@ -61,14 +61,14 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     });
 
     if (res.statusCode < 400) {
-      return true;
+      return true
     } else {
       throw this.errorHandler.createErrorWithMessage(`Message Gateway returned error response ${res.statusCode}`)
     }
   }
 
   async sendSMS(recipientMobileNumber: string, sms: SMSMessage): Promise<boolean> {
-    if (!this.authHeader) return false;
+    if (!this.authHeader) return false
 
     const mobileNumber = this.sanitizer.validateMobilePhone(recipientMobileNumber)
 
@@ -76,7 +76,8 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       throw this.errorHandler.createErrorWithMessage(`Invalid mobile number ${recipientMobileNumber}`)
     }
 
-    const res = await XHR.sendCommand('POST',
+    const res = await XHR.sendCommand(
+      'POST',
       `${this.msgGtwUrl}/${this.specId}/sms/to/${mobileNumber}`,
       this.headers.concat([this.authHeader]),
       sms,
@@ -86,7 +87,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     });
 
     if (res.statusCode < 400) {
-      return true;
+      return true
     } else {
       throw this.errorHandler.createErrorWithMessage(`Message Gateway returned error response ${res.statusCode}`)
     }
@@ -95,25 +96,27 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
   async startProcess(processId: string, processBody: AuthenticationProcessBody): Promise<string> {
     const requestId = uuid()
 
-    const res = await XHR.sendCommand('POST',
+    const res = await XHR.sendCommand(
+      'POST',
       `${this.msgGtwUrl}/${this.specId}/process/${processId}/${requestId}`,
       this.headers,
       processBody,
       this.fetchImpl,
-      "text/plain"
+      'text/plain'
     ).catch(e => {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
     if (res.statusCode < 400) {
-      return requestId;
+      return requestId
     } else {
       throw this.errorHandler.createErrorWithMessage(`Message Gateway returned error response ${res.statusCode}`)
     }
   }
 
   async validateProcess(requestId: string, validationCode: string): Promise<boolean> {
-    const res = await XHR.sendCommand('GET',
+    const res = await XHR.sendCommand(
+      'GET',
       `${this.msgGtwUrl}/${this.specId}/process/validate/${requestId}-${validationCode}`,
       [],
       undefined,
@@ -123,10 +126,9 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     })
 
     if (res.statusCode < 400) {
-      return true;
+      return true
     } else {
       throw this.errorHandler.createErrorWithMessage(`Message Gateway returned error response ${res.statusCode}`)
     }
   }
-
 }
