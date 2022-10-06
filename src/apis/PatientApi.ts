@@ -4,6 +4,9 @@ import {Patient} from '../models/Patient'
 import {Connection} from '../models/Connection'
 import {SharingResult} from "../utils/interfaces";
 
+/**
+ * The PatientApi interface provides methods to manage patients.
+ */
 export interface PatientApi {
   /**
    * When modifying a patient, you must ensure that the rev obtained when getting or creating the patient is present as the rev is used to guarantee that the patient has not been modified by a third party.

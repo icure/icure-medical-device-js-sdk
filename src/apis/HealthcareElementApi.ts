@@ -1,8 +1,12 @@
 import {Filter} from '../filter/Filter'
 import {HealthcareElement} from '../models/HealthcareElement'
 import {PaginatedListHealthcareElement} from '../models/PaginatedListHealthcareElement'
+import {Connection} from "../models/Connection";
 import {Patient} from "../models/Patient";
 
+/**
+ * The HealthcareElementApi interface provides methods to manage healthcare elements.
+ */
 export interface HealthcareElementApi {
   /**
    * A Healthcare Element is a data giving some medical context to a series of measures, symptoms, ...
@@ -85,4 +89,22 @@ export interface HealthcareElementApi {
    * @return an array containing the Healthcare Elements
    */
   getHealthcareElementsForPatient(patient: Patient): Promise<Array<HealthcareElement>>
+
+  /**
+   * Opens a WebSocket Connection in order to receive all the Healthcare Element corresponding to specific filter criteria.
+   * @param eventTypes Type of event you would like to listen. It can be CREATE, UPDATE or DELETE
+   * @param filter Filter criteria to filter to the healthcare element you would like to receive
+   * @param eventFired Action applied each time you receive a healthcare element through the WebSocket
+   * @param options Options to configure the WebSocket.
+   *    - keepAlive : How long to keep connection alive (ms);
+   *    - lifetime : How long to keep the WebSocket alive (ms);
+   *    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;
+   *    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts)
+   */
+  subscribeToHealthcareElementEvents(
+    eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
+    filter: Filter<HealthcareElement>,
+    eventFired: (dataSample: HealthcareElement) => Promise<void>,
+    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
+  ): Promise<Connection>
 }

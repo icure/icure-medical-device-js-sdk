@@ -24,6 +24,8 @@ import {firstOrNull} from '../../utils/functionalUtils'
 import {Patient} from "../../models/Patient";
 import {HealthcareElementFilter} from "../../filter";
 import {ErrorHandler} from "../../services/ErrorHandler";
+import {Connection, ConnectionImpl} from '../../models/Connection'
+import {subscribeToEntityEvents} from "../../utils/rsocket";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -32,6 +34,10 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
   private readonly errorHandler: ErrorHandler
+
+  private readonly basePath: string
+  private readonly username?: string
+  private readonly password?: string
 
   constructor(
     api: {
@@ -45,7 +51,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       healthcareElementApi: IccHelementXApi
     },
     errorHandler: ErrorHandler,
+    basePath: string,
+    username: string | undefined,
+    password: string | undefined
   ) {
+    this.basePath = basePath
+    this.username = username
+    this.password = password
     this.userApi = api.userApi
     this.heApi = api.healthcareElementApi
     this.patientApi = api.patientApi
@@ -280,5 +292,27 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       .forPatients(this.cryptoApi, [patient])
       .build()
     return await this.concatenateFilterResults(filter);
+  }
+
+
+  async subscribeToHealthcareElementEvents(
+    eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
+    filter: Filter<HealthcareElement> | undefined,
+    eventFired: (dataSample: HealthcareElement) => Promise<void>,
+    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+  ): Promise<Connection> {
+    const currentUser = await this.userApi.getCurrentUser()
+
+    return subscribeToEntityEvents(
+      this.basePath,
+      this.username!,
+      this.password!,
+      'HealthcareElement',
+      eventTypes,
+      filter,
+      eventFired,
+      options,
+      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerOf(currentUser), [encrypted]))[0]
+    ).then((rs) => new ConnectionImpl(rs))
   }
 }

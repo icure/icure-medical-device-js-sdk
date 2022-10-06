@@ -40,7 +40,7 @@ constructor(json: IHealthcareElement) {
     /**
     * The logical id of the healthcare element, used to link together different versions of the same healthcare element. We encourage using either a v4 UUID or a HL7 Id.
     */
-    'healthElementId'?: string;
+    'healthcareElementId'?: string;
     /**
     * The date (unix epoch in ms) when the healthcare element is noted to have started and also closes on the same date
     */
@@ -78,7 +78,7 @@ interface IHealthcareElement {
   'codes'?: Set<CodingReference>;
   'endOfLife'?: number;
   'deletionDate'?: number;
-  'healthElementId'?: string;
+  'healthcareElementId'?: string;
   'valueDate'?: number;
   'openingDate'?: number;
   'closingDate'?: number;
