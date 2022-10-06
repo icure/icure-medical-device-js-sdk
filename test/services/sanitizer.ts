@@ -1,9 +1,10 @@
 import 'mocha';
 import {assert} from "chai";
 import {SanitizerImpl} from "../../src/services/impl/SanitizerImpl";
+import {ErrorHandlerImpl} from "../../src/services/impl/ErrorHandlerImpl";
 
 describe('Sanitizer', () => {
-  const sanitizer = new SanitizerImpl();
+  const sanitizer = new SanitizerImpl(new ErrorHandlerImpl());
 
   it('should validate email', () => {
     assert(sanitizer.validateEmail('test@icure.com') != null, 'Email should be valid');
