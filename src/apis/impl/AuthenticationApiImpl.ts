@@ -2,12 +2,13 @@ import {AuthenticationProcess} from "../../models/AuthenticationProcess";
 import {AuthenticationResult} from "../../models/AuthenticationResult";
 import {AuthenticationApi} from "../AuthenticationApi";
 import {v4 as uuid} from 'uuid';
-import {Device, HealthcareParty, Patient, retry, User} from "@icure/api";
 import {medTechApi, MedTechApi} from "../medTechApi";
 import {MessageGatewayApi} from "../MessageGatewayApi";
 import {Notification, NotificationTypeEnum} from "../../models/Notification";
 import {Sanitizer} from "../../services/Sanitizer";
 import {ErrorHandler} from "../../services/ErrorHandler";
+import {retry} from "@icure/api";
+import {User} from "../../models/User";
 
 class ApiInitialisationResult {
   constructor(user: User, token: string, keyPair?: [string, string]) {

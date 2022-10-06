@@ -50,6 +50,8 @@ import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
 import {ErrorHandler} from "../services/ErrorHandler";
 import {Sanitizer} from "../services/Sanitizer";
 import {SanitizerImpl} from "../services/impl/SanitizerImpl";
+import {DataOwnerApiImpl} from "./impl/DataOwnerApiImpl";
+import {DataOwnerApi} from "./DataOwnerApi";
 
 
 export class MedTechApi {
@@ -149,7 +151,7 @@ export class MedTechApi {
     this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, basePath, username, password);
     this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler, basePath, username, password);
     this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler);
-    this._notificationApi = new NotificationApiImpl(api, this._errorHandler);
+    this._notificationApi = new NotificationApiImpl(api, this._errorHandler, basePath, username, password);
     this._dataOwnerApi = new DataOwnerApiImpl(api, this._errorHandler)
 
     this._baseApi = api;

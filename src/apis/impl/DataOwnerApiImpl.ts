@@ -1,8 +1,19 @@
-import { Device, HealthcareParty, hex2ua, IccCryptoXApi, IccDeviceApi, IccHcpartyXApi, IccPatientXApi, Patient, ua2hex } from '@icure/api'
-import { DataOwnerApi } from '../DataOwnerApi'
-import { User } from '../../models/User'
-import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
-import { UserMapper } from '../../mappers/user'
+import {
+  Device,
+  HealthcareParty,
+  hex2ua,
+  IccCryptoXApi,
+  IccDeviceApi,
+  IccHcpartyXApi,
+  IccPatientXApi,
+  Patient,
+  ua2hex
+} from '@icure/api'
+import {DataOwnerApi} from '../DataOwnerApi'
+import {User} from '../../models/User'
+import {IccDataOwnerXApi} from '@icure/api/icc-x-api/icc-data-owner-x-api'
+import {UserMapper} from '../../mappers/user'
+import {ErrorHandler} from "../../services/ErrorHandler";
 
 export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly cryptoApi: IccCryptoXApi
@@ -11,13 +22,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly hcPartyApi: IccHcpartyXApi
   private readonly deviceApi: IccDeviceApi
 
-  constructor(api: {
-    cryptoApi: IccCryptoXApi
-    dataOwnerApi: IccDataOwnerXApi
-    patientApi: IccPatientXApi
-    healthcarePartyApi: IccHcpartyXApi
-    deviceApi: IccDeviceApi
-  }) {
+  constructor(api: { cryptoApi: IccCryptoXApi; dataOwnerApi: IccDataOwnerXApi; patientApi: IccPatientXApi; healthcarePartyApi: IccHcpartyXApi; deviceApi: IccDeviceApi }, errorHandler: ErrorHandler) {
     this.dataOwnerApi = api.dataOwnerApi
     this.cryptoApi = api.cryptoApi
     this.patientApi = api.patientApi
