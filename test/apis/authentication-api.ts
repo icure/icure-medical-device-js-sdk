@@ -42,8 +42,8 @@ describe('Authentication API', () => {
       const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
         .withICureBaseUrl(env!.iCureUrl)
         .withCrypto(webcrypto as any)
-        .withMsgGwUrl(msgGtwUrl)
-        .withMsgGwSpecId(specId)
+        .withMsgGwUrl(env!.msgGtwUrl)
+        .withMsgGwSpecId(env!.specId)
         .withAuthProcessByEmailId('fake-process-id')
         .withAuthProcessBySmsId('fake-process-id')
         .build()
@@ -95,7 +95,7 @@ describe('Authentication API', () => {
         undefined,
         'Tom',
         'Gideon',
-        authProcessHcpId,
+        env!.hcpAuthProcessId,
         false
       )
       expect(true, 'promise should fail').eq(false)
@@ -123,7 +123,7 @@ describe('Authentication API', () => {
         '',
         'Tom',
         'Gideon',
-        authProcessHcpId,
+        env!.patAuthProcessId,
         false
       )
       expect(true, 'promise should fail').eq(false)

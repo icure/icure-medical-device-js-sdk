@@ -89,32 +89,7 @@ export function getEnvVariables(): TestVars {
     adminId: process.env.ICURE_TEST_ADMIN_ID!,
     masterHcp: masterHcpDetails,
     masterHcpId: process.env.ICURE_TEST_MASTER_ID,
-    dataOwnerDetails: {
-      hcpDetails: {
-        user: process.env.ICURE_TS_TEST_HCP_USER!,
-        password: process.env.ICURE_TS_TEST_HCP_PWD!,
-        privateKey: process.env.ICURE_TS_TEST_HCP_PRIV!,
-        publicKey: process.env.ICURE_TS_TEST_HCP_PUB!
-      },
-      hcp2Details: {
-        user: process.env.ICURE_TS_TEST_HCP_2_USER!,
-        password: process.env.ICURE_TS_TEST_HCP_2_PWD!,
-        privateKey: process.env.ICURE_TS_TEST_HCP_2_PRIV!,
-        publicKey: process.env.ICURE_TS_TEST_HCP_2_PUB!
-      },
-      hcp3Details: {
-        user: process.env.ICURE_TS_TEST_HCP_3_USER!,
-        password: process.env.ICURE_TS_TEST_HCP_3_PWD!,
-        privateKey: process.env.ICURE_TS_TEST_HCP_3_PRIV!,
-        publicKey: process.env.ICURE_TS_TEST_HCP_3_PUB!
-      },
-      patDetails: {
-        user: process.env.ICURE_TS_TEST_PAT_USER!,
-        password: process.env.ICURE_TS_TEST_PAT_PWD!,
-        privateKey: process.env.ICURE_TS_TEST_PAT_PRIV!,
-        publicKey: process.env.ICURE_TS_TEST_PAT_PUB!
-      }
-    }
+    dataOwnerDetails: {}
   }
 }
 
@@ -152,22 +127,10 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     const creationStep = !!env.masterHcp
       ? new OldMasterUserInitializerComposite(groupStep, fetch)
       : new NewMasterUserInitializerComposite(groupStep, fetch);
-    creationStep.add(
-      new CreateHcpComponent(env.dataOwnerDetails["hcpDetails"].user, env.dataOwnerDetails["hcpDetails"].password, env.dataOwnerDetails["hcpDetails"].publicKey, env.dataOwnerDetails["hcpDetails"].privateKey),
-      "hcpDetails"
-    );
-    creationStep.add(
-      new CreateHcpComponent(env.dataOwnerDetails["hcp2Details"].user, env.dataOwnerDetails["hcp2Details"].password, env.dataOwnerDetails["hcp2Details"].publicKey, env.dataOwnerDetails["hcp2Details"].privateKey),
-      "hcp2Details"
-    );
-    creationStep.add(
-      new CreateHcpComponent(env.dataOwnerDetails["hcp3Details"].user, env.dataOwnerDetails["hcp3Details"].password, env.dataOwnerDetails["hcp3Details"].publicKey, env.dataOwnerDetails["hcp3Details"].privateKey),
-      "hcp3Details"
-    );
-    creationStep.add(
-      new CreatePatientComponent(env.dataOwnerDetails["patDetails"].user, env.dataOwnerDetails["patDetails"].password, env.dataOwnerDetails["hcp3Details"].publicKey, env.dataOwnerDetails["hcp3Details"].privateKey),
-      "patDetails"
-    );
+    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_USER!))
+    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_2_USER!))
+    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_3_USER!))
+    creationStep.add(new CreatePatientComponent(process.env.ICURE_TS_TEST_PAT_USER!))
     cachedInitializer = new SafeguardInitializer(creationStep);
   }
   return cachedInitializer;
