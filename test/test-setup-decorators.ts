@@ -6,7 +6,7 @@ import {
   checkIfDockerIsOnline,
   bootstrapCloudKraken
 } from "@icure/test-setup";
-import {Api, Apis, hex2ua} from "@icure/api";
+import {Api, Apis, hex2ua, pkcs8ToJwk, spkiToJwk} from "@icure/api";
 import {webcrypto} from "crypto";
 import {TestVars, UserDetails} from "./test-utils";
 import {createGroup} from "@icure/test-setup/groups";
@@ -16,6 +16,7 @@ import {
   createMasterHcpUser,
   createPatientUser
 } from "@icure/test-setup/creation";
+import { v4 as uuid } from 'uuid'
 
 /**
  * Base interface for the decorator classes.
@@ -164,7 +165,7 @@ export class GroupInitializer implements EnvInitializer {
  */
 export abstract class UserCreationComposite implements EnvComponent {
 
-  private components: { [key: string]: EnvComponent } = {}
+  private components: EnvComponent[] = []
 
   /**
    * The create methods calls all the create methods of the components, await for all of them to be finished and then
@@ -174,9 +175,9 @@ export abstract class UserCreationComposite implements EnvComponent {
    */
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
     return Promise.all(
-      Object.keys(this.components).map( async (key): Promise<{ [key: string]: UserDetails }> => {
-        const result = await this.components[key].create(dataOwnerApi);
-        return { [key]: result[Object.keys(result)[0]] }
+      this.components.map( async (component): Promise<{ [key: string]: UserDetails }> => {
+        const result = await component.create(dataOwnerApi);
+        return { [Object.keys(result)[0]]: result[Object.keys(result)[0]] }
       })
     ).then( (dataOwners) => {
       return dataOwners.reduce(
@@ -186,13 +187,12 @@ export abstract class UserCreationComposite implements EnvComponent {
   }
 
   /**
-   * Adds one component to the components data structure
+   * Adds one component to the components list
    *
    * @param component the component to add
-   * @param label a label to identify it
    */
-  add(component: EnvComponent, label: string) {
-    this.components = {...this.components, [label]: component};
+  add(component: EnvComponent) {
+    this.components = [...this.components, component]
   }
 
 }
@@ -220,10 +220,12 @@ export class NewMasterUserInitializerComposite extends UserCreationComposite imp
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
     const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
     const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, this.fetchImpl);
-    api.cryptoApi.RSA.storeKeyPair(masterCredentials.dataOwnerId, {
-      publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(masterCredentials.publicKey)),
-      privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(masterCredentials.privateKey))
-    });
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(masterCredentials.publicKey)),
+      privateKey: pkcs8ToJwk(hex2ua(masterCredentials.privateKey)),
+    };
+    await api.cryptoApi.cacheKeyPair(jwk)
+    await api.cryptoApi.storeKeyPair(`${masterCredentials.dataOwnerId}.${masterCredentials.publicKey.slice(-32)}`, jwk)
     const createdUsers = await this.create(api);
     return !!updatedEnvs
       ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
@@ -253,10 +255,12 @@ export class OldMasterUserInitializerComposite extends UserCreationComposite imp
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
     const api = await Api(env.iCureUrl, env.masterHcp?.user!, env.masterHcp?.password!, webcrypto as any, this.fetchImpl);
-    api.cryptoApi.RSA.storeKeyPair(env.masterHcpId!, {
-      publicKey: api.cryptoApi.utils.spkiToJwk(hex2ua(env.masterHcp?.publicKey!)),
-      privateKey: api.cryptoApi.utils.pkcs8ToJwk(hex2ua(env.masterHcp?.privateKey!))
-    });
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(env.masterHcp?.publicKey!)),
+      privateKey: pkcs8ToJwk(hex2ua(env.masterHcp?.privateKey!)),
+    };
+    await api.cryptoApi.cacheKeyPair(jwk)
+    await api.cryptoApi.storeKeyPair(`${env.masterHcpId}.${env.masterHcp?.publicKey.slice(-32)}`, jwk)
     const createdUsers = await this.create(api);
     return !!updatedEnvs
       ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
@@ -279,15 +283,15 @@ export class CreatePatientComponent implements EnvComponent {
    */
   constructor(
     private login: string,
-    private authToken: string,
-    private publicKey: string,
-    private privateKey: string
+    private authToken: string = uuid(),
+    private publicKey?: string | undefined,
+    private privateKey?: string | undefined,
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
     const details = await createPatientUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
-      "leafResult": {
+      [this.login]: {
         user: details.login,
         password: details.password,
         publicKey: details.publicKey,
@@ -313,15 +317,15 @@ export class CreateHcpComponent implements EnvComponent {
    */
   constructor(
     private login: string,
-    private authToken: string,
-    private publicKey: string,
-    private privateKey: string,
+    private authToken: string = uuid(),
+    private publicKey?: string | undefined,
+    private privateKey?: string | undefined
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
     const details = await createHealthcarePartyUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
-      "leafResult": {
+      [this.login]: {
         user: details.login,
         password: details.password,
         publicKey: details.publicKey,
@@ -347,15 +351,15 @@ export class createDeviceComponent implements EnvComponent {
    */
   constructor(
     private login: string,
-    private authToken: string,
-    private publicKey: string,
-    private privateKey: string,
+    private authToken: string = uuid(),
+    private publicKey?: string | undefined,
+    private privateKey?: string | undefined
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
     const details = await createDeviceUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
     return {
-      "leafResult": {
+      [this.login]: {
         user: details.login,
         password: details.password,
         publicKey: details.publicKey,

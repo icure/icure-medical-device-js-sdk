@@ -25,8 +25,8 @@ describe("Healthcare professional", () => {
   it("should be capable of creating a healthcare professional from scratch", async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails["hcpDetails"].user)
-      .withPassword(env!.dataOwnerDetails["hcpDetails"].password)
+      .withUserName(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
+      .withPassword(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -67,8 +67,8 @@ describe("Healthcare professional", () => {
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails["hcpDetails"].user)
-      .withPassword(env!.dataOwnerDetails["hcpDetails"].password)
+      .withUserName(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
+      .withPassword(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
       .withCrypto(webcrypto as any)
       .build()
 

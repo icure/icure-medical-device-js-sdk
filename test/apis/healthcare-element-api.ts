@@ -36,19 +36,19 @@ describe('Healthcare Element API', () => {
     env = await initializer.execute(getEnvVariables());
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["patDetails"]);
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["hcpDetails"]);
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails["hcp2Details"]);
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
     hcp2Api = hcp2ApiAndUser.api
     hcp2User = hcp2ApiAndUser.user
   })
@@ -179,7 +179,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('Data Owner can filter all his Health Elements', async () => {
-    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!])
     const hcp3Api = hcp3ApiAndUser.api
 
     const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
@@ -192,7 +192,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('Data Owner can match all his Health Elements', async () => {
-    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!])
     const hcp3Api = hcp3ApiAndUser.api
 
     const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
@@ -206,7 +206,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('if no Healthcare Element healthcareElementId is specified, then it should be set to the Healthcare Element id', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails["hcpDetails"])
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
     const hcp1Api = hcp1ApiAndUser.api
 
     const patient = await TestUtils.getOrCreatePatient(hcp1Api)
@@ -222,7 +222,7 @@ describe('Healthcare Element API', () => {
   })
 
   it('if a Healthcare Element healthcareElementId is specified, then it should be different from the Healthcare Element id', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails["hcpDetails"])
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
     const hcp1Api = hcp1ApiAndUser.api
 
     const elementId = uuid()

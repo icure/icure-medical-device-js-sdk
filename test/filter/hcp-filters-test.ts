@@ -25,13 +25,13 @@ describe("HealthcareProfessional Filters Test", function () {
 
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env.dataOwnerDetails["hcpDetails"])
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env.dataOwnerDetails["patDetails"])
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!])
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 

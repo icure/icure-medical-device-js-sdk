@@ -50,19 +50,19 @@ describe('Notification API', async function () {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
-    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcpDetails"]);
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
     hcp1Api = hcpApi1AndUser.api
     hcp1User = hcpApi1AndUser.user
 
-    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp2Details"]);
+    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
     hcp2Api = hcpApi2AndUser.api
     hcp2User = hcpApi2AndUser.user
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp3Details"])
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!])
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!])
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
 

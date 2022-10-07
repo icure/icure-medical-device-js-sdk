@@ -208,6 +208,19 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
+"@icure/api@4.2.38":
+  version "4.2.38"
+  resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.2.38.tgz#6dffe4bccb32816fd471cd2b1851dee61889563f"
+  integrity sha512-AarqVZO3VqeTjBEX82tlHTqm3d/Xydl9/kiwCYtc9T8X8oVzyPxd/49TIKfwynan08mrkwsZq6kOoOg6aEuKuw==
+  dependencies:
+    date-fns "^2.23.0"
+    libphonenumber-js "^1.7.18"
+    lodash "^4.17.20"
+    moment "^2.22.1"
+    text-encoding "^0.7.0"
+    uuid "^8.3.2"
+    uuid-encoder "^1.1.0"
+
 "@icure/api@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@icure/api/-/api-6.0.0.tgz#a2ce308552b221baf38ab96060536ead938700af"
@@ -220,6 +233,17 @@
     text-encoding "^0.7.0"
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
+
+"@icure/test-setup@^0.0.17":
+  version "0.0.17"
+  resolved "https://registry.yarnpkg.com/@icure/test-setup/-/test-setup-0.0.17.tgz#f95c84f2c5d28301c4648e4b266a3144bf61b3e0"
+  integrity sha512-T1yjK5vw3EfoUF7LNMfOyeXjWYf+kmSkt2JTQJbDhWTdPSkUp2E/joyy4gufMELXNPalkyjBWdxZJ8UZUdGiHg==
+  dependencies:
+    "@icure/api" "4.2.38"
+    date-fns "^2.3.0"
+    isomorphic-fetch "^3.0.0"
+    node-localstorage "^2.2.1"
+    uuid "^3.3.2"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -1807,7 +1831,7 @@ lodash.flattendeep@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.flattendeep/-/lodash.flattendeep-4.4.0.tgz#fb030917f86a3134e5bc9bec0d69e0013ddfedb2"
   integrity sha512-uHaJFihxmJcEX3kT4I23ABqKKalJ/zDrDg0lsFtc1h+3uw49SIJ5beyhx5ExVRti3AvKoOJngIj7xz3oylPdWQ==
 
-lodash@^4.17.21:
+lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==

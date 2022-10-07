@@ -38,8 +38,8 @@ describe('A Healthcare Party', () => {
 
     hcp1Api = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails["hcpDetails"].user)
-      .withPassword(env.dataOwnerDetails["hcpDetails"].password)
+      .withUserName(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
+      .withPassword(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
       .withMsgGwUrl(env!.msgGtwUrl)
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
@@ -48,7 +48,7 @@ describe('A Healthcare Party', () => {
     hcp1User = await hcp1Api.userApi.getLoggedUser()
     await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
-      hex2ua(env.dataOwnerDetails["hcpDetails"].privateKey)
+      hex2ua(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].privateKey)
     )
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
