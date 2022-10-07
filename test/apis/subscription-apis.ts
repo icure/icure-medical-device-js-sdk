@@ -362,7 +362,7 @@ describe("Subscription API", () => {
       await createPatientAndSubscribe({}, ["CREATE"]);
     }).timeout(60000);
 
-    it.only("CREATE Patient with options", async () => {
+    it("CREATE Patient with options", async () => {
       await createPatientAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
     }).timeout(60000);
   });
