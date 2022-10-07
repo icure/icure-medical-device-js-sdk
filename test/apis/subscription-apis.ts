@@ -309,15 +309,18 @@ describe("Subscription API", () => {
 
   describe("Can subscribe to Patients", async () => {
     const createPatientAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
-      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => medtechApi!.patientApi.subscribeToPatientEvents(
-        eventTypes,
-        await new PatientFilter()
-          .forDataOwner(loggedUser.healthcarePartyId!)
-          .containsFuzzy("John")
-          .build(),
-        eventListener,
-        options,
-      )
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => {
+        await sleep(2000)
+        return medtechApi!.patientApi.subscribeToPatientEvents(
+          eventTypes,
+          await new PatientFilter()
+            .forDataOwner(loggedUser.healthcarePartyId!)
+            .containsFuzzy("John")
+            .build(),
+          eventListener,
+          options,
+        );
+      }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
@@ -359,7 +362,7 @@ describe("Subscription API", () => {
       await createPatientAndSubscribe({}, ["CREATE"]);
     }).timeout(60000);
 
-    it("CREATE Patient with options", async () => {
+    it.only("CREATE Patient with options", async () => {
       await createPatientAndSubscribe({keepAlive: 100, lifetime: 10000}, ["CREATE"]);
     }).timeout(60000);
   });
