@@ -208,19 +208,6 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@4.2.38":
-  version "4.2.38"
-  resolved "https://registry.yarnpkg.com/@icure/api/-/api-4.2.38.tgz#6dffe4bccb32816fd471cd2b1851dee61889563f"
-  integrity sha512-AarqVZO3VqeTjBEX82tlHTqm3d/Xydl9/kiwCYtc9T8X8oVzyPxd/49TIKfwynan08mrkwsZq6kOoOg6aEuKuw==
-  dependencies:
-    date-fns "^2.23.0"
-    libphonenumber-js "^1.7.18"
-    lodash "^4.17.20"
-    moment "^2.22.1"
-    text-encoding "^0.7.0"
-    uuid "^8.3.2"
-    uuid-encoder "^1.1.0"
-
 "@icure/api@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@icure/api/-/api-6.0.0.tgz#a2ce308552b221baf38ab96060536ead938700af"
@@ -234,12 +221,13 @@
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
 
-"@icure/test-setup@^0.0.17":
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/@icure/test-setup/-/test-setup-0.0.17.tgz#f95c84f2c5d28301c4648e4b266a3144bf61b3e0"
-  integrity sha512-T1yjK5vw3EfoUF7LNMfOyeXjWYf+kmSkt2JTQJbDhWTdPSkUp2E/joyy4gufMELXNPalkyjBWdxZJ8UZUdGiHg==
+"@icure/test-setup@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@icure/test-setup/-/test-setup-0.0.19.tgz#3332647b759839c0bcd03bd61481304efe9009f9"
+  integrity sha512-u9ewfpOJO13kFw2nT4GcO85FIwxerJvGTVFhxZoik57WMN+utp1jKb1T7XmVJFNDEI92H0dO2tugU9GsXEgFPQ==
   dependencies:
-    "@icure/api" "4.2.38"
+    "@icure/api" "^5.0.26"
+    "@types/react-dom" "^18.0.6"
     date-fns "^2.3.0"
     isomorphic-fetch "^3.0.0"
     node-localstorage "^2.2.1"
@@ -405,6 +393,27 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.8.2.tgz#17d42c6322d917764dd3d2d3a10d7884925de067"
   integrity sha512-cRMwIgdDN43GO4xMWAfJAecYn8wV4JbsOGHNfNUIDiuYkUYAR5ec4Rj7IO2SAhFPEfpPtLtUTbbny/TCT7aDwA==
 
+"@types/prop-types@*":
+  version "15.7.5"
+  resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.5.tgz#5f19d2b85a98e9558036f6a3cacc8819420f05cf"
+  integrity sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==
+
+"@types/react-dom@^18.0.6":
+  version "18.0.6"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.0.6.tgz#36652900024842b74607a17786b6662dd1e103a1"
+  integrity sha512-/5OFZgfIPSwy+YuIBP/FgJnQnsxhZhjjrnxudMddeblOouIodEQ75X14Rr4wGSG/bknL+Omy9iWlLo1u/9GzAA==
+  dependencies:
+    "@types/react" "*"
+
+"@types/react@*":
+  version "18.0.21"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.21.tgz#b8209e9626bb00a34c76f55482697edd2b43cc67"
+  integrity sha512-7QUCOxvFgnD5Jk8ZKlUAhVcRj7GuJRjnjjiY/IUBWKgOlnvDvTMLD4RTF7NPyVmbRhNrbomZiOepg7M/2Kj1mA==
+  dependencies:
+    "@types/prop-types" "*"
+    "@types/scheduler" "*"
+    csstype "^3.0.2"
+
 "@types/rsocket-core@*", "@types/rsocket-core@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@types/rsocket-core/-/rsocket-core-0.0.7.tgz#e9ed6d9ec918ec7a9aab0c48fefbb74b33712235"
@@ -437,6 +446,11 @@
     "@types/rsocket-core" "*"
     "@types/rsocket-flowable" "*"
     "@types/rsocket-types" "*"
+
+"@types/scheduler@*":
+  version "0.16.2"
+  resolved "https://registry.yarnpkg.com/@types/scheduler/-/scheduler-0.16.2.tgz#1a62f89525723dde24ba1b01b092bf5df8ad4d39"
+  integrity sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==
 
 "@types/uuid@^8.3.4":
   version "8.3.4"
@@ -921,6 +935,11 @@ crypt@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
   integrity sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
+
+csstype@^3.0.2:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.1.tgz#841b532c45c758ee546a11d5bd7b7b473c8c30b9"
+  integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
 
 date-fns@^2.23.0, date-fns@^2.28.0, date-fns@^2.3.0:
   version "2.29.3"
@@ -1831,7 +1850,7 @@ lodash.flattendeep@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.flattendeep/-/lodash.flattendeep-4.4.0.tgz#fb030917f86a3134e5bc9bec0d69e0013ddfedb2"
   integrity sha512-uHaJFihxmJcEX3kT4I23ABqKKalJ/zDrDg0lsFtc1h+3uw49SIJ5beyhx5ExVRti3AvKoOJngIj7xz3oylPdWQ==
 
-lodash@^4.17.20, lodash@^4.17.21:
+lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -2807,6 +2826,11 @@ trim-repeated@^1.0.0:
   integrity sha512-pkonvlKk8/ZuR0D5tLW8ljt5I8kmxp2XKymhepUeOdCEfKpZaktSArkLHZt76OB1ZvO9bssUsDty4SWhLvZpLg==
   dependencies:
     escape-string-regexp "^1.0.2"
+
+ts-md5@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/ts-md5/-/ts-md5-1.3.1.tgz#f5b860c0d5241dd9bb4e909dd73991166403f511"
+  integrity sha512-DiwiXfwvcTeZ5wCE0z+2A9EseZsztaiZtGrtSaY5JOD7ekPnR/GoIVD5gXZAlK9Na9Kvpo9Waz5rW64WKAWApg==
 
 ts-node@^10.7.0:
   version "10.9.1"
