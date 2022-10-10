@@ -33,7 +33,7 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
     const medicalDevicesToUpdate = medicalDevice.filter(dev => !!dev.rev);
 
     if (!medicalDevicesToUpdate.every(device => device.id != null && forceUuid(device.id))) {
-      throw this.errorHandler.createErrorWithMessage("Update id should be provided as an UUID");
+      throw this.errorHandler.createErrorWithMessage("The id of the device to update should be a valid UUID");
     }
 
     const deviceToCreate = medicalDevicesToCreate.map(d => MedicalDeviceMapper.toDeviceDto(d));

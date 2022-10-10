@@ -121,7 +121,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       })
     }
 
-    throw this.errorHandler.createErrorWithMessage(`iCure could not complete authentication process with requestId ${process.requestId}`)
+    throw this.errorHandler.createErrorWithMessage(`iCure could not complete authentication process with requestId ${process.requestId}. Try again later.`)
   }
 
   async authenticateAndAskAccessToItsExistingData(
@@ -134,7 +134,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser()
     if (!loggedUser) {
-      throw this.errorHandler.createErrorWithMessage(`Impossible to log the new user and find their information. Try again to authenticate them`)
+      throw this.errorHandler.createErrorWithMessage(`There is no user currently logged in. You must call this method from an authenticated MedTechApi`)
 
     } else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId)

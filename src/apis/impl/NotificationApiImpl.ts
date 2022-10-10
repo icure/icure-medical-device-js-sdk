@@ -43,8 +43,8 @@ export class NotificationApiImpl implements NotificationApi {
   async createOrModifyNotification(notification: Notification, delegate?: string): Promise<Notification | undefined> {
     return this.userApi.getCurrentUser().then(user => {
       if (!user) throw this.errorHandler.createErrorWithMessage("There is no user currently logged in. You must call this method from an authenticated MedTechApi");
-      const notificationPromise = !notification?.rev ? this.createNotification(notification, user, delegate)
-        : this.updateNotification(notification, user);
+      const notificationPromise = !notification?.rev ? this._createNotification(notification, user, delegate)
+        : this._updateNotification(notification, user);
       return notificationPromise.then((createdTask) => {
         return NotificationMapper.toNotification(createdTask as MaintenanceTask);
       });
@@ -53,7 +53,7 @@ export class NotificationApiImpl implements NotificationApi {
     });
   }
 
-  private async updateNotification(notification: Notification, user: User): Promise<any> {
+  private async _updateNotification(notification: Notification, user: User): Promise<any> {
     if (!notification.id) throw this.errorHandler.createErrorWithMessage("Invalid notification");
     const existingNotification = await this.getNotification(notification.id);
     if (!existingNotification) throw this.errorHandler.createErrorWithMessage("Cannot modify a non-existing Notification");
@@ -129,8 +129,8 @@ export class NotificationApiImpl implements NotificationApi {
     return (await this.concatenateFilterResults(filter)).filter(it => it.status === "pending");
   }
 
-  private async createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
-    if (!delegate) throw this.errorHandler.createErrorWithMessage("No delegate provided for Notification creation. You must provide a delegate to create a Notification. The delegate is the data owner id you want to notify.");
+  private async _createNotification(notification: Notification, user: User, delegate?: string): Promise<any> {
+    if (!delegate) throw this.errorHandler.createErrorWithMessage("No delegate provided for Notification creation. You must provide a delegate to create a Notification. The delegate is the id of the data owner you want to notify.");
     const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification);
     return this.maintenanceTaskApi.newInstance(user, inputMaintenanceTask, [delegate])
       .then(task => {

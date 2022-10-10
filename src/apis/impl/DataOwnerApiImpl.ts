@@ -35,7 +35,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   getDataOwnerIdOf(user: User): string {
     const dataOwnerId = user.healthcarePartyId ?? user.patientId ?? user.deviceId
     if (dataOwnerId == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
+      throw this.errorHandler.createErrorWithMessage(`The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.`)
     }
     return dataOwnerId
   }
@@ -57,7 +57,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       throw this.errorHandler.createErrorFromAny(e)
     })
     if (dataOwner == null) {
-      throw this.errorHandler.createErrorWithMessage(`User ${user.id} is not a data owner : Make sure he is linked either to a healthcare party, a patient or a medical device`)
+      throw this.errorHandler.createErrorWithMessage(`The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.`)
     }
 
     if (dataOwner.dataOwner.publicKey == undefined) {
