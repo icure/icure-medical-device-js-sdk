@@ -3,7 +3,7 @@ import {Filter} from "../../filter/Filter";
 import {PaginatedListCoding} from "../../models/PaginatedListCoding";
 import {CodingApi} from "../CodingApi";
 import {FilterChainCode, IccCodeApi, IccCodeXApi,} from "@icure/api";
-import {forceUuid} from "../../mappers/utils";
+import {isCodeId} from "../../mappers/utils";
 import {CodingMapper} from "../../mappers/codeCoding";
 import {PaginatedListMapper} from "../../mappers/paginatedList";
 import {FilterMapper} from "../../mappers/filter";
@@ -35,8 +35,8 @@ export class CodingApiImpl implements CodingApi {
     const codingsToCreate = coding.filter(dev => !dev.rev);
     const codingsToUpdate = coding.filter(dev => !!dev.rev);
 
-    if (!codingsToUpdate.every(c => c.id != null && forceUuid(c.id))) {
-      throw this.errorHandler.createErrorWithMessage("Update id should be provided as an UUID v4 (String)");
+    if (!codingsToUpdate.every(c => c.id != null && isCodeId(c.id))) {
+      throw this.errorHandler.createErrorWithMessage("Update id should be provided as an String of format: type|code|version");
     }
 
     const codesToCreate = codingsToCreate.map(d => CodingMapper.toCode(d));
