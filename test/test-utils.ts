@@ -118,7 +118,7 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     const env = getEnvVariables();
     let bootstrapStep = null;
     if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock']);
+      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock', 'haproxy']);
       bootstrapStep = env.backendType === "oss"
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);

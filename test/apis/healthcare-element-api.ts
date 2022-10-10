@@ -9,6 +9,7 @@ import {HealthcareElement } from '../../src/models/HealthcareElement'
 import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
 import { HealthcareElementFilter } from '../../src/filter'
 import { it } from 'mocha'
+import {deepEquality} from "../../src/utils/equality";
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
@@ -121,12 +122,12 @@ describe('Healthcare Element API', () => {
     // When
     const sharedHealthcareElement = await patApi!.healthcareElementApi.giveAccessTo(
       createdHealthcareElement,
-      patUser!.healthcarePartyId!
+      patUser!.patientId!
     )
 
     // Then
-    assert(createdHealthcareElement === sharedHealthcareElement)
-  })
+    assert(deepEquality(createdHealthcareElement, sharedHealthcareElement))
+  });
 
   it('Delegator may not share info of Healthcare element', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
@@ -184,10 +185,10 @@ describe('Healthcare Element API', () => {
 
     const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
 
-    const filterResult = await hcp3Api.healthcareElementApi.filterHealthcareElement(filter)
+    const filterResult = await hcp2Api!.healthcareElementApi.filterHealthcareElement(filter)
     expect(filterResult.rows.length).to.gt(0)
     filterResult.rows.forEach((he) => {
-      expect(Object.keys(he.systemMetaData?.delegations ?? {})).to.contain(hcp3ApiAndUser.user.healthcarePartyId!)
+      expect(Object.keys(he.systemMetaData?.delegations ?? {})).to.contain(hcp2User!.healthcarePartyId!)
     })
   })
 
@@ -197,8 +198,8 @@ describe('Healthcare Element API', () => {
 
     const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
 
-    const filterResult = await hcp3Api.healthcareElementApi.filterHealthcareElement(filter)
-    const matchResult = await hcp3Api.healthcareElementApi.matchHealthcareElement(filter)
+    const filterResult = await hcp2Api!.healthcareElementApi.filterHealthcareElement(filter)
+    const matchResult = await hcp2Api!.healthcareElementApi.matchHealthcareElement(filter)
     expect(matchResult.length).to.eq(filterResult.rows.length)
     filterResult.rows.forEach((he) => {
       expect(matchResult).to.contain(he.id)
@@ -226,8 +227,8 @@ describe('Healthcare Element API', () => {
     const hcp1Api = hcp1ApiAndUser.api
 
     const elementId = uuid()
-    const patient = await TestUtils.getOrCreatePatient(hcp1Api)
-    const newHE = await hcp1Api.healthcareElementApi.createOrModifyHealthcareElement(
+    const patient = await TestUtils.getOrCreatePatient(hcp1Api!)
+    const newHE = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         description: 'DUMMY_DESCRIPTION',
         healthcareElementId: elementId,
