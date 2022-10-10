@@ -7,12 +7,12 @@ import { PaginatedListNotification } from '../../models/PaginatedListNotificatio
 import { Filter } from '../../filter/Filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { FilterMapper } from '../../mappers/filter'
-import { systemMetaDataEncryptedEquality } from '../../utils/equality'
 import { NotificationFilter } from '../../filter'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
+import {deepEquality} from "../../utils/equality";
 
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
