@@ -6,7 +6,14 @@ import { DataSampleFilter } from '../../src/filter'
 import { assert, expect, use as chaiUse } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { CodingReference } from '../../src/models/CodingReference'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables, hcp1Username, hcp2Username, hcp3Username,
+  patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { it } from 'mocha'
 import { Patient } from '../../index'
 chaiUse(require('chai-as-promised'))
@@ -25,7 +32,7 @@ describe('Data Samples API', () => {
 
   it('Create Data Sample - Success', async () => {
     // Given
-    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
 
     const patient = await TestUtils.getOrCreatePatient(medtechApi)
@@ -40,7 +47,7 @@ describe('Data Samples API', () => {
 
   it('Create Data Sample linked to HealthElement - Success', async () => {
     // Given
-    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
 
     const patient = await TestUtils.getOrCreatePatient(medtechApi)
@@ -62,7 +69,7 @@ describe('Data Samples API', () => {
 
   it('Create Data Sample and modify it to link it to HealthElement - Success', async () => {
     // Given
-    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
 
     const patient = await TestUtils.getOrCreatePatient(medtechApi)
@@ -83,7 +90,7 @@ describe('Data Samples API', () => {
 
   it('Can not create Data Sample with invalid healthElementId', async () => {
     // Given
-    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
     const loggedUser = apiAndUser.user
     const patient = await TestUtils.getOrCreatePatient(medtechApi)
@@ -107,7 +114,7 @@ describe('Data Samples API', () => {
   })
 
   it('Filter Data Samples', async () => {
-    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
     const loggedUser = apiAndUser.user
 
@@ -167,12 +174,12 @@ describe('Data Samples API', () => {
 
   it('Patient sharing data sample with HCP', async () => {
     // Given
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username]);
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
@@ -190,10 +197,10 @@ describe('Data Samples API', () => {
 
   it('HCP sharing data sample with patient', async () => {
     // Given
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     const hcpApi = hcpApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
@@ -211,10 +218,10 @@ describe('Data Samples API', () => {
 
   it('HCP sharing data sample with another HCP', async () => {
     // Given
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     const hcp1Api = hcp1ApiAndUser.api
 
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username]);
     const hcp2Api = hcp2ApiAndUser.api
     const hcp2User = hcp2ApiAndUser.user
     const currentHcp2 = await hcp2Api.healthcareProfessionalApi.getHealthcareProfessional(hcp2User.healthcarePartyId!)
@@ -233,8 +240,8 @@ describe('Data Samples API', () => {
   })
 
   it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, patient)
@@ -247,13 +254,13 @@ describe('Data Samples API', () => {
   });
 
   it('Delegator may not share info of Data Sample', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     const hcp1Api = hcp1ApiAndUser.api
 
-    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!]);
+    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username]);
     const hcp3Api = hcp3ApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patUser = patApiAndUser.user
 
     const patient = await TestUtils.createDefaultPatient(hcp1Api)
@@ -269,7 +276,7 @@ describe('Data Samples API', () => {
   })
 
   it('Data Owner can filter all the Data Samples for a Patient - Success', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     const hcp1Api = hcp1ApiAndUser.api
 
     const newPatient = await TestUtils.createDefaultPatient(hcp1Api)
@@ -285,7 +292,7 @@ describe('Data Samples API', () => {
   })
 
   it('getDataSamplesForPatient returns no Data Samples for a Patient with no Data Samples', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     const hcp1Api = hcp1ApiAndUser.api
 
     const newPatient = await TestUtils.createDefaultPatient(hcp1Api)

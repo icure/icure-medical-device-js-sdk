@@ -4,7 +4,14 @@ import 'isomorphic-fetch'
 import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+  hcp1Username, hcp2Username, patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
 import {deepEquality} from "../../src/utils/equality";
@@ -24,7 +31,7 @@ describe('Patient API', () => {
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+      env.dataOwnerDetails[hcp1Username]);
     hcp1Api = hcpApiAndUser.api
     hcp1User = hcpApiAndUser.user
   });
@@ -74,7 +81,7 @@ describe('Patient API', () => {
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+      env!.dataOwnerDetails[hcp2Username]);
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
@@ -94,7 +101,7 @@ describe('Patient API', () => {
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor( env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
     const hcpApi = hcpApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
@@ -137,7 +144,7 @@ describe('Patient API', () => {
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+      env!.dataOwnerDetails[hcp2Username]);
     const hcp2Api = hcp2ApiAndUser.api
     const hcp2User = hcp2ApiAndUser.user
 
@@ -155,7 +162,7 @@ describe('Patient API', () => {
   it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+      env!.dataOwnerDetails[patUsername]);
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     console.log(patient.systemMetaData!.delegations)
@@ -175,12 +182,12 @@ describe('Patient API', () => {
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+      env!.dataOwnerDetails[hcp2Username]);
     const hcp2Api = hcp2ApiAndUser.api
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+      env!.dataOwnerDetails[patUsername]);
     const patUser = patApiAndUser.user
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)

@@ -16,7 +16,14 @@ import {assert} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
-import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestVars, TestUtils} from "../test-utils";
+import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+  setLocalStorage,
+  TestVars,
+  TestUtils,
+  hcp3Username, hcp1Username
+} from "../test-utils";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {User} from "../../src/models/User";
 import {v4 as uuid} from "uuid";
@@ -41,14 +48,14 @@ describe("Subscription API", () => {
 
     medtechApi = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].user)
-      .withPassword(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].password)
+      .withUserName(env.dataOwnerDetails[hcp3Username].user)
+      .withPassword(env.dataOwnerDetails[hcp3Username].password)
       .withCrypto(webcrypto as any)
       .build();
 
     const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!])
+      env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcpApi1AndUser.api;
     hcp1User = hcpApi1AndUser.user;
   });
@@ -87,7 +94,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser();
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey)
+        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
       );
 
       const events: DataSample[] = [];
@@ -95,7 +102,7 @@ describe("Subscription API", () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey,
+        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (ds) => {
           events.push(ds);
@@ -177,7 +184,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey)
+        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
       );
 
       const events: Notification[] = [];
@@ -185,7 +192,7 @@ describe("Subscription API", () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey,
+        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (notification) => {
           events.push(notification);
@@ -241,7 +248,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey)
+        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
       );
 
       const events: HealthcareElement[] = [];
@@ -249,7 +256,7 @@ describe("Subscription API", () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey,
+        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (healthcareElement) => {
           events.push(healthcareElement);
@@ -309,7 +316,7 @@ describe("Subscription API", () => {
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
         loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey)
+        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
       );
 
       const events: Patient[] = [];
@@ -317,7 +324,7 @@ describe("Subscription API", () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey,
+        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (patient) => {
           events.push(patient);
@@ -373,7 +380,7 @@ describe("Subscription API", () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!].privateKey,
+        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user);
