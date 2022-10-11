@@ -29,6 +29,10 @@ let cachedPatient: Patient | undefined;
 let cachedHealthcareElement: HealthcareElement | undefined;
 let cachedInitializer: EnvInitializer | undefined;
 
+export function getTempEmail(): string {
+  return `${uuid().substring(0, 8)}@icure.com`
+}
+
 export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>) {
   ;(global as any).localStorage = new (require('node-localstorage').LocalStorage)(tmpdir(), 5 * 1024 ** 3)
   ;(global as any).fetch = fetch
@@ -74,24 +78,29 @@ export function getEnvVariables(): TestVars {
     }
     : undefined
   return {
-    iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1',
-    msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'https://msg-gw.icure.cloud',
-    couchDbUrl: process.env.ICURE_COUCHDB_URL ?? "https://couch.svcacc.icure.cloud",
-    composeFileUrl: process.env.COMPOSE_FILE_URL! ?? "",
+    iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'http://127.0.0.1:16044/rest/v1',
+    msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'http://127.0.0.1:8081/msggtw',
+    couchDbUrl: process.env.ICURE_COUCHDB_URL ?? "http://127.0.0.1:15984",
+    composeFileUrl: process.env.COMPOSE_FILE_URL ?? "https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose-cloud.yaml",
     patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5',
     hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c6a19",
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
-    testEnvironment: process.env.TEST_ENVIRONMENT!,
-    testGroupId: process.env.ICURE_TEST_GROUP_ID!,
-    backendType: process.env.BACKEND_TYPE ?? "oss",
-    adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN!,
-    adminPassword: process.env.ICURE_TEST_ADMIN_PWD!,
-    adminId: process.env.ICURE_TEST_ADMIN_ID!,
+    testEnvironment: process.env.TEST_ENVIRONMENT ?? "docker",
+    testGroupId: process.env.ICURE_TEST_GROUP_ID ?? "test-group",
+    backendType: process.env.BACKEND_TYPE ?? "kraken",
+    adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? "john",
+    adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? "LetMeIn",
+    adminId: process.env.ICURE_TEST_ADMIN_ID ?? "2aadbf66-2761-4e87-97e9-431ad5a72bec",
     masterHcp: masterHcpDetails,
-    masterHcpId: process.env.ICURE_TEST_MASTER_ID,
+    masterHcpId: process.env.ICURE_TEST_MASTER_ID ?? "730d24e1-8cc4-4ded-b02b-365f7c5d2c61",
     dataOwnerDetails: {}
   }
 }
+
+export const hcp1Username = process.env.ICURE_TS_TEST_HCP_USER ?? getTempEmail()
+export const hcp2Username = process.env.ICURE_TS_TEST_HCP_2_USER ?? getTempEmail()
+export const hcp3Username = process.env.ICURE_TS_TEST_HCP_3_USER ?? getTempEmail()
+export const patUsername = process.env.ICURE_TS_TEST_PAT_USER ?? getTempEmail()
 
 export class ICureTestEmail implements EmailMessageFactory {
   dataOwner: HealthcareProfessional | Patient
@@ -127,10 +136,10 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     const creationStep = !!env.masterHcp
       ? new OldMasterUserInitializerComposite(groupStep, fetch)
       : new NewMasterUserInitializerComposite(groupStep, fetch)
-    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_USER!))
-    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_2_USER!))
-    creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_3_USER!))
-    creationStep.add(new CreatePatientComponent(process.env.ICURE_TS_TEST_PAT_USER!))
+    creationStep.add(new CreateHcpComponent(hcp1Username))
+    creationStep.add(new CreateHcpComponent(hcp2Username))
+    creationStep.add(new CreateHcpComponent(hcp3Username))
+    creationStep.add(new CreatePatientComponent(patUsername))
     cachedInitializer = new SafeguardInitializer(creationStep)
   }
   return cachedInitializer
@@ -167,10 +176,6 @@ export class TestUtils {
       })
 
     return { api: medtechApi, user: foundUser }
-  }
-
-  static async getTempEmail(): Promise<string> {
-    return `${uuid().substring(0, 8)}@icure.com`
   }
 
   static async getEmail(email: string): Promise<any> {
@@ -210,7 +215,7 @@ export class TestUtils {
 
     const anonymousMedTechApi = await builder.build()
 
-    const email = await this.getTempEmail()
+    const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
       'process.env.ICURE_RECAPTCHA',
       email,

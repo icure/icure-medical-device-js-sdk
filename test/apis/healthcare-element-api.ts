@@ -6,7 +6,14 @@ import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { User} from "../../src/models/User";
 import {HealthcareElement } from '../../src/models/HealthcareElement'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables, hcp1Username,
+  hcp2Username, patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { HealthcareElementFilter } from '../../src/filter'
 import { it } from 'mocha'
 import {deepEquality} from "../../src/utils/equality";
@@ -37,19 +44,19 @@ describe('Healthcare Element API', () => {
     env = await initializer.execute(getEnvVariables());
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+      env.dataOwnerDetails[patUsername]);
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+      env.dataOwnerDetails[hcp1Username]);
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+      env.dataOwnerDetails[hcp2Username]);
     hcp2Api = hcp2ApiAndUser.api
     hcp2User = hcp2ApiAndUser.user
   })

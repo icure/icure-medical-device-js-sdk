@@ -4,7 +4,14 @@ import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables, hcp1Username,
+  hcp2Username, hcp3Username, patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { User } from '../../src/models/User'
 import { NotificationFilter } from '../../src/filter'
 import { PaginatedListNotification } from '../../src/models/PaginatedListNotification'
@@ -50,19 +57,19 @@ describe('Notification API', async function () {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
-    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username]);
     hcp1Api = hcpApi1AndUser.api
     hcp1User = hcpApi1AndUser.user
 
-    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
+    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp2Username]);
     hcp2Api = hcpApi2AndUser.api
     hcp2User = hcpApi2AndUser.user
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!])
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!])
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[patUsername])
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
 

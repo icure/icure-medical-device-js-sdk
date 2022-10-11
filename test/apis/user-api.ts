@@ -1,4 +1,11 @@
-  import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from "../test-utils";
+  import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+    hcp1Username,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from "../test-utils";
 import {v4 as uuid} from 'uuid'
 import {assert} from "chai"
 import 'isomorphic-fetch'
@@ -14,7 +21,7 @@ describe('User API', () => {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     hcpId = hcpApiAndUser.user.healthcarePartyId;
   });
 

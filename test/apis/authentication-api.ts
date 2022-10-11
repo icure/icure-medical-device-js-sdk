@@ -2,7 +2,14 @@ import { assert, expect } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
-import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+  hcp1Username,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
@@ -21,7 +28,7 @@ describe('Authentication API', () => {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username]);
     hcpId = hcpApiAndUser.user.healthcarePartyId;
   });
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {

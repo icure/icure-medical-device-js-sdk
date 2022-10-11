@@ -3,11 +3,11 @@ import { medTechApi, MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { Patient } from '../../src/models/Patient'
 import { webcrypto } from 'crypto'
-import { hex2ua, sleep, ua2hex } from '@icure/api'
+import { hex2ua, sleep } from '@icure/api'
 import {
   getEnvironmentInitializer,
-  getEnvVariables,
-  ICureTestEmail,
+  getEnvVariables, getTempEmail, hcp1Username,
+  ICureTestEmail, patUsername,
   setLocalStorage,
   TestUtils,
   TestVars
@@ -38,8 +38,8 @@ describe('A Healthcare Party', () => {
 
     hcp1Api = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
-      .withPassword(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
+      .withUserName(env.dataOwnerDetails[hcp1Username].user)
+      .withPassword(env.dataOwnerDetails[hcp1Username].password)
       .withMsgGwUrl(env!.msgGtwUrl)
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
@@ -48,7 +48,7 @@ describe('A Healthcare Party', () => {
     hcp1User = await hcp1Api.userApi.getLoggedUser()
     await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
-      hex2ua(env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].privateKey)
+      hex2ua(env.dataOwnerDetails[hcp1Username].privateKey)
     )
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
@@ -60,7 +60,7 @@ describe('A Healthcare Party', () => {
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
+      env.dataOwnerDetails[patUsername]);
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
   })
@@ -79,7 +79,7 @@ describe('A Healthcare Party', () => {
     // PRECONDITIONS:
 
     // The Patient exists
-    const email = await TestUtils.getTempEmail()
+    const email = getTempEmail()
     const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
       new Patient({
         firstName: 'Marc',
@@ -203,7 +203,7 @@ describe('A Healthcare Party', () => {
   })
 
   it('should not be able to create a new User if it already exists for that Patient', async () => {
-    const email = await TestUtils.getTempEmail()
+    const email = getTempEmail()
     const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
       new Patient({
         firstName: 'Marc',

@@ -7,7 +7,7 @@ import {webcrypto} from "crypto";
 import {User} from "../../src/models/User";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
-import {getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestVars} from "../test-utils";
+import {getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestVars} from "../test-utils";
 import {Patient} from "../../src/models/Patient"
 import {jwk2spki} from "@icure/api"
 
@@ -25,8 +25,8 @@ describe("Healthcare professional", () => {
   it("should be capable of creating a healthcare professional from scratch", async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
-      .withPassword(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
+      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
+      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -67,8 +67,8 @@ describe("Healthcare professional", () => {
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].user)
-      .withPassword(env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!].password)
+      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
+      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
       .withCrypto(webcrypto as any)
       .build()
 
