@@ -22,58 +22,57 @@ import {
   IccPatientXApi,
   IccReceiptXApi,
   IccTimeTableXApi,
-  IccUserXApi
-} from "@icure/api";
-import {IccDataOwnerXApi} from "@icure/api/icc-x-api/icc-data-owner-x-api";
-import {DataSampleApi} from "./DataSampleApi";
-import {HealthcareProfessionalApi} from "./HealthcareProfessionalApi";
-import {MedicalDeviceApi} from "./MedicalDeviceApi";
-import {HealthcareElementApi} from "./HealthcareElementApi";
-import {PatientApi} from "./PatientApi";
-import {UserApi} from "./UserApi";
-import {CodingApi} from "./CodingApi";
-import {DataSampleApiImpl} from "./impl/DataSampleApiImpl";
-import {CodingApiImpl} from "./impl/CodingApiImpl";
-import {MedicalDeviceApiImpl} from "./impl/MedicalDeviceApiImpl";
-import {PatientApiImpl} from "./impl/PatientApiImpl";
-import {UserApiImpl} from "./impl/UserApiImpl";
-import {HealthcareElementApiImpl} from "./impl/HealthcareElementApiImpl";
-import {HealthcareProfessionalApiImpl} from "./impl/HealthcareProfessionalApiImpl";
-import {AuthenticationApi} from "./AuthenticationApi";
-import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
-import {IccMaintenanceTaskXApi} from "@icure/api/icc-x-api/icc-maintenance-task-x-api";
-import {NotificationApiImpl} from "./impl/NotificationApiImpl";
-import {NotificationApi} from "./NotificationApi";
-import {MessageGatewayApi} from "./MessageGatewayApi";
-import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
-import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
-import {ErrorHandler} from "../services/ErrorHandler";
-import {Sanitizer} from "../services/Sanitizer";
-import {SanitizerImpl} from "../services/impl/SanitizerImpl";
-import {DataOwnerApiImpl} from "./impl/DataOwnerApiImpl";
-import {DataOwnerApi} from "./DataOwnerApi";
-
+  IccUserXApi,
+} from '@icure/api'
+import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
+import { DataSampleApi } from './DataSampleApi'
+import { HealthcareProfessionalApi } from './HealthcareProfessionalApi'
+import { MedicalDeviceApi } from './MedicalDeviceApi'
+import { HealthcareElementApi } from './HealthcareElementApi'
+import { PatientApi } from './PatientApi'
+import { UserApi } from './UserApi'
+import { CodingApi } from './CodingApi'
+import { DataSampleApiImpl } from './impl/DataSampleApiImpl'
+import { CodingApiImpl } from './impl/CodingApiImpl'
+import { MedicalDeviceApiImpl } from './impl/MedicalDeviceApiImpl'
+import { PatientApiImpl } from './impl/PatientApiImpl'
+import { UserApiImpl } from './impl/UserApiImpl'
+import { HealthcareElementApiImpl } from './impl/HealthcareElementApiImpl'
+import { HealthcareProfessionalApiImpl } from './impl/HealthcareProfessionalApiImpl'
+import { AuthenticationApi } from './AuthenticationApi'
+import { AuthenticationApiImpl } from './impl/AuthenticationApiImpl'
+import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
+import { NotificationApiImpl } from './impl/NotificationApiImpl'
+import { NotificationApi } from './NotificationApi'
+import { MessageGatewayApi } from './MessageGatewayApi'
+import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
+import { ErrorHandlerImpl } from '../services/impl/ErrorHandlerImpl'
+import { ErrorHandler } from '../services/ErrorHandler'
+import { Sanitizer } from '../services/Sanitizer'
+import { SanitizerImpl } from '../services/impl/SanitizerImpl'
+import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
+import { DataOwnerApi } from './DataOwnerApi'
 
 export class MedTechApi {
-  private readonly _codingApi: CodingApi;
-  private readonly _userApi: UserApi;
-  private readonly _patientApi: PatientApi;
-  private readonly _healthcareElementApi: HealthcareElementApi;
-  private readonly _notificationApi: NotificationApi;
-  private readonly _medicalDeviceApi: MedicalDeviceApi;
-  private readonly _healthcareProfessionalApi: HealthcareProfessionalApi;
-  private readonly _dataSampleApi: DataSampleApi;
+  private readonly _codingApi: CodingApi
+  private readonly _userApi: UserApi
+  private readonly _patientApi: PatientApi
+  private readonly _healthcareElementApi: HealthcareElementApi
+  private readonly _notificationApi: NotificationApi
+  private readonly _medicalDeviceApi: MedicalDeviceApi
+  private readonly _healthcareProfessionalApi: HealthcareProfessionalApi
+  private readonly _dataSampleApi: DataSampleApi
   private readonly _dataOwnerApi: DataOwnerApi
-  private readonly _cryptoApi: IccCryptoXApi;
+  private readonly _cryptoApi: IccCryptoXApi
 
-  private readonly _basePath: string;
-  private readonly _username: string | undefined;
-  private readonly _password: string | undefined;
+  private readonly _basePath: string
+  private readonly _username: string | undefined
+  private readonly _password: string | undefined
 
-  private readonly _authenticationApi: AuthenticationApi | undefined;
-  private readonly _messageGatewayApi: MessageGatewayApi | undefined;
-  private readonly _errorHandler: ErrorHandler;
-  private readonly _sanitizer: Sanitizer;
+  private readonly _authenticationApi: AuthenticationApi | undefined
+  private readonly _messageGatewayApi: MessageGatewayApi | undefined
+  private readonly _errorHandler: ErrorHandler
+  private readonly _sanitizer: Sanitizer
   private readonly _baseApi: {
     cryptoApi: IccCryptoXApi
     authApi: IccAuthApi
@@ -135,31 +134,34 @@ export class MedTechApi {
     authProcessByEmailId: string | undefined = undefined,
     authProcessBySmsId: string | undefined = undefined
   ) {
-    this._basePath = basePath;
-    this._username = username;
-    this._password = password;
+    this._basePath = basePath
+    this._username = username
+    this._password = password
 
-    this._errorHandler = new ErrorHandlerImpl();
-    this._sanitizer = new SanitizerImpl(this._errorHandler);
+    this._errorHandler = new ErrorHandlerImpl()
+    this._sanitizer = new SanitizerImpl(this._errorHandler)
 
-    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer, username, password) : undefined;
+    this._messageGatewayApi =
+      msgGtwUrl && msgGtwSpecId
+        ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer, username, password)
+        : undefined
     this._authenticationApi =
       authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi
         ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId, this._errorHandler, this._sanitizer)
         : undefined
-    this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password);
-    this._codingApi = new CodingApiImpl(api, this._errorHandler);
-    this._medicalDeviceApi = new MedicalDeviceApiImpl(api, this._errorHandler);
-    this._patientApi = new PatientApiImpl(api, this._errorHandler, basePath, username, password);
-    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, this._sanitizer, basePath, username, password);
-    this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler, basePath, username, password);
+    this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password)
+    this._codingApi = new CodingApiImpl(api, this._errorHandler)
+    this._medicalDeviceApi = new MedicalDeviceApiImpl(api, this._errorHandler)
+    this._patientApi = new PatientApiImpl(api, this._errorHandler, basePath, username, password)
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, this._sanitizer, basePath, username, password)
+    this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler, basePath, username, password)
 
-    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler);
-    this._notificationApi = new NotificationApiImpl(api, this._errorHandler, basePath, username, password);
+    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler)
+    this._notificationApi = new NotificationApiImpl(api, this._errorHandler, basePath, username, password)
     this._dataOwnerApi = new DataOwnerApiImpl(api, this._errorHandler)
 
-    this._baseApi = api;
-    this._cryptoApi = api.cryptoApi;
+    this._baseApi = api
+    this._cryptoApi = api.cryptoApi
   }
 
   get codingApi(): CodingApi {

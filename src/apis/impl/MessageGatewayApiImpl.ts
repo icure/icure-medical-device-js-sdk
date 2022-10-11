@@ -1,21 +1,19 @@
-import {MessageGatewayApi} from '../MessageGatewayApi'
-import {AuthenticationProcessBody, EmailMessage, SMSMessage} from '../../utils/msgGtwMessageFactory'
-import {XHR} from '@icure/api'
-import {v4 as uuid} from 'uuid'
-import {ErrorHandler} from "../../services/ErrorHandler";
-import {Sanitizer} from "../../services/Sanitizer";
-import Header = XHR.Header;
+import { MessageGatewayApi } from '../MessageGatewayApi'
+import { AuthenticationProcessBody, EmailMessage, SMSMessage } from '../../utils/msgGtwMessageFactory'
+import { XHR } from '@icure/api'
+import { v4 as uuid } from 'uuid'
+import { ErrorHandler } from '../../services/ErrorHandler'
+import { Sanitizer } from '../../services/Sanitizer'
+import Header = XHR.Header
 
 export class MessageGatewayApiImpl implements MessageGatewayApi {
-
-
-  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  private readonly msgGtwUrl: string;
-  private readonly specId: string;
-  private readonly authHeader: XHR.Header | null;
-  private readonly headers: Header[];
-  private readonly errorHandler: ErrorHandler;
-  private readonly sanitizer: Sanitizer;
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+  private readonly msgGtwUrl: string
+  private readonly specId: string
+  private readonly authHeader: XHR.Header | null
+  private readonly headers: Header[]
+  private readonly errorHandler: ErrorHandler
+  private readonly sanitizer: Sanitizer
 
   constructor(
     msgGtwUrl: string,
@@ -27,18 +25,17 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
-        ? self.fetch
-        : fetch
+      ? self.fetch
+      : fetch
   ) {
     this.fetchImpl = fetchImpl
     this.msgGtwUrl = msgGtwUrl
     this.specId = specId
     this.authHeader =
-      !!username && !!password ? new Header('Authorization', 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
-      ) : null
-    this.headers = [new Header('Content-Type', 'application/json')];
-    this.errorHandler = errorHandler;
-    this.sanitizer = sanitizer;
+      !!username && !!password ? new Header('Authorization', 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')) : null
+    this.headers = [new Header('Content-Type', 'application/json')]
+    this.errorHandler = errorHandler
+    this.sanitizer = sanitizer
   }
 
   async sendEmail(recipientEmail: string, email: EmailMessage): Promise<boolean> {
@@ -50,9 +47,9 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.headers.concat([this.authHeader]),
       email,
       this.fetchImpl
-    ).catch(e => {
+    ).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
-    });
+    })
 
     return true
   }
@@ -66,9 +63,9 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       this.headers.concat([this.authHeader]),
       sms,
       this.fetchImpl
-    ).catch(e => {
+    ).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
-    });
+    })
 
     return true
   }
@@ -83,7 +80,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       processBody,
       this.fetchImpl,
       'text/plain'
-    ).catch(e => {
+    ).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
@@ -97,7 +94,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
       [],
       undefined,
       this.fetchImpl
-    ).catch(reason => {
+    ).catch((reason) => {
       throw this.errorHandler.createError(reason)
     })
 
