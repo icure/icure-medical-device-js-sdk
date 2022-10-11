@@ -14,7 +14,7 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
-import {ICURE_FREE_URL} from "../index";
+import { ICURE_FREE_URL } from '../index'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -27,6 +27,7 @@ export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) 
   ;(global as any).Storage = ''
   ;(global as any).TextDecoder = TextDecoder
   ;(global as any).TextEncoder = TextEncoder
+  ;(global as any).headers = Headers
 }
 
 export type TestVars = {
@@ -116,13 +117,12 @@ export class TestUtils {
       .build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(dataOwnerKey)
-    ).catch((error: any) => {
-      console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
-      console.error(error)
-    })
+    await medtechApi.cryptoApi
+      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(dataOwnerKey))
+      .catch((error: any) => {
+        console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
+        console.error(error)
+      })
 
     return { api: medtechApi, user: foundUser }
   }
@@ -171,10 +171,8 @@ export class TestUtils {
     const emails = await TestUtils.getEmail(email)
 
     const subjectCode = emails.subject!
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(
-      process!,
-      subjectCode,
-      () => anonymousMedTechApi.generateRSAKeypair()
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
+      anonymousMedTechApi.generateRSAKeypair()
     )
 
     if (result?.medTechApi == undefined) {
