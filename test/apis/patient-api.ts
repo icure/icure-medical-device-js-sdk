@@ -5,12 +5,16 @@ import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { getEnvironmentInitializer, getEnvVariables, setLocalStorage, TestUtils, TestVars} from '../test-utils'
+import {MedTechApi} from "../../src/apis/MedTechApi";
+import {User} from "../../src/models/User";
+import {deepEquality} from "../../src/utils/equality";
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
 let env: TestVars | undefined;
-let hcpId: string | undefined;
+let hcp1Api: MedTechApi | undefined
+let hcp1User: User | undefined
 
 describe('Patient API', () => {
 
@@ -21,7 +25,8 @@ describe('Patient API', () => {
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
       env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
-    hcpId = hcpApiAndUser.user.healthcarePartyId;
+    hcp1Api = hcpApiAndUser.api
+    hcp1User = hcpApiAndUser.user
   });
 
   it('Can create a patient and a related Healthcare Element', async () => {
@@ -38,38 +43,38 @@ describe('Patient API', () => {
     })
 
     // when
-    const patient = await medtechApi.patientApi.createOrModifyPatient(patientToCreate)
+    const patient = await hcp1Api!.patientApi.createOrModifyPatient(patientToCreate)
 
     // Then
     assert(patient.id != undefined)
     assert(patient.firstName == 'John')
     assert(patient.lastName == 'Snow')
     assert(patient.note == 'Winter is coming')
-    assert(patient.systemMetaData?.delegations[loggedUser.healthcarePartyId!] != undefined)
-    assert(patient.systemMetaData?.encryptionKeys[loggedUser.healthcarePartyId!] != undefined)
+    assert(patient.systemMetaData?.delegations[hcp1User!.healthcarePartyId!] != undefined)
+    assert(patient.systemMetaData?.encryptionKeys[hcp1User!.healthcarePartyId!] != undefined)
 
     // Init
     const healthElementToCreate = new HealthcareElement({
       note: 'Hero Syndrome',
     })
 
-    const createdHealthElement = await medtechApi.healthcareElementApi.createOrModifyHealthcareElement(healthElementToCreate, patient.id)
+    const createdHealthElement = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(healthElementToCreate, patient.id)
 
     // Then
     assert(createdHealthElement.id != undefined)
     assert(createdHealthElement.note == 'Hero Syndrome')
     assert(createdHealthElement.systemMetaData?.secretForeignKeys != undefined)
-    assert(createdHealthElement.systemMetaData?.delegations[loggedUser.healthcarePartyId!] != undefined)
+    assert(createdHealthElement.systemMetaData?.delegations[hcp1User!.healthcarePartyId!] != undefined)
   })
 
   it('Patient sharing its own information with HCP', async () => {
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcp1User!.healthcarePartyId!)
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
-      env!.dataOwnerDetails["hcp2Details"]);
+      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_2_USER!]);
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
@@ -136,8 +141,8 @@ describe('Patient API', () => {
     const hcp2Api = hcp2ApiAndUser.api
     const hcp2User = hcp2ApiAndUser.user
 
-    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api)
-    const sharedPatient = await hcp1Api.patientApi.giveAccessTo(createdPatient, hcp2User.healthcarePartyId!)
+    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
+    const sharedPatient = await hcp1Api!.patientApi.giveAccessTo(createdPatient, hcp2User.healthcarePartyId!)
 
     assert(sharedPatient.systemMetaData!.delegations[hcp2User.healthcarePartyId!] != undefined)
     assert(sharedPatient.systemMetaData!.encryptionKeys[hcp2User.healthcarePartyId!] != undefined)
@@ -151,19 +156,16 @@ describe('Patient API', () => {
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
       env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     console.log(patient.systemMetaData!.delegations)
 
     // When
-    const sharedPatient = await patApiAndUser.api.patientApi.giveAccessTo(patient, hcp1ApiAndUser.user.healthcarePartyId!)
+    const sharedPatient = await patApiAndUser.api.patientApi.giveAccessTo(patient, patient!.id!)
 
     // Then
-    assert(patient === sharedPatient)
-  })
+    assert(deepEquality(patient, sharedPatient))
+  });
 
   it('Delegator may not share info of Patient', async () => {
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
@@ -181,7 +183,7 @@ describe('Patient API', () => {
       env!.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
     const patUser = patApiAndUser.user
 
-    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api)
+    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
 
     // When
     await hcp2Api.patientApi.giveAccessTo(createdPatient, patUser.patientId!).then(
