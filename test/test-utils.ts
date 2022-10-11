@@ -77,12 +77,12 @@ export function getEnvVariables(): TestVars {
     iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1',
     msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'https://msg-gw.icure.cloud',
     couchDbUrl: process.env.ICURE_COUCHDB_URL ?? "https://couch.svcacc.icure.cloud",
-    composeFileUrl: process.env.COMPOSE_FILE_URL!,
+    composeFileUrl: process.env.COMPOSE_FILE_URL! ?? "",
     patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5',
     hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c6a19",
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
     testEnvironment: process.env.TEST_ENVIRONMENT!,
-    testGroupId: process.env.ICURE_TEST_GROUP_ID ?? uuid(),
+    testGroupId: process.env.ICURE_TEST_GROUP_ID!,
     backendType: process.env.BACKEND_TYPE ?? "oss",
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN!,
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD!,
@@ -123,17 +123,17 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
     }
-    const groupStep = new GroupInitializer(bootstrapStep, fetch);
+    const groupStep = env.backendType === "oss" ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
     const creationStep = !!env.masterHcp
       ? new OldMasterUserInitializerComposite(groupStep, fetch)
-      : new NewMasterUserInitializerComposite(groupStep, fetch);
+      : new NewMasterUserInitializerComposite(groupStep, fetch)
     creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_USER!))
     creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_2_USER!))
     creationStep.add(new CreateHcpComponent(process.env.ICURE_TS_TEST_HCP_3_USER!))
     creationStep.add(new CreatePatientComponent(process.env.ICURE_TS_TEST_PAT_USER!))
-    cachedInitializer = new SafeguardInitializer(creationStep);
+    cachedInitializer = new SafeguardInitializer(creationStep)
   }
-  return cachedInitializer;
+  return cachedInitializer
 }
 
 export class TestUtils {
