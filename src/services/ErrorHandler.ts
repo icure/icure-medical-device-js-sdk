@@ -1,18 +1,18 @@
 export abstract class ErrorHandler {
   public createErrorWithMessage(message: string): Error {
-    return this.createError(Error(message));
+    return this.createError(Error(message))
   }
 
   public createError(error: Error): Error {
-    return error;
+    return error
   }
 
   public createErrorFromAny(reason: any): Error {
     if (reason instanceof Error) {
-      return this.createError(reason);
+      return this.createError(reason)
     }
     if (typeof reason === 'string') {
-      return this.createErrorWithMessage(reason);
+      return this.createErrorWithMessage(reason)
     }
     throw reason
   }

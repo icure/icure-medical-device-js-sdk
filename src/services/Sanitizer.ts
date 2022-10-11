@@ -1,12 +1,11 @@
 export interface Sanitizer {
-
   /**
    * Function that validates an email address.
    * The regex used to validate the email address follows RFC 5322.
    * @param email The email address to validate
    * @return The email address if it is valid, null otherwise
    */
-  validateEmail(email: string): string;
+  validateEmail(email: string): string
 
   /**
    * Function that validates a mobile phone number.
@@ -14,5 +13,5 @@ export interface Sanitizer {
    * @param mobilePhone The mobile phone number to validate
    * @return The mobile phone number if it is valid, null otherwise
    */
-  validateMobilePhone(mobilePhone: string): string;
+  validateMobilePhone(mobilePhone: string): string
 }

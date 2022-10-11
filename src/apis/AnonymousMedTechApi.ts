@@ -1,20 +1,20 @@
-import {AuthenticationApi} from "./AuthenticationApi";
-import {AuthenticationApiImpl} from "./impl/AuthenticationApiImpl";
-import {Api, IccCryptoXApi} from "@icure/api";
-import {MessageGatewayApiImpl} from "./impl/MessageGatewayApiImpl";
-import {ErrorHandlerImpl} from "../services/impl/ErrorHandlerImpl";
-import {ErrorHandler} from "../services/ErrorHandler";
-import {Sanitizer} from "../services/Sanitizer";
-import {SanitizerImpl} from "../services/impl/SanitizerImpl";
+import { AuthenticationApi } from './AuthenticationApi'
+import { AuthenticationApiImpl } from './impl/AuthenticationApiImpl'
+import { Api, IccCryptoXApi } from '@icure/api'
+import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
+import { ErrorHandlerImpl } from '../services/impl/ErrorHandlerImpl'
+import { ErrorHandler } from '../services/ErrorHandler'
+import { Sanitizer } from '../services/Sanitizer'
+import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 
 export class AnonymousMedTechApi {
-  private readonly _iCureUrlPath: string;
-  private readonly _msgGtwUrl: string;
-  private readonly _msgGtwSpecId: string;
-  private readonly _authenticationApi: AuthenticationApi;
-  private readonly _cryptoApi: IccCryptoXApi;
-  private readonly _errorHandler: ErrorHandler;
-  private readonly _sanitizer: Sanitizer;
+  private readonly _iCureUrlPath: string
+  private readonly _msgGtwUrl: string
+  private readonly _msgGtwSpecId: string
+  private readonly _authenticationApi: AuthenticationApi
+  private readonly _cryptoApi: IccCryptoXApi
+  private readonly _errorHandler: ErrorHandler
+  private readonly _sanitizer: Sanitizer
 
   constructor(
     iCureUrlPath: string,
@@ -37,9 +37,9 @@ export class AnonymousMedTechApi {
       authProcessByEmailId,
       authProcessBySmsId,
       this._errorHandler,
-      this._sanitizer,
-    );
-    this._cryptoApi = api.cryptoApi;
+      this._sanitizer
+    )
+    this._cryptoApi = api.cryptoApi
   }
 
   get cryptoApi(): IccCryptoXApi {
