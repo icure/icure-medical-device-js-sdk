@@ -52,11 +52,15 @@ describe('A Healthcare Party', () => {
     )
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcp3Details"]);
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!]);
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["patDetails"]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
   })

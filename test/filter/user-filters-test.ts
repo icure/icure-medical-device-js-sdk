@@ -19,11 +19,15 @@ describe("User Filters Test", function () {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["hcpDetails"]);
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails["patDetails"]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      env.iCureUrl,
+      env.dataOwnerDetails[process.env.ICURE_TS_TEST_PAT_USER!]);
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
   });
