@@ -23,7 +23,7 @@ jobs:
           ICURE_TS_TEST_MSG_GTW_SPEC_ID: "ic"
           TEST_ENVIRONMENT: "acceptance"
           BACKEND_TYPE: "kraken"
-          ICURE_TEST_GROUP_ID: ${{ github.actor }}-${{ github.run_id }}-${{ github.run_attempt }}
+          ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
           ICURE_TS_TEST_HCP_AUTH_PROCESS_ID: ${{ secrets.TEST_HCP_AUTH_PROCESS_ID }}
           ICURE_TS_TEST_PAT_AUTH_PROCESS_ID: ${{ secrets.TEST_PAT_AUTH_PROCESS_ID }}
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
@@ -40,7 +40,7 @@ jobs:
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
           ICURE_TEST_ADMIN_PWD: ${{ secrets.ICURE_TEST_ADMIN_PWD }}
           ICURE_TEST_ADMIN_ID: ${{ secrets.ICURE_TEST_ADMIN_ID }}
-          ICURE_TEST_GROUP_ID: ${{ github.actor }}-${{ github.run_id }}-${{ github.run_attempt }}
+          ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
           TEST_ENVIRONMENT: "acceptance"
           ICURE_COUCHDB_URL: "https://couch.svcacc.icure.cloud"
         run: yarn clean
