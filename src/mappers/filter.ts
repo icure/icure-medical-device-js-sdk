@@ -21,7 +21,7 @@ import {
   DeviceByIdsFilter as DeviceByIdsFilterDto,
   HealthcareParty as HealthcarePartyDto,
   HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto,
-  HealthcarePartyByTagCodeFilter,
+  HealthcarePartyByTagCodeFilter as HealthcarePartyByTagCodeFilterDto,
   HealthElement as HealthElementDto,
   HealthElementByHcPartyFilter as HealthElementByHcPartyFilterDto,
   HealthElementByHcPartyIdentifiersFilter as HealthElementByHcPartyIdentifiersFilterDto,
@@ -357,7 +357,7 @@ export namespace FilterMapper {
     new HealthcarePartyByIdsFilterDto({desc: filter.description, ids: filter.ids})
 
   const toHealthcarePartyByTagCodeFilterDto = (filter: HealthcareProfessionalByLabelCodeFilter) =>
-    new HealthcarePartyByTagCodeFilter({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
+    new HealthcarePartyByTagCodeFilterDto({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
 
   function toAbstractFilterHealthElementDto(filter: Filter<HealthcareElement>): AbstractFilter<HealthElementDto> {
     if (filter['$type'] === 'ComplementFilter') {
