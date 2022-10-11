@@ -1,5 +1,5 @@
 import "mocha";
-import {medTechApi, MedTechApi} from "../../src/apis/medTechApi";
+import {medTechApi, MedTechApi} from "../../src/apis/MedTechApi";
 import "isomorphic-fetch";
 import {webcrypto} from "crypto";
 
@@ -57,7 +57,7 @@ describe("Subscription API", () => {
 
   before(async () => {
     medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
@@ -309,15 +309,18 @@ describe("Subscription API", () => {
 
   describe("Can subscribe to Patients", async () => {
     const createPatientAndSubscribe = async (options: {}, eventTypes: ("CREATE" | "DELETE" | "UPDATE")[]) => {
-      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => medtechApi!.patientApi.subscribeToPatientEvents(
-        eventTypes,
-        await new PatientFilter()
-          .forDataOwner(loggedUser.healthcarePartyId!)
-          .containsFuzzy("John")
-          .build(),
-        eventListener,
-        options,
-      )
+      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => {
+        await sleep(2000)
+        return medtechApi!.patientApi.subscribeToPatientEvents(
+          eventTypes,
+          await new PatientFilter()
+            .forDataOwner(loggedUser.healthcarePartyId!)
+            .containsFuzzy("John")
+            .build(),
+          eventListener,
+          options,
+        );
+      }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
       await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(

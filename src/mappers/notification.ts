@@ -1,7 +1,7 @@
 import {Notification, NotificationTypeEnum} from "../models/Notification";
 import {MaintenanceTask} from "@icure/api";
 import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
-import {toMapArrayTransform, toMapSetTransform} from "./utils";
+import {forceUuid, toMapArrayTransform, toMapSetTransform} from "./utils";
 import {DelegationMapper} from "./delegation";
 
 export namespace NotificationMapper {
@@ -29,7 +29,7 @@ export namespace NotificationMapper {
   }) : undefined;
 
   export const toMaintenanceTaskDto = (obj?: Notification) => obj ? new MaintenanceTask({
-    id: obj.id,
+    id: forceUuid(obj.id),
     rev: obj.rev,
     status: obj.status,
     identifier: obj.identifier,

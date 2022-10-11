@@ -1,7 +1,7 @@
-import { medTechApi, MedTechApi } from '../src/apis/medTechApi'
+import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, ua2hex } from '@icure/api'
+import { hex2ua } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -14,6 +14,7 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
+import { ICURE_FREE_URL } from '../index'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -109,17 +110,19 @@ export class TestUtils {
     dataOwnerKey: string
   ): Promise<{ api: MedTechApi; user: User }> {
     const medtechApi = await medTechApi()
-      .withICureBasePath(iCureUrl)
+      .withICureBaseUrl(iCureUrl)
       .withUserName(userName)
       .withPassword(password)
       .withCrypto(webcrypto as any)
       .build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(dataOwnerKey)
-    )
+    await medtechApi.cryptoApi
+      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(dataOwnerKey))
+      .catch((error: any) => {
+        console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
+        console.error(error)
+      })
 
     return { api: medtechApi, user: foundUser }
   }
@@ -146,9 +149,9 @@ export class TestUtils {
     hcpId: string
   ): Promise<{ api: MedTechApi; user: User }> {
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureUrlPath(iCureUrl)
-      .withMsgGtwUrl(msgGtwUrl)
-      .withMsgGtwSpecId(msgGtwSpecId)
+      .withICureBaseUrl(iCureUrl)
+      .withMsgGwUrl(msgGtwUrl)
+      .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
@@ -156,27 +159,22 @@ export class TestUtils {
 
     const email = await this.getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      hcpId,
+      'process.env.ICURE_RECAPTCHA',
+      email,
+      undefined,
       'Antoine',
       'Duchâteau',
-      'process.env.ICURE_RECAPTCHA',
-      false,
-      email
+      hcpId,
+      false
     )
-
-    const { publicKey, privateKey } = await anonymousMedTechApi.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await anonymousMedTechApi.cryptoApi.RSA.exportKey(publicKey, 'spki'))
-    const privateKeyHex = ua2hex(await anonymousMedTechApi.cryptoApi.RSA.exportKey(privateKey, 'pkcs8'))
 
     const emails = await TestUtils.getEmail(email)
 
     const subjectCode = emails.subject!
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(
-      process!,
-      subjectCode,
-      [privateKeyHex, publicKeyHex],
-      () => undefined
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
+      anonymousMedTechApi.generateRSAKeypair()
     )
+
     if (result?.medTechApi == undefined) {
       throw Error(`Couldn't sign up user by email for current test`)
     }
@@ -184,7 +182,7 @@ export class TestUtils {
     const foundUser = await result.medTechApi.userApi.getLoggedUser()
     await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(privateKeyHex)
+      hex2ua(result.keyPair.privateKey)
     )
     assert(result)
     assert(result!.token != null)

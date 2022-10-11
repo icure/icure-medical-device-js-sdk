@@ -2,7 +2,7 @@ import {before, describe, it} from 'mocha'
 import 'isomorphic-fetch'
 import {assert, expect} from "chai";
 import {v4 as uuid} from "uuid";
-import {MedTechApi} from "../../src/apis/medTechApi";
+import {MedTechApi} from "../../src/apis/MedTechApi";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
 import {User} from "../../src/models/User";
@@ -15,22 +15,22 @@ setLocalStorage(fetch);
 
 const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
   hcp2UserName: hcp2UserName, hcp2Password: hcp2Password, hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey} = getEnvVariables()
+  hcp3UserName: hcp3UserName, hcp3Password: hcp3Password, hcp3PrivKey: hcp3PrivKey,
+  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
 let hcp1Api: MedTechApi | undefined = undefined;
 let hcp1User: User | undefined = undefined;
 let hcp2Api: MedTechApi | undefined = undefined;
 let hcp2User: User | undefined = undefined;
 let hcp3Api: MedTechApi | undefined = undefined;
 let hcp3User: User | undefined = undefined;
+let patApi: MedTechApi | undefined = undefined;
+let patUser: User | undefined = undefined;
 let idFilterNotification1: Notification | undefined = undefined;
 let idFilterNotification2: Notification | undefined = undefined;
 let idFilterNotification3: Notification | undefined = undefined;
 
 async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
-  const notificationId = uuid();
   const notification = new Notification({
-    id: notificationId,
-    status: "pending",
     type: NotificationTypeEnum.KEY_PAIR_UPDATE
   })
   const createdNotification = await api.notificationApi.createOrModifyNotification(
@@ -78,10 +78,16 @@ describe('Notification API', async function () {
     hcp3Api = hcpApi3AndUser.api;
     hcp3User = hcpApi3AndUser.user;
 
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
+      iCureUrl,
+      patUserName,
+      patPassword,
+      patPrivKey)
+    patApi = patApiAndUser.api;
+    patUser = patApiAndUser.user;
+
     idFilterNotification1 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
-        id: uuid(),
-        status: "pending",
         type: NotificationTypeEnum.KEY_PAIR_UPDATE
       }),
       hcp2User.healthcarePartyId
@@ -89,8 +95,6 @@ describe('Notification API', async function () {
     assert(!!idFilterNotification1);
     idFilterNotification2 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
-        id: uuid(),
-        status: "pending",
         type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
       }),
       hcp2User.healthcarePartyId
@@ -98,8 +102,6 @@ describe('Notification API', async function () {
     assert(!!idFilterNotification2);
     idFilterNotification3 = await hcp1Api.notificationApi.createOrModifyNotification(
       new Notification({
-        id: uuid(),
-        status: "pending",
         type: NotificationTypeEnum.OTHER
       }),
       hcp2User.healthcarePartyId
@@ -109,10 +111,9 @@ describe('Notification API', async function () {
     console.log('All prerequisites are started');
   });
 
-  it('should be able to create a new Notification with a logged in user', async () => {
+  it('should be able to create a new Notification with a logged in HCP', async () => {
     const notification = new Notification({
       id: uuid(),
-      status: "pending",
       type: NotificationTypeEnum.KEY_PAIR_UPDATE
     })
     const createdNotification = await hcp1Api!.notificationApi.createOrModifyNotification(
@@ -121,7 +122,7 @@ describe('Notification API', async function () {
     )
     assert(!!createdNotification);
     assert(createdNotification.id === notification.id);
-    assert(createdNotification.status === notification.status);
+    assert(createdNotification.status === "pending");
     assert(!!createdNotification.rev);
     assert(!!createdNotification.created);
     assert(createdNotification.type === notification.type);
@@ -129,6 +130,42 @@ describe('Notification API', async function () {
     assert(createdNotification.responsible === hcp1User!.healthcarePartyId);
     assert(hcp1User!.healthcarePartyId! in createdNotification.systemMetaData?.delegations!);
     assert(hcp2User!.healthcarePartyId! in createdNotification.systemMetaData?.delegations!);
+  });
+
+  it('should be able to create a new Notification with a logged in Patient', async () => {
+    const notification = new Notification({
+      id: uuid(),
+      type: NotificationTypeEnum.KEY_PAIR_UPDATE
+    })
+    const createdNotification = await patApi!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp3User!.healthcarePartyId
+    )
+    assert(!!createdNotification);
+    assert(createdNotification.id === notification.id);
+    assert(createdNotification.status === "pending");
+    assert(!!createdNotification.rev);
+    assert(!!createdNotification.created);
+    assert(createdNotification.type === notification.type);
+    assert(createdNotification.author === patUser!.id!);
+    assert(createdNotification.responsible === patUser!.patientId);
+    assert(patUser!.patientId! in createdNotification.systemMetaData?.delegations!);
+    assert(hcp3User!.healthcarePartyId! in createdNotification.systemMetaData?.delegations!);
+  });
+
+  it('should not be able to create a new Notification if the responsible is another Patient', async () => {
+    const notification = new Notification({
+      type: NotificationTypeEnum.KEY_PAIR_UPDATE,
+      responsible: "SOMEONE_ELSE"
+    })
+    patApi!.notificationApi.createOrModifyNotification(
+      notification,
+      hcp2User!.healthcarePartyId
+    ).then(
+      () => {throw new Error("Illegal state");},
+      (e) => assert(e != undefined)
+    );
+
   });
 
   it('should be able to get an existing Notification by Id as the creator', async () => {
@@ -377,8 +414,6 @@ describe('Notification API', async function () {
   it('should be able to get all the pending Notification of Users asking for data access', async() => {
     const createdNotification = await hcp2Api!.notificationApi.createOrModifyNotification(
       new Notification({
-        id: uuid(),
-        status: "pending",
         type: NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS
       }),
       hcp1User?.healthcarePartyId!
