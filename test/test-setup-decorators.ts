@@ -196,8 +196,8 @@ export class GroupInitializer implements EnvInitializer {
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
-    const api = await Api(env.iCureUrl, env.adminLogin, env.adminPassword, webcrypto as any, this.fetchImpl);
-    await createGroup(api, env.testGroupId);
+    const api = await Api(updatedEnvs.iCureUrl, updatedEnvs.adminLogin, updatedEnvs.adminPassword, webcrypto as any, this.fetchImpl);
+    await createGroup(api, updatedEnvs.testGroupId);
     return updatedEnvs;
   }
 }
@@ -220,7 +220,7 @@ export class MasterUserInGroupInitializer implements EnvInitializer {
 
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
-    const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
+    const masterCredentials = await createMasterHcpUser(updatedEnvs.adminLogin, updatedEnvs.adminPassword, updatedEnvs.testGroupId, this.fetchImpl, updatedEnvs.iCureUrl);
     return {
       ...updatedEnvs,
       masterHcp: {
@@ -352,7 +352,14 @@ export class CreatePatientComponent implements EnvComponent {
   ) {}
 
   async create(dataOwnerApi: Apis): Promise<{[key: string]: UserDetails}> {
-    const details = await createPatientUser(dataOwnerApi, this.login, this.authToken, this.publicKey, this.privateKey);
+    const details = await createPatientUser(
+      dataOwnerApi,
+      this.login,
+      this.authToken,
+      this.publicKey,
+      this.privateKey,
+      dataOwnerApi.patientApi.fetchImpl,
+      dataOwnerApi.patientApi.host);
     return {
       [this.login]: {
         user: details.login,
