@@ -41,9 +41,11 @@ export interface NotificationApi {
 
   /**
    * Gets all the Notifications with status "pending" that the current dataOwner can access
+   *
+   * @param afterDate : Default value is now less 30 days
    * @return an Array of the Notifications matching those criteria
    */
-  getPendingNotifications(): Promise<Array<Notification>>;
+  getPendingNotificationsAfter(afterDate?:number): Promise<Array<Notification>>;
 
   /**
    * Updates the status of a Notification.

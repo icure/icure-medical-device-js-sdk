@@ -420,13 +420,13 @@ describe('Notification API', async function () {
     )
     expect(!!createdNotification).to.eq(true);
 
-    const notifications = await hcp1Api!.notificationApi.getPendingNotifications();
+    const notifications = await hcp1Api!.notificationApi.getPendingNotificationsAfter();
     expect(notifications.length).to.gt(0);
     notifications.forEach( notification => {
       expect(notification.status).to.eq("pending");
       expect(Object.keys(notification.systemMetaData?.delegations ?? {})).to.contain(hcp1User?.healthcarePartyId!);
     });
-  });
+  }).timeout(30000);
 
   it('should be able to update the status of a Notification', async () => {
     const createdNotification = await createNotificationWithApi(hcp1Api!, hcp2User!.healthcarePartyId!);
@@ -435,5 +435,12 @@ describe('Notification API', async function () {
     expect(!!updatedNotification).to.eq(true);
     expect(updatedNotification!.status).to.eq("completed");
   });
+
+  // it('close all pending notifications', async() => {
+  //   const notifications = await hcp1Api!.notificationApi.getPendingNotifications()
+  //   expect(notifications.length).to.gt(0);
+  //
+  //   console.log(notifications.map((notif) => notif.id).join(","))
+  // }).timeout(600000);
 
 });

@@ -150,7 +150,7 @@ describe('A Healthcare Party', () => {
     await TestUtils.retrieveHealthcareElementAndExpectError(newPatientApi, newHE2.id!)
 
     // When HCP_1 gives access to PAT_1
-    const newNotifications = await hcp1Api.notificationApi.getPendingNotifications()
+    const newNotifications = await hcp1Api.notificationApi.getPendingNotificationsAfter()
     expect(!!newNotifications).to.eq(true)
     const newPatientNotification = newNotifications.filter(
       (notification) => notification.type === NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS && notification.responsible === newPatient.id
