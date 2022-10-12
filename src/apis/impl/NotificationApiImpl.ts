@@ -111,7 +111,7 @@ export class NotificationApiImpl implements NotificationApi {
       : this.concatenateFilterResults(filter, paginatedNotifications.nextKeyPair.startKeyDocId, limit, accumulator.concat(paginatedNotifications.rows))
   }
 
-  async getPendingNotifications(): Promise<Array<Notification>> {
+  async getPendingNotificationsAfter(afterDate?:number): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser();
     if (!user){
       throw new Error("There is no user currently logged in");
@@ -120,9 +120,18 @@ export class NotificationApiImpl implements NotificationApi {
       throw new Error("User is not a Data Owner");
     }
     const filter = await new NotificationFilter()
+      .afterDateFilter(this._findAfterDateFilterValue(afterDate))
       .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
+  }
+
+  private _findAfterDateFilterValue(afterDate?: number): number {
+    if (afterDate != undefined) {
+      return afterDate
+    }
+
+    return new Date().getTime() - (1000 * 60 * 60 * 24 * 30);
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
