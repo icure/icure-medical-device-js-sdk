@@ -27,7 +27,8 @@ export class AnonymousMedTechApi {
       new MessageGatewayApiImpl(msgGwUrl, msgGwSpecId),
       this._iCureUrlPath,
       authProcessByEmailId,
-      authProcessBySmsId
+      authProcessBySmsId,
+      api.cryptoApi.crypto
     )
     this._cryptoApi = api.cryptoApi
   }
