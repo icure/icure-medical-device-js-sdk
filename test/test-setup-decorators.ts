@@ -56,6 +56,51 @@ export class SafeguardInitializer implements EnvInitializer {
 }
 
 /**
+ * This step calls the original execute method and decorates it by describing the setting used
+ */
+export class DescribeInitializer implements EnvInitializer {
+
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   */
+  constructor(
+    private initializer?: EnvInitializer
+  ) {}
+
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    let lines = ["Setting up the test stack using the following options:"]
+    lines.push(`Launching on: ${updatedEnvs.testEnvironment.toUpperCase()}`)
+    if (updatedEnvs.testEnvironment === "docker") {
+      lines.push(`Using docker compose file: ${updatedEnvs.composeFileUrl}`)
+    }
+    else {
+      lines.push(`With Kraken @ ${updatedEnvs.iCureUrl}`)
+      lines.push(`With CouchDB @ ${updatedEnvs.couchDbUrl}`)
+      lines.push(`With Message Gateway @ ${updatedEnvs.msgGtwUrl}`)
+    }
+    lines.push(`With backend version ${updatedEnvs.backendType.toUpperCase()}`)
+    if (!!updatedEnvs.masterHcp) {
+      lines.push(`Using existing master HCP with login ${updatedEnvs.masterHcp.user}`)
+    } else {
+      lines.push(`Using a new master HCP`)
+    }
+    const maxLen = lines.reduce( function (previous, current) { return current.length > previous ? current.length : previous }, 0)
+    console.log('#'.repeat(maxLen+4))
+    console.log(`#${' '.repeat(maxLen+2)}#`)
+    lines.forEach( (line) => {
+      console.log(`# ${line}${' '.repeat(maxLen-line.length)} #`)
+    })
+    console.log(`#${' '.repeat(maxLen+2)}#`)
+    console.log('#'.repeat(maxLen+4))
+    return updatedEnvs
+  }
+
+}
+
+/**
  * This step calls the original execute method and decorates it by setting up the docker with the given parameters.
  */
 export class DockerComposeInitializer implements EnvInitializer {
@@ -74,13 +119,13 @@ export class DockerComposeInitializer implements EnvInitializer {
   ) {}
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
     await setup(this.scratchDir, env.composeFileUrl, ...this.profiles);
     await setupCouchDb(env.couchDbUrl);
     await retry( async () => {
       if (!(await checkIfDockerIsOnline(this.scratchDir, env.composeFileUrl))) throw new Error("Docker not ready");
     });
-    return !!updatedEnvs ? updatedEnvs : env;
+    return updatedEnvs;
   }
 
 }
@@ -102,9 +147,9 @@ export class OssInitializer implements EnvInitializer {
   ) {}
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
-    await bootstrapOssKraken(env.adminId, env.adminLogin, this.passwordHash, env.couchDbUrl);
-    return !!updatedEnvs ? updatedEnvs : env;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    await bootstrapOssKraken(uuid(), env.adminLogin, this.passwordHash, env.couchDbUrl);
+    return updatedEnvs;
   }
 
 }
@@ -130,9 +175,9 @@ export class KrakenInitializer implements EnvInitializer {
   ) {}
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
-    await bootstrapCloudKraken(env.adminId, env.adminLogin, this.passwordHash, this.masterGroupId, this.masterGroupPassword, env.couchDbUrl);
-    return !!updatedEnvs ? updatedEnvs : env;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    await bootstrapCloudKraken(uuid(), env.adminLogin, this.passwordHash, this.masterGroupId, this.masterGroupPassword, env.couchDbUrl);
+    return updatedEnvs;
   }
 }
 
@@ -153,10 +198,10 @@ export class GroupInitializer implements EnvInitializer {
   ) {}
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
     const api = await Api(env.iCureUrl, env.adminLogin, env.adminPassword, webcrypto as any, this.fetchImpl);
     await createGroup(api, env.testGroupId);
-    return !!updatedEnvs ? updatedEnvs : env;
+    return updatedEnvs;
   }
 }
 
@@ -217,7 +262,7 @@ export class NewMasterUserInitializerComposite extends UserCreationComposite imp
   ) { super(); }
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
     const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
     const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, this.fetchImpl);
     const jwk = {
@@ -227,9 +272,7 @@ export class NewMasterUserInitializerComposite extends UserCreationComposite imp
     await api.cryptoApi.cacheKeyPair(jwk)
     await api.cryptoApi.storeKeyPair(`${masterCredentials.dataOwnerId}.${masterCredentials.publicKey.slice(-32)}`, jwk)
     const createdUsers = await this.create(api);
-    return !!updatedEnvs
-      ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
-      : {...env, dataOwnerDetails: { ...env.dataOwnerDetails, ...createdUsers }}
+    return {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
   }
 }
 
@@ -253,18 +296,17 @@ export class OldMasterUserInitializerComposite extends UserCreationComposite imp
   ) { super(); }
 
   async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : undefined;
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
     const api = await Api(env.iCureUrl, env.masterHcp?.user!, env.masterHcp?.password!, webcrypto as any, this.fetchImpl);
+    const masterUser = await api.userApi.getUserByEmail(env.masterHcp?.user!)
     const jwk = {
       publicKey: spkiToJwk(hex2ua(env.masterHcp?.publicKey!)),
       privateKey: pkcs8ToJwk(hex2ua(env.masterHcp?.privateKey!)),
     };
     await api.cryptoApi.cacheKeyPair(jwk)
-    await api.cryptoApi.storeKeyPair(`${env.masterHcpId}.${env.masterHcp?.publicKey.slice(-32)}`, jwk)
+    await api.cryptoApi.storeKeyPair(`${masterUser.healthcarePartyId}.${env.masterHcp?.publicKey.slice(-32)}`, jwk)
     const createdUsers = await this.create(api);
-    return !!updatedEnvs
-      ? {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
-      : {...env, dataOwnerDetails: { ...env.dataOwnerDetails, ...createdUsers }}
+    return {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
   }
 }
 

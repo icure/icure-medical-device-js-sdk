@@ -6,7 +6,7 @@ import { webcrypto } from 'crypto'
 import { hex2ua, sleep } from '@icure/api'
 import {
   getEnvironmentInitializer,
-  getEnvVariables, getTempEmail, hcp1Username,
+  getEnvVariables, getTempEmail, hcp1Username, hcp3Username,
   ICureTestEmail, patUsername,
   setLocalStorage,
   TestUtils,
@@ -54,7 +54,7 @@ describe('A Healthcare Party', () => {
 
     const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env.iCureUrl,
-      env.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_3_USER!]);
+      env.dataOwnerDetails[hcp3Username]);
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 

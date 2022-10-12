@@ -15,7 +15,7 @@ import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFac
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
 import {
-  CreateHcpComponent, CreatePatientComponent,
+  CreateHcpComponent, CreatePatientComponent, DescribeInitializer,
   DockerComposeInitializer,
   EnvInitializer,
   GroupInitializer,
@@ -62,14 +62,13 @@ export type TestVars = {
   backendType: string,
   adminLogin: string,
   adminPassword: string,
-  adminId: string,
   masterHcp: UserDetails | undefined,
-  masterHcpId: string | undefined,
   dataOwnerDetails: { [key: string]: UserDetails}
 }
 
 export function getEnvVariables(): TestVars {
-  const masterHcpDetails = !!process.env.ICURE_TEST_MASTER_LOGIN
+  const masterHcpDetails =
+    (!!process.env.ICURE_TEST_MASTER_LOGIN && !!process.env.ICURE_TEST_MASTER_PWD && !!process.env.ICURE_TEST_MASTER_PRIV && !!process.env.ICURE_TEST_MASTER_PUB)
     ? {
       user: process.env.ICURE_TEST_MASTER_LOGIN!,
       password: process.env.ICURE_TEST_MASTER_PWD!,
@@ -90,9 +89,7 @@ export function getEnvVariables(): TestVars {
     backendType: process.env.BACKEND_TYPE ?? "kraken",
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? "john",
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? "LetMeIn",
-    adminId: process.env.ICURE_TEST_ADMIN_ID ?? "2aadbf66-2761-4e87-97e9-431ad5a72bec",
     masterHcp: masterHcpDetails,
-    masterHcpId: process.env.ICURE_TEST_MASTER_ID ?? "730d24e1-8cc4-4ded-b02b-365f7c5d2c61",
     dataOwnerDetails: {}
   }
 }
@@ -140,7 +137,8 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     creationStep.add(new CreateHcpComponent(hcp2Username))
     creationStep.add(new CreateHcpComponent(hcp3Username))
     creationStep.add(new CreatePatientComponent(patUsername))
-    cachedInitializer = new SafeguardInitializer(creationStep)
+    const explanationStep = new DescribeInitializer(creationStep)
+    cachedInitializer = new SafeguardInitializer(explanationStep)
   }
   return cachedInitializer
 }
