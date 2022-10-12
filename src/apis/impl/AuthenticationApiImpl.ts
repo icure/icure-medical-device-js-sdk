@@ -18,6 +18,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly messageGatewayApi: MessageGatewayApi
   private readonly errorHandler: ErrorHandler
   private readonly sanitizer: Sanitizer
+  private readonly _crypto: Crypto
 
   constructor(
     messageGatewayApi: MessageGatewayApi,
@@ -26,6 +27,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     authProcessBySmsId: string,
     errorHandler: ErrorHandler,
     sanitizer: Sanitizer,
+    crypto: Crypto,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -40,6 +42,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.messageGatewayApi = messageGatewayApi
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer
+    this._crypto = crypto
   }
 
   async startAuthentication(
@@ -193,7 +196,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withICureBaseUrl(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
-      .withCrypto(require('crypto').webcrypto)
+      .withCrypto(this._crypto)
       .build()
 
     const user = await api.userApi.getLoggedUser()
