@@ -119,7 +119,7 @@ export class NotificationApiImpl implements NotificationApi {
       })
   }
 
-  async getPendingNotifications(): Promise<Array<Notification>> {
+  async getPendingNotificationsAfter(afterDate?:number): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -133,8 +133,11 @@ export class NotificationApiImpl implements NotificationApi {
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new NotificationFilter().forDataOwner(this.dataOwnerApi.getDataOwnerOf(user)).build()
-    return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
+    const filter = await new NotificationFilter()
+      .afterDateFilter(this._findAfterDateFilterValue(afterDate))
+      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .build()
+    return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
   }
 
   async concatenateFilterResults(
@@ -147,11 +150,19 @@ export class NotificationApiImpl implements NotificationApi {
     return !paginatedNotifications.nextKeyPair?.startKeyDocId
       ? accumulator.concat(paginatedNotifications.rows)
       : this.concatenateFilterResults(
-          filter,
-          paginatedNotifications.nextKeyPair.startKeyDocId,
-          limit,
-          accumulator.concat(paginatedNotifications.rows)
-        )
+        filter,
+        paginatedNotifications.nextKeyPair.startKeyDocId,
+        limit,
+        accumulator.concat(paginatedNotifications.rows)
+      )
+  }
+
+  private _findAfterDateFilterValue(afterDate?: number): number {
+    if (afterDate != undefined) {
+      return afterDate
+    }
+
+    return new Date().getTime() - (1000 * 60 * 60 * 24 * 30);
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
