@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  couchdb:
+    image: couchdb:3.2.2
+    container_name: couchdb-test
+    ports:
+      - "${COUCHDB_PORT}:5984"
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+
+  icure-oss-test:
+    image: kraken-oss:arm64
+    container_name: icure-oss-test
+    ports:
+      - "5005:5005"
+      - "${AS_PORT}:16043"
+    environment:
+      - ICURE_COUCHDB_URL=http://couchdb-test:5984
+      - ICURE_COUCHDB_USERNAME=${COUCHDB_USER}
+      - ICURE_COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+      - ICURE_COUCHDB_POPULATEDATABASEFROMLOCALXMLS=false
+      - ICURE_AUTHENTICATION_LOCAL=true
+      - ICURE_OBJECTSTORAGE_ICURECLOUDURL=http://icure-oss-test:16043
+      - ICURE_OBJECTSTORAGE_CACHELOCATION=/tmp
+    depends_on:
+      - couchdb
+
+  init-db:
+    build: ./docker/init_oss
+    depends_on:
+      - icure-oss-test
+    profiles:
+      - init

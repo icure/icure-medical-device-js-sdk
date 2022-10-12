@@ -42,9 +42,11 @@ let hcp1User: User | undefined = undefined;
 
 describe("Subscription API", () => {
 
-  before(async () => {
+  before(async function () {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
+
+    if (env.backendType === "oss") this.skip()
 
     medtechApi = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)

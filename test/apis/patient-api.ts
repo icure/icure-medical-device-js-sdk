@@ -74,7 +74,8 @@ describe('Patient API', () => {
     assert(createdHealthElement.systemMetaData?.delegations[hcp1User!.healthcarePartyId!] != undefined)
   })
 
-  it('Patient sharing its own information with HCP', async () => {
+  it('Patient sharing its own information with HCP', async function () {
+    if (env!.backendType === "oss") this.skip()
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcp1User!.healthcarePartyId!)
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user

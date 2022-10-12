@@ -82,11 +82,8 @@ export class DescribeInitializer implements EnvInitializer {
       lines.push(`With Message Gateway @ ${updatedEnvs.msgGtwUrl}`)
     }
     lines.push(`With backend version ${updatedEnvs.backendType.toUpperCase()}`)
-    if (!!updatedEnvs.masterHcp) {
-      lines.push(`Using existing master HCP with login ${updatedEnvs.masterHcp.user}`)
-    } else {
-      lines.push(`Using a new master HCP`)
-    }
+    lines.push(`Using master HCP with login ${updatedEnvs.masterHcp!.user}`)
+
     const maxLen = lines.reduce( function (previous, current) { return current.length > previous ? current.length : previous }, 0)
     console.log('#'.repeat(maxLen+4))
     console.log(`#${' '.repeat(maxLen+2)}#`)
@@ -206,11 +203,103 @@ export class GroupInitializer implements EnvInitializer {
 }
 
 /**
- * Base abstract class for the Composite hierarchy.
+ * This step calls the original execute method and then decorates it by creating a new master HCP user in the test group.
  */
-export abstract class UserCreationComposite implements EnvComponent {
+export class MasterUserInGroupInitializer implements EnvInitializer {
+
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param fetchImpl an implementation of the fetch method
+   */
+  constructor(
+    private initializer: EnvInitializer | null,
+    private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
+  ) {}
+
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
+    return {
+      ...updatedEnvs,
+      masterHcp: {
+        user: masterCredentials.login,
+        password: masterCredentials.password,
+        publicKey: masterCredentials.publicKey,
+        privateKey: masterCredentials.privateKey
+      }
+    }
+  }
+}
+
+/**
+ * This step calls the original execute method and then decorates it by creating a new master HCP user that is not in a group.
+ */
+export class MasterUserInitializer implements EnvInitializer {
+
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param fetchImpl an implementation of the fetch method
+   */
+  constructor(
+    private initializer: EnvInitializer | null,
+    private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
+  ) {}
+
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    const api = await Api(env.iCureUrl, env.adminLogin, env.adminPassword, webcrypto as any, this.fetchImpl)
+    const masterLogin = `master-${uuid().substring(0, 8)}@icure.com`
+    const masterCredentials = await createHealthcarePartyUser(api, masterLogin, uuid())
+    return {
+      ...updatedEnvs,
+      masterHcp: {
+        user: masterCredentials.login,
+        password: masterCredentials.password,
+        publicKey: masterCredentials.publicKey,
+        privateKey: masterCredentials.privateKey
+      }
+    }
+  }
+}
+
+/**
+ * This class is part both of the composite and the decorator hierarchy.
+ * It calls the original execute method, then decorates it by creating an instance of the ICC API for an existing
+ * master HCP with the credentials passed in the env parameter, and finally use the master HCP to create all the other
+ * users passed in the add method of the composite.
+ */
+export class UserInitializerComposite implements EnvInitializer, EnvComponent {
 
   private components: EnvComponent[] = []
+
+  /**
+   * Constructor method
+   *
+   * @param initializer a previous step of the initialization pipeline
+   * @param fetchImpl an implementation of the fetch method
+   */
+  constructor(
+    private initializer: EnvInitializer | null,
+    private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
+  ) { }
+
+  async execute(env: TestVars): Promise<TestVars> {
+    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
+    const api = await Api(updatedEnvs.iCureUrl, updatedEnvs.masterHcp?.user!, updatedEnvs.masterHcp?.password!, webcrypto as any, this.fetchImpl);
+    const masterUser = await api.userApi.getUserByEmail(updatedEnvs.masterHcp?.user!)
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(updatedEnvs.masterHcp!.publicKey!)),
+      privateKey: pkcs8ToJwk(hex2ua(updatedEnvs.masterHcp!.privateKey!)),
+    };
+    await api.cryptoApi.cacheKeyPair(jwk)
+    await api.cryptoApi.storeKeyPair(`${masterUser.healthcarePartyId}.${updatedEnvs.masterHcp!.publicKey.slice(-32)}`, jwk)
+    const createdUsers = await this.create(api);
+    return {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
+  }
 
   /**
    * The create methods calls all the create methods of the components, await for all of them to be finished and then
@@ -240,74 +329,6 @@ export abstract class UserCreationComposite implements EnvComponent {
     this.components = [...this.components, component]
   }
 
-}
-
-/**
- * This class is part both of the composite and the decorator hierarchy.
- * It calls the original execute method, then decorates it by creating a master HCP user with the credentials passed
- * in the env parameter, and finally use the master HCP to create all the other users passed in the add method of the
- * composite.
- */
-export class NewMasterUserInitializerComposite extends UserCreationComposite implements EnvInitializer {
-
-  /**
-   * Constructor method
-   *
-   * @param initializer a previous step of the initialization pipeline
-   * @param fetchImpl an implementation of the fetch method
-   */
-  constructor(
-    private initializer: EnvInitializer | null,
-    private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
-  ) { super(); }
-
-  async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
-    const masterCredentials = await createMasterHcpUser(env.adminLogin, env.adminPassword, env.testGroupId, this.fetchImpl, env.iCureUrl);
-    const api = await Api(env.iCureUrl, masterCredentials.login, masterCredentials.password, webcrypto as any, this.fetchImpl);
-    const jwk = {
-      publicKey: spkiToJwk(hex2ua(masterCredentials.publicKey)),
-      privateKey: pkcs8ToJwk(hex2ua(masterCredentials.privateKey)),
-    };
-    await api.cryptoApi.cacheKeyPair(jwk)
-    await api.cryptoApi.storeKeyPair(`${masterCredentials.dataOwnerId}.${masterCredentials.publicKey.slice(-32)}`, jwk)
-    const createdUsers = await this.create(api);
-    return {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
-  }
-}
-
-/**
- * This class is part both of the composite and the decorator hierarchy.
- * It calls the original execute method, then decorates it by creating an instance of the ICC API for an existing
- * master HCP with the credentials passed in the env parameter, and finally use the master HCP to create all the other
- * users passed in the add method of the composite.
- */
-export class OldMasterUserInitializerComposite extends UserCreationComposite implements EnvInitializer {
-
-  /**
-   * Constructor method
-   *
-   * @param initializer a previous step of the initialization pipeline
-   * @param fetchImpl an implementation of the fetch method
-   */
-  constructor(
-    private initializer: EnvInitializer | null,
-    private fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
-  ) { super(); }
-
-  async execute(env: TestVars): Promise<TestVars> {
-    const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env;
-    const api = await Api(env.iCureUrl, env.masterHcp?.user!, env.masterHcp?.password!, webcrypto as any, this.fetchImpl);
-    const masterUser = await api.userApi.getUserByEmail(env.masterHcp?.user!)
-    const jwk = {
-      publicKey: spkiToJwk(hex2ua(env.masterHcp?.publicKey!)),
-      privateKey: pkcs8ToJwk(hex2ua(env.masterHcp?.privateKey!)),
-    };
-    await api.cryptoApi.cacheKeyPair(jwk)
-    await api.cryptoApi.storeKeyPair(`${masterUser.healthcarePartyId}.${env.masterHcp?.publicKey.slice(-32)}`, jwk)
-    const createdUsers = await this.create(api);
-    return {...updatedEnvs, dataOwnerDetails: { ...updatedEnvs.dataOwnerDetails, ...createdUsers }}
-  }
 }
 
 /**

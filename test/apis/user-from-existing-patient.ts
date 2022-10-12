@@ -32,9 +32,11 @@ let patApi: MedTechApi;
 let patUser: User;
 
 describe('A Healthcare Party', () => {
-  before(async () => {
+  before(async function ()  {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
+
+    if (env.backendType === "oss") this.skip()
 
     hcp1Api = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)

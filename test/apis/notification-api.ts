@@ -52,6 +52,13 @@ function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, e
   })
 }
 
+async function modifyNotificationAndExpectFailure(api: MedTechApi, notification: Notification) {
+  api.notificationApi.createOrModifyNotification(notification).then(
+    () => {throw new Error("Illegal state");},
+    (e) => assert(e != undefined)
+  );
+}
+
 describe('Notification API', async function () {
   before(async function () {
     const initializer = await getEnvironmentInitializer();

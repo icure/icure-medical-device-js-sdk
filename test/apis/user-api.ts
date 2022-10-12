@@ -17,9 +17,11 @@ let hcpId: string | undefined;
 
 describe('User API', () => {
 
-  before(async () => {
+  before(async function () {
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
+
+    if (env.backendType === "oss") this.skip()
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username]);
     hcpId = hcpApiAndUser.user.healthcarePartyId;
