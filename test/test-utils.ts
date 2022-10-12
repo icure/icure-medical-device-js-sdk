@@ -129,7 +129,7 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
     }
-    const groupStep = env.backendType === "oss" ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
+    const groupStep = (env.backendType === "oss" || !!process.env.GROUP_EXISTS ) ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
     const masterInitializerClass = env.backendType === "kraken" ? MasterUserInGroupInitializer : MasterUserInitializer
     const masterStep = !!env.masterHcp ? groupStep : new masterInitializerClass(groupStep, fetch)
     const creationStep = new UserInitializerComposite(masterStep, fetch)
