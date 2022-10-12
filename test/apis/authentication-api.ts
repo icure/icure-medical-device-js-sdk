@@ -25,11 +25,13 @@ describe('Authentication API', () => {
 
   before(async function () {
     this.timeout(600000)
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username]);
-    hcpId = hcpApiAndUser.user.healthcarePartyId;
+    if (env.backendType === "oss") this.skip()
+
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
+    hcpId = hcpApiAndUser.user.healthcarePartyId
   });
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
     try {

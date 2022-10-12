@@ -19,8 +19,8 @@ import {
   DockerComposeInitializer,
   EnvInitializer,
   GroupInitializer,
-  KrakenInitializer, NewMasterUserInitializerComposite, OldMasterUserInitializerComposite,
-  OssInitializer, SafeguardInitializer
+  KrakenInitializer, MasterUserInGroupInitializer, MasterUserInitializer,
+  OssInitializer, SafeguardInitializer, UserInitializerComposite
 } from "./test-setup-decorators";
 
 let cachedHcpApi: MedTechApi | undefined;
@@ -130,9 +130,9 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
         : new KrakenInitializer(setupStep);
     }
     const groupStep = env.backendType === "oss" ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
-    const creationStep = !!env.masterHcp
-      ? new OldMasterUserInitializerComposite(groupStep, fetch)
-      : new NewMasterUserInitializerComposite(groupStep, fetch)
+    const masterInitializerClass = env.backendType === "kraken" ? MasterUserInGroupInitializer : MasterUserInitializer
+    const masterStep = !!env.masterHcp ? groupStep : new masterInitializerClass(groupStep, fetch)
+    const creationStep = new UserInitializerComposite(masterStep, fetch)
     creationStep.add(new CreateHcpComponent(hcp1Username))
     creationStep.add(new CreateHcpComponent(hcp2Username))
     creationStep.add(new CreateHcpComponent(hcp3Username))
