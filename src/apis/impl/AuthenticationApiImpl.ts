@@ -8,6 +8,7 @@ import { retry } from '@icure/api'
 import { medTechApi, MedTechApi } from '../MedTechApi'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
+import * as Crypto from "crypto";
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   constructor(
@@ -15,6 +16,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     iCureBasePath: string,
     authProcessByEmailId: string,
     authProcessBySmsId: string,
+    crypto: Crypto,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -25,6 +27,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.messageGatewayApi = messageGatewayApi
     this.authProcessByEmailId = authProcessByEmailId
     this.authProcessBySmsId = authProcessBySmsId
+    this.crypto = crypto
     this.fetchImpl = fetchImpl
   }
 
@@ -32,6 +35,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly authProcessByEmailId: string
   private readonly authProcessBySmsId: string
   private readonly messageGatewayApi: MessageGatewayApi
+  private readonly crypto: Crypto
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 
   async startAuthentication(
@@ -161,7 +165,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withICureBaseUrl(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
-      .withCrypto(require('crypto').webcrypto)
+      .withCrypto(this.crypto)
       .build()
 
     const user = await api.userApi.getLoggedUser()
