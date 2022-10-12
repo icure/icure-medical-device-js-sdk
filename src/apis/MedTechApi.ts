@@ -135,7 +135,7 @@ export class MedTechApi {
 
     this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined
     this._authenticationApi = authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi
-        ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId)
+        ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId, api.cryptoApi.crypto)
         : undefined
     this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password)
     this._codingApi = new CodingApiImpl(api)
