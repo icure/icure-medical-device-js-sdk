@@ -9,6 +9,7 @@ import { Sanitizer } from '../../services/Sanitizer'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { retry } from '@icure/api'
 import { User } from '../../models/User'
+import * as Crypto from 'crypto'
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
@@ -18,6 +19,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly messageGatewayApi: MessageGatewayApi
   private readonly errorHandler: ErrorHandler
   private readonly sanitizer: Sanitizer
+  private readonly crypto: Crypto
 
   constructor(
     messageGatewayApi: MessageGatewayApi,
@@ -26,6 +28,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     authProcessBySmsId: string,
     errorHandler: ErrorHandler,
     sanitizer: Sanitizer,
+    crypto: Crypto,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -36,6 +39,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.messageGatewayApi = messageGatewayApi
     this.authProcessByEmailId = authProcessByEmailId
     this.authProcessBySmsId = authProcessBySmsId
+    this.crypto = crypto
     this.fetchImpl = fetchImpl
     this.messageGatewayApi = messageGatewayApi
     this.errorHandler = errorHandler
@@ -193,7 +197,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withICureBaseUrl(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
-      .withCrypto(require('crypto').webcrypto)
+      .withCrypto(this.crypto)
       .build()
 
     const user = await api.userApi.getLoggedUser()

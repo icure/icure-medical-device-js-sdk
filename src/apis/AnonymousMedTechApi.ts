@@ -38,7 +38,8 @@ export class AnonymousMedTechApi {
       authProcessByEmailId,
       authProcessBySmsId,
       this._errorHandler,
-      this._sanitizer
+      this._sanitizer,
+      api.cryptoApi.crypto
     )
     this._cryptoApi = api.cryptoApi
   }
