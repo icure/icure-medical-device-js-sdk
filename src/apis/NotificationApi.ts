@@ -1,7 +1,7 @@
-import {MaintenanceTaskStatusEnum, Notification} from '../models/Notification'
-import {Filter} from '../filter/Filter'
-import {PaginatedListNotification} from '../models/PaginatedListNotification'
-import {Connection} from "../models/Connection";
+import { MaintenanceTaskStatusEnum, Notification } from '../models/Notification'
+import { Filter } from '../filter/Filter'
+import { PaginatedListNotification } from '../models/PaginatedListNotification'
+import { Connection } from '../models/Connection'
 
 /**
  * The NotificationApi interface provides methods to subscribe to notifications.
@@ -37,13 +37,15 @@ export interface NotificationApi {
    * @param notificationId the id of the Notification to retrieve.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  getNotification(notificationId: string): Promise<Notification | undefined>;
+  getNotification(notificationId: string): Promise<Notification | undefined>
 
   /**
    * Gets all the Notifications with status "pending" that the current dataOwner can access
+   *
+   * @param fromDate : Default value is now less 30 days
    * @return an Array of the Notifications matching those criteria
    */
-  getPendingNotifications(): Promise<Array<Notification>>;
+  getPendingNotificationsAfter(fromDate?: number): Promise<Array<Notification>>
 
   /**
    * Updates the status of a Notification.
@@ -51,7 +53,7 @@ export interface NotificationApi {
    * @param newStatus the new status
    * @return the updated Notification
    */
-  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>;
+  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>
 
   /**
    * Opens a WebSocket Connection in order to receive all the Notification corresponding to specific filter criteria.

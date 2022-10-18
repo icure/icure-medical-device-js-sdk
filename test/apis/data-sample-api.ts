@@ -314,8 +314,12 @@ describe('Data Samples API', () => {
     const content = { en: { stringValue: 'Hello world' } }
     const contentString = JSON.stringify(content)
     const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({ content }))
+
     await h1api.dataSampleApi.giveAccessTo(dataSample, pApi.dataOwnerApi.getDataOwnerIdOf(p))
+
+    // Won't work because need to have the latest revision
     expect(h1api.dataSampleApi.giveAccessTo(dataSample, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
+
     expect(JSON.stringify((await h1api.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
     expect(JSON.stringify((await pApi.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
     expect(h2api.dataSampleApi.getDataSample(dataSample.id!)).to.be.rejected

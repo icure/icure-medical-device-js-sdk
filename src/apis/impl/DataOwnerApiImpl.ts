@@ -6,6 +6,7 @@ import {
   IccDeviceApi,
   IccHcpartyXApi,
   IccPatientXApi,
+  IccUserXApi,
   Patient,
   pkcs8ToJwk,
   spkiToJwk,
@@ -16,31 +17,38 @@ import { User } from '../../models/User'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { UserMapper } from '../../mappers/user'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
 
 export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly cryptoApi: IccCryptoXApi
+  private readonly userApi: IccUserXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
   private readonly patientApi: IccPatientXApi
   private readonly hcPartyApi: IccHcpartyXApi
   private readonly deviceApi: IccDeviceApi
+  private readonly maintenanceTaskApi: IccMaintenanceTaskXApi
   private readonly errorHandler: ErrorHandler
 
   constructor(
     api: {
       cryptoApi: IccCryptoXApi
+      userApi: IccUserXApi
       dataOwnerApi: IccDataOwnerXApi
       patientApi: IccPatientXApi
       healthcarePartyApi: IccHcpartyXApi
       deviceApi: IccDeviceApi
+      maintenanceTaskApi: IccMaintenanceTaskXApi
     },
     errorHandler: ErrorHandler
   ) {
-    this.dataOwnerApi = api.dataOwnerApi
     this.cryptoApi = api.cryptoApi
+    this.userApi = api.userApi
+    this.dataOwnerApi = api.dataOwnerApi
     this.patientApi = api.patientApi
     this.hcPartyApi = api.healthcarePartyApi
     this.deviceApi = api.deviceApi
     this.errorHandler = errorHandler
+    this.maintenanceTaskApi = api.maintenanceTaskApi
   }
 
   getDataOwnerIdOf(user: User): string {
@@ -80,8 +88,11 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     if (dataOwner.dataOwner.publicKey == undefined) {
       await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
     } else if (dataOwner.dataOwner.publicKey != publicKey && overwriteExistingKeys) {
-      console.log(`Generating a new RSA Key Pair for user ${user.id}`)
-      //TODO User lost his key
+      console.log(`Adding a new RSA Key Pair to user ${user.id}`)
+      await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
+        publicKey: publicKey,
+        privateKey: privateKey,
+      })
     }
 
     return { publicKey: publicKey, privateKey: privateKey }
@@ -139,5 +150,19 @@ export class DataOwnerApiImpl implements DataOwnerApi {
 
     await this.patientApi.modifyPatientWithUser(userDto, patientToUpdate)
     this.cryptoApi.emptyHcpCache(patientToUpdate.id!)
+  }
+
+  async giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<boolean> {
+    try {
+      const currentUser = await this.userApi.getCurrentUser()
+      await this.cryptoApi.giveAccessBackTo(currentUser, ownerId, ownerNewPublicKey)
+      return Promise.resolve(true)
+    } catch (e) {
+      throw this.errorHandler.createErrorWithMessage(
+        `Could not give access back to owner ${ownerId} with public key ${ownerNewPublicKey}. Try again later`
+      )
+    }
+
+    return Promise.resolve(false)
   }
 }
