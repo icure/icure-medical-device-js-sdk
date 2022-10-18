@@ -119,7 +119,7 @@ export class NotificationApiImpl implements NotificationApi {
       })
   }
 
-  async getPendingNotificationsAfter(afterDate?:number): Promise<Array<Notification>> {
+  async getPendingNotificationsAfter(afterDate?: number): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -137,7 +137,7 @@ export class NotificationApiImpl implements NotificationApi {
       .afterDateFilter(this._findAfterDateFilterValue(afterDate))
       .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
       .build()
-    return (await this.concatenateFilterResults(filter)).filter( it => it.status === "pending");
+    return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }
 
   async concatenateFilterResults(
@@ -150,11 +150,11 @@ export class NotificationApiImpl implements NotificationApi {
     return !paginatedNotifications.nextKeyPair?.startKeyDocId
       ? accumulator.concat(paginatedNotifications.rows)
       : this.concatenateFilterResults(
-        filter,
-        paginatedNotifications.nextKeyPair.startKeyDocId,
-        limit,
-        accumulator.concat(paginatedNotifications.rows)
-      )
+          filter,
+          paginatedNotifications.nextKeyPair.startKeyDocId,
+          limit,
+          accumulator.concat(paginatedNotifications.rows)
+        )
   }
 
   private _findAfterDateFilterValue(afterDate?: number): number {
@@ -162,7 +162,7 @@ export class NotificationApiImpl implements NotificationApi {
       return afterDate
     }
 
-    return new Date().getTime() - (1000 * 60 * 60 * 24 * 30);
+    return new Date().getTime() - 1000 * 60 * 60 * 24 * 30
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
