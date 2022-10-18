@@ -157,9 +157,9 @@ export class NotificationApiImpl implements NotificationApi {
         )
   }
 
-  private _findAfterDateFilterValue(afterDate?: number): number {
-    if (afterDate != undefined) {
-      return afterDate
+  private _findAfterDateFilterValue(fromDate?: number): number {
+    if (fromDate != undefined) {
+      return fromDate
     }
 
     return new Date().getTime() - 1000 * 60 * 60 * 24 * 30
