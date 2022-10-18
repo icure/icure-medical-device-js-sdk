@@ -152,8 +152,8 @@ export class MedTechApi {
     this._errorHandler = new ErrorHandlerImpl()
     this._sanitizer = new SanitizerImpl(this._errorHandler)
 
-    this._storage = storage ?? new LocalStorageImpl()
-    this._keyStorage = keyStorage ?? new KeyStorageImpl(this._storage)
+    this._storage = storage || new LocalStorageImpl()
+    this._keyStorage = keyStorage || new KeyStorageImpl(this._storage)
 
     this._messageGatewayApi =
       msgGtwUrl && msgGtwSpecId
