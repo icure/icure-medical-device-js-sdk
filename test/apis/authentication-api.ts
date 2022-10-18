@@ -5,7 +5,7 @@ import 'isomorphic-fetch'
 import {
   getEnvironmentInitializer,
   getEnvVariables,
-  hcp1Username,
+  hcp1Username, hcp3Username,
   setLocalStorage,
   TestUtils,
   TestVars
@@ -33,6 +33,7 @@ describe('Authentication API', () => {
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcpId = hcpApiAndUser.user.healthcarePartyId
   });
+
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
     try {
       await new AnonymousMedTechApiBuilder()
@@ -209,20 +210,24 @@ describe('Authentication API', () => {
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
     // Given
-    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.patAuthProcessId,
+      hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, currentPatient)
 
     // User logs on another device
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId(patAuthProcessId)
-      .withAuthProcessBySmsId(patAuthProcessId)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
@@ -276,24 +281,28 @@ describe('Authentication API', () => {
 
   it('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
     // Given
-    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
-    const hcpApiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.patAuthProcessId,
+      hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
-    const updatedPatient = await patApiAndUser.api.patientApi.giveAccessTo(currentPatient, hcpApiAndUser.user.healthcarePartyId!)
+    await patApiAndUser.api.patientApi.giveAccessTo(currentPatient, hcpApiAndUser.user.healthcarePartyId!)
 
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, currentPatient)
     await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcpApiAndUser.user.healthcarePartyId!)
 
     // User lost his key and logs back
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-      .withICureBaseUrl(iCureUrl)
-      .withMsgGwUrl(msgGtwUrl)
-      .withMsgGwSpecId(specId)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId(patAuthProcessId)
-      .withAuthProcessBySmsId(patAuthProcessId)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(

@@ -37,11 +37,6 @@ describe('Patient API', () => {
   });
 
   it('Can create a patient and a related Healthcare Element', async () => {
-    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
-    const medtechApi = apiAndUser.api
-    const loggedUser = apiAndUser.user
 
     const patientToCreate = new Patient({
       firstName: 'John',
@@ -99,15 +94,12 @@ describe('Patient API', () => {
   }).timeout(60000)
 
   it("Patient may not access info of another patient if he doesn't have any delegation", async () => {
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor( env!.iCureUrl, env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
-    const hcpApi = hcpApiAndUser.api
-
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
-    const createdPatient = await TestUtils.createDefaultPatient(hcpApi)
+    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
 
     await patApi.patientApi.getPatient(createdPatient.id!).then(
       () => {
@@ -118,16 +110,13 @@ describe('Patient API', () => {
   })
 
   it('Patient may access info of another patient if he has the appropriate delegation', async () => {
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
-    const hcpApi = hcpApiAndUser.api
-
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
-    const createdPatient = await TestUtils.createDefaultPatient(hcpApi)
-    const sharedPatient = await hcpApi.patientApi.giveAccessTo(createdPatient, currentPatient.id!)
+    const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
+    const sharedPatient = await hcp1Api!.patientApi.giveAccessTo(createdPatient, currentPatient.id!)
 
     assert(sharedPatient.systemMetaData!.delegations[currentPatient.id!] != undefined)
     assert(sharedPatient.systemMetaData!.encryptionKeys[currentPatient.id!] != undefined)
@@ -203,14 +192,13 @@ describe('Patient API', () => {
   })
 
   it('Give access to will fail if the patient version does not match the latest', async () => {
-    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
-    const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
-    const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
+    const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const note = 'Winter is coming'
-    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow', note }))
-    await h1api.patientApi.giveAccessTo(patient, pApi.dataOwnerApi.getDataOwnerIdOf(p))
-    expect(h1api.patientApi.giveAccessTo(patient, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
-    expect((await h1api.patientApi.getPatient(patient.id!)).note).to.equal(note)
+    const patient = await hcp1Api!.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow', note }))
+    await hcp1Api!.patientApi.giveAccessTo(patient, pApi.dataOwnerApi.getDataOwnerIdOf(p))
+    expect(hcp1Api!.patientApi.giveAccessTo(patient, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
+    expect((await hcp1Api!.patientApi.getPatient(patient.id!)).note).to.equal(note)
     expect((await pApi.patientApi.getPatient(patient.id!)).note).to.equal(note)
     expect((await h2api.patientApi.getPatient(patient.id!)).note).to.be.undefined
   })
