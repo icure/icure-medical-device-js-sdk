@@ -39,7 +39,8 @@ function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Pati
 }
 
 describe('Healthcare Element API', () => {
-  before(async () => {
+  before(async function () {
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
@@ -160,9 +161,11 @@ describe('Healthcare Element API', () => {
   })
 
   it('Data Owner can filter all his Health Elements', async () => {
-    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
+    const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!)
 
-    const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
+    await createHealthcareElementForPatient(hcp2Api!, currentPatient)
+
+    const filter = await new HealthcareElementFilter().forDataOwner(hcp2User!.healthcarePartyId!).build()
 
     const filterResult = await hcp2Api!.healthcareElementApi.filterHealthcareElement(filter)
     expect(filterResult.rows.length).to.gt(0)

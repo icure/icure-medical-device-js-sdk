@@ -25,7 +25,8 @@ let hcp1User: User | undefined
 
 describe('Patient API', () => {
 
-  before(async () => {
+  before(async  function () {
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
@@ -127,11 +128,6 @@ describe('Patient API', () => {
   })
 
   it('HCP sharing healthcare element with another HCP', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
-    const hcp1Api = hcp1ApiAndUser.api
-
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
       env!.dataOwnerDetails[hcp2Username]);
@@ -165,11 +161,6 @@ describe('Patient API', () => {
   });
 
   it('Delegator may not share info of Patient', async () => {
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[process.env.ICURE_TS_TEST_HCP_USER!]);
-    const hcp1Api = hcp1ApiAndUser.api
-
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
       env!.iCureUrl,
       env!.dataOwnerDetails[hcp2Username]);
@@ -201,5 +192,5 @@ describe('Patient API', () => {
     expect((await hcp1Api!.patientApi.getPatient(patient.id!)).note).to.equal(note)
     expect((await pApi.patientApi.getPatient(patient.id!)).note).to.equal(note)
     expect((await h2api.patientApi.getPatient(patient.id!)).note).to.be.undefined
-  })
+  }).timeout(60000)
 })
