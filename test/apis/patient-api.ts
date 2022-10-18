@@ -88,7 +88,26 @@ describe('Patient API', () => {
     assert(hcpPatient.id == sharedPatient.id)
   }).timeout(60000)
 
-  it('Patient may not access info of another patient', async () => {
+  it("Patient may not access info of another patient if he doesn't have any delegation", async () => {
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const hcpApi = hcpApiAndUser.api
+
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApi = patApiAndUser.api
+    const patUser = patApiAndUser.user
+    const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
+
+    const createdPatient = await TestUtils.createDefaultPatient(hcpApi)
+
+    await patApi.patientApi.getPatient(createdPatient.id!).then(
+      () => {
+        throw Error(`Patient ${currentPatient.id} should not be able to access info of another patient !!`)
+      },
+      (e) => assert(e != undefined)
+    )
+  })
+
+  it('Patient may access info of another patient if he has the appropriate delegation', async () => {
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const hcpApi = hcpApiAndUser.api
 
@@ -103,12 +122,9 @@ describe('Patient API', () => {
     assert(sharedPatient.systemMetaData!.delegations[currentPatient.id!] != undefined)
     assert(sharedPatient.systemMetaData!.encryptionKeys[currentPatient.id!] != undefined)
 
-    await patApi.patientApi.getPatient(sharedPatient.id!).then(
-      () => {
-        throw Error(`Patient ${currentPatient.id} should not be able to access info of another patient !!`)
-      },
-      (e) => assert(e != undefined)
-    )
+    const foundPatient = await patApi.patientApi.getPatient(sharedPatient.id!)
+    expect(foundPatient.id!).to.equals(createdPatient.id!)
+    expect(foundPatient.note!).to.equals(createdPatient.note!)
   })
 
   it('HCP sharing healthcare element with another HCP', async () => {
