@@ -148,45 +148,48 @@ export class PatientApiImpl implements PatientApi {
       return patient
     }
 
-    return this.cryptoApi
-      .extractDelegationsSFKs(patientToModify, dataOwnerId)
-      .then((delKeys) => {
-        if (delKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(
-            `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
-          )
-        }
+    const delKeys = await this.cryptoApi.extractDelegationsSFKs(patientToModify, dataOwnerId)
+    if (delKeys.extractedKeys.length == 0) {
+      throw this.errorHandler.createErrorWithMessage(
+        `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
+      )
+    }
+    const secretKey = delKeys.extractedKeys.shift()!
+    const patientWithNewDelegations = await this.cryptoApi.addDelegationsAndEncryptionKeys(
+      null,
+      patientToModify,
+      dataOwnerId,
+      delegatedTo,
+      secretKey,
+      null
+    )
+    const encKeys = await this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId)
+    if (encKeys.extractedKeys.length == 0) {
+      throw this.errorHandler.createErrorWithMessage(
+        `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
+      )
+    }
+    const encKey = encKeys.extractedKeys.shift()!
+    const patientWithUpdatedAccesses = await this.cryptoApi.addDelegationsAndEncryptionKeys(
+      null,
+      patientToModify,
+      dataOwnerId,
+      delegatedTo,
+      null,
+      encKey
+    )
+    // const currentPatient = await this.patientApi.getPatientWithUser(currentUser, patientWithUpdatedAccesses.id!)
+    // const patientToUpdate = new PatientDto({
+    //   ...currentPatient,
+    //   delegations: patientWithUpdatedAccesses.delegations,
+    //   encryptionKeys: patientWithUpdatedAccesses.encryptionKeys,
+    // })
+    const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
+    if (!updatedPatient) {
+      throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
+    }
 
-        return delKeys.extractedKeys.shift()!
-      })
-      .then((secretKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, secretKey, null))
-      .then((patientWithNewDelegations) => this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId))
-      .then((encKeys) => {
-        if (encKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(
-            `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
-          )
-        }
-
-        return encKeys.extractedKeys.shift()!
-      })
-      .then((encKey) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, null, encKey))
-      .then(async (patientWithUpdatedAccesses) => {
-        const currentPatient = await this.patientApi.getPatientWithUser(currentUser, patientWithUpdatedAccesses.id!)
-        const patientToUpdate = new PatientDto({
-          ...currentPatient,
-          delegations: patientWithUpdatedAccesses.delegations,
-          encryptionKeys: patientWithUpdatedAccesses.encryptionKeys,
-        })
-        return this.patientApi.modifyPatientWithUser(currentUser, patientToUpdate)
-      })
-      .then((updatedPatient) => {
-        if (!updatedPatient) {
-          throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
-        }
-
-        return PatientMapper.toPatient(updatedPatient)!
-      })
+    return PatientMapper.toPatient(updatedPatient)!
   }
 
   async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {
