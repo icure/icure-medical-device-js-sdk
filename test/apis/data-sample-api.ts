@@ -25,7 +25,8 @@ let env: TestVars | undefined;
 
 describe('Data Samples API', () => {
 
-  before(async () => {
+  before(async function () {
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
   });

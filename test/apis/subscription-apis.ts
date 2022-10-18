@@ -43,6 +43,7 @@ let hcp1User: User | undefined = undefined;
 describe("Subscription API", () => {
 
   before(async function () {
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
