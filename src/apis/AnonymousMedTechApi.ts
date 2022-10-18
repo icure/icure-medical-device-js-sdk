@@ -1,6 +1,6 @@
 import { AuthenticationApi } from './AuthenticationApi'
 import { AuthenticationApiImpl } from './impl/AuthenticationApiImpl'
-import { Api, IccCryptoXApi, ua2hex } from '@icure/api'
+import { Api, IccCryptoXApi, KeyStorageFacade, KeyStorageImpl, LocalStorageImpl, StorageFacade, ua2hex } from '@icure/api'
 import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
 import { ErrorHandlerImpl } from '../services/impl/ErrorHandlerImpl'
 import { ErrorHandler } from '../services/ErrorHandler'
@@ -69,6 +69,8 @@ export class AnonymousMedTechApiBuilder {
   private authProcessBySmsId?: string
   private _preventCookieUsage: boolean = false
   private crypto?: Crypto
+  private storage?: StorageFacade<string>
+  private keyStorage?: KeyStorageFacade
 
   withICureBaseUrl(newICureBaseUrl: string): AnonymousMedTechApiBuilder {
     this.iCureBaseUrl = newICureBaseUrl.search('/rest/v[1-2]') == -1 ? newICureBaseUrl + '/rest/v2' : newICureBaseUrl
@@ -100,6 +102,16 @@ export class AnonymousMedTechApiBuilder {
     return this
   }
 
+  withStorage(storage: StorageFacade<string>): AnonymousMedTechApiBuilder {
+    this.storage = storage
+    return this
+  }
+
+  withKeyStorage(keyStorage: KeyStorageFacade): AnonymousMedTechApiBuilder {
+    this.keyStorage = keyStorage
+    return this
+  }
+
   preventCookieUsage(): AnonymousMedTechApiBuilder {
     this._preventCookieUsage = true
     return this
@@ -116,7 +128,10 @@ export class AnonymousMedTechApiBuilder {
       throw new Error('msgGtwSpecId is required')
     }
 
-    return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage).then(
+    const _storage = this.storage || new LocalStorageImpl()
+    const _keyStorage = this.keyStorage || new KeyStorageImpl(_storage)
+
+    return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage, undefined, _storage, _keyStorage).then(
       (api) =>
         new AnonymousMedTechApi(this.iCureBaseUrl, this.msgGwUrl!, this.msgGwSpecId!, this.authProcessByEmailId!, this.authProcessBySmsId!, api)
     )
