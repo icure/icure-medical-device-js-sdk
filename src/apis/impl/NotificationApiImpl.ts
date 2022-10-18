@@ -119,7 +119,7 @@ export class NotificationApiImpl implements NotificationApi {
       })
   }
 
-  async getPendingNotificationsAfter(afterDate?: number): Promise<Array<Notification>> {
+  async getPendingNotificationsAfter(fromDate?: number): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -134,7 +134,7 @@ export class NotificationApiImpl implements NotificationApi {
       )
     }
     const filter = await new NotificationFilter()
-      .afterDateFilter(this._findAfterDateFilterValue(afterDate))
+      .afterDate(this._findAfterDateFilterValue(fromDate))
       .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')

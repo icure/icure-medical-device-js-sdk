@@ -158,8 +158,11 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       await this.cryptoApi.giveAccessBackTo(currentUser, ownerId, ownerNewPublicKey)
       return Promise.resolve(true)
     } catch (e) {
-      console.log(`Could not give access back to owner ${ownerId} with pub key ${ownerNewPublicKey}`)
+      throw this.errorHandler.createErrorWithMessage(
+        `Could not give access back to owner ${ownerId} with public key ${ownerNewPublicKey}. Try again later`
+      )
     }
+
     return Promise.resolve(false)
   }
 }
