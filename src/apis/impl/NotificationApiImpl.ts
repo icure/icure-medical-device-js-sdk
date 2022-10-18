@@ -119,7 +119,7 @@ export class NotificationApiImpl implements NotificationApi {
       })
   }
 
-  async getPendingNotifications(): Promise<Array<Notification>> {
+  async getPendingNotificationsAfter(fromDate?: number): Promise<Array<Notification>> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -133,7 +133,10 @@ export class NotificationApiImpl implements NotificationApi {
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new NotificationFilter().forDataOwner(this.dataOwnerApi.getDataOwnerOf(user)).build()
+    const filter = await new NotificationFilter()
+      .afterDate(this._findAfterDateFilterValue(fromDate))
+      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .build()
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }
 
@@ -152,6 +155,14 @@ export class NotificationApiImpl implements NotificationApi {
           limit,
           accumulator.concat(paginatedNotifications.rows)
         )
+  }
+
+  private _findAfterDateFilterValue(fromDate?: number): number {
+    if (fromDate != undefined) {
+      return fromDate
+    }
+
+    return new Date().getTime() - 1000 * 60 * 60 * 24 * 30
   }
 
   async updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined> {
