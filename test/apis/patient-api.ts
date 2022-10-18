@@ -94,7 +94,8 @@ describe('Patient API', () => {
     assert(hcpPatient.id == sharedPatient.id)
   }).timeout(60000)
 
-  it("Patient may not access info of another patient if he doesn't have any delegation", async () => {
+  it("Patient may not access info of another patient if he doesn't have any delegation", async function() {
+    if (env!.backendType === "oss") this.skip()
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
