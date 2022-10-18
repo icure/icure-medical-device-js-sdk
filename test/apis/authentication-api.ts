@@ -84,7 +84,7 @@ describe('Authentication API', () => {
         "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, authProcessByEmailId and authProcessBySMSId"
       )
     }
-  })
+  }).timeout(60000)
 
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
     // Given
