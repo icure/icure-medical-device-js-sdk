@@ -128,8 +128,8 @@ export class AnonymousMedTechApiBuilder {
       throw new Error('msgGtwSpecId is required')
     }
 
-    const _storage = this.storage || new LocalStorageImpl()
-    const _keyStorage = this.keyStorage || new KeyStorageImpl(_storage)
+    const _storage = this.storage ?? new LocalStorageImpl()
+    const _keyStorage = this.keyStorage ?? new KeyStorageImpl(_storage)
 
     return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage, undefined, _storage, _keyStorage).then(
       (api) =>
