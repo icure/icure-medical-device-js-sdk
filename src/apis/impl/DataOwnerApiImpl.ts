@@ -7,6 +7,7 @@ import {
   IccHcpartyXApi,
   IccPatientXApi,
   IccUserXApi,
+  KeyStorageFacade,
   Patient,
   pkcs8ToJwk,
   spkiToJwk,
@@ -28,6 +29,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly deviceApi: IccDeviceApi
   private readonly maintenanceTaskApi: IccMaintenanceTaskXApi
   private readonly errorHandler: ErrorHandler
+  private readonly keyStorage: KeyStorageFacade
 
   constructor(
     api: {
@@ -39,7 +41,8 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       deviceApi: IccDeviceApi
       maintenanceTaskApi: IccMaintenanceTaskXApi
     },
-    errorHandler: ErrorHandler
+    errorHandler: ErrorHandler,
+    keyStorage: KeyStorageFacade
   ) {
     this.cryptoApi = api.cryptoApi
     this.userApi = api.userApi
@@ -49,6 +52,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     this.deviceApi = api.deviceApi
     this.errorHandler = errorHandler
     this.maintenanceTaskApi = api.maintenanceTaskApi
+    this.keyStorage = keyStorage
   }
 
   getDataOwnerIdOf(user: User): string {
@@ -74,7 +78,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       privateKey: pkcs8ToJwk(hex2ua(privateKey)),
     }
     await this.cryptoApi.cacheKeyPair(jwk)
-    await this.cryptoApi.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwk)
+    await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwk)
 
     const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)

@@ -19,6 +19,8 @@ export * from '@icure/api/icc-x-api/utils/uuid-encoder'
 
 export * from './src/utils/msgGtwMessageFactory'
 
+export { KeyStorageFacade, StorageFacade, LocalStorageImpl, KeyStorageImpl } from '@icure/api'
+
 export const ICURE_CLOUD_URL = 'https://kraken.icure.cloud'
 export const ICURE_FREE_URL = 'http://localhost:16043'
 export const MSG_GW_CLOUD_URL = 'https://msg-gw.icure.cloud'
