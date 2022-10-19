@@ -168,7 +168,9 @@ export class MedTechApi {
             authProcessBySmsId,
             this._errorHandler,
             this._sanitizer,
-            api.cryptoApi.crypto
+            api.cryptoApi.crypto,
+            this._storage,
+            this._keyStorage
           )
         : undefined
     this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password)
@@ -246,6 +248,14 @@ export class MedTechApi {
 
   get password(): string {
     return this._password
+  }
+
+  get storage(): StorageFacade<string> {
+    return this._storage
+  }
+
+  get keyStorage(): KeyStorageFacade {
+    return this._keyStorage
   }
 
   async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
@@ -371,7 +381,13 @@ export class MedTechApiBuilder {
 export const medTechApi = (api?: MedTechApi) => {
   const apiBuilder = new MedTechApiBuilder()
   if (api) {
-    return apiBuilder.withICureBaseUrl(api.iCureBaseUrl).withCrypto(api.cryptoApi.crypto).withUserName(api.username).withPassword(api.password)
+    return apiBuilder
+      .withICureBaseUrl(api.iCureBaseUrl)
+      .withCrypto(api.cryptoApi.crypto)
+      .withUserName(api.username)
+      .withPassword(api.password)
+      .withStorage(api.storage)
+      .withKeyStorage(api.keyStorage)
   }
 
   return apiBuilder

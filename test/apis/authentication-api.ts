@@ -6,7 +6,7 @@ import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
-import { hex2ua, sleep } from '@icure/api'
+import { hex2ua, StorageFacade } from '@icure/api'
 import { NotificationTypeEnum } from '../../src/models/Notification'
 
 setLocalStorage(fetch)
@@ -170,6 +170,86 @@ describe('Authentication API', () => {
     assert(currentPatient)
     assert(currentPatient.firstName == 'Antoine')
     assert(currentPatient.lastName == 'Duchâteau')
+  }).timeout(60000)
+
+  it('Patient should be able to signing up through email using a different Storage implementation', async () => {
+    // Given
+    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
+
+    const storage: Record<string, string> = {}
+
+    class MemoryStorage implements StorageFacade<string> {
+      deleteItem(key: string): void {
+        delete storage[key]
+      }
+
+      getItem(key: string): string | undefined {
+        return storage[key]
+      }
+
+      setItem(key: string, valueToStore: string): void {
+        storage[key] = valueToStore
+      }
+    }
+
+    const apiWithCustomStorage = async (iCureUrl: string, msgGtwUrl: string, msgGtwSpecId: string, authProcessId: string, hcpId: string) => {
+      const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+        .withICureBaseUrl(iCureUrl)
+        .withMsgGwUrl(msgGtwUrl)
+        .withMsgGwSpecId(msgGtwSpecId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessByEmailId(authProcessId)
+        .withAuthProcessBySmsId(authProcessId)
+        .withStorage(new MemoryStorage())
+        .build()
+
+      const email = await TestUtils.getTempEmail()
+      const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
+        'process.env.ICURE_RECAPTCHA',
+        email,
+        undefined,
+        'Antoine',
+        'Duchâteau',
+        hcpId,
+        false
+      )
+
+      const emails = await TestUtils.getEmail(email)
+
+      const subjectCode = emails.subject!
+      const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
+        anonymousMedTechApi.generateRSAKeypair()
+      )
+
+      if (result?.medTechApi == undefined) {
+        throw Error(`Couldn't sign up user by email for current test`)
+      }
+
+      const foundUser = await result.medTechApi.userApi.getLoggedUser()
+      await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
+        hex2ua(result.keyPair.privateKey)
+      )
+      assert(result)
+      assert(result!.token != null)
+      assert(result!.userId != null)
+
+      return { api: result.medTechApi, user: foundUser }
+    }
+
+    // When
+    const patApiAndUser = await apiWithCustomStorage(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
+
+    // Then
+    const currentUser = patApiAndUser.user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
+
+    const currentPatient = await patApiAndUser.api.patientApi.getPatient(currentUser.patientId!)
+    assert(currentPatient)
+    assert(currentPatient.firstName == 'Antoine')
+    assert(currentPatient.lastName == 'Duchâteau')
+    assert(Object.entries(storage).length > 0)
   }).timeout(60000)
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
