@@ -7,7 +7,7 @@ import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
 import { Sanitizer } from '../../services/Sanitizer'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { retry } from '@icure/api'
+import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
 import { User } from '../../models/User'
 import * as Crypto from 'crypto'
 
@@ -20,6 +20,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly errorHandler: ErrorHandler
   private readonly sanitizer: Sanitizer
   private readonly crypto: Crypto
+  private readonly storage: StorageFacade<string>
+  private readonly keyStorage: KeyStorageFacade
 
   constructor(
     messageGatewayApi: MessageGatewayApi,
@@ -29,6 +31,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     errorHandler: ErrorHandler,
     sanitizer: Sanitizer,
     crypto: Crypto,
+    storage: StorageFacade<string>,
+    keyStorage: KeyStorageFacade,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -44,6 +48,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.messageGatewayApi = messageGatewayApi
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer
+    this.storage = storage
+    this.keyStorage = keyStorage
   }
 
   async startAuthentication(
@@ -198,6 +204,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withUserName(login)
       .withPassword(validationCode)
       .withCrypto(this.crypto)
+      .withStorage(this.storage)
+      .withKeyStorage(this.keyStorage)
       .build()
 
     const user = await api.userApi.getLoggedUser()
