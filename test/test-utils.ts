@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua } from '@icure/api'
+import { hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -146,16 +146,27 @@ export class TestUtils {
     msgGtwUrl: string,
     msgGtwSpecId: string,
     authProcessId: string,
-    hcpId: string
+    hcpId: string,
+    storage?: StorageFacade<string>,
+    keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User }> {
-    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+    const builder = new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(iCureUrl)
       .withMsgGwUrl(msgGtwUrl)
       .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
-      .build()
+
+    if (storage) {
+      builder.withStorage(storage)
+    }
+
+    if (keyStorage) {
+      builder.withKeyStorage(keyStorage)
+    }
+
+    const anonymousMedTechApi = await builder.build()
 
     const email = await this.getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
