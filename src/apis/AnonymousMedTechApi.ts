@@ -23,7 +23,9 @@ export class AnonymousMedTechApi {
     msgGwSpecId: string,
     authProcessByEmailId: string,
     authProcessBySmsId: string,
-    api: { cryptoApi: IccCryptoXApi }
+    api: { cryptoApi: IccCryptoXApi },
+    storage: StorageFacade<string>,
+    keyStorage: KeyStorageFacade
   ) {
     this._iCureUrlPath = iCureUrlPath
     this._msgGwUrl = msgGwUrl
@@ -39,7 +41,9 @@ export class AnonymousMedTechApi {
       authProcessBySmsId,
       this._errorHandler,
       this._sanitizer,
-      api.cryptoApi.crypto
+      api.cryptoApi.crypto,
+      storage,
+      keyStorage
     )
     this._cryptoApi = api.cryptoApi
   }
@@ -133,7 +137,16 @@ export class AnonymousMedTechApiBuilder {
 
     return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage, undefined, _storage, _keyStorage).then(
       (api) =>
-        new AnonymousMedTechApi(this.iCureBaseUrl, this.msgGwUrl!, this.msgGwSpecId!, this.authProcessByEmailId!, this.authProcessBySmsId!, api)
+        new AnonymousMedTechApi(
+          this.iCureBaseUrl,
+          this.msgGwUrl!,
+          this.msgGwSpecId!,
+          this.authProcessByEmailId!,
+          this.authProcessBySmsId!,
+          api,
+          _storage,
+          _keyStorage
+        )
     )
   }
 }
