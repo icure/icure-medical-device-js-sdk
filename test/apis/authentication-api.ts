@@ -180,21 +180,66 @@ describe('Authentication API', () => {
     const storage: Record<string, string> = {}
 
     class MemoryStorage implements StorageFacade<string> {
-      async deleteItem(key: string): Promise<void> {
+      deleteItem(key: string): void {
         delete storage[key]
       }
 
-      async getItem(key: string): Promise<string | undefined> {
+      getItem(key: string): string | undefined {
         return storage[key]
       }
 
-      async setItem(key: string, valueToStore: string): Promise<void> {
+      setItem(key: string, valueToStore: string): void {
         storage[key] = valueToStore
       }
     }
 
+    const apiWithCustomStorage = async (iCureUrl: string, msgGtwUrl: string, msgGtwSpecId: string, authProcessId: string, hcpId: string) => {
+      const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+        .withICureBaseUrl(iCureUrl)
+        .withMsgGwUrl(msgGtwUrl)
+        .withMsgGwSpecId(msgGtwSpecId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessByEmailId(authProcessId)
+        .withAuthProcessBySmsId(authProcessId)
+        .withStorage(new MemoryStorage())
+        .build()
+
+      const email = await TestUtils.getTempEmail()
+      const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
+        'process.env.ICURE_RECAPTCHA',
+        email,
+        undefined,
+        'Antoine',
+        'Duchâteau',
+        hcpId,
+        false
+      )
+
+      const emails = await TestUtils.getEmail(email)
+
+      const subjectCode = emails.subject!
+      const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
+        anonymousMedTechApi.generateRSAKeypair()
+      )
+
+      if (result?.medTechApi == undefined) {
+        throw Error(`Couldn't sign up user by email for current test`)
+      }
+
+      const foundUser = await result.medTechApi.userApi.getLoggedUser()
+      await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
+        foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
+        hex2ua(result.keyPair.privateKey)
+      )
+      assert(result)
+      assert(result!.token != null)
+      assert(result!.userId != null)
+
+      return { api: result.medTechApi, user: foundUser }
+    }
+
     // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId, new MemoryStorage())
+    const patApiAndUser = await apiWithCustomStorage(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId)
 
     // Then
     const currentUser = patApiAndUser.user
