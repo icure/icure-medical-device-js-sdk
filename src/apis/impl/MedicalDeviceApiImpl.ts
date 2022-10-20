@@ -37,7 +37,7 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
     }
 
     const deviceToCreate = medicalDevicesToCreate.map((d) => MedicalDeviceMapper.toDeviceDto(d))
-    const deviceToUpdate = medicalDevicesToCreate.map((d) => MedicalDeviceMapper.toDeviceDto(d))
+    const deviceToUpdate = medicalDevicesToUpdate.map((d) => MedicalDeviceMapper.toDeviceDto(d))
 
     const createdDevices = await this.deviceApi.createDevices(deviceToCreate).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
