@@ -279,7 +279,7 @@ describe('Authentication API', () => {
     expect(previousDataSample).to.not.be.undefined
   }).timeout(60000)
 
-  it.only('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
+  it('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
     // Given
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(
