@@ -34,25 +34,26 @@ describe('MedicalDevice API', () => {
     assert(createdMedicalDevice.modified != undefined)
   })
 
-  const newSerialNumber = uuid()
-
   it('Can create a medical device and update it', async () => {
     const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
     const medtechApi = apiAndUser.api
 
     const createdMedicalDevice = await medtechApi.medicalDeviceApi.createOrModifyMedicalDevice(
       new MedicalDevice({
-        serialNumber: newSerialNumber,
+        serialNumber: '123456789',
         name: 'What-If Machine',
         brand: 'Farnsworth',
         model: '2ACV16',
       })
     )
 
+    const newSerialNumber = uuid()
+
     const updatedMedicalDevice = await medtechApi.medicalDeviceApi.createOrModifyMedicalDevice(
       new MedicalDevice({
         ...createdMedicalDevice,
-        serialNumber: '123456789',
+        serialNumber: newSerialNumber,
+        modified: undefined,
         name: 'What-If Machine',
         brand: 'Farnsworth',
         model: '2ACV16',
