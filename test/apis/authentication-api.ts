@@ -274,7 +274,7 @@ describe('Authentication API', () => {
     expect(previousDataSample).to.not.be.undefined
   }).timeout(60000)
 
-  it.only('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
+  it('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
     // Given
     const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
     const hcpApiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
