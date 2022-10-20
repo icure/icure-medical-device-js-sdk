@@ -202,10 +202,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@^5.0.34":
-  version "5.0.34"
-  resolved "https://registry.yarnpkg.com/@icure/api/-/api-5.0.34.tgz#c6c9aa3efba4ac2d815e38b937e72a2810a51899"
-  integrity sha512-zkb5FOOoi94P8V36YtLTHRX7Y/HX1yCm88se1YYhEvKChcEmvfTn093e+BBaTX84GnfWHBovboay+EKPuvBF+g==
+"@icure/api@^5.0.35":
+  version "5.0.35"
+  resolved "https://registry.yarnpkg.com/@icure/api/-/api-5.0.35.tgz#2858b24de5aac44777a08b13fe22a9a4d3f5631b"
+  integrity sha512-VPCaCEivOyOzOGpRPHmkGSXWByXMTCKY+XDvrElocYTi3XSCtZIAAonmN0jv/AaaVo+5q94sJjBhKC+NSIS8HA==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
