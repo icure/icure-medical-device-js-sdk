@@ -1,27 +1,43 @@
 import { AuthenticationProcess } from '../../models/AuthenticationProcess'
 import { AuthenticationResult } from '../../models/AuthenticationResult'
-import { User } from '../../models/User'
-
 import { AuthenticationApi } from '../AuthenticationApi'
 import { v4 as uuid } from 'uuid'
-import { retry } from '@icure/api'
 import { medTechApi, MedTechApi } from '../MedTechApi'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
-import * as Crypto from "crypto";
+import { Sanitizer } from '../../services/Sanitizer'
+import { ErrorHandler } from '../../services/ErrorHandler'
+import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
+import { User } from '../../models/User'
+import * as Crypto from 'crypto'
 
 export class AuthenticationApiImpl implements AuthenticationApi {
+  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+  private readonly iCureBasePath: string
+  private readonly authProcessByEmailId: string
+  private readonly authProcessBySmsId: string
+  private readonly messageGatewayApi: MessageGatewayApi
+  private readonly errorHandler: ErrorHandler
+  private readonly sanitizer: Sanitizer
+  private readonly crypto: Crypto
+  private readonly storage: StorageFacade<string>
+  private readonly keyStorage: KeyStorageFacade
+
   constructor(
     messageGatewayApi: MessageGatewayApi,
     iCureBasePath: string,
     authProcessByEmailId: string,
     authProcessBySmsId: string,
+    errorHandler: ErrorHandler,
+    sanitizer: Sanitizer,
     crypto: Crypto,
+    storage: StorageFacade<string>,
+    keyStorage: KeyStorageFacade,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
-        ? self.fetch
-        : fetch
+      ? self.fetch
+      : fetch
   ) {
     this.iCureBasePath = iCureBasePath
     this.messageGatewayApi = messageGatewayApi
@@ -29,14 +45,12 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.authProcessBySmsId = authProcessBySmsId
     this.crypto = crypto
     this.fetchImpl = fetchImpl
+    this.messageGatewayApi = messageGatewayApi
+    this.errorHandler = errorHandler
+    this.sanitizer = sanitizer
+    this.storage = storage
+    this.keyStorage = keyStorage
   }
-
-  private readonly iCureBasePath: string
-  private readonly authProcessByEmailId: string
-  private readonly authProcessBySmsId: string
-  private readonly messageGatewayApi: MessageGatewayApi
-  private readonly crypto: Crypto
-  private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 
   async startAuthentication(
     recaptcha: string,
@@ -45,17 +59,21 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     firstName: string = '',
     lastName: string = '',
     healthcareProfessionalId: string = '',
-    bypassTokenCheck: boolean = false,
+    bypassTokenCheck: boolean = false
   ): Promise<AuthenticationProcess> {
     if (!email && !phoneNumber) {
-      throw Error(`In order to start authentication of a user, you should at least provide its email OR its phone number`)
+      throw this.errorHandler.createErrorWithMessage(
+        `In order to start authentication of a user, you should at least provide its email OR its phone number`
+      )
     }
 
-    const requestId = await this.messageGatewayApi.startProcess(email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId, {
+    const processId = email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId
+
+    const requestId = await this.messageGatewayApi.startProcess(processId, {
       'g-recaptcha-response': recaptcha,
       firstName: firstName,
       lastName: lastName,
-      from: email ?? phoneNumber,
+      from: email != undefined ? this.sanitizer.validateEmail(email) : this.sanitizer.validateMobilePhone(phoneNumber!),
       email: email,
       mobilePhone: phoneNumber,
       hcpId: healthcareProfessionalId,
@@ -65,14 +83,15 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       return new AuthenticationProcess({ requestId, login: (email ?? phoneNumber)!, bypassTokenCheck: bypassTokenCheck })
     }
 
-    throw Error(`Could not start authentication of user ${email ?? phoneNumber}`)
+    throw this.errorHandler.createErrorWithMessage(
+      `iCure could not start the authentication process ${processId} for user ${email ?? phoneNumber}. Try again later`
+    )
   }
-
 
   async completeAuthentication(
     process: AuthenticationProcess,
     validationCode: string,
-    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
+    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
   ): Promise<AuthenticationResult> {
     const result = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
       if (process.bypassTokenCheck) {
@@ -85,22 +104,29 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       return this._initUserAuthTokenAndCrypto(process.login, validationCode, getUserKeypair)
     }
 
-    throw Error(`Could not validate authentication of user ${process.login}`)
+    throw this.errorHandler.createErrorWithMessage(
+      `iCure could not complete authentication process with requestId ${process.requestId}. Try again later.`
+    )
   }
 
   async authenticateAndAskAccessToItsExistingData(
     userLogin: string,
     shortLivedToken: string,
-    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
+    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
   ): Promise<AuthenticationResult> {
     const authenticationResult = await this._initUserAuthTokenAndCrypto(userLogin, shortLivedToken, getUserKeypair)
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser()
     if (!loggedUser) {
-      throw new Error('User log in failed')
+      throw this.errorHandler.createErrorWithMessage(
+        `There is no user currently logged in. You must call this method from an authenticated MedTechApi`
+      )
     } else if (!!loggedUser.patientId) {
       const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId)
-      if (!patientDataOwner) throw new Error(`Patient with id ${loggedUser.patientId} does not exist`)
+      if (!patientDataOwner)
+        throw this.errorHandler.createErrorWithMessage(
+          `Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`
+        )
 
       const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
         .map((keyValue) => Array.from(keyValue[1]))
@@ -121,16 +147,33 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           delegate
         )
         //TODO Return which delegates were warned to share back info & add retry mechanism
-        if (!accessNotification) throw new Error(`Cannot create a notification to Healthcare Professional with id ${delegate}`)
+        if (!accessNotification)
+          console.error(
+            `iCure could not create a notification to healthcare party ${delegate} to ask access back to ${loggedUser.patientId} data. Make sure to create a notification for the healthcare party so that he gives back access to ${loggedUser.patientId} data.`
+          )
       }
     } else if (!!loggedUser.healthcarePartyId) {
-      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi.getHealthcareProfessional(loggedUser.healthcarePartyId)
-      if (!hcpDataOwner) throw new Error(`Healthcare Professional with id ${loggedUser.healthcarePartyId} does not exist`)
+      const hcpDataOwner = await authenticationResult.medTechApi.healthcareProfessionalApi
+        .getHealthcareProfessional(loggedUser.healthcarePartyId)
+        .catch((e) => {
+          throw this.errorHandler.createErrorFromAny(e)
+        })
+      if (!hcpDataOwner)
+        throw this.errorHandler.createErrorWithMessage(
+          `Impossible to find the healthcare party ${loggedUser.healthcarePartyId} apparently linked to user ${loggedUser.id}. Are you sure this healthcarePartyId is correct ?`
+        )
     } else if (!!loggedUser.deviceId) {
-      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId)
-      if (!hcpDataOwner) throw new Error(`Medical Device with id ${loggedUser.deviceId} does not exist`)
+      const hcpDataOwner = await authenticationResult.medTechApi.medicalDeviceApi.getMedicalDevice(loggedUser.deviceId).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      if (!hcpDataOwner)
+        throw this.errorHandler.createErrorWithMessage(
+          `Impossible to find the device ${loggedUser.deviceId} apparently linked to the user ${loggedUser.id}. Are you sure this deviceId is correct ?`
+        )
     } else {
-      throw new Error('User is not a Data Owner')
+      throw this.errorHandler.createErrorWithMessage(
+        `User with id ${loggedUser.id} is not a Data Owner. To be a Data Owner, your user needs to have either patientId, healthcarePartyId or deviceId filled in`
+      )
     }
 
     return authenticationResult
@@ -139,11 +182,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private async _initUserAuthTokenAndCrypto(
     login: string,
     token: string,
-    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>)
+    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
   ): Promise<AuthenticationResult> {
-    const { authenticatedApi, user } = await retry(() =>
-      this._generateAndAssignAuthenticationToken(login, token)
-    )
+    const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
 
     const userKeyPair = await getUserKeypair(user.id!)
     await authenticatedApi.initUserCrypto(true, userKeyPair)
@@ -157,30 +198,33 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     })
   }
 
-  private async _generateAndAssignAuthenticationToken(
-    login: string,
-    validationCode: string
-  ): Promise<{ authenticatedApi: MedTechApi, user: User }> {
+  private async _generateAndAssignAuthenticationToken(login: string, validationCode: string): Promise<{ authenticatedApi: MedTechApi; user: User }> {
     const api = await medTechApi()
       .withICureBaseUrl(this.iCureBasePath)
       .withUserName(login)
       .withPassword(validationCode)
       .withCrypto(this.crypto)
+      .withStorage(this.storage)
+      .withKeyStorage(this.keyStorage)
       .build()
 
     const user = await api.userApi.getLoggedUser()
     if (user == null) {
-      throw Error(`Your validation code ${validationCode} is expired - Couldn't login new user`)
+      throw this.errorHandler.createErrorWithMessage(
+        `Your validation code ${validationCode} expired. Start a new authentication process for your user`
+      )
     }
 
     const token = await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10)
     if (token == null) {
-      throw Error(`Your validation code ${validationCode} is expired - Couldn't create new secured token`)
+      throw this.errorHandler.createErrorWithMessage(
+        `Your validation code ${validationCode} expired. Start a new authentication process for your user`
+      )
     }
 
     return {
       authenticatedApi: await medTechApi(api).withPassword(token).build(),
-      user: user
+      user: user,
     }
   }
 }

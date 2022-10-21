@@ -26,4 +26,9 @@ export interface DataOwnerApi {
     overwriteExistingKeys: boolean,
     userKeyPair?: { publicKey: string; privateKey: string }
   ): Promise<{ publicKey: string; privateKey: string }>
+
+  giveAccessBackTo(
+    ownerId: string,
+    ownerNewPublicKey: string
+  ): Promise<boolean>
 }

@@ -202,10 +202,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@^5.0.26":
-  version "5.0.26"
-  resolved "https://registry.yarnpkg.com/@icure/api/-/api-5.0.26.tgz#598b73c3f73c35077de203bce07a35fdaf3ac838"
-  integrity sha512-RWs3jDmxqa7oHPCdRCkCrqdiIe2EBlQr4/i4BnuxLB3NcmJsf9pjBekPIZCPWGHt3L96ZcqlarW7m6phvG1xoQ==
+"@icure/api@^5.0.35":
+  version "5.0.35"
+  resolved "https://registry.yarnpkg.com/@icure/api/-/api-5.0.35.tgz#2858b24de5aac44777a08b13fe22a9a4d3f5631b"
+  integrity sha512-VPCaCEivOyOzOGpRPHmkGSXWByXMTCKY+XDvrElocYTi3XSCtZIAAonmN0jv/AaaVo+5q94sJjBhKC+NSIS8HA==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
@@ -320,6 +320,18 @@
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.3.tgz#472eaab5f15c1ffdd7f8628bd4c4f753995ec79e"
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
+
+"@types/chai-as-promised@^7.1.1":
+  version "7.1.5"
+  resolved "https://registry.yarnpkg.com/@types/chai-as-promised/-/chai-as-promised-7.1.5.tgz#6e016811f6c7a64f2eed823191c3a6955094e255"
+  integrity sha512-jStwss93SITGBwt/niYrkf2C+/1KTeZCZl1LaeezTlqppAKeoQC7jxyqYuP72sxBGKCIbw7oHgbYssIRzT5FCQ==
+  dependencies:
+    "@types/chai" "*"
+
+"@types/chai@*":
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.3.tgz#3c90752792660c4b562ad73b3fbd68bf3bc7ae07"
+  integrity sha512-hC7OMnszpxhZPduX+m+nrx+uFoLkWOMiR4oa/AZF3MuSETYTZmFfJAHqZEM8MVlvfG7BEUcgvtwoCTxBp6hm3g==
 
 "@types/chai@^4.3.0":
   version "4.3.1"
@@ -685,6 +697,13 @@ caw@^2.0.0:
     isurl "^1.0.0-alpha5"
     tunnel-agent "^0.6.0"
     url-to-options "^1.0.1"
+
+chai-as-promised@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/chai-as-promised/-/chai-as-promised-7.1.1.tgz#08645d825deb8696ee61725dbf590c012eb00ca0"
+  integrity sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==
+  dependencies:
+    check-error "^1.0.2"
 
 chai@^4.3.6:
   version "4.3.6"
