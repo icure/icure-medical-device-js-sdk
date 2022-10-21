@@ -208,7 +208,7 @@ export class UserApiImpl implements UserApi {
       })
   }
 
-  async shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+  async shareAllFutureDataWith(dataOwnerIds: string[], type?: SharedDataType): Promise<User> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -220,7 +220,7 @@ export class UserApiImpl implements UserApi {
     }
 
     let newDataSharing
-    const currentAutoDelegationsForType = user.autoDelegations?.[type]
+    const currentAutoDelegationsForType = user.autoDelegations?.[type ?? 'all']
     if (currentAutoDelegationsForType) {
       const delegationsToAdd = dataOwnerIds.filter((item) => !currentAutoDelegationsForType.includes(item))
       if (delegationsToAdd.length > 0) {
@@ -235,7 +235,7 @@ export class UserApiImpl implements UserApi {
         ...Object.entries(user.autoDelegations ?? {}).reduce((accumulator, [key, values]) => {
           return { ...accumulator, [key]: [...values] }
         }, {}),
-        [type]: dataOwnerIds,
+        [type ?? 'all']: dataOwnerIds,
       }
     }
 
@@ -255,7 +255,7 @@ export class UserApiImpl implements UserApi {
     throw this.errorHandler.createErrorWithMessage("Couldn't add data sharing to user")
   }
 
-  async stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User> {
+  async stopSharingDataWith(dataOwnerIds: string[], type?: SharedDataType): Promise<User> {
     const user = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -266,7 +266,7 @@ export class UserApiImpl implements UserApi {
       )
     }
 
-    const delegationsToRemove = user.autoDelegations?.[type]?.filter((item) => dataOwnerIds.indexOf(item) >= 0)
+    const delegationsToRemove = user.autoDelegations?.[type ?? 'all']?.filter((item) => dataOwnerIds.indexOf(item) >= 0)
 
     if (delegationsToRemove === undefined || delegationsToRemove.length === 0) {
       return UserMapper.toUser(user)!!
