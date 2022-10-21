@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua } from '@icure/api'
+import { hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -14,7 +14,7 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
-import {ICURE_FREE_URL} from "../index";
+import { ICURE_FREE_URL } from '../index'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -27,6 +27,7 @@ export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) 
   ;(global as any).Storage = ''
   ;(global as any).TextDecoder = TextDecoder
   ;(global as any).TextEncoder = TextEncoder
+  ;(global as any).headers = Headers
 }
 
 export type TestVars = {
@@ -116,13 +117,12 @@ export class TestUtils {
       .build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
-    await medtechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(dataOwnerKey)
-    ).catch((error: any) => {
-      console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
-      console.error(error)
-    })
+    await medtechApi.cryptoApi
+      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(dataOwnerKey))
+      .catch((error: any) => {
+        console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
+        console.error(error)
+      })
 
     return { api: medtechApi, user: foundUser }
   }
@@ -146,16 +146,27 @@ export class TestUtils {
     msgGtwUrl: string,
     msgGtwSpecId: string,
     authProcessId: string,
-    hcpId: string
+    hcpId: string,
+    storage?: StorageFacade<string>,
+    keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User }> {
-    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+    const builder = new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(iCureUrl)
       .withMsgGwUrl(msgGtwUrl)
       .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
       .withAuthProcessBySmsId(authProcessId)
-      .build()
+
+    if (storage) {
+      builder.withStorage(storage)
+    }
+
+    if (keyStorage) {
+      builder.withKeyStorage(keyStorage)
+    }
+
+    const anonymousMedTechApi = await builder.build()
 
     const email = await this.getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
@@ -171,10 +182,8 @@ export class TestUtils {
     const emails = await TestUtils.getEmail(email)
 
     const subjectCode = emails.subject!
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(
-      process!,
-      subjectCode,
-      () => anonymousMedTechApi.generateRSAKeypair()
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
+      anonymousMedTechApi.generateRSAKeypair()
     )
 
     if (result?.medTechApi == undefined) {
