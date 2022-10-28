@@ -360,7 +360,17 @@ export class MedTechApiBuilder {
       throw new Error('password is required')
     }
 
-    return Api(this.iCureBaseUrl!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then(
+    return Api(
+      this.iCureBaseUrl!,
+      this.userName!,
+      this.password!,
+      this.crypto,
+      fetch,
+      this._preventCookieUsage,
+      undefined,
+      this._storage,
+      this._keyStorage
+    ).then(
       (api) =>
         new MedTechApi(
           api,
