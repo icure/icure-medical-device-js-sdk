@@ -179,15 +179,15 @@ describe('Authentication API', () => {
     const storage: Record<string, string> = {}
 
     class MemoryStorage implements StorageFacade<string> {
-      deleteItem(key: string): void {
+      async deleteItem(key: string): Promise<void> {
         delete storage[key]
       }
 
-      getItem(key: string): string | undefined {
+      async getItem(key: string): Promise<string | undefined> {
         return storage[key]
       }
 
-      setItem(key: string, valueToStore: string): void {
+      async setItem(key: string, valueToStore: string): Promise<void> {
         storage[key] = valueToStore
       }
     }
