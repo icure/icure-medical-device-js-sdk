@@ -208,7 +208,7 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@^5.0.26", "@icure/api@^6.0.0":
+"@icure/api@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@icure/api/-/api-6.0.0.tgz#a2ce308552b221baf38ab96060536ead938700af"
   integrity sha512-T55qLjbbXBm47EJEQOrNHVyTggt0ylAQwad8K0is4CxIazsQ4Eg5KEt5D3T9PSeJxcwMS5eDYc9SKoUG3j/92w==
@@ -221,12 +221,12 @@
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
 
-"@icure/test-setup@^0.0.23":
-  version "0.0.23"
-  resolved "https://registry.yarnpkg.com/@icure/test-setup/-/test-setup-0.0.23.tgz#3b525a10cbaf603ea7033140d475bfbd29a9d927"
-  integrity sha512-85jCWPWzAQE1umPyd83+AuBLvCE9RMUKj1iVRmFqeezr/T2J1GKenxpQySou2w+aWGLmG4EyvgggYsODdEaWnA==
+"@icure/test-setup@^0.0.25":
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/@icure/test-setup/-/test-setup-0.0.25.tgz#4b872f374f48475c89e04a9de71e4d9de2b8c294"
+  integrity sha512-wLjuuHbpeHlGay+Zr6tF8Tq9zCKD86cdceEYnIMzPDDiWIK1CgGRxpwVzbTesTIIGafs0WD7luFkSIPv2uYz9g==
   dependencies:
-    "@icure/api" "^5.0.26"
+    "@icure/api" "^6.0.0"
     "@types/react-dom" "^18.0.6"
     date-fns "^2.3.0"
     isomorphic-fetch "^3.0.0"

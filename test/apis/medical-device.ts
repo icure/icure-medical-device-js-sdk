@@ -2,18 +2,24 @@ import 'mocha'
 import 'isomorphic-fetch'
 
 import { assert, use as chaiUse } from 'chai'
-import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
 import { MedicalDevice } from '../../src/models/MedicalDevice'
 import { v4 as uuid } from 'uuid'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-const { iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey } = getEnvVariables()
+let env: TestVars | undefined
 
 describe('MedicalDevice API', () => {
+  before(async function () {
+    this.timeout(600000)
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
+  })
+
   it('Can create a medical device', async () => {
-    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
 
     const createdMedicalDevice = await medtechApi.medicalDeviceApi.createOrModifyMedicalDevice(
@@ -35,7 +41,7 @@ describe('MedicalDevice API', () => {
   })
 
   it('Can create a medical device and update it', async () => {
-    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const medtechApi = apiAndUser.api
 
     const createdMedicalDevice = await medtechApi.medicalDeviceApi.createOrModifyMedicalDevice(
