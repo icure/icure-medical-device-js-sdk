@@ -175,8 +175,6 @@ describe('Authentication API', () => {
 
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
     // Given
-    const patAuthProcessId = process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5'
-
     const storage: Record<string, string> = {}
 
     class MemoryStorage implements StorageFacade<string> {
@@ -194,7 +192,14 @@ describe('Authentication API', () => {
     }
 
     // When
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(iCureUrl, msgGtwUrl, specId, patAuthProcessId, authProcessHcpId, new MemoryStorage())
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.patAuthProcessId,
+      hcpId!,
+      new MemoryStorage()
+    )
 
     // Then
     const currentUser = patApiAndUser.user
