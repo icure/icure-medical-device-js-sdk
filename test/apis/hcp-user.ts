@@ -1,28 +1,27 @@
-import {assert, expect} from "chai";
-import {v4 as uuid} from "uuid";
-import "mocha";
-import {medTechApi} from "../../src/apis/medTechApi";
-import "isomorphic-fetch";
-import {webcrypto} from "crypto";
-import {User} from "../../src/models/User";
-import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
-import {SystemMetaDataOwner} from "../../src/models/SystemMetaDataOwner";
-import {getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestVars} from "../test-utils";
-import {Patient} from "../../src/models/Patient"
-import {jwk2spki} from "@icure/api"
+import { assert, expect } from 'chai'
+import { v4 as uuid } from 'uuid'
+import 'mocha'
+import { medTechApi } from '../../src/apis/MedTechApi'
+import 'isomorphic-fetch'
+import { webcrypto } from 'crypto'
+import { User } from '../../src/models/User'
+import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
+import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
+import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestVars } from '../test-utils'
+import { Patient } from '../../src/models/Patient'
+import { jwk2spki } from '@icure/api'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
+let env: TestVars | undefined
 
-describe("Healthcare professional", () => {
-
+describe('Healthcare professional', () => {
   before(async () => {
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
-  });
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
+  })
 
-  it("should be capable of creating a healthcare professional from scratch", async () => {
+  it('should be capable of creating a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(env!.iCureUrl)
       .withUserName(env!.dataOwnerDetails[hcp1Username].user)
