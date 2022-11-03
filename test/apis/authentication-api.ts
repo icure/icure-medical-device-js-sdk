@@ -374,5 +374,5 @@ describe('Authentication API', () => {
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
-  }).timeout(60000)
+  }).timeout(120000)
 })
