@@ -4,7 +4,14 @@ import { assert, expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
-import { getEnvVariables, setLocalStorage, TestUtils } from '../test-utils'
+import {
+  getEnvironmentInitializer,
+  getEnvVariables, hcp1Username,
+  hcp2Username, hcp3Username, patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from '../test-utils'
 import { User } from '../../src/models/User'
 import { NotificationFilter } from '../../src/filter'
 import { PaginatedListNotification } from '../../src/models/PaginatedListNotification'
@@ -13,32 +20,18 @@ import { NotificationApiImpl } from '../../src/apis/impl/NotificationApiImpl'
 
 setLocalStorage(fetch)
 
-const {
-  iCureUrl: iCureUrl,
-  hcpUserName: hcpUserName,
-  hcpPassword: hcpPassword,
-  hcpPrivKey: hcpPrivKey,
-  hcp2UserName: hcp2UserName,
-  hcp2Password: hcp2Password,
-  hcp2PrivKey: hcp2PrivKey,
-  hcp3UserName: hcp3UserName,
-  hcp3Password: hcp3Password,
-  hcp3PrivKey: hcp3PrivKey,
-  patUserName: patUserName,
-  patPassword: patPassword,
-  patPrivKey: patPrivKey,
-} = getEnvVariables()
-let hcp1Api: MedTechApi | undefined = undefined
-let hcp1User: User | undefined = undefined
-let hcp2Api: MedTechApi | undefined = undefined
-let hcp2User: User | undefined = undefined
-let hcp3Api: MedTechApi | undefined = undefined
-let hcp3User: User | undefined = undefined
-let patApi: MedTechApi | undefined = undefined
-let patUser: User | undefined = undefined
-let idFilterNotification1: Notification | undefined = undefined
-let idFilterNotification2: Notification | undefined = undefined
-let idFilterNotification3: Notification | undefined = undefined
+let env: TestVars | undefined;
+let hcp1Api: MedTechApi | undefined = undefined;
+let hcp1User: User | undefined = undefined;
+let hcp2Api: MedTechApi | undefined = undefined;
+let hcp2User: User | undefined = undefined;
+let hcp3Api: MedTechApi | undefined = undefined;
+let hcp3User: User | undefined = undefined;
+let patApi: MedTechApi | undefined = undefined;
+let patUser: User | undefined = undefined;
+let idFilterNotification1: Notification | undefined = undefined;
+let idFilterNotification2: Notification | undefined = undefined;
+let idFilterNotification3: Notification | undefined = undefined;
 
 async function createNotificationWithApi(api: MedTechApi, delegateId: string) {
   const notification = new Notification({
@@ -59,21 +52,31 @@ function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, e
   })
 }
 
+async function modifyNotificationAndExpectFailure(api: MedTechApi, notification: Notification) {
+  api.notificationApi.createOrModifyNotification(notification).then(
+    () => {throw new Error("Illegal state");},
+    (e) => assert(e != undefined)
+  );
+}
+
 describe('Notification API', async function () {
   before(async function () {
-    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcpUserName, hcpPassword, hcpPrivKey)
+    const initializer = await getEnvironmentInitializer();
+    env = await initializer.execute(getEnvVariables());
+
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username]);
     hcp1Api = hcpApi1AndUser.api
     hcp1User = hcpApi1AndUser.user
 
-    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp2UserName, hcp2Password, hcp2PrivKey)
+    const hcpApi2AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp2Username]);
     hcp2Api = hcpApi2AndUser.api
     hcp2User = hcpApi2AndUser.user
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, hcp3UserName, hcp3Password, hcp3PrivKey)
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, patUserName, patPassword, patPrivKey)
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[patUsername])
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
 
