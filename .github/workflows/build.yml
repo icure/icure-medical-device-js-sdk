@@ -17,21 +17,13 @@ jobs:
         run: yarn
       - name: Test and coverage
         env:
-          ICURE_TS_TEST_URL: "https://kraken.icure.dev/rest/v1"
-          ICURE_TS_TEST_MSG_GTW_URL: "https://mock.icure.dev/msggtw"
-          ICURE_COUCHDB_URL: "https://couch.svcacc.icure.cloud"
-          ICURE_TS_TEST_MSG_GTW_SPEC_ID: "ic"
-          TEST_ENVIRONMENT: "acceptance"
-          BACKEND_TYPE: "kraken"
+          ICURE_TS_TEST_URL: 'https://kraken.icure.dev/rest/v1'
+          ICURE_TS_TEST_MSG_GTW_URL: 'https://mock.icure.dev/msggtw'
+          TEST_ENVIRONMENT: 'acceptance'
+          BACKEND_TYPE: 'kraken'
           ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
-          ICURE_TS_TEST_HCP_AUTH_PROCESS_ID: ${{ secrets.TEST_HCP_AUTH_PROCESS_ID }}
-          ICURE_TS_TEST_PAT_AUTH_PROCESS_ID: ${{ secrets.TEST_PAT_AUTH_PROCESS_ID }}
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
           ICURE_TEST_ADMIN_PWD: ${{ secrets.ICURE_TEST_ADMIN_PWD }}
-          ICURE_TS_TEST_HCP_USER: ${{ secrets.TEST_HCP_USER }}
-          ICURE_TS_TEST_PAT_USER: ${{ secrets.TEST_PAT_USER }}
-          ICURE_TS_TEST_HCP_2_USER: ${{ secrets.TEST_HCP_2_USER }}
-          ICURE_TS_TEST_HCP_3_USER: ${{ secrets.TEST_HCP_3_USER }}
         run: yarn test
       - name: Clean up database
         if: always()
@@ -39,8 +31,8 @@ jobs:
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
           ICURE_TEST_ADMIN_PWD: ${{ secrets.ICURE_TEST_ADMIN_PWD }}
           ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
-          TEST_ENVIRONMENT: "acceptance"
-          ICURE_COUCHDB_URL: "https://couch.svcacc.icure.cloud"
+          TEST_ENVIRONMENT: 'acceptance'
+          ICURE_TS_TEST_URL: 'https://kraken.icure.dev/rest/v1'
         run: yarn clean
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
