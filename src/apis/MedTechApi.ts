@@ -361,9 +361,9 @@ export class MedTechApiBuilder {
     }
 
     return Api(
-      this.iCureBaseUrl!,
-      this.userName!,
-      this.password!,
+      this.iCureBaseUrl,
+      this.userName,
+      this.password,
       this.crypto,
       fetch,
       this._preventCookieUsage,
