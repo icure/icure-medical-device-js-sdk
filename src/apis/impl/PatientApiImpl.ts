@@ -155,14 +155,11 @@ export class PatientApiImpl implements PatientApi {
       )
     }
     const secretKey = delKeys.extractedKeys.shift()!
-    const patientWithNewDelegations = await this.cryptoApi.addDelegationsAndEncryptionKeys(
-      null,
-      patientToModify,
-      dataOwnerId,
-      delegatedTo,
-      secretKey,
-      null
-    )
+    const patientWithNewDelegations = await this.cryptoApi
+      .addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, secretKey, null)
+      .catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
     const encKeys = await this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId)
     if (encKeys.extractedKeys.length == 0) {
       throw this.errorHandler.createErrorWithMessage(

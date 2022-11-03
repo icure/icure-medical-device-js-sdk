@@ -76,19 +76,20 @@ export function getEnvVariables(): TestVars {
       publicKey: process.env.ICURE_TEST_MASTER_PUB!
     }
     : undefined
+  const testGroupId = process.env.ICURE_TEST_GROUP_ID ?? 'test-group'
   return {
     iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'http://127.0.0.1:16044/rest/v1',
     msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'http://127.0.0.1:8081/msggtw',
-    couchDbUrl: process.env.ICURE_COUCHDB_URL ?? "http://127.0.0.1:15984",
-    composeFileUrl: process.env.COMPOSE_FILE_URL ?? "https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose-cloud.yaml",
-    patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? '6a355458dbfa392cb5624403190c39e5',
-    hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? "6a355458dbfa392cb5624403190c6a19",
+    couchDbUrl: process.env.ICURE_COUCHDB_URL ?? 'http://127.0.0.1:15984',
+    composeFileUrl: process.env.COMPOSE_FILE_URL ?? 'https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose-cloud.yaml',
+    patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? `patient|${testGroupId}`,
+    hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? `hcp|${testGroupId}`,
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
-    testEnvironment: process.env.TEST_ENVIRONMENT ?? "docker",
-    testGroupId: process.env.ICURE_TEST_GROUP_ID ?? "test-group",
-    backendType: process.env.BACKEND_TYPE ?? "kraken",
-    adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? "john",
-    adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? "LetMeIn",
+    testEnvironment: process.env.TEST_ENVIRONMENT ?? 'docker',
+    testGroupId: testGroupId,
+    backendType: process.env.BACKEND_TYPE ?? 'kraken',
+    adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
+    adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {}
   }
@@ -124,7 +125,7 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
     const env = getEnvVariables();
     let bootstrapStep = null;
     if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock', 'haproxy']);
+      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock']);
       bootstrapStep = env.backendType === "oss"
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
