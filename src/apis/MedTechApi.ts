@@ -152,8 +152,8 @@ export class MedTechApi {
     this._errorHandler = new ErrorHandlerImpl()
     this._sanitizer = new SanitizerImpl(this._errorHandler)
 
-    this._storage = storage ?? new LocalStorageImpl()
-    this._keyStorage = keyStorage ?? new KeyStorageImpl(this._storage)
+    this._storage = storage || new LocalStorageImpl()
+    this._keyStorage = keyStorage || new KeyStorageImpl(this._storage)
 
     this._messageGatewayApi =
       msgGtwUrl && msgGtwSpecId
@@ -361,9 +361,9 @@ export class MedTechApiBuilder {
     }
 
     return Api(
-      this.iCureBaseUrl!,
-      this.userName!,
-      this.password!,
+      this.iCureBaseUrl,
+      this.userName,
+      this.password,
       this.crypto,
       fetch,
       this._preventCookieUsage,
