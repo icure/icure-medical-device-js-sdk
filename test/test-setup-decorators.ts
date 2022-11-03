@@ -62,6 +62,9 @@ export class DescribeInitializer implements EnvInitializer {
       lines.push(`With CouchDB @ ${updatedEnvs.couchDbUrl}`)
       lines.push(`With Message Gateway @ ${updatedEnvs.msgGtwUrl}`)
     }
+    if (updatedEnvs.backendType === 'kraken') {
+      lines.push(`With group id: ${updatedEnvs.testGroupId}`)
+    }
     lines.push(`With backend version ${updatedEnvs.backendType.toUpperCase()}`)
     lines.push(`Using master HCP with login ${updatedEnvs.masterHcp!.user}`)
 
