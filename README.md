@@ -15,9 +15,10 @@ To run all the tests use:
 ```
 yarn run test
 ```
-By default, the SDK will be tested on the closed source version of the Kraken that will be downloaded and will run on a
-local docker, along with the CouchDB instance and a mock Message Gateway instance.  
-To change these settings, you can use the following environment variables:
+By default, the SDK will be tested using the iCure Kraken Cloud version. 
+ The corresponding jar will be downloaded on developer computer and will run on a local docker, along with the CouchDB 
+ instance and a mock Message Gateway instance. To change these settings, 
+ you can use the following environment variables:
 ```bash
 # Set it to docker to run the tests on a local docker
 # Set it to acceptance to run the tests on the remote acceptance instance
@@ -64,19 +65,11 @@ ICURE_TEST_MASTER_PRIV
 ICURE_TEST_MASTER_PUB
 
 # It acts as a flag to specify not to create a new group for the tests
-GROUP_EXISTS="any_value"
+EXISTING_GROUP="any_value"
 
-# The spec id of the Message Gateway
+# The spec id of the Message Gateway (both for the real one and the mock one)
 ICURE_TS_TEST_MSG_GTW_SPEC_ID="ic"
-
-# The process id for creating Patients and HCPs through the Message Gateway
-ICURE_TS_TEST_PAT_AUTH_PROCESS_ID="6a355458dbfa392cb5624403190c39e5"
-ICURE_TS_TEST_HCP_AUTH_PROCESS_ID="6a355458dbfa392cb5624403190c6a19"
 ```
-
-### Publishing
-
-First build the package then run ```npm publish```
 
 ### Consuming
 
