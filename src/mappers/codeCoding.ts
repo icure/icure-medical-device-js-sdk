@@ -12,6 +12,7 @@ export namespace CodingMapper {
       type: dto.type,
       code: dto.code,
       version: dto.version,
+      regions: dto.regions,
       description: dto.label,
     });
 
@@ -24,6 +25,7 @@ export namespace CodingMapper {
       type: obj.type,
       code: obj.code,
       version: obj.version,
+      regions: obj.regions,
       label: obj.description
     });
 }

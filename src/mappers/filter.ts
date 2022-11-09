@@ -168,7 +168,7 @@ export namespace FilterMapper {
     if (filter['$type'] === 'CodingByIdsFilter') {
       return toCodeByIdsFilterDto(filter as CodingByIdsFilter);
     }
-    if (filter['$type'] === 'CodingByRegionTypeLabelLanguageFilter') {
+    if (filter['$type'] === 'CodingByRegionTypeLabelFilter') {
       return toCodeByRegionTypeLabelLanguageFilterDto(filter as CodingByRegionTypeLabelFilter);
     }
     throw Error(`No mapper for ${filter['$type']}`);

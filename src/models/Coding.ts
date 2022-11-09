@@ -30,6 +30,7 @@ constructor(json: ICoding) {
     * Must be lexicographically searchable
     */
     'version'?: string;
+    'regions'?: Array<string>;
     /**
     * Description (ex: {en: Rheumatic Aortic Stenosis, fr: Sténose rhumatoïde de l'Aorte})
     */
@@ -51,6 +52,7 @@ interface ICoding {
   'type'?: string;
   'code'?: string;
   'version'?: string;
+  'regions'?: Array<string>;
   'description'?: { [key: string]: string; };
   'qualifiedLinks'?: { [key: string]: Array<string>; };
   'searchTerms'?: { [key: string]: Set<string>; };
