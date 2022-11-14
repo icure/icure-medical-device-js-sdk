@@ -84,8 +84,14 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
 
     let jwks: { privateKey: JsonWebKey; publicKey: JsonWebKey } | undefined
-    if (keyPair == undefined && !overwriteExistingKeys && dataOwner.dataOwner.publicKey != undefined) {
+    if (keyPair === undefined && !overwriteExistingKeys && dataOwner.dataOwner.publicKey !== undefined) {
       jwks = await this.keyStorage.getKeypair(`${dataOwnerId}.${dataOwner.dataOwner.publicKey.slice(-32)}`)
+
+      if (jwks === undefined) {
+        throw this.errorHandler.createErrorWithMessage(
+          `The keypair for the current user is not available in the key storage. Please call this method with the overwriteExistingKeys parameter set to true.`
+        )
+      }
     } else {
       const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
       jwks = {
