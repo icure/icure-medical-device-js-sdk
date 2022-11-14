@@ -7,6 +7,8 @@ import {
   IccHcpartyXApi,
   IccPatientXApi,
   IccUserXApi,
+  jwk2pkcs8,
+  jwk2spki,
   KeyStorageFacade,
   Patient,
   pkcs8ToJwk,
@@ -71,23 +73,32 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     keyPair?: { publicKey: string; privateKey: string }
   ): Promise<{ publicKey: string; privateKey: string }> {
     const dataOwnerId = this.getDataOwnerIdOf(user)
-
-    const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
-    const jwk = {
-      publicKey: spkiToJwk(hex2ua(publicKey)),
-      privateKey: pkcs8ToJwk(hex2ua(privateKey)),
-    }
-    await this.cryptoApi.cacheKeyPair(jwk)
-    await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwk)
-
     const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
+
     if (dataOwner == null) {
       throw this.errorHandler.createErrorWithMessage(
         `The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.`
       )
     }
+
+    let jwks: { privateKey: JsonWebKey; publicKey: JsonWebKey } | undefined
+    if (keyPair == undefined && !overwriteExistingKeys && dataOwner.dataOwner.publicKey != undefined) {
+      jwks = await this.keyStorage.getKeypair(`${dataOwnerId}.${dataOwner.dataOwner.publicKey.slice(-32)}`)
+    } else {
+      const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
+      jwks = {
+        publicKey: spkiToJwk(hex2ua(publicKey)),
+        privateKey: pkcs8ToJwk(hex2ua(privateKey)),
+      }
+      await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
+    }
+
+    await this.cryptoApi.cacheKeyPair(jwks!)
+
+    const publicKey = jwk2spki(jwks!.publicKey)
+    const privateKey = jwk2pkcs8(jwks!.privateKey)
 
     if (dataOwner.dataOwner.publicKey == undefined) {
       await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)

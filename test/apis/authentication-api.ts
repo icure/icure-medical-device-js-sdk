@@ -2,14 +2,7 @@ import { assert, expect } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
-import {
-  getEnvironmentInitializer,
-  getEnvVariables,
-  hcp1Username, hcp3Username,
-  setLocalStorage,
-  TestUtils,
-  TestVars
-} from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
@@ -18,21 +11,20 @@ import { NotificationTypeEnum } from '../../src/models/Notification'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
-let hcpId: string | undefined;
+let env: TestVars | undefined
+let hcpId: string | undefined
 
 describe('Authentication API', () => {
-
   before(async function () {
     this.timeout(600000)
     const initializer = await getEnvironmentInitializer()
     env = await initializer.execute(getEnvVariables())
 
-    if (env.backendType === "oss") this.skip()
+    if (env.backendType === 'oss') this.skip()
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcpId = hcpApiAndUser.user.healthcarePartyId
-  });
+  })
 
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
     try {
@@ -142,7 +134,7 @@ describe('Authentication API', () => {
     }
   })
 
-  it("HCP should be capable of signing up using email", async () => {
+  it('HCP should be capable of signing up using email', async () => {
     // When
     const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.hcpAuthProcessId, hcpId!)
     const currentUser = hcpApiAndUser.user
@@ -157,8 +149,7 @@ describe('Authentication API', () => {
     assert(currentHcp.lastName == 'Duchâteau')
   }).timeout(60000)
 
-
-  it("Patient should be able to signing up through email", async () => {
+  it('Patient should be able to signing up through email', async () => {
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
@@ -178,7 +169,7 @@ describe('Authentication API', () => {
     const storage: Record<string, string> = {}
 
     class MemoryStorage implements StorageFacade<string> {
-      async deleteItem(key: string): Promise<void> {
+      async removeItem(key: string): Promise<void> {
         delete storage[key]
       }
 
@@ -215,12 +206,7 @@ describe('Authentication API', () => {
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
     // Given
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
-      env!.iCureUrl,
-      env!.msgGtwUrl,
-      env!.specId,
-      env!.patAuthProcessId,
-      hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, currentPatient)
@@ -287,12 +273,7 @@ describe('Authentication API', () => {
   it('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
     // Given
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
-      env!.iCureUrl,
-      env!.msgGtwUrl,
-      env!.specId,
-      env!.patAuthProcessId,
-      hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     await patApiAndUser.api.patientApi.giveAccessTo(currentPatient, hcpApiAndUser.user.healthcarePartyId!)
