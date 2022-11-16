@@ -50,6 +50,9 @@ ICURE_TS_TEST_MSG_GTW_URL="http://127.0.0.1:8081/msggtw"
 
 # The URL of the CouchDB Instance
 ICURE_COUCHDB_URL="http://127.0.0.1:15984"
+
+# To enable the automatic cleanup of the docker after that all tests finished, you can set
+CLEANUP=1
 ```
 
 #### Advanced Settings
