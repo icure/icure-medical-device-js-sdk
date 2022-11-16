@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
+import {Api, hex2ua, KeyStorageFacade, StorageFacade} from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -22,6 +22,7 @@ import {
   KrakenInitializer, MasterUserInGroupInitializer, MasterUserInitializer,
   OssInitializer, SafeguardInitializer, UserInitializerComposite
 } from "./test-setup-decorators";
+import {checkIfDockerIsOnline} from "@icure/test-setup";
 
 let cachedHcpApi: MedTechApi | undefined;
 let cachedHcpLoggedUser: User | undefined;
@@ -123,14 +124,16 @@ export class ICureTestEmail implements EmailMessageFactory {
 export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
   if (!cachedInitializer) {
     const env = getEnvVariables();
+    const scratchDir = 'test/scratch'
+    const isDockerOnline = await checkIfDockerIsOnline(scratchDir, env.composeFileUrl)
     let bootstrapStep = null;
-    if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock']);
+    if (env.testEnvironment === "docker" && !isDockerOnline) {
+      const setupStep = new DockerComposeInitializer(scratchDir, ['mock']);
       bootstrapStep = env.backendType === "oss"
         ? new OssInitializer(setupStep)
         : new KrakenInitializer(setupStep);
     }
-    const groupStep = (env.backendType === "oss" || !!process.env.EXISTING_GROUP ) ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
+    const groupStep = env.backendType === "oss" ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
     const masterInitializerClass = env.backendType === "kraken" ? MasterUserInGroupInitializer : MasterUserInitializer
     const masterStep = !!env.masterHcp ? groupStep : new masterInitializerClass(groupStep, fetch)
     const creationStep = new UserInitializerComposite(masterStep, fetch)

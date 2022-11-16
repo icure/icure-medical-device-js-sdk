@@ -67,9 +67,6 @@ ICURE_TEST_MASTER_PWD
 ICURE_TEST_MASTER_PRIV
 ICURE_TEST_MASTER_PUB
 
-# It acts as a flag to specify not to create a new group for the tests
-EXISTING_GROUP="any_value"
-
 # The spec id of the Message Gateway (both for the real one and the mock one)
 ICURE_TS_TEST_MSG_GTW_SPEC_ID="ic"
 ```
