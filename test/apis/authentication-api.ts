@@ -6,8 +6,9 @@ import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username,
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
-import { hex2ua, StorageFacade } from '@icure/api'
+import { hex2ua, ua2hex } from '@icure/api'
 import { NotificationTypeEnum } from '../../src/models/Notification'
+import { MemoryStorage } from './utils/MemoryStorage'
 
 setLocalStorage(fetch)
 
@@ -166,6 +167,32 @@ describe('Authentication API', () => {
 
   it('Patient should be able to retrieve its keys when re-login', async () => {
     // When
+    const { api, user } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+
+    // Then
+    const currentUser = user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
+
+    const keyPair = await api.initUserCrypto()
+    const automaticallyLoadedKeyPair = await api.initUserCrypto()
+
+    assert(automaticallyLoadedKeyPair.privateKey === keyPair.privateKey)
+    assert(automaticallyLoadedKeyPair.publicKey === keyPair.publicKey)
+
+    const { publicKey, privateKey } = await api.cryptoApi.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await api.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
+    const privKeyHex = ua2hex(await api.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
+
+    expect(api.initUserCrypto(true, { privateKey: privKeyHex, publicKey: publicKeyHex })).to.throw(Error)
+
+    const keyPairNotOverridden = await api.initUserCrypto(true)
+    assert(keyPairNotOverridden.privateKey === keyPair.privateKey)
+    assert(keyPairNotOverridden.publicKey === keyPair.publicKey)
+  }).timeout(60000)
+
+  it('Patient should be able to retrieve its keys when re-login', async () => {
+    // When
     const { api, user, token } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     // Then
@@ -191,21 +218,7 @@ describe('Authentication API', () => {
 
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
     // Given
-    const storage: Record<string, string> = {}
-
-    class MemoryStorage implements StorageFacade<string> {
-      async removeItem(key: string): Promise<void> {
-        delete storage[key]
-      }
-
-      async getItem(key: string): Promise<string | undefined> {
-        return storage[key]
-      }
-
-      async setItem(key: string, valueToStore: string): Promise<void> {
-        storage[key] = valueToStore
-      }
-    }
+    const memoryStorage = new MemoryStorage()
 
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(
@@ -214,7 +227,7 @@ describe('Authentication API', () => {
       env!.specId,
       env!.patAuthProcessId,
       hcpId!,
-      new MemoryStorage()
+      memoryStorage
     )
 
     // Then
@@ -226,7 +239,7 @@ describe('Authentication API', () => {
     assert(currentPatient)
     assert(currentPatient.firstName == 'Antoine')
     assert(currentPatient.lastName == 'Duchâteau')
-    assert(Object.entries(storage).length > 0)
+    assert(Object.entries(memoryStorage.storage).length > 0)
   }).timeout(60000)
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
@@ -244,6 +257,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withStorage(new MemoryStorage())
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
@@ -314,6 +328,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withStorage(new MemoryStorage())
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
