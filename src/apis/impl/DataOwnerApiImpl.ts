@@ -88,7 +88,12 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
 
     const dataOwnerPublicKeys = this._getDataOwnerPublicKeys(dataOwner.dataOwner)
-    if (keyPair === undefined && !overwriteExistingKeys && dataOwner.dataOwner.publicKey !== undefined && dataOwnerPublicKeys.length > 0) {
+
+    const fetchCurrentUserKeyPairOnDevice = async () => {
+      if (dataOwnerPublicKeys.length <= 0) {
+        return undefined
+      }
+
       const keyPairs = (await Promise.all(dataOwnerPublicKeys.map((pub) => this.keyStorage.getKeypair(`${dataOwnerId}.${pub.slice(-32)}`)))).filter(
         (kp) => kp !== undefined
       ) as { publicKey: JsonWebKey; privateKey: JsonWebKey }[]
@@ -96,34 +101,45 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       await Promise.all(keyPairs.map((kp) => this.cryptoApi.cacheKeyPair(kp)))
       const currentKeyPair = keyPairs.find((kp) => jwk2spki(kp.publicKey) === dataOwner.dataOwner.publicKey!)
 
-      if (currentKeyPair === undefined) {
+      return currentKeyPair !== undefined
+        ? { privateKey: jwk2pkcs8(currentKeyPair.privateKey), publicKey: jwk2spki(currentKeyPair.publicKey) }
+        : undefined
+    }
+
+    const currentUserKeyPairOnDevice = await fetchCurrentUserKeyPairOnDevice()
+
+    if (currentUserKeyPairOnDevice !== undefined) {
+      if (
+        keyPair !== undefined &&
+        (currentUserKeyPairOnDevice.publicKey !== keyPair.publicKey || keyPair.privateKey !== currentUserKeyPairOnDevice.privateKey)
+      ) {
         throw this.errorHandler.createErrorWithMessage(
-          `The keypair for the current user is not available in the key storage. Please call this method with the overwriteExistingKeys parameter set to true.`
+          `The current user already has a keypair on the device. You must either provide the same keypair or must not provide any keypair.`
         )
       }
-
-      return { privateKey: jwk2pkcs8(currentKeyPair!.privateKey), publicKey: jwk2spki(currentKeyPair!.publicKey) }
-    } else {
-      const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
-      const jwks = {
-        publicKey: spkiToJwk(hex2ua(publicKey)),
-        privateKey: pkcs8ToJwk(hex2ua(privateKey)),
-      }
-      await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
-      await this.cryptoApi.cacheKeyPair(jwks!)
-
-      if (dataOwner.dataOwner.publicKey == undefined) {
-        await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
-      } else if (dataOwner.dataOwner.publicKey != publicKey && overwriteExistingKeys) {
-        console.log(`Adding a new RSA Key Pair to user ${user.id}`)
-        await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
-          publicKey: publicKey,
-          privateKey: privateKey,
-        })
-      }
-
-      return { publicKey: publicKey, privateKey: privateKey }
+      return currentUserKeyPairOnDevice
     }
+
+    const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
+    const jwks = {
+      publicKey: spkiToJwk(hex2ua(publicKey)),
+      privateKey: pkcs8ToJwk(hex2ua(privateKey)),
+    }
+
+    await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
+    await this.cryptoApi.cacheKeyPair(jwks!)
+
+    if (dataOwner.dataOwner.publicKey == undefined) {
+      await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
+    } else if (dataOwner.dataOwner.publicKey != publicKey && overwriteExistingKeys) {
+      console.log(`Adding a new RSA Key Pair to user ${user.id}`)
+      await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
+        publicKey: publicKey,
+        privateKey: privateKey,
+      })
+    }
+
+    return { publicKey: publicKey, privateKey: privateKey }
   }
 
   private async _generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
