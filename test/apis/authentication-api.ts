@@ -164,6 +164,31 @@ describe('Authentication API', () => {
     assert(currentPatient.lastName == 'Duchâteau')
   }).timeout(60000)
 
+  it('Patient should be able to retrieve its keys when re-login', async () => {
+    // When
+    const { api, user, token } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+
+    // Then
+    const currentUser = user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
+
+    const keyPair = await api.initUserCrypto()
+    const newApi = await new MedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withUserName(`${currentUser.groupId}/${currentUser.id!}`)
+      .withPassword(token)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessByEmailId(env!.hcpAuthProcessId)
+      .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .build()
+    const newApiKeyPair = await newApi.initUserCrypto()
+
+    assert(newApiKeyPair.privateKey === keyPair.privateKey)
+    assert(newApiKeyPair.publicKey === keyPair.publicKey)
+  }).timeout(60000)
+
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
     // Given
     const storage: Record<string, string> = {}
