@@ -127,7 +127,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
 
     await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
-    await this.cryptoApi.cacheKeyPair(jwks!)
+    await this.cryptoApi.cacheKeyPair(jwks)
 
     if (dataOwner.dataOwner.publicKey == undefined) {
       await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
