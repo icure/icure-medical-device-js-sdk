@@ -175,10 +175,12 @@ describe('Authentication API', () => {
     assert(currentUser.patientId != null)
 
     const keyPair = await api.initUserCrypto()
-    const automaticallyLoadedKeyPair = await api.initUserCrypto()
-
-    assert(automaticallyLoadedKeyPair.privateKey === keyPair.privateKey)
-    assert(automaticallyLoadedKeyPair.publicKey === keyPair.publicKey)
+    try {
+      await api.initUserCrypto()
+    } catch (e) {
+      expect(true, 'promise should not fail').eq(false)
+    }
+    expect(true, 'promise should not fail').eq(true)
 
     const { publicKey, privateKey } = await api.cryptoApi.RSA.generateKeyPair()
     const publicKeyHex = ua2hex(await api.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
@@ -188,14 +190,16 @@ describe('Authentication API', () => {
       await api.initUserCrypto(true, { privateKey: privKeyHex, publicKey: publicKeyHex })
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq(
-        'The current user already has a keypair on the device. You must either provide the same keypair or must not provide any keypair.'
-      )
+      expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
     }
 
-    const keyPairNotOverridden = await api.initUserCrypto(true)
-    assert(keyPairNotOverridden.privateKey === keyPair.privateKey)
-    assert(keyPairNotOverridden.publicKey === keyPair.publicKey)
+    try {
+      await api.initUserCrypto(true)
+    } catch (e) {
+      expect(true, 'promise should not fail').eq(false)
+    }
+
+    expect(true, 'promise should not fail').eq(true)
   }).timeout(60000)
 
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {

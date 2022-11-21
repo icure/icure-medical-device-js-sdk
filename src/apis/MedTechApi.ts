@@ -258,6 +258,15 @@ export class MedTechApi {
     return this._keyStorage
   }
 
+  async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
+      privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
+    }
+    await this.cryptoApi.cacheKeyPair(jwk)
+    await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
+  }
+
   async initUserCrypto(overwriteExistingKeys: boolean = false, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const currentUser = await this.userApi.getLoggedUser()
     await this._dataOwnerApi.initCryptoFor(currentUser, overwriteExistingKeys, keyPair)
