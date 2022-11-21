@@ -67,15 +67,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     return dataOwnerId
   }
 
-  private _getDataOwnerPublicKeys(dataOwner: Patient | Device | HealthcareParty): string[] {
-    return [...Object.keys(dataOwner.aesExchangeKeys ?? {}), dataOwner.publicKey ?? ''].filter((k) => k !== '')
-  }
-
-  async initCryptoFor(
-    user: User,
-    overwriteExistingKeys: boolean = false,
-    keyPair?: { publicKey: string; privateKey: string }
-  ): Promise<{ publicKey: string; privateKey: string }> {
+  async initCryptoFor(user: User, overrideExistingKeys: boolean = false, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const dataOwnerId = this.getDataOwnerIdOf(user)
     const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
@@ -87,70 +79,44 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       )
     }
 
-    const dataOwnerPublicKeys = this._getDataOwnerPublicKeys(dataOwner.dataOwner)
+    const userKeyPairs = await this._loadCurrentUserKeyPairsOnDevice(dataOwner.dataOwner)
+    const shouldGenerateOrUseProvidedKeyPair = userKeyPairs === undefined || userKeyPairs.length === 0
 
-    const fetchCurrentUserKeyPairOnDevice = async () => {
-      if (dataOwnerPublicKeys.length <= 0) {
-        return undefined
+    if (!shouldGenerateOrUseProvidedKeyPair && !!keyPair) {
+      const isProvidedKeyPairAlreadyPresent = userKeyPairs
+        .filter((k) => jwk2spki(k.publicKey) === keyPair.publicKey)
+        .some((k) => jwk2pkcs8(k.privateKey) === keyPair.privateKey)
+
+      if (!isProvidedKeyPairAlreadyPresent) {
+        throw this.errorHandler.createErrorWithMessage(`The provided key pair is not present on the device and other key pairs are already present.`)
+      }
+    }
+
+    await Promise.all(userKeyPairs!.map((kp) => this.cryptoApi.cacheKeyPair(kp)))
+
+    if (shouldGenerateOrUseProvidedKeyPair) {
+      const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
+      const jwks = {
+        publicKey: spkiToJwk(hex2ua(publicKey)),
+        privateKey: pkcs8ToJwk(hex2ua(privateKey)),
       }
 
-      const keyPairs = (await Promise.all(dataOwnerPublicKeys.map((pub) => this.keyStorage.getKeypair(`${dataOwnerId}.${pub.slice(-32)}`)))).filter(
-        (kp) => kp !== undefined
-      ) as { publicKey: JsonWebKey; privateKey: JsonWebKey }[]
+      await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
+      await this.cryptoApi.cacheKeyPair(jwks)
 
-      await Promise.all(keyPairs.map((kp) => this.cryptoApi.cacheKeyPair(kp)))
-      const currentKeyPair = keyPairs.find((kp) => jwk2spki(kp.publicKey) === dataOwner.dataOwner.publicKey!)
-
-      return currentKeyPair !== undefined
-        ? { privateKey: jwk2pkcs8(currentKeyPair.privateKey), publicKey: jwk2spki(currentKeyPair.publicKey) }
-        : undefined
-    }
-
-    const currentUserKeyPairOnDevice = await fetchCurrentUserKeyPairOnDevice()
-
-    if (currentUserKeyPairOnDevice !== undefined) {
-      if (
-        keyPair !== undefined &&
-        (currentUserKeyPairOnDevice.publicKey !== keyPair.publicKey || keyPair.privateKey !== currentUserKeyPairOnDevice.privateKey)
-      ) {
-        throw this.errorHandler.createErrorWithMessage(
-          `The current user already has a keypair on the device. You must either provide the same keypair or must not provide any keypair.`
-        )
+      if (dataOwner.dataOwner.publicKey == undefined) {
+        await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
+      } else if (dataOwner.dataOwner.publicKey != publicKey && overrideExistingKeys) {
+        console.log(`Adding a new RSA Key Pair to user ${user.id}`)
+        await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
+          publicKey: publicKey,
+          privateKey: privateKey,
+        })
       }
-      return currentUserKeyPairOnDevice
     }
-
-    const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
-    const jwks = {
-      publicKey: spkiToJwk(hex2ua(publicKey)),
-      privateKey: pkcs8ToJwk(hex2ua(privateKey)),
-    }
-
-    await this.keyStorage.storeKeyPair(`${dataOwnerId}.${publicKey.slice(-32)}`, jwks)
-    await this.cryptoApi.cacheKeyPair(jwks)
-
-    if (dataOwner.dataOwner.publicKey == undefined) {
-      await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
-    } else if (dataOwner.dataOwner.publicKey != publicKey && overwriteExistingKeys) {
-      console.log(`Adding a new RSA Key Pair to user ${user.id}`)
-      await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
-        publicKey: publicKey,
-        privateKey: privateKey,
-      })
-    }
-
-    return { publicKey: publicKey, privateKey: privateKey }
   }
 
-  private async _generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
-    const { publicKey, privateKey } = await this.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
-    const privKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
-
-    return { publicKey: publicKeyHex, privateKey: privKeyHex }
-  }
-
-  private async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
+  async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
     dataOwner.publicKey = dataOwnerPublicKey
 
     if (dataOwner instanceof Patient) {
@@ -174,7 +140,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
   }
 
-  private async _initPatientDelegationsAndSave(user: User) {
+  async _initPatientDelegationsAndSave(user: User) {
     const userDto = UserMapper.toUserDto(user)
     if (userDto == undefined) {
       throw this.errorHandler.createErrorWithMessage(`Could not map user to iCure Base User version : Make sure your user info are valid`)
@@ -208,5 +174,30 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
 
     return Promise.resolve(false)
+  }
+
+  private _getDataOwnerPublicKeys(dataOwner: Patient | Device | HealthcareParty): string[] {
+    return [...new Set(...Object.keys(dataOwner.aesExchangeKeys ?? {}), dataOwner.publicKey ?? '')].filter((k) => k !== '')
+  }
+
+  private async _loadCurrentUserKeyPairsOnDevice(
+    dataOwner: Patient | Device | HealthcareParty
+  ): Promise<{ publicKey: JsonWebKey; privateKey: JsonWebKey }[] | undefined> {
+    const dataOwnerPublicKeys = this._getDataOwnerPublicKeys(dataOwner)
+
+    if (dataOwnerPublicKeys.length <= 0) {
+      return undefined
+    }
+    return (await Promise.all(dataOwnerPublicKeys.map((pub) => this.keyStorage.getKeypair(`${dataOwner.id}.${pub.slice(-32)}`)))).filter(
+      (kp) => kp !== undefined
+    ) as { publicKey: JsonWebKey; privateKey: JsonWebKey }[]
+  }
+
+  private async _generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
+    const { publicKey, privateKey } = await this.cryptoApi.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
+    const privKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
+
+    return { publicKey: publicKeyHex, privateKey: privKeyHex }
   }
 }
