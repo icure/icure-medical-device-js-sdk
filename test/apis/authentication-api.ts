@@ -167,7 +167,7 @@ describe('Authentication API', () => {
 
   it('Patient should be able to retrieve its keys when re-login', async () => {
     // When
-    const { api, user } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+    const { api, user, token } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     // Then
     const currentUser = user
@@ -182,19 +182,33 @@ describe('Authentication API', () => {
     }
     expect(true, 'promise should not fail').eq(true)
 
-    const { publicKey, privateKey } = await api.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await api.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
-    const privKeyHex = ua2hex(await api.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
+    const newMedTechApi = async () =>
+      await new MedTechApiBuilder()
+        .withUserName(currentUser.login!)
+        .withPassword(token)
+        .withICureBaseUrl(env!.iCureUrl)
+        .withMsgGwUrl(env!.msgGtwUrl)
+        .withMsgGwSpecId(env!.specId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessByEmailId(env!.patAuthProcessId)
+        .withAuthProcessBySmsId(env!.patAuthProcessId)
+        .build()
+
+    const newApi = await newMedTechApi()
+
+    const { publicKey, privateKey } = await newApi.cryptoApi.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
+    const privKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
 
     try {
-      await api.initUserCrypto(true, { privateKey: privKeyHex, publicKey: publicKeyHex })
-      expect(true, 'promise should fail').eq(false)
+      await newApi.initUserCrypto(true, { privateKey: privKeyHex, publicKey: publicKeyHex })
+      expect(true, 'promise should fail').to.eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
     }
 
     try {
-      await api.initUserCrypto(true)
+      await (await newMedTechApi()).initUserCrypto(true)
     } catch (e) {
       expect(true, 'promise should not fail').eq(false)
     }

@@ -92,7 +92,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       }
     }
 
-    await Promise.all(userKeyPairs!.map((kp) => this.cryptoApi.cacheKeyPair(kp)))
+    await Promise.all(userKeyPairs?.map((kp) => this.cryptoApi.cacheKeyPair(kp)) ?? [])
 
     if (shouldGenerateOrUseProvidedKeyPair) {
       const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
@@ -177,7 +177,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   }
 
   private _getDataOwnerPublicKeys(dataOwner: Patient | Device | HealthcareParty): string[] {
-    return [...new Set(...Object.keys(dataOwner.aesExchangeKeys ?? {}), dataOwner.publicKey ?? '')].filter((k) => k !== '')
+    return [...new Set(Object.keys(dataOwner.aesExchangeKeys ?? {}).concat(dataOwner.publicKey ?? ''))].filter((k) => k != '')
   }
 
   private async _loadCurrentUserKeyPairsOnDevice(
