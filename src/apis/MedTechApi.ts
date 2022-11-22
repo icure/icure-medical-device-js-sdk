@@ -267,9 +267,9 @@ export class MedTechApi {
     await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
   }
 
-  async initUserCrypto(overrideExistingKeys: boolean = false, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
+  async initUserCrypto(keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const currentUser = await this.userApi.getLoggedUser()
-    await this._dataOwnerApi.initCryptoFor(currentUser, overrideExistingKeys, keyPair)
+    await this._dataOwnerApi.initCryptoFor(currentUser, keyPair)
   }
 }
 

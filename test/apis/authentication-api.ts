@@ -201,14 +201,14 @@ describe('Authentication API', () => {
     const privKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
 
     try {
-      await newApi.initUserCrypto(true, { privateKey: privKeyHex, publicKey: publicKeyHex })
+      await newApi.initUserCrypto({ privateKey: privKeyHex, publicKey: publicKeyHex })
       expect(true, 'promise should fail').to.eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
     }
 
     try {
-      await (await newMedTechApi()).initUserCrypto(true)
+      await (await newMedTechApi()).initUserCrypto()
     } catch (e) {
       expect(true, 'promise should not fail').eq(false)
     }
@@ -303,7 +303,7 @@ describe('Authentication API', () => {
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(false, loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
@@ -391,7 +391,7 @@ describe('Authentication API', () => {
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(false, loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined

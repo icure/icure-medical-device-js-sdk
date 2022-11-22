@@ -22,6 +22,8 @@ import { UserMapper } from '../../mappers/user'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
 
+export type DataOwner = Patient | Device | HealthcareParty
+
 export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly cryptoApi: IccCryptoXApi
   private readonly userApi: IccUserXApi
@@ -67,7 +69,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     return dataOwnerId
   }
 
-  async initCryptoFor(user: User, overrideExistingKeys: boolean = false, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
+  async initCryptoFor(user: User, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const dataOwnerId = this.getDataOwnerIdOf(user)
     const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
@@ -80,9 +82,9 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
 
     const userKeyPairs = await this._loadCurrentUserKeyPairsOnDevice(dataOwner.dataOwner)
-    const shouldGenerateOrUseProvidedKeyPair = userKeyPairs === undefined || userKeyPairs.length === 0
+    const hasExistingKeys = userKeyPairs !== undefined && userKeyPairs.length > 0
 
-    if (!shouldGenerateOrUseProvidedKeyPair && !!keyPair) {
+    if (hasExistingKeys && !!keyPair) {
       const isProvidedKeyPairAlreadyPresent = userKeyPairs
         .filter((k) => jwk2spki(k.publicKey) === keyPair.publicKey)
         .some((k) => jwk2pkcs8(k.privateKey) === keyPair.privateKey)
@@ -94,7 +96,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
 
     await Promise.all(userKeyPairs?.map((kp) => this.cryptoApi.cacheKeyPair(kp)) ?? [])
 
-    if (shouldGenerateOrUseProvidedKeyPair) {
+    if (!hasExistingKeys) {
       const { publicKey, privateKey } = keyPair ?? (await this._generateKeyPair())
       const jwks = {
         publicKey: spkiToJwk(hex2ua(publicKey)),
@@ -106,7 +108,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
 
       if (dataOwner.dataOwner.publicKey == undefined) {
         await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
-      } else if (dataOwner.dataOwner.publicKey != publicKey && overrideExistingKeys) {
+      } else if (dataOwner.dataOwner.publicKey != publicKey) {
         console.log(`Adding a new RSA Key Pair to user ${user.id}`)
         await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
           publicKey: publicKey,
@@ -116,7 +118,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
   }
 
-  async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
+  private async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
     dataOwner.publicKey = dataOwnerPublicKey
 
     if (dataOwner instanceof Patient) {
@@ -140,7 +142,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     }
   }
 
-  async _initPatientDelegationsAndSave(user: User) {
+  private async _initPatientDelegationsAndSave(user: User) {
     const userDto = UserMapper.toUserDto(user)
     if (userDto == undefined) {
       throw this.errorHandler.createErrorWithMessage(`Could not map user to iCure Base User version : Make sure your user info are valid`)
@@ -180,9 +182,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     return [...new Set(Object.keys(dataOwner.aesExchangeKeys ?? {}).concat(dataOwner.publicKey ?? ''))].filter((k) => k != '')
   }
 
-  private async _loadCurrentUserKeyPairsOnDevice(
-    dataOwner: Patient | Device | HealthcareParty
-  ): Promise<{ publicKey: JsonWebKey; privateKey: JsonWebKey }[] | undefined> {
+  private async _loadCurrentUserKeyPairsOnDevice(dataOwner: DataOwner): Promise<{ publicKey: JsonWebKey; privateKey: JsonWebKey }[] | undefined> {
     const dataOwnerPublicKeys = this._getDataOwnerPublicKeys(dataOwner)
 
     if (dataOwnerPublicKeys.length <= 0) {

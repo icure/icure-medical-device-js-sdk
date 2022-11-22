@@ -187,7 +187,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
 
     const userKeyPair = await getUserKeypair(user.id!)
-    await authenticatedApi.initUserCrypto(true, userKeyPair)
+    await authenticatedApi.initUserCrypto(userKeyPair)
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
