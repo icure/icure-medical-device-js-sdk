@@ -166,7 +166,10 @@ export class GroupInitializer implements EnvInitializer {
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env
     const api = await Api(updatedEnvs.iCureUrl, updatedEnvs.adminLogin, updatedEnvs.adminPassword, webcrypto as any, this.fetchImpl)
-    await createGroup(api, updatedEnvs.testGroupId)
+    const doesGroupExists = await api.groupApi.getGroup(updatedEnvs.testGroupId).catch( () => null)
+    if (!doesGroupExists) {
+      await createGroup(api, updatedEnvs.testGroupId)
+    }
     return updatedEnvs
   }
 }

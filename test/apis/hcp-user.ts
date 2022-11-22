@@ -108,9 +108,7 @@ describe('Healthcare professional', () => {
       .withCrypto(webcrypto as any)
       .build()
 
-    const generatedKey = await hcpApi.initUserCrypto()
-    expect(generatedKey).to.be.not.undefined
-    expect(generatedKey).to.be.not.null
+    await hcpApi.initUserCrypto()
 
     // Then, HCP can create data
     const createdPatient = await hcpApi.patientApi.createOrModifyPatient(

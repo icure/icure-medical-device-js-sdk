@@ -2,37 +2,30 @@ import { assert, expect } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
-import {
-  getEnvironmentInitializer,
-  getEnvVariables,
-  hcp1Username, hcp3Username,
-  setLocalStorage,
-  TestUtils,
-  TestVars
-} from '../test-utils'
+import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
-import { hex2ua, StorageFacade } from '@icure/api'
+import { hex2ua, ua2hex } from '@icure/api'
 import { NotificationTypeEnum } from '../../src/models/Notification'
+import { MemoryStorage } from './utils/MemoryStorage'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
-let hcpId: string | undefined;
+let env: TestVars | undefined
+let hcpId: string | undefined
 
 describe('Authentication API', () => {
-
   before(async function () {
     this.timeout(600000)
     const initializer = await getEnvironmentInitializer()
     env = await initializer.execute(getEnvVariables())
 
-    if (env.backendType === "oss") this.skip()
+    if (env.backendType === 'oss') this.skip()
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcpId = hcpApiAndUser.user.healthcarePartyId
-  });
+  })
 
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
     try {
@@ -142,7 +135,7 @@ describe('Authentication API', () => {
     }
   })
 
-  it("HCP should be capable of signing up using email", async () => {
+  it('HCP should be capable of signing up using email', async () => {
     // When
     const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.hcpAuthProcessId, hcpId!)
     const currentUser = hcpApiAndUser.user
@@ -157,8 +150,7 @@ describe('Authentication API', () => {
     assert(currentHcp.lastName == 'Duchâteau')
   }).timeout(60000)
 
-
-  it("Patient should be able to signing up through email", async () => {
+  it('Patient should be able to signing up through email', async () => {
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
@@ -173,23 +165,60 @@ describe('Authentication API', () => {
     assert(currentPatient.lastName == 'Duchâteau')
   }).timeout(60000)
 
+  it('Patient should be able to retrieve its keys when re-login', async () => {
+    // When
+    const { api, user, token } = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+
+    // Then
+    const currentUser = user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
+
+    const keyPair = await api.initUserCrypto()
+    try {
+      await api.initUserCrypto()
+    } catch (e) {
+      expect(true, 'promise should not fail').eq(false)
+    }
+    expect(true, 'promise should not fail').eq(true)
+
+    const newMedTechApi = async () =>
+      await new MedTechApiBuilder()
+        .withUserName(currentUser.login!)
+        .withPassword(token)
+        .withICureBaseUrl(env!.iCureUrl)
+        .withMsgGwUrl(env!.msgGtwUrl)
+        .withMsgGwSpecId(env!.specId)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessByEmailId(env!.patAuthProcessId)
+        .withAuthProcessBySmsId(env!.patAuthProcessId)
+        .build()
+
+    const newApi = await newMedTechApi()
+
+    const { publicKey, privateKey } = await newApi.cryptoApi.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
+    const privKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
+
+    try {
+      await newApi.initUserCrypto({ privateKey: privKeyHex, publicKey: publicKeyHex })
+      expect(true, 'promise should fail').to.eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
+    }
+
+    try {
+      await (await newMedTechApi()).initUserCrypto()
+    } catch (e) {
+      expect(true, 'promise should not fail').eq(false)
+    }
+
+    expect(true, 'promise should not fail').eq(true)
+  }).timeout(60000)
+
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
     // Given
-    const storage: Record<string, string> = {}
-
-    class MemoryStorage implements StorageFacade<string> {
-      async deleteItem(key: string): Promise<void> {
-        delete storage[key]
-      }
-
-      async getItem(key: string): Promise<string | undefined> {
-        return storage[key]
-      }
-
-      async setItem(key: string, valueToStore: string): Promise<void> {
-        storage[key] = valueToStore
-      }
-    }
+    const memoryStorage = new MemoryStorage()
 
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(
@@ -198,7 +227,7 @@ describe('Authentication API', () => {
       env!.specId,
       env!.patAuthProcessId,
       hcpId!,
-      new MemoryStorage()
+      memoryStorage
     )
 
     // Then
@@ -210,17 +239,12 @@ describe('Authentication API', () => {
     assert(currentPatient)
     assert(currentPatient.firstName == 'Antoine')
     assert(currentPatient.lastName == 'Duchâteau')
-    assert(Object.entries(storage).length > 0)
+    assert(Object.entries(memoryStorage.storage).length > 0)
   }).timeout(60000)
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
     // Given
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
-      env!.iCureUrl,
-      env!.msgGtwUrl,
-      env!.specId,
-      env!.patAuthProcessId,
-      hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, currentPatient)
@@ -233,6 +257,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withStorage(new MemoryStorage())
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
@@ -278,7 +303,7 @@ describe('Authentication API', () => {
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(false, loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
@@ -287,12 +312,7 @@ describe('Authentication API', () => {
   it('A patient may login with a new RSA keypair and access his previous data only when a delegate gave him access back', async () => {
     // Given
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
-      env!.iCureUrl,
-      env!.msgGtwUrl,
-      env!.specId,
-      env!.patAuthProcessId,
-      hcpId!)
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     await patApiAndUser.api.patientApi.giveAccessTo(currentPatient, hcpApiAndUser.user.healthcarePartyId!)
@@ -308,6 +328,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withStorage(new MemoryStorage())
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
@@ -370,7 +391,7 @@ describe('Authentication API', () => {
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(false, loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
