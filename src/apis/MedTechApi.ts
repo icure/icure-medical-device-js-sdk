@@ -152,8 +152,8 @@ export class MedTechApi {
     this._errorHandler = new ErrorHandlerImpl()
     this._sanitizer = new SanitizerImpl(this._errorHandler)
 
-    this._storage = storage ?? new LocalStorageImpl()
-    this._keyStorage = keyStorage ?? new KeyStorageImpl(this._storage)
+    this._storage = storage || new LocalStorageImpl()
+    this._keyStorage = keyStorage || new KeyStorageImpl(this._storage)
 
     this._messageGatewayApi =
       msgGtwUrl && msgGtwSpecId
@@ -267,16 +267,9 @@ export class MedTechApi {
     await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
   }
 
-  async initUserCrypto(
-    overwriteExistingKeys: boolean = false,
-    keyPair?: { publicKey: string; privateKey: string }
-  ): Promise<{ publicKey: string; privateKey: String }> {
+  async initUserCrypto(keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const currentUser = await this.userApi.getLoggedUser()
-    const userKeyPair = await this._dataOwnerApi.initCryptoFor(currentUser, overwriteExistingKeys, keyPair)
-
-    await this.addKeyPair(this._dataOwnerApi.getDataOwnerIdOf(currentUser), userKeyPair)
-
-    return userKeyPair
+    await this._dataOwnerApi.initCryptoFor(currentUser, keyPair)
   }
 }
 
@@ -361,9 +354,9 @@ export class MedTechApiBuilder {
     }
 
     return Api(
-      this.iCureBaseUrl!,
-      this.userName!,
-      this.password!,
+      this.iCureBaseUrl,
+      this.userName,
+      this.password,
       this.crypto,
       fetch,
       this._preventCookieUsage,

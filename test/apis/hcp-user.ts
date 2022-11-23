@@ -7,25 +7,25 @@ import { webcrypto } from 'crypto'
 import { User } from '../../src/models/User'
 import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
+import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestVars } from '../test-utils'
 import { Patient } from '../../src/models/Patient'
-import { setLocalStorage } from '../test-utils'
-import * as os from 'os'
-import {jwk2spki} from "@icure/api";
+import { jwk2spki } from '@icure/api'
 
-const tmp = os.tmpdir()
-console.log('Saving keys in ' + tmp)
 setLocalStorage(fetch)
 
-const iCureUrl = process.env.ICURE_TS_TEST_URL ?? 'https://kraken.icure.dev/rest/v1'
-const userName = process.env.ICURE_TS_TEST_HCP_USER!
-const password = process.env.ICURE_TS_TEST_HCP_PWD!
+let env: TestVars | undefined
 
 describe('Healthcare professional', () => {
+  before(async () => {
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
+  })
+
   it('should be capable of creating a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
+      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -65,9 +65,9 @@ describe('Healthcare professional', () => {
 
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
     const medtechApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
-      .withUserName(userName)
-      .withPassword(password)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
+      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
       .withCrypto(webcrypto as any)
       .build()
 
@@ -102,15 +102,13 @@ describe('Healthcare professional', () => {
 
     // When HCP wants to init a RSA KeyPair
     const hcpApi = await medTechApi()
-      .withICureBaseUrl(iCureUrl)
+      .withICureBaseUrl(env!.iCureUrl)
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)
       .build()
 
-    const generatedKey = await hcpApi.initUserCrypto()
-    expect(generatedKey).to.be.not.undefined
-    expect(generatedKey).to.be.not.null
+    await hcpApi.initUserCrypto()
 
     // Then, HCP can create data
     const createdPatient = await hcpApi.patientApi.createOrModifyPatient(

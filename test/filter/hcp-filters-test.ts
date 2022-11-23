@@ -1,15 +1,22 @@
 import 'isomorphic-fetch';
 import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
-import {getEnvVariables, setLocalStorage, TestUtils} from "../test-utils";
-import {HealthcareProfessionalFilter, UserFilter} from "../../src/filter";
+import {
+  getEnvironmentInitializer,
+  getEnvVariables,
+  hcp1Username, patUsername,
+  setLocalStorage,
+  TestUtils,
+  TestVars
+} from "../test-utils";
+import {HealthcareProfessionalFilter} from "../../src/filter";
 import {assert, expect} from "chai";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {v4 as uuid} from "uuid";
+
 setLocalStorage(fetch);
 
-const {iCureUrl: iCureUrl, hcpUserName: hcpUserName, hcpPassword: hcpPassword, hcpPrivKey: hcpPrivKey,
-  patUserName: patUserName, patPassword: patPassword, patPrivKey: patPrivKey} = getEnvVariables()
+let env: TestVars | undefined;
 
 let hcp1Api: MedTechApi | undefined = undefined;
 let hcp1User: User | undefined = undefined;
@@ -19,19 +26,19 @@ let patUser: User | undefined = undefined;
 describe("HealthcareProfessional Filters Test", function () {
   const id = uuid();
   before(async function () {
+    this.timeout(600000)
+    const initializer = await getEnvironmentInitializer();
+    env = await initializer.execute(getEnvVariables());
+
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      iCureUrl,
-      hcpUserName,
-      hcpPassword,
-      hcpPrivKey)
+      env!.iCureUrl,
+      env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      iCureUrl,
-      patUserName,
-      patPassword,
-      patPrivKey)
+      env!.iCureUrl,
+      env.dataOwnerDetails[patUsername])
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
