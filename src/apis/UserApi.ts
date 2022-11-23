@@ -1,9 +1,9 @@
-import {Filter} from '../filter/Filter';
-import {PaginatedListUser} from '../models/PaginatedListUser';
-import {SharedDataType, User} from '../models/User';
-import {Connection} from "../models/Connection";
-import {Patient} from "../models/Patient";
-import {EmailMessageFactory, SMSMessageFactory} from "../utils/msgGtwMessageFactory";
+import { Filter } from '../filter/Filter'
+import { PaginatedListUser } from '../models/PaginatedListUser'
+import { SharedDataType, User } from '../models/User'
+import { Connection } from '../models/Connection'
+import { Patient } from '../models/Patient'
+import { EmailMessageFactory, SMSMessageFactory } from '../utils/msgGtwMessageFactory'
 
 /**
  * The UserApi interface provides methods to manage users.
@@ -23,7 +23,7 @@ export interface UserApi {
    * @param messageFactory a MessageFactory that generates an EmailMessage or a SMSMessage.
    * @param tokenDuration the validity duration of the short-lived token, in seconds (default 48 hours)
    */
-  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration?: number): Promise<User>;
+  createAndInviteUser(patient: Patient, messageFactory: SMSMessageFactory | EmailMessageFactory, tokenDuration?: number): Promise<User>
 
   /**
    * A user must have a login, an email or a mobilePhone defined, a user should be linked to either a Healthcare Professional, a Patient or a Device. When modifying an user, you must ensure that the rev obtained when getting or creating the user is present as the rev is used to guarantee that the user has not been modified by a third party.
@@ -100,17 +100,17 @@ export interface UserApi {
 
   /**
    * Add autoDelegations values to the user.
-   * @param type Type of AutoDelegation to add
    * @param dataOwnerIds Array of DataOwnerId to add
+   * @param type Type of AutoDelegation to add. Shares all data by default.
    * @return Updated user
    */
-  shareAllFutureDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
+  shareAllFutureDataWith(dataOwnerIds: string[], type?: SharedDataType): Promise<User>
 
   /**
    * Removes autoDelegations values to the user.
-   * @param type Type of AutoDelegation to removes
    * @param dataOwnerIds Array of DataOwnerId to add
+   * @param type Type of AutoDelegation to removes. Shares all data by default.
    * @return Updated user
    */
-  stopSharingDataWith(type: SharedDataType, dataOwnerIds: string[]): Promise<User>
+  stopSharingDataWith(dataOwnerIds: string[], type?: SharedDataType): Promise<User>
 }
