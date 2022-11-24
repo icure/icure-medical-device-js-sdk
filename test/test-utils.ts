@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
+import { Api, hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -15,19 +15,26 @@ import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFac
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
 import {
-  CreateHcpComponent, CreatePatientComponent, DescribeInitializer,
+  CreateHcpComponent,
+  CreatePatientComponent,
+  DescribeInitializer,
   DockerComposeInitializer,
   EnvInitializer,
   GroupInitializer,
-  KrakenInitializer, MasterUserInGroupInitializer, MasterUserInitializer,
-  OssInitializer, SafeguardInitializer, UserInitializerComposite
-} from "./test-setup-decorators";
+  KrakenInitializer,
+  MasterUserInGroupInitializer,
+  MasterUserInitializer,
+  OssInitializer,
+  SafeguardInitializer,
+  UserInitializerComposite,
+} from './test-setup-decorators'
+import { checkIfDockerIsOnline } from '@icure/test-setup'
 
-let cachedHcpApi: MedTechApi | undefined;
-let cachedHcpLoggedUser: User | undefined;
-let cachedPatient: Patient | undefined;
-let cachedHealthcareElement: HealthcareElement | undefined;
-let cachedInitializer: EnvInitializer | undefined;
+let cachedHcpApi: MedTechApi | undefined
+let cachedHcpLoggedUser: User | undefined
+let cachedPatient: Patient | undefined
+let cachedHealthcareElement: HealthcareElement | undefined
+let cachedInitializer: EnvInitializer | undefined
 
 export function getTempEmail(): string {
   return `${uuid().substring(0, 8)}@icure.com`
@@ -43,47 +50,50 @@ export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) 
 }
 
 export type UserDetails = {
-  user: string,
-  password: string,
-  publicKey: string,
+  user: string
+  password: string
+  publicKey: string
   privateKey: string
 }
 
 export type TestVars = {
-  iCureUrl: string,
-  msgGtwUrl: string,
-  couchDbUrl: string,
-  composeFileUrl: string,
-  patAuthProcessId: string,
-  hcpAuthProcessId: string,
-  specId: string,
-  testEnvironment: string,
-  testGroupId: string,
-  backendType: string,
-  adminLogin: string,
-  adminPassword: string,
-  masterHcp: UserDetails | undefined,
-  dataOwnerDetails: { [key: string]: UserDetails}
+  iCureUrl: string
+  msgGtwUrl: string
+  couchDbUrl: string
+  composeFileUrl: string
+  patAuthProcessId: string
+  hcpAuthProcessId: string
+  specId: string
+  testEnvironment: string
+  testGroupId: string
+  backendType: string
+  adminLogin: string
+  adminPassword: string
+  masterHcp: UserDetails | undefined
+  dataOwnerDetails: { [key: string]: UserDetails }
 }
 
 export function getEnvVariables(): TestVars {
   const masterHcpDetails =
-    (!!process.env.ICURE_TEST_MASTER_LOGIN && !!process.env.ICURE_TEST_MASTER_PWD && !!process.env.ICURE_TEST_MASTER_PRIV && !!process.env.ICURE_TEST_MASTER_PUB)
-    ? {
-      user: process.env.ICURE_TEST_MASTER_LOGIN!,
-      password: process.env.ICURE_TEST_MASTER_PWD!,
-      privateKey: process.env.ICURE_TEST_MASTER_PRIV!,
-      publicKey: process.env.ICURE_TEST_MASTER_PUB!
-    }
-    : undefined
+    !!process.env.ICURE_TEST_MASTER_LOGIN &&
+    !!process.env.ICURE_TEST_MASTER_PWD &&
+    !!process.env.ICURE_TEST_MASTER_PRIV &&
+    !!process.env.ICURE_TEST_MASTER_PUB
+      ? {
+          user: process.env.ICURE_TEST_MASTER_LOGIN!,
+          password: process.env.ICURE_TEST_MASTER_PWD!,
+          privateKey: process.env.ICURE_TEST_MASTER_PRIV!,
+          publicKey: process.env.ICURE_TEST_MASTER_PUB!,
+        }
+      : undefined
   const testGroupId = process.env.ICURE_TEST_GROUP_ID ?? 'test-group'
   return {
     iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'http://127.0.0.1:16044/rest/v1',
     msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'http://127.0.0.1:8081/msggtw',
     couchDbUrl: process.env.ICURE_COUCHDB_URL ?? 'http://127.0.0.1:15984',
     composeFileUrl: process.env.COMPOSE_FILE_URL ?? 'https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose-cloud.yaml',
-    patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? `patient|${testGroupId}`,
-    hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? `hcp|${testGroupId}`,
+    patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? `patient${testGroupId}`,
+    hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? `hcp${testGroupId}`,
     specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
     testEnvironment: process.env.TEST_ENVIRONMENT ?? 'docker',
     testGroupId: testGroupId,
@@ -91,7 +101,7 @@ export function getEnvVariables(): TestVars {
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
     masterHcp: masterHcpDetails,
-    dataOwnerDetails: {}
+    dataOwnerDetails: {},
   }
 }
 
@@ -122,16 +132,16 @@ export class ICureTestEmail implements EmailMessageFactory {
 
 export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
   if (!cachedInitializer) {
-    const env = getEnvVariables();
-    let bootstrapStep = null;
-    if (env.testEnvironment === "docker") {
-      const setupStep = new DockerComposeInitializer( 'test/scratch', ['mock']);
-      bootstrapStep = env.backendType === "oss"
-        ? new OssInitializer(setupStep)
-        : new KrakenInitializer(setupStep);
+    const env = getEnvVariables()
+    const scratchDir = 'test/scratch'
+    const isDockerOnline = await checkIfDockerIsOnline(scratchDir, env.composeFileUrl)
+    let bootstrapStep = null
+    if (env.testEnvironment === 'docker' && !isDockerOnline) {
+      const setupStep = new DockerComposeInitializer(scratchDir, ['mock'])
+      bootstrapStep = env.backendType === 'oss' ? new OssInitializer(setupStep) : new KrakenInitializer(setupStep)
     }
-    const groupStep = (env.backendType === "oss" || !!process.env.EXISTING_GROUP ) ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
-    const masterInitializerClass = env.backendType === "kraken" ? MasterUserInGroupInitializer : MasterUserInitializer
+    const groupStep = env.backendType === 'oss' ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
+    const masterInitializerClass = env.backendType === 'kraken' ? MasterUserInGroupInitializer : MasterUserInitializer
     const masterStep = !!env.masterHcp ? groupStep : new masterInitializerClass(groupStep, fetch)
     const creationStep = new UserInitializerComposite(masterStep, fetch)
     creationStep.add(new CreateHcpComponent(hcp1Username))
@@ -155,10 +165,7 @@ export class TestUtils {
     )
   }
 
-  static async createMedTechApiAndLoggedUserFor(
-    iCureUrl: string,
-    credentials: UserDetails
-  ): Promise<{ api: MedTechApi; user: User }> {
+  static async createMedTechApiAndLoggedUserFor(iCureUrl: string, credentials: UserDetails): Promise<{ api: MedTechApi; user: User }> {
     const medtechApi = await medTechApi()
       .withICureBaseUrl(iCureUrl)
       .withUserName(credentials.user)
@@ -168,7 +175,10 @@ export class TestUtils {
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
     await medtechApi.cryptoApi
-      .loadKeyPairsAsTextInBrowserLocalStorage(foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!, hex2ua(credentials.privateKey))
+      .loadKeyPairsAsTextInBrowserLocalStorage(
+        foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
+        hex2ua(credentials.privateKey)
+      )
       .catch((error: any) => {
         console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
         console.error(error)
@@ -195,7 +205,7 @@ export class TestUtils {
     hcpId: string,
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
-  ): Promise<{ api: MedTechApi; user: User }> {
+  ): Promise<{ api: MedTechApi; user: User; token: string }> {
     const builder = new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(iCureUrl)
       .withMsgGwUrl(msgGtwUrl)
@@ -245,13 +255,10 @@ export class TestUtils {
     assert(result!.token != null)
     assert(result!.userId != null)
 
-    return { api: result.medTechApi, user: foundUser }
+    return { api: result.medTechApi, user: foundUser, token: result.token }
   }
 
-  static async getOrCreateHcpApiAndLoggedUser(
-    iCureUrl: string,
-    credentials: UserDetails
-  ): Promise<{ api: MedTechApi; user: User }> {
+  static async getOrCreateHcpApiAndLoggedUser(iCureUrl: string, credentials: UserDetails): Promise<{ api: MedTechApi; user: User }> {
     if (cachedHcpApi == undefined && cachedHcpLoggedUser == undefined) {
       const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(iCureUrl, credentials)
       cachedHcpApi = apiAndUser.api
