@@ -50,6 +50,9 @@ ICURE_TS_TEST_MSG_GTW_URL="http://127.0.0.1:8081/msggtw"
 
 # The URL of the CouchDB Instance
 ICURE_COUCHDB_URL="http://127.0.0.1:15984"
+
+# To enable the automatic cleanup of the docker after that all tests finished, you can set
+CLEANUP=1
 ```
 
 #### Advanced Settings
@@ -63,9 +66,6 @@ ICURE_TEST_MASTER_LOGIN
 ICURE_TEST_MASTER_PWD
 ICURE_TEST_MASTER_PRIV
 ICURE_TEST_MASTER_PUB
-
-# It acts as a flag to specify not to create a new group for the tests
-EXISTING_GROUP="any_value"
 
 # The spec id of the Message Gateway (both for the real one and the mock one)
 ICURE_TS_TEST_MSG_GTW_SPEC_ID="ic"
