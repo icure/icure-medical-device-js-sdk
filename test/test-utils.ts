@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import {Api, hex2ua, KeyStorageFacade, sleep, StorageFacade} from '@icure/api'
+import { hex2ua, KeyStorageFacade, sleep, StorageFacade} from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
