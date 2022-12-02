@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { Api, hex2ua, KeyStorageFacade, StorageFacade } from '@icure/api'
+import { hex2ua, KeyStorageFacade, sleep, StorageFacade} from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -109,6 +109,7 @@ export const hcp1Username = process.env.ICURE_TS_TEST_HCP_USER ?? getTempEmail()
 export const hcp2Username = process.env.ICURE_TS_TEST_HCP_2_USER ?? getTempEmail()
 export const hcp3Username = process.env.ICURE_TS_TEST_HCP_3_USER ?? getTempEmail()
 export const patUsername = process.env.ICURE_TS_TEST_PAT_USER ?? getTempEmail()
+const registerThrottlingLimit = 10000
 
 export class ICureTestEmail implements EmailMessageFactory {
   dataOwner: HealthcareProfessional | Patient
@@ -154,7 +155,17 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
   return cachedInitializer
 }
 
+function returnWithinBoundaries(element: number, upperBound: number, lowerBound: number): number {
+  if ( element <= upperBound && element >= lowerBound) return element
+  else if ( element > upperBound) return  upperBound
+  else return lowerBound
+}
+
 export class TestUtils {
+
+  private static registerAverageWait = 10000
+  private static lastRegisterCall = 0
+
   static async createDefaultPatient(medTechApi: MedTechApi): Promise<Patient> {
     return medTechApi.patientApi.createOrModifyPatient(
       new Patient({
@@ -206,6 +217,14 @@ export class TestUtils {
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
+
+    if( (new Date().getTime() - this.lastRegisterCall) < registerThrottlingLimit) {
+      const throttlingWait = returnWithinBoundaries( (registerThrottlingLimit - this.registerAverageWait)*5 - this.registerAverageWait, registerThrottlingLimit, 0)
+      await sleep(throttlingWait)
+      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait)/5
+    }
+    this.lastRegisterCall = new Date().getTime()
+
     const builder = new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(iCureUrl)
       .withMsgGwUrl(msgGtwUrl)

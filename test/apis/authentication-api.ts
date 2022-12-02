@@ -174,7 +174,7 @@ describe('Authentication API', () => {
     assert(currentUser)
     assert(currentUser.patientId != null)
 
-    const keyPair = await api.initUserCrypto()
+    await api.initUserCrypto()
     try {
       await api.initUserCrypto()
     } catch (e) {
