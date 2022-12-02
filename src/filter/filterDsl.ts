@@ -79,18 +79,23 @@ export class UserFilter implements FilterBuilder<User> {
   async build(): Promise<Filter<User>> {
     const filters = [
       this._byIds && ({ ids: this._byIds, $type: 'UserByIdsFilter' } as UserByIdsFilter),
-      this._patientId && ({ patientId: this._patientId, $type: 'UsersByPatientIdFilter' } as UsersByPatientIdFilter),
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<User>),
-      this._intersection &&
-        ({ filters: await Promise.all(this._intersection.map((f) => f.build())), $type: 'IntersectionFilter' } as IntersectionFilter<User>),
+      this._patientId && ({ patientId: this._patientId, $type: 'UsersByPatientIdFilter' } as UsersByPatientIdFilter)
     ].filter((x) => !!x) as Filter<User>[]
 
-    if (!filters.length) {
-      return { $type: 'AllUsersFilter' } as AllUsersFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<User>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<User>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<User>
+      return { $type: 'AllUsersFilter' } as AllUsersFilter
     }
   }
 }
@@ -204,25 +209,23 @@ export class PatientFilter implements FilterBuilder<Patient> {
           healthcarePartyId: dataOwnerId,
           searchString: this._containsFuzzy,
           $type: 'PatientByHealthcarePartyNameContainsFuzzyFilter',
-        } as PatientByHealthcarePartyNameContainsFuzzyFilter),
-      this._union &&
-        ({
-          filters: await Promise.all(this._union.map((f) => f.build())),
-          $type: 'UnionFilter',
-        } as UnionFilter<Patient>),
-      this._intersection &&
-        ({
-          filters: await Promise.all(this._intersection.map((f) => f.build())),
-          $type: 'IntersectionFilter',
-        } as IntersectionFilter<Patient>),
+        } as PatientByHealthcarePartyNameContainsFuzzyFilter)
     ].filter((x) => !!x) as Filter<Patient>[]
 
-    if (!filters.length) {
-      return { healthcarePartyId: dataOwnerId, $type: 'PatientByHealthcarePartyFilter' } as PatientByHealthcarePartyFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<Patient>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<Patient>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<Patient>
+      return { healthcarePartyId: dataOwnerId, $type: 'PatientByHealthcarePartyFilter' } as PatientByHealthcarePartyFilter
     }
   }
 }
@@ -262,21 +265,23 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
   async build(): Promise<Filter<HealthcareProfessional>> {
     const filters = [
       this._byIds && ({ ids: this._byIds, $type: 'HealthcareProfessionalByIdsFilter' } as HealthcareProfessionalByIdsFilter),
-      this._byLabelCodeFilter,
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<HealthcareProfessional>),
-      this._intersection &&
-        ({
-          filters: await Promise.all(this._intersection.map((f) => f.build())),
-          $type: 'IntersectionFilter',
-        } as IntersectionFilter<HealthcareProfessional>),
+      this._byLabelCodeFilter
     ].filter((x) => !!x) as Filter<HealthcareProfessional>[]
 
-    if (!filters.length) {
-      return { $type: 'AllHealthcareProfessionalsFilter' } as AllHealthcareProfessionalsFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<HealthcareProfessional>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<HealthcareProfessional>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<HealthcareProfessional>
+      return { $type: 'AllHealthcareProfessionalsFilter' } as AllHealthcareProfessionalsFilter
     }
   }
 }
@@ -303,18 +308,23 @@ export class MedicalDeviceFilter implements FilterBuilder<MedicalDevice> {
 
   async build(): Promise<Filter<MedicalDevice>> {
     const filters = [
-      this._byIds && ({ ids: this._byIds, $type: 'MedicalDeviceByIdsFilter' } as MedicalDeviceByIdsFilter),
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<MedicalDevice>),
-      this._intersection &&
-        ({ filters: await Promise.all(this._intersection.map((f) => f.build())), $type: 'IntersectionFilter' } as IntersectionFilter<MedicalDevice>),
+      this._byIds && ({ ids: this._byIds, $type: 'MedicalDeviceByIdsFilter' } as MedicalDeviceByIdsFilter)
     ].filter((x) => !!x) as Filter<MedicalDevice>[]
 
-    if (!filters.length) {
-      return { $type: 'AllMedicalDevicesFilter' } as AllMedicalDevicesFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<MedicalDevice>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<MedicalDevice>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<MedicalDevice>
+      return { $type: 'AllMedicalDevicesFilter' } as AllMedicalDevicesFilter
     }
   }
 }
@@ -410,20 +420,22 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
           ).reduce((t, v) => t.concat(v[0]), [] as string[]),
           $type: 'HealthcareElementByHealthcarePartyPatientFilter',
         } as HealthcareElementByHealthcarePartyPatientFilter),
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<HealthcareElement>),
-      this._intersection &&
-        ({
-          filters: await Promise.all(this._intersection.map((f) => f.build())),
-          $type: 'IntersectionFilter',
-        } as IntersectionFilter<HealthcareElement>),
     ].filter((x) => !!x) as Filter<HealthcareElement>[]
 
-    if (!filters.length) {
-      return { healthcarePartyId: dataOwnerId, $type: 'HealthcareElementByHealthcarePartyFilter' } as HealthcareElementByHealthcarePartyFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<HealthcareElement>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<HealthcareElement>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<HealthcareElement>
+      return { healthcarePartyId: dataOwnerId, $type: 'HealthcareElementByHealthcarePartyFilter' } as HealthcareElementByHealthcarePartyFilter
     }
   }
 }
@@ -439,7 +451,7 @@ export class CodingFilter implements FilterBuilder<Coding> {
     return this
   }
 
-  byRegionTypeLabelLanguage(region?: string, type?: string, language?: string, label?: string): CodingFilter {
+  byRegionLanguageTypeLabel(region?: string, language?: string, type?: string, label?: string): CodingFilter {
     this._byRegionTypeLabelLanguageFilter = { region, type, language, label, $type: 'CodingByRegionTypeLabelFilter' } as CodingByRegionTypeLabelFilter
     return this
   }
@@ -457,18 +469,23 @@ export class CodingFilter implements FilterBuilder<Coding> {
   async build(): Promise<Filter<Coding>> {
     const filters = [
       this._byIds && ({ ids: this._byIds, $type: 'CodingByIdsFilter' } as CodingByIdsFilter),
-      this._byRegionTypeLabelLanguageFilter,
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<Coding>),
-      this._intersection &&
-        ({ filters: await Promise.all(this._intersection.map((f) => f.build())), $type: 'IntersectionFilter' } as IntersectionFilter<Coding>),
+      this._byRegionTypeLabelLanguageFilter
     ].filter((x) => !!x) as Filter<Coding>[]
 
-    if (!filters.length) {
-      return { $type: 'AllCodingsFilter' } as AllCodingsFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<Coding>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<Coding>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<Coding>
+      return { $type: 'AllCodingsFilter' } as AllCodingsFilter
     }
   }
 }
@@ -525,18 +542,23 @@ export class NotificationFilter implements FilterBuilder<Notification> {
           $type: 'NotificationsByHcPartyAndTypeFilter',
         } as NotificationsByHcPartyAndTypeFilter),
       this._fromDate &&
-        ({ healthcarePartyId: this._dataOwnerId, date: this._fromDate, $type: 'NotificationsAfterDateFilter' } as NotificationsAfterDateFilter),
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<Notification>),
-      this._intersection &&
-        ({ filters: await Promise.all(this._intersection.map((f) => f.build())), $type: 'IntersectionFilter' } as IntersectionFilter<Notification>),
+        ({ healthcarePartyId: this._dataOwnerId, date: this._fromDate, $type: 'NotificationsAfterDateFilter' } as NotificationsAfterDateFilter)
     ].filter((x) => !!x) as Filter<Notification>[]
 
-    if (!filters.length) {
-      return { healthcarePartyId: this._dataOwnerId, date: 0, $type: 'NotificationsAfterDateFilter' } as NotificationsAfterDateFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<Notification>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<Notification>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters } as IntersectionFilter<Notification>
+      return { healthcarePartyId: this._dataOwnerId, date: 0, $type: 'NotificationsAfterDateFilter' } as NotificationsAfterDateFilter
     }
   }
 }
@@ -655,19 +677,23 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
             )
           ).reduce((patientSecretForeignKeys, extractedKeys) => patientSecretForeignKeys.concat(extractedKeys[0]), [] as string[]),
           $type: 'DataSampleByHealthcarePartyPatientFilter',
-        } as DataSampleByHealthcarePartyPatientFilter),
-
-      this._union && ({ filters: await Promise.all(this._union.map((f) => f.build())), $type: 'UnionFilter' } as UnionFilter<DataSample>),
-      this._intersection &&
-        ({ filters: await Promise.all(this._intersection.map((f) => f.build())), $type: 'IntersectionFilter' } as IntersectionFilter<DataSample>),
+        } as DataSampleByHealthcarePartyPatientFilter)
     ].filter((x) => !!x) as Filter<DataSample>[]
 
-    if (!filters.length) {
-      return { hcpId: doId, $type: 'DataSampleByHealthcarePartyFilter' } as DataSampleByHealthcarePartyFilter
-    } else if (filters.length == 1) {
+    if (!!this._union) {
+      return {
+        filters: await Promise.all(this._union.map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'UnionFilter',
+      } as UnionFilter<DataSample>
+    } else if (filters.length > 1 || !!this._intersection) {
+      return {
+        filters: await Promise.all((this._intersection ?? []).map((f) => f.build())).then( (fs) => fs.concat(filters)),
+        $type: 'IntersectionFilter',
+      } as IntersectionFilter<DataSample>
+    } else if (filters.length === 1) {
       return filters[0]
     } else {
-      return { filters: filters, $type: 'IntersectionFilter' } as IntersectionFilter<DataSample>
+      return { hcpId: doId, $type: 'DataSampleByHealthcarePartyFilter' } as DataSampleByHealthcarePartyFilter
     }
   }
 }
