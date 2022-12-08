@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, KeyStorageFacade, sleep, StorageFacade} from '@icure/api'
+import { hex2ua, KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
@@ -156,13 +156,12 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
 }
 
 function returnWithinBoundaries(element: number, upperBound: number, lowerBound: number): number {
-  if ( element <= upperBound && element >= lowerBound) return element
-  else if ( element > upperBound) return  upperBound
+  if (element <= upperBound && element >= lowerBound) return element
+  else if (element > upperBound) return upperBound
   else return lowerBound
 }
 
 export class TestUtils {
-
   private static registerAverageWait = 10000
   private static lastRegisterCall = 0
 
@@ -217,11 +216,14 @@ export class TestUtils {
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
-
-    if( (new Date().getTime() - this.lastRegisterCall) < registerThrottlingLimit) {
-      const throttlingWait = returnWithinBoundaries( (registerThrottlingLimit - this.registerAverageWait)*5 - this.registerAverageWait, registerThrottlingLimit, 0)
+    if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
+      const throttlingWait = returnWithinBoundaries(
+        (registerThrottlingLimit - this.registerAverageWait) * 5 - this.registerAverageWait,
+        registerThrottlingLimit,
+        0
+      )
       await sleep(throttlingWait)
-      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait)/5
+      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait) / 5
     }
     this.lastRegisterCall = new Date().getTime()
 
@@ -268,7 +270,7 @@ export class TestUtils {
     const foundUser = await result.medTechApi.userApi.getLoggedUser()
     await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(result.keyPair.privateKey)
+      hex2ua(result.keyPairs[0].privateKey)
     )
     assert(result)
     assert(result!.token != null)
