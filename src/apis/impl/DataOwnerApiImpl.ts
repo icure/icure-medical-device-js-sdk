@@ -117,7 +117,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       }
       return [{ publicKey, privateKey }]
     }
-    return userKeyPairs.map(({ publicKey, privateKey }) => ({ publicKey: jwk2spki(publicKey), privateKey: jwk2pkcs8(privateKey) }))
+    return userKeyPairs.map((kp) => ({ publicKey: jwk2spki(kp.publicKey), privateKey: jwk2pkcs8(kp.privateKey) }))
   }
 
   private async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
