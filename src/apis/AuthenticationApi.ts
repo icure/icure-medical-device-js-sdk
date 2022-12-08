@@ -1,11 +1,10 @@
-import {AuthenticationProcess} from "../models/AuthenticationProcess";
-import {AuthenticationResult} from "../models/AuthenticationResult";
+import { AuthenticationProcess } from '../models/AuthenticationProcess'
+import { AuthenticationResult } from '../models/AuthenticationResult'
 
 /**
  * The AuthenticationApi interface provides methods to authenticate and register users.
  */
 export interface AuthenticationApi {
-
   /**
    * Starts the authentication of a user by sending him/her a validation code by email and/or by SMS.
    * Use this service if you would like to register or login your user in the iCure system.
@@ -53,7 +52,7 @@ export interface AuthenticationApi {
   completeAuthentication(
     process: AuthenticationProcess,
     validationCode: string,
-    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
+    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
   ): Promise<AuthenticationResult>
 
   /**
@@ -69,9 +68,5 @@ export interface AuthenticationApi {
    * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
    * user.
    */
-  authenticateAndAskAccessToItsExistingData(
-    userLogin: string,
-    shortLivedToken: string,
-    getUserKeypair: ((userId: string) => Promise<{ privateKey: string, publicKey: string }>),
-  ): Promise<AuthenticationResult>
+  authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string): Promise<AuthenticationResult>
 }

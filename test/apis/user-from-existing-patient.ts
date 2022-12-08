@@ -6,11 +6,15 @@ import { webcrypto } from 'crypto'
 import { hex2ua, sleep } from '@icure/api'
 import {
   getEnvironmentInitializer,
-  getEnvVariables, getTempEmail, hcp1Username, hcp3Username,
-  ICureTestEmail, patUsername,
+  getEnvVariables,
+  getTempEmail,
+  hcp1Username,
+  hcp3Username,
+  ICureTestEmail,
+  patUsername,
   setLocalStorage,
   TestUtils,
-  TestVars
+  TestVars,
 } from '../test-utils'
 import { Address } from '../../src/models/Address'
 import { Telecom } from '../../src/models/Telecom'
@@ -22,21 +26,22 @@ import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
-let hcp1Api: MedTechApi;
-let hcp1User: User;
-let hcp1: HealthcareProfessional;
-let hcp3Api: MedTechApi;
-let hcp3User: User;
-let patApi: MedTechApi;
-let patUser: User;
+let env: TestVars | undefined
+let hcp1Api: MedTechApi
+let hcp1User: User
+let hcp1: HealthcareProfessional
+let hcp3Api: MedTechApi
+let hcp3User: User
+let patApi: MedTechApi
+let patUser: User
 
 describe('A Healthcare Party', () => {
-  before(async function ()  {
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
+  before(async function () {
+    this.timeout(600000)
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
 
-    if (env.backendType === "oss") this.skip()
+    if (env.backendType === 'oss') this.skip()
 
     hcp1Api = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)
@@ -54,15 +59,11 @@ describe('A Healthcare Party', () => {
     )
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
-    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[hcp3Username]);
+    const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])
     hcp3Api = hcpApi3AndUser.api
     hcp3User = hcpApi3AndUser.user
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[patUsername]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[patUsername])
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
   })
@@ -127,8 +128,6 @@ describe('A Healthcare Party', () => {
       .withAuthProcessBySmsId(env!.patAuthProcessId)
       .build()
 
-    const userKeyPair = await anonymousMedTechApi.generateRSAKeypair()
-
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
 
     // When PAT_1 generates a key pair for himself
@@ -136,8 +135,7 @@ describe('A Healthcare Party', () => {
     // Then PAT_1 is able to log as a user
     const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(
       loginAndPassword.split('|')[0],
-      loginAndPassword.split('|')[1],
-      async () => userKeyPair
+      loginAndPassword.split('|')[1]
     )
 
     await sleep(3000)
@@ -182,7 +180,7 @@ describe('A Healthcare Party', () => {
     // Be careful : We need to empty the cache of the hcPartyKeys otherwise, the previous API will use the key of the
     // patient -> patient stocked in cache instead of the one created by the doctor when he gives access back to patient data
     const updatedApi = await medTechApi(newPatientApi).build()
-    await updatedApi.addKeyPair(newPatient.id!, userKeyPair)
+    await updatedApi.addKeyPair(newPatient.id!, authResult.keyPairs[0])
 
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE1.id!)
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!)
