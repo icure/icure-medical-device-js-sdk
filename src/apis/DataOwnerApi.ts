@@ -21,7 +21,7 @@ export interface DataOwnerApi {
    *
    * @return The response will contain the RSA keyPair generated for the provided user;
    */
-  initCryptoFor(user: User, userKeyPair?: { publicKey: string; privateKey: string }): Promise<void>
+  initCryptoFor(user: User, userKeyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]>
 
   giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<boolean>
 }

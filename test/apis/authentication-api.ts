@@ -174,7 +174,7 @@ describe('Authentication API', () => {
     assert(currentUser)
     assert(currentUser.patientId != null)
 
-    const keyPair = await api.initUserCrypto()
+    await api.initUserCrypto()
     try {
       await api.initUserCrypto()
     } catch (e) {
@@ -278,7 +278,7 @@ describe('Authentication API', () => {
     const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
     await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPair.privateKey)
+      hex2ua(loginAuthResult.keyPairs[0].privateKey)
     )
 
     // Then
@@ -298,12 +298,12 @@ describe('Authentication API', () => {
 
     // When he gave access back with his previous key
     patApiAndUser.api.cryptoApi.emptyHcpCache(currentPatient.id!)
-    const accessBack = await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPair.publicKey)
+    const accessBack = await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
     expect(accessBack).to.be.true
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
@@ -349,7 +349,7 @@ describe('Authentication API', () => {
     const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
     await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPair.privateKey)
+      hex2ua(loginAuthResult.keyPairs[0].privateKey)
     )
 
     // Then
@@ -391,7 +391,7 @@ describe('Authentication API', () => {
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPair)
+    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
