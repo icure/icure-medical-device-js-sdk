@@ -158,6 +158,8 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
 function returnWithinBoundaries(element: number, upperBound: number, lowerBound: number): number {
   if (element <= upperBound && element >= lowerBound) return element
   else if (element > upperBound) return upperBound
+  if ( element <= upperBound && element >= lowerBound) return element
+  else if ( element > upperBound) return  upperBound
   else return lowerBound
 }
 
@@ -216,14 +218,11 @@ export class TestUtils {
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
-    if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
-      const throttlingWait = returnWithinBoundaries(
-        (registerThrottlingLimit - this.registerAverageWait) * 5 - this.registerAverageWait,
-        registerThrottlingLimit,
-        0
-      )
+
+    if( (new Date().getTime() - this.lastRegisterCall) < registerThrottlingLimit) {
+      const throttlingWait = returnWithinBoundaries( (registerThrottlingLimit - this.registerAverageWait)*5 - this.registerAverageWait, registerThrottlingLimit, 0)
       await sleep(throttlingWait)
-      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait) / 5
+      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait)/5
     }
     this.lastRegisterCall = new Date().getTime()
 

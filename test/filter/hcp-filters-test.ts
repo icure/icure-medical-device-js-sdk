@@ -10,18 +10,21 @@ import {
   TestVars
 } from "../test-utils";
 import {HealthcareProfessionalFilter} from "../../src/filter";
-import {assert, expect} from "chai";
+import {expect} from "chai";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {v4 as uuid} from "uuid";
 
-setLocalStorage(fetch);
+setLocalStorage(fetch)
 
-let env: TestVars | undefined;
+let env: TestVars
 
-let hcp1Api: MedTechApi | undefined = undefined;
-let hcp1User: User | undefined = undefined;
-let patApi: MedTechApi | undefined = undefined;
-let patUser: User | undefined = undefined;
+let hcp1Api: MedTechApi
+let hcp1User: User
+let patApi: MedTechApi
+let patUser: User
+let hcp1: HealthcareProfessional
+let hcp2: HealthcareProfessional
+let hcp3: HealthcareProfessional
 
 describe("HealthcareProfessional Filters Test", function () {
   const id = uuid();
@@ -31,31 +34,31 @@ describe("HealthcareProfessional Filters Test", function () {
     env = await initializer.execute(getEnvVariables());
 
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
+      env.iCureUrl,
       env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcp1ApiAndUser.api;
     hcp1User = hcp1ApiAndUser.user;
 
     const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
+      env.iCureUrl,
       env.dataOwnerDetails[patUsername])
     patApi = patApiAndUser.api;
     patUser = patApiAndUser.user;
 
     //Create more hcps
-    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    hcp1 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_01',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `gastroenterologist-${id}`}])
     }))
 
-    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    hcp2 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_02',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
     }))
 
-    await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
+    hcp3 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_03',
       labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
       codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
@@ -71,35 +74,35 @@ describe("HealthcareProfessional Filters Test", function () {
     );
 
     expect(!!hcps).to.equal(true);
-    expect(hcps.rows.length).to.equal(2);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(2)
     hcps.rows.forEach( (hcp) => {
       expect([...hcp.codes][0].code).to.eq(`cardiologist-${id}`)
     });
   })
 
   it("HcpsByPatientIdFilter by type test - Success", async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
         .byLabelCodeFilter('hcp-type', `physician-${id}`)
         .build()
     );
 
     expect(!!hcps).to.equal(true);
-    expect(hcps.rows.length).to.equal(3);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(1)
     hcps.rows.forEach( (hcp) => {
       expect([...hcp.labels][0].code).to.eq(`physician-${id}`)
     });
   })
 
   it("HcpsByPatientIdFilter by combination test - Success", async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
         .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
         .build()
     );
 
     expect(!!hcps).to.equal(true);
-    expect(hcps.rows.length).to.equal(1);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(1)
     hcps.rows.forEach( (hcp) => {
       expect([...hcp.codes][0].code).to.eq(`gastroenterologist-${id}`)
     });
@@ -107,14 +110,91 @@ describe("HealthcareProfessional Filters Test", function () {
 
 
   it("HcpsByPatientIdFilter test - Failure", async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
       await new HealthcareProfessionalFilter()
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', 'acrobat')
         .build()
     );
 
-    assert(!!hcps)
-    assert(hcps.rows.length == 0)
+    expect(!!hcps).to.be.true
+    expect(hcps.rows.length).to.be.equal(0)
+  })
+
+  it("If no criteria is specified, all the HCPs are returned", async function () {
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .build()
+    );
+
+    expect(!!hcps).to.be.true
+    expect(hcps.rows.length).to.be.greaterThan(0)
+  })
+
+  it("Can filter HCPs by union filter", async function () {
+    const hcpIdFilter = new HealthcareProfessionalFilter().byIds([hcp2.id!])
+
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
+        .union([hcpIdFilter])
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(2)
+    hcps.rows.forEach( (hcp) => {
+      expect(hcp).to.satisfy( (h: HealthcareProfessional) => {
+        return [...h.codes][0].code === `gastroenterologist-${id}` || h.id === hcp2.id
+      })
+    });
+  })
+
+  it("Can filter HCPs by implicit intersection filter", async function () {
+    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
+        .byIds([hcp2.id!])
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.equal(1)
+    hcps.rows.forEach( (hcp) => {
+      expect([...hcp.codes][0].code).to.eq(`cardiologist-${id}`)
+      expect(hcp.id).to.eq(hcp2.id)
+    });
+  })
+
+  it("Can filter HCPs by explicit intersection filter", async function () {
+    const hcpByIdFilter = new HealthcareProfessionalFilter().byIds([hcp3.id!])
+
+    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
+        .intersection([hcpByIdFilter])
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.equal(1)
+    hcps.rows.forEach( (hcp) => {
+      expect(hcp.id).to.eq(hcp3.id)
+      expect([...hcp.codes][0].code).to.eq(`cardiologist-${id}`)
+    });
+  })
+
+  it("Can filter HCPs using disjoint sets with intersection filter returns empty result", async function () {
+    const hcpByIdFilter = new HealthcareProfessionalFilter().byIds([hcp1.id!])
+
+    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
+        .intersection([hcpByIdFilter])
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.equal(0)
   })
 
 });
