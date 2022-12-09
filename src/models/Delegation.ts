@@ -21,6 +21,11 @@ constructor(json: IDelegation) {
     'delegatedTo'?: string;
     'key'?: string;
 
+    marshal(): IDelegation {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IDelegation {

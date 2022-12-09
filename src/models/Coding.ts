@@ -44,6 +44,11 @@ constructor(json: ICoding) {
     */
     'searchTerms': { [key: string]: Set<string>; };
 
+    marshal(): ICoding {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ICoding {

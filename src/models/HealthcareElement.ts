@@ -13,10 +13,19 @@
 import {CodingReference} from './CodingReference';
 import {Identifier} from './Identifier';
 import {SystemMetaDataEncrypted} from './SystemMetaDataEncrypted';
+import {Content} from "./Content";
 
 export class HealthcareElement {
 constructor(json: IHealthcareElement) {
-  Object.assign(this as HealthcareElement, json)
+
+  const { identifiers, codes, labels, systemMetaData, ...simpleProperties } = json
+
+  Object.assign(this as HealthcareElement, simpleProperties as IHealthcareElement)
+
+  this.identifiers = identifiers?.map((it) => new Identifier(it)) ?? []
+  this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
+  this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
+  this.systemMetaData = systemMetaData && new SystemMetaDataEncrypted(systemMetaData)
 }
 
     /**
@@ -33,7 +42,7 @@ constructor(json: IHealthcareElement) {
     'author'?: string;
     'responsible'?: string;
     'medicalLocationId'?: string;
-    'tags': Set<CodingReference>;
+    'labels': Set<CodingReference>;
     'codes': Set<CodingReference>;
     'endOfLife'?: number;
     'deletionDate'?: number;
@@ -63,6 +72,15 @@ constructor(json: IHealthcareElement) {
     'note'?: string;
     'systemMetaData'?: SystemMetaDataEncrypted;
 
+  marshal(): IHealthcareElement {
+    return {
+      ...this,
+      codes: [...this.codes].map((it)=> it.marshal()),
+      labels: [...this.labels].map((it)=> it.marshal()),
+      systemMetaData: this.systemMetaData && this.systemMetaData.marshal(),
+    }
+  }
+
 }
 
 interface IHealthcareElement {
@@ -74,7 +92,7 @@ interface IHealthcareElement {
   'author'?: string;
   'responsible'?: string;
   'medicalLocationId'?: string;
-  'tags'?: Set<CodingReference>;
+  'labels'?: Set<CodingReference>;
   'codes'?: Set<CodingReference>;
   'endOfLife'?: number;
   'deletionDate'?: number;

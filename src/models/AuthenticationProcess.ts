@@ -1,6 +1,6 @@
 
 export class AuthenticationProcess {
-  constructor(json: { requestId: string; bypassTokenCheck: boolean; login: string }) {
+  constructor(json: IAuthenticationProcess) {
     Object.assign(this as AuthenticationProcess, json)
   }
 
@@ -16,6 +16,12 @@ export class AuthenticationProcess {
    * Bypass Token Check
    */
   'bypassTokenCheck': boolean;
+
+  marshal(): IAuthenticationProcess {
+    return {
+      ...this,
+    }
+  }
 }
 
 interface IAuthenticationProcess {

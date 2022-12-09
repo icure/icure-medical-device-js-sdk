@@ -13,13 +13,23 @@
 import {DataSample} from './DataSample';
 import {Measure} from './Measure';
 import {TimeSeries} from './TimeSeries';
+import {b2a, b64_2ab, ua2b64} from "@icure/api";
 
 /**
 * Information contained in the data sample (Measure, number, ...). Content is localized, using ISO language code as key
 */
 export class Content {
 constructor(json: IContent) {
-  Object.assign(this as Content, json)
+  const { binaryValue, measureValue, timeSeries, compoundValue, ratio, range, ...simpleProperties } = json
+
+  Object.assign(this as Content, simpleProperties)
+
+  this.binaryValue = !binaryValue ? undefined : (binaryValue as unknown instanceof ArrayBuffer) ? binaryValue : (typeof (binaryValue as unknown) === 'string') ? b64_2ab(binaryValue as unknown as string) : undefined
+  this.measureValue = measureValue && new Measure(measureValue)
+  this.timeSeries = timeSeries && new TimeSeries(timeSeries)
+  this.compoundValue = compoundValue?.map(r => new DataSample(r)) ?? []
+  this.ratio = ratio?.map(r => new Measure(r)) ?? []
+  this.range = range?.map(r => new Measure(r)) ?? []
 }
 
     'stringValue'?: string;
@@ -40,6 +50,18 @@ constructor(json: IContent) {
     'compoundValue'?: Array<DataSample>;
     'ratio'?: Array<Measure>;
     'range'?: Array<Measure>;
+
+  marshal(): IContent {
+    return {
+      ...this,
+      binaryValue: this.binaryValue ? ua2b64(this.binaryValue) : undefined,
+      measureValue: this.measureValue?.marshal(),
+      timeSeries: this.timeSeries?.marshal(),
+      compoundValue: this.compoundValue?.map(r => r.marshal()),
+      ratio: this.ratio?.map(r => r.marshal()),
+      range: this.range?.map(r => r.marshal()),
+    }
+  }
 
 }
 

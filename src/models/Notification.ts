@@ -4,7 +4,15 @@ import {SystemMetaDataEncrypted} from "./SystemMetaDataEncrypted";
 
 export class Notification {
   constructor(json: INotification) {
-    Object.assign(this as Notification, json);
+    const { status, identifiers, properties, type, systemMetaData, ...simpleProperties } = json
+
+    Object.assign(this as Notification, simpleProperties as INotification)
+
+    this.status = status as MaintenanceTaskStatusEnum
+    this.identifiers = identifiers?.map((item) => new Identifier(item)) ?? []
+    this.properties = properties && ([...properties]).map(p => new Property(p))
+    this.type = type as NotificationTypeEnum
+    this.systemMetaData = systemMetaData && new SystemMetaDataEncrypted(systemMetaData)
   }
 
   /**
@@ -34,7 +42,7 @@ export class Notification {
   /**
    * Typically used for business / client identifiers. An identifier should identify a notification uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
    */
-  'identifier'?: Array<Identifier>;
+  'identifiers'?: Array<Identifier>;
   /**
    * the last modification date of the notification (encoded as epoch).
    */
@@ -56,13 +64,22 @@ export class Notification {
    */
   'type'?: NotificationTypeEnum;
   'systemMetaData'?: SystemMetaDataEncrypted;
+
+  marshal(): INotification {
+    return {
+      ...this,
+      identifiers: this.identifiers?.map((item) => item.marshal()),
+      properties: this.properties?.map((item) => item.marshal()),
+      systemMetaData: this.systemMetaData?.marshal(),
+    }
+  }
 }
 
 export interface INotification {
   id?: string;
   rev?: string;
   status?: MaintenanceTaskStatusEnum;
-  identifier?: Array<Identifier>;
+  identifiers?: Array<Identifier>;
   created?: number;
   modified?: number;
   endOfLife?: number;

@@ -13,7 +13,11 @@
 
 export class Document {
 constructor(json: IDocument) {
-  Object.assign(this as Document, json)
+  const { otherUtis, ...simpleProperties } = json
+
+  Object.assign(this as Document, simpleProperties as IDocument)
+
+  this.otherUtis = otherUtis ? new Set([...otherUtis]) : new Set()
 }
 
     /**
@@ -66,6 +70,13 @@ constructor(json: IDocument) {
     * Id of attachment to this document
     */
     'attachmentId'?: string;
+
+  marshal(): IDocument {
+    return {
+      ...this,
+      otherUtis: [...this.otherUtis],
+    }
+  }
 
 }
 

@@ -1,0 +1,26 @@
+import 'mocha';
+
+import {PersonName} from '../../src/models/PersonName';
+import {assert} from "chai";
+
+export function newPersonName(): PersonName {
+  return new PersonName({
+    lastName: "lastName",
+    firstNames: ["firstNames"],
+    start: 123,
+    end: 456,
+    prefix: ["prefix"],
+    suffix: ["suffix"],
+    text: "text",
+    use: "official",
+  });
+}
+
+describe('PersonName model test', () => {
+  it('Marshalling/Unmarshalling of PersonName model - Success', () => {
+    const address = newPersonName()
+    const marshalledPersonName = address.marshal()
+    const unmarshalledPersonName = new PersonName(marshalledPersonName)
+    assert.deepEqual(address, unmarshalledPersonName)
+  });
+});
