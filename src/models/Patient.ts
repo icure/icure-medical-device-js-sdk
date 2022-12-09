@@ -18,10 +18,38 @@ import {PatientHealthCareParty} from './PatientHealthCareParty';
 import {PersonName} from './PersonName';
 import {Property} from './Property';
 import {SystemMetaDataOwnerEncrypted} from './SystemMetaDataOwnerEncrypted';
+import {b64_2ab, ua2b64} from "@icure/api";
+import {SystemMetaDataOwner} from "./SystemMetaDataOwner";
+import {HealthcareProfessionalGenderEnum} from "./HealthcareProfessional";
 
 export class Patient {
 constructor(json: IPatient) {
-  Object.assign(this as Patient, json)
+  const { identifiers, labels, codes, names, addresses, gender, birthSex, mergedIds, deactivationReason, personalStatus, picture, partnerships, patientHealthCareParties, patientProfessions, properties, systemMetaData, ...simpleProperties } = json
+
+  Object.assign(this as Patient, simpleProperties as IPatient)
+
+  this.identifiers = identifiers ? [...identifiers]?.map(p => new Identifier(p)) : []
+
+  this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
+  this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
+
+  this.names = names?.map(n => new PersonName(n)) ?? []
+  this.addresses = addresses?.map(a => new Address(a)) ?? []
+  this.gender = gender as HealthcareProfessionalGenderEnum
+  this.birthSex = birthSex as HealthcareProfessionalGenderEnum
+  this.mergedIds = mergedIds ? new Set([...mergedIds]) : new Set()
+  this.deactivationReason = deactivationReason as PatientDeactivationReasonEnum
+  this.personalStatus = personalStatus as PatientPersonalStatusEnum
+
+  this.picture = !picture ? undefined : (picture as unknown instanceof ArrayBuffer) ? picture : (typeof (picture as unknown) === 'string') ? b64_2ab(picture as unknown as string) : undefined
+
+  this.partnerships = partnerships ? [...partnerships]?.map(p => new Partnership(p)) : []
+  this.patientHealthCareParties = patientHealthCareParties ? [...patientHealthCareParties]?.map(p => new PatientHealthCareParty(p)) : []
+  this.patientProfessions = patientProfessions ? [...patientProfessions]?.map(p => new CodingReference(p)) : []
+
+  this.properties = properties ? new Set(([...properties])?.map(p => new Property(p))) : new Set()
+
+  this.systemMetaData = systemMetaData && new SystemMetaDataOwnerEncrypted(systemMetaData)
 }
 
     /**
@@ -222,6 +250,23 @@ constructor(json: IPatient) {
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwnerEncrypted;
 
+    marshal(): IPatient {
+        return {
+          ...this,
+          identifiers: this.identifiers && this.identifiers.map(i => i.marshal()),
+          labels: this.labels ? [...this.labels].map((it)=> it.marshal()) : undefined,
+          codes: this.codes ? [...this.codes].map((it)=> it.marshal()) : undefined,
+          names: this.names?.map(n => n.marshal()) ?? undefined,
+          addresses: this.addresses?.map(a => a.marshal()) ?? undefined,
+          mergedIds: this.mergedIds ? [...this.mergedIds] : undefined,
+          picture: this.picture ? ua2b64(this.picture) : undefined,
+          partnerships: this.partnerships?.map(p => p.marshal()) ?? undefined,
+          patientHealthCareParties: this.patientHealthCareParties?.map(p => p.marshal()) ?? undefined,
+          patientProfessions: this.patientProfessions?.map(p => p.marshal()) ?? undefined,
+          properties: this.properties ? [...this.properties].map((it)=> it.marshal()) : undefined,
+          systemMetaData: this.systemMetaData ? this.systemMetaData.marshal() : undefined,
+        }
+    }
 }
 
 interface IPatient {

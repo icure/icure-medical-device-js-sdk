@@ -14,6 +14,7 @@ import {
 
 import {assert} from "chai";
 import {DataSample} from "../../src/models/DataSample";
+import {Content} from "../../src/models/Content";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
 import {
@@ -138,7 +139,7 @@ describe("Subscription API", () => {
           labels: new Set([
             new CodingReference({type: testType, code: testCode}),
           ]),
-          content: {en: {stringValue: "Hello world"}},
+          content: {en: new Content({stringValue: "Hello world"})},
         })
       );
     }

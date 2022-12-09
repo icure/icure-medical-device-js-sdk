@@ -18,6 +18,11 @@ constructor(json: IFilter) {
 
     'description': string;
 
+    marshal(): IFilter {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IFilter {

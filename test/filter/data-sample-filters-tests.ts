@@ -15,6 +15,7 @@ import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
+import {Content} from "../../src/models/Content";
 
 setLocalStorage(fetch);
 
@@ -60,7 +61,7 @@ describe("Data Sample Filters Tests", function () {
             version: '20020131',
           }),
         ]),
-        content: { en: { stringValue: 'Hello world' } }
+        content: { en: new Content({ stringValue: 'Hello world' }) }
       })
     )
 
@@ -91,7 +92,7 @@ describe("Data Sample Filters Tests", function () {
             version: '20020131',
           }),
         ]),
-        content: { en: { stringValue: 'Hello world' } }
+        content: { en: new Content({ stringValue: 'Hello world' }) }
       })
     )
 
@@ -106,7 +107,7 @@ describe("Data Sample Filters Tests", function () {
             version: '20020131',
           }),
         ]),
-        content: { en: { stringValue: 'Hello world' } }
+        content: { en: new Content({ stringValue: 'Hello world' }) }
       })
     )
 

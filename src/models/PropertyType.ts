@@ -13,12 +13,19 @@
 
 export class PropertyType {
 constructor(json: IPropertyType) {
-  Object.assign(this as PropertyType, json)
+  const { type, ...simpleProperties } = json
+  Object.assign(this as PropertyType, simpleProperties as IPropertyType)
+  this.type = type as PropertyTypeTypeEnum
 }
 
     'identifier'?: string;
     'type'?: PropertyTypeTypeEnum;
 
+    marshal(): IPropertyType {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IPropertyType {

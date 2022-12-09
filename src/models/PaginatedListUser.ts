@@ -15,7 +15,12 @@ import {User} from './User';
 
 export class PaginatedListUser {
 constructor(json: IPaginatedListUser) {
-  Object.assign(this as PaginatedListUser, json)
+  const { rows, nextKeyPair, ...simpleProperties } = json
+
+  Object.assign(this as PaginatedListUser, simpleProperties as IPaginatedListUser)
+
+  this.rows = rows ? [...rows]?.map(p => new User(p)) : []
+  this.nextKeyPair = nextKeyPair && new PaginatedDocumentKeyAndIdPairObject(nextKeyPair)
 }
 
     'pageSize': number;
@@ -23,6 +28,13 @@ constructor(json: IPaginatedListUser) {
     'rows': Array<User>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+    marshal(): IPaginatedListUser {
+      return {
+        ...this,
+        rows: this.rows?.map(p => p.marshal()),
+        nextKeyPair: this.nextKeyPair?.marshal(),
+      }
+    }
 }
 
 interface IPaginatedListUser {

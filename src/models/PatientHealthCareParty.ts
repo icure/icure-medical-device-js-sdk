@@ -16,12 +16,19 @@
 */
 export class PatientHealthCareParty {
 constructor(json: IPatientHealthCareParty) {
-  Object.assign(this as PatientHealthCareParty, json)
+  const { type, ...simpleProperties } = json
+  Object.assign(this as PatientHealthCareParty, simpleProperties as IPatientHealthCareParty)
+  this.type = type as PatientHealthCarePartyTypeEnum
 }
 
     'type': PatientHealthCarePartyTypeEnum;
     'healthcarePartyId'?: string;
 
+    marshal(): IPatientHealthCareParty {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IPatientHealthCareParty {

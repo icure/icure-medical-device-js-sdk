@@ -16,13 +16,21 @@
 */
 export class Partnership {
 constructor(json: IPartnership) {
-  Object.assign(this as Partnership, json)
+  const { type, status, ...simpleProperties } = json
+  Object.assign(this as Partnership, simpleProperties as IPartnership)
+  this.type = type as PartnershipTypeEnum
+  this.status = status as PartnershipStatusEnum
 }
 
     'type'?: PartnershipTypeEnum;
     'status'?: PartnershipStatusEnum;
     'partnerId'?: string;
 
+    marshal(): IPartnership {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IPartnership {

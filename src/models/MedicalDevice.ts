@@ -14,10 +14,26 @@ import {CodingReference} from './CodingReference';
 import {Identifier} from './Identifier';
 import {Property} from './Property';
 import {SystemMetaDataOwner} from './SystemMetaDataOwner';
+import {PersonName} from "./PersonName";
+import {Address} from "./Address";
+import {b64_2ab, ua2b64} from "@icure/api";
+import {HealthcareProfessionalGenderEnum} from "./HealthcareProfessional";
 
 export class MedicalDevice {
 constructor(json: IMedicalDevice) {
-  Object.assign(this as MedicalDevice, json)
+  const { identifiers, labels, codes, picture, properties, systemMetaData, ...simpleProperties } = json
+
+  Object.assign(this as MedicalDevice, simpleProperties as IMedicalDevice)
+
+  this.identifiers = identifiers?.map((item) => new Identifier(item)) ?? []
+
+  this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
+  this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
+
+  this.picture = !picture ? undefined : (picture as unknown instanceof ArrayBuffer) ? picture : (typeof (picture as unknown) === 'string') ? b64_2ab(picture as unknown as string) : undefined
+  this.properties = properties ? new Set(([...properties])?.map(p => new Property(p))) : new Set()
+
+  this.systemMetaData = systemMetaData && new SystemMetaDataOwner(systemMetaData)
 }
 
     /**
@@ -96,6 +112,17 @@ constructor(json: IMedicalDevice) {
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwner;
 
+    marshal(): IMedicalDevice {
+      return {
+        ...this,
+        picture: this.picture ? ua2b64(this.picture) : undefined,
+        labels: [...this.labels].map((it)=> it.marshal()),
+        codes: [...this.codes].map((it)=> it.marshal()),
+        identifiers: this.identifiers.map((it)=> it.marshal()),
+        properties: [...this.properties].map((it)=> it.marshal()),
+        systemMetaData: this.systemMetaData?.marshal()
+      }
+    }
 }
 
 interface IMedicalDevice {
