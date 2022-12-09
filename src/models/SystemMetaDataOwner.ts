@@ -21,6 +21,12 @@ constructor(json: ISystemMetaDataOwner) {
     'privateKeyShamirPartitions': { [key: string]: string; };
     'aesExchangeKeys' : { [key: string]: { [key: string]: { [key: string]: string }; }; };
     'transferKeys' : { [key: string]: { [key: string]: string; }; };
+
+    marshal(): ISystemMetaDataOwner {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ISystemMetaDataOwner {

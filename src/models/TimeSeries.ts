@@ -27,6 +27,11 @@ constructor(json: ITimeSeries) {
     'median': Array<number>;
     'variance': Array<number>;
 
+    marshal(): ITimeSeries {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ITimeSeries {

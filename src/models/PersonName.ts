@@ -16,7 +16,9 @@
 */
 export class PersonName {
 constructor(json: IPersonName) {
-  Object.assign(this as PersonName, json)
+  const { use, ...simpleProperties } = json
+  Object.assign(this as PersonName, simpleProperties as IPersonName)
+  this.use = use as PersonNameUseEnum
 }
 
     'lastName'?: string;
@@ -28,6 +30,11 @@ constructor(json: IPersonName) {
     'text'?: string;
     'use'?: PersonNameUseEnum;
 
+    marshal(): IPersonName {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IPersonName {

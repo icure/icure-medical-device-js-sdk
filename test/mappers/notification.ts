@@ -43,7 +43,7 @@ function assertNotificationIsEquivalentToMaintenanceTask(notification: Notificat
   assert(notification.id === maintenanceTask.id);
   assert(notification.rev === maintenanceTask.rev);
   assert(notification.status === maintenanceTask.status);
-  assert(arrayEquality(!!notification.identifier ? notification.identifier : [],
+  assert(arrayEquality(!!notification.identifiers ? notification.identifiers : [],
     !!maintenanceTask.identifier ? maintenanceTask.identifier : [], identifierEquality));
   assert(notification.created === maintenanceTask.created);
   assert(notification.modified === maintenanceTask.modified);

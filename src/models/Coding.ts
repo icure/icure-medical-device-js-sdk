@@ -13,7 +13,9 @@
 
 export class Coding {
 constructor(json: ICoding) {
-  Object.assign(this as Coding, json)
+  const { searchTerms, ...simpleProperties } = json
+  Object.assign(this as Coding, simpleProperties as ICoding)
+  this.searchTerms = searchTerms ? Object.entries(searchTerms).map(([k,v]) => [k, new Set([...v])] as [string, Set<string>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {} as any
 }
 
     /**
@@ -44,6 +46,12 @@ constructor(json: ICoding) {
     */
     'searchTerms': { [key: string]: Set<string>; };
 
+    marshal(): ICoding {
+      return {
+        ...this,
+        searchTerms: Object.entries(this.searchTerms).map(([k,v]) => [k, [...v]] as [string, Array<string>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) as any,
+      }
+    }
 }
 
 interface ICoding {

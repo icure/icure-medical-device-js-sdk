@@ -64,7 +64,7 @@ describe("Healthcare Element Filters Test", function () {
     he2 = await hcp1Api.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         description: 'The patient has been diagnosed Pararibulitis',
-        tags: new Set([
+        labels: new Set([
           new CodingReference({
             id: 'SNOMEDCT|617|20020131',
             type: 'SNOMEDCT',
@@ -121,8 +121,8 @@ describe("Healthcare Element Filters Test", function () {
     expect(!!elements).to.eq(true)
     expect(elements.rows.length).to.be.greaterThan(0)
     elements.rows.forEach( (he) => {
-      expect(Array.from(he.tags).map( (it) => it.code)).to.contain('617')
-      expect(Array.from(he.tags).map( (it) => it.type)).to.contain('SNOMEDCT')
+      expect(Array.from(he.labels).map( (it) => it.code)).to.contain('617')
+      expect(Array.from(he.labels).map( (it) => it.type)).to.contain('SNOMEDCT')
     })
   }).timeout(60000)
 
@@ -171,7 +171,7 @@ describe("Healthcare Element Filters Test", function () {
     elements.rows.forEach( (he) => {
       expect(he).to.satisfy( (e: HealthcareElement) => {
         return Array.from(e.codes).some( (it) => it.type === 'SNOMEDCT' && it.code === '617')
-          || Array.from(e.tags).some( (it) => it.type === 'SNOMEDCT' && it.code === '617')
+          || Array.from(e.labels).some( (it) => it.type === 'SNOMEDCT' && it.code === '617')
       })
     })
   }).timeout(60000)
@@ -189,8 +189,8 @@ describe("Healthcare Element Filters Test", function () {
     )
     expect(elements.rows.length).to.be.equal(1)
     elements.rows.forEach( (he) => {
-      expect(Array.from(he.tags).map( (it) => it.code)).to.contain('617')
-      expect(Array.from(he.tags).map( (it) => it.type)).to.contain('SNOMEDCT')
+      expect(Array.from(he.labels).map( (it) => it.code)).to.contain('617')
+      expect(Array.from(he.labels).map( (it) => it.type)).to.contain('SNOMEDCT')
     })
   })
 
@@ -211,8 +211,8 @@ describe("Healthcare Element Filters Test", function () {
     )
     expect(elements.rows.length).to.be.equal(1)
     elements.rows.forEach( (he) => {
-      expect(Array.from(he.tags).map( (it) => it.code)).to.contain('617')
-      expect(Array.from(he.tags).map( (it) => it.type)).to.contain('SNOMEDCT')
+      expect(Array.from(he.labels).map( (it) => it.code)).to.contain('617')
+      expect(Array.from(he.labels).map( (it) => it.type)).to.contain('SNOMEDCT')
     })
   })
 
