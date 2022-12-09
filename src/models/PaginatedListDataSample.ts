@@ -12,10 +12,16 @@
 
 import {DataSample} from './DataSample';
 import {PaginatedDocumentKeyAndIdPairObject} from './PaginatedDocumentKeyAndIdPairObject';
+import {Coding} from "./Coding";
 
 export class PaginatedListDataSample {
 constructor(json: IPaginatedListDataSample) {
-  Object.assign(this as PaginatedListDataSample, json)
+  const { rows, nextKeyPair, ...simpleProperties } = json
+
+  Object.assign(this as PaginatedListDataSample, simpleProperties as IPaginatedListDataSample)
+
+  this.rows = rows ? [...rows]?.map(p => new DataSample(p)) : []
+  this.nextKeyPair = nextKeyPair && new PaginatedDocumentKeyAndIdPairObject(nextKeyPair)
 }
 
     'pageSize': number;
@@ -23,6 +29,13 @@ constructor(json: IPaginatedListDataSample) {
     'rows': Array<DataSample>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+    marshal(): IPaginatedListDataSample {
+      return {
+        ...this,
+        rows: this.rows?.map(p => p.marshal()),
+        nextKeyPair: this.nextKeyPair?.marshal(),
+      }
+    }
 }
 
 interface IPaginatedListDataSample {

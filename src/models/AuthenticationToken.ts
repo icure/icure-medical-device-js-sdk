@@ -32,6 +32,11 @@ constructor(json: IAuthenticationToken) {
     */
     'validity': number;
 
+    marshal(): IAuthenticationToken {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IAuthenticationToken {

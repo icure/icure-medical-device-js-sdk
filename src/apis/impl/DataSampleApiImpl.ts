@@ -449,10 +449,10 @@ export class DataSampleApiImpl implements DataSampleApi {
         ...existingDataSample.content,
         [contentIso]: new Content({ documentId: createdDocument.id }),
       }
-      await this.createOrModifyDataSampleFor(patientIdOfBatch!, {
+      await this.createOrModifyDataSampleFor(patientIdOfBatch!, new DataSample({
         ...existingDataSample,
         content: newDSContent,
-      })
+      }))
 
       // Add attachment to document
       const docEncKey = firstOrNull(await this._getDocumentEncryptionKeys(currentUser, createdDocument))

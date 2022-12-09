@@ -13,7 +13,9 @@
 
 export class TypedValueObject {
 constructor(json: ITypedValueObject) {
-  Object.assign(this as TypedValueObject, json)
+  const { type, ...simpleProperties } = json
+  Object.assign(this as TypedValueObject, simpleProperties as ITypedValueObject)
+  this.type = type as TypedValueObjectTypeEnum
 }
 
     'type'?: TypedValueObjectTypeEnum;
@@ -23,6 +25,11 @@ constructor(json: ITypedValueObject) {
     'stringValue'?: string;
     'dateValue'?: number;
 
+    marshal(): ITypedValueObject {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ITypedValueObject {

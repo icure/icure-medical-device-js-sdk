@@ -13,13 +13,20 @@
 
 export class Telecom {
 constructor(json: ITelecom) {
-  Object.assign(this as Telecom, json)
+  const { telecomType, ...simpleProperties } = json
+  Object.assign(this as Telecom, simpleProperties as ITelecom)
+  this.telecomType = telecomType as TelecomTelecomTypeEnum
 }
 
     'telecomType'?: TelecomTelecomTypeEnum;
     'telecomNumber'?: string;
     'telecomDescription'?: string;
 
+    marshal(): ITelecom {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ITelecom {

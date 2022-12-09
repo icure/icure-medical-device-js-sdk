@@ -7,6 +7,7 @@ import axios, { Method } from 'axios'
 import { Patient } from '../src/models/Patient'
 import { assert, expect } from 'chai'
 import { HealthcareElement } from '../src/models/HealthcareElement'
+import { Content } from '../src/models/Content'
 import { DataSample } from '../src/models/DataSample'
 import { CodingReference } from '../src/models/CodingReference'
 import { tmpdir } from 'os'
@@ -317,7 +318,7 @@ export class TestUtils {
       patient.id!,
       new DataSample({
         labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
-        content: { en: { stringValue: 'Hello world' } },
+        content: { en: new Content({ stringValue: 'Hello world' }) },
       })
     )
   }

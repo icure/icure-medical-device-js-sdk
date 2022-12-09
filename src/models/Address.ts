@@ -17,7 +17,12 @@ import {Telecom} from './Telecom';
 */
 export class Address {
 constructor(json: IAddress) {
-  Object.assign(this as Address, json)
+  const { addressType, telecoms, ...simpleProperties } = json
+
+  Object.assign(this as Address, simpleProperties)
+
+  this.addressType = addressType as AddressAddressTypeEnum
+  this.telecoms = telecoms?.map(t => new Telecom(t)) ?? []
 }
 
     'addressType'?: AddressAddressTypeEnum;
@@ -32,6 +37,12 @@ constructor(json: IAddress) {
     'note'?: string;
     'telecoms': Array<Telecom>;
 
+    marshal(): IAddress {
+      return {
+        ...this,
+        telecoms: this.telecoms.map(t => t.marshal()),
+      }
+    }
 }
 
 interface IAddress {

@@ -11,10 +11,13 @@
  */
 
 import {CodingReference} from './CodingReference';
+import {Property} from "./Property";
 
 export class Measure {
 constructor(json: IMeasure) {
-  Object.assign(this as Measure, json)
+  const { unitCodes, ...simpleProperties } = json
+  Object.assign(this as Measure, simpleProperties as IMeasure)
+  this.unitCodes = unitCodes && new Set(([...unitCodes])?.map(p => new CodingReference(p)))
 }
 
     'value'?: number;
@@ -29,6 +32,12 @@ constructor(json: IMeasure) {
     'comment'?: string;
     'comparator'?: string;
 
+    marshal(): IMeasure {
+      return {
+        ...this,
+        unitCodes: this.unitCodes?.size ? [...this.unitCodes].map(p => p.marshal()) : undefined,
+      }
+    }
 }
 
 interface IMeasure {

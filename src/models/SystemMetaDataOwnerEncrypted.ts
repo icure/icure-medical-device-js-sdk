@@ -14,7 +14,14 @@ import {Delegation} from './Delegation';
 
 export class SystemMetaDataOwnerEncrypted {
 constructor(json: ISystemMetaDataOwnerEncrypted) {
-  Object.assign(this as SystemMetaDataOwnerEncrypted, json)
+  const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, ...simpleProperties } = json
+
+  Object.assign(this as SystemMetaDataOwnerEncrypted, simpleProperties as ISystemMetaDataOwnerEncrypted)
+
+  this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
+  this.cryptedForeignKeys = cryptedForeignKeys ? Object.entries(cryptedForeignKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
+  this.delegations = delegations ? Object.entries(delegations).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
+  this.encryptionKeys = encryptionKeys ? Object.entries(encryptionKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
 }
 
     'publicKey': string;
@@ -26,6 +33,15 @@ constructor(json: ISystemMetaDataOwnerEncrypted) {
     'encryptionKeys': { [key: string]: Set<Delegation>; };
     'aesExchangeKeys' : { [key: string]: { [key: string]: { [key: string]: string }; }; };
     'transferKeys' : { [key: string]: { [key: string]: string; }; };
+
+    marshal(): ISystemMetaDataOwnerEncrypted {
+return {
+        ...this,
+        cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
+        delegations: Object.entries(this.delegations).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
+        encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
+      }
+    }
 }
 
 interface ISystemMetaDataOwnerEncrypted {

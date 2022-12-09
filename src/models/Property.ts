@@ -18,7 +18,10 @@ import {TypedValueObject} from './TypedValueObject';
 */
 export class Property {
 constructor(json: IProperty) {
-  Object.assign(this as Property, json)
+  const { type, typedValue, ...simpleProperties } = json
+  Object.assign(this as Property, simpleProperties as IProperty)
+  this.type = type && new PropertyType(type)
+  this.typedValue = typedValue && new TypedValueObject(typedValue)
 }
 
     'id'?: string;
@@ -26,6 +29,13 @@ constructor(json: IProperty) {
     'typedValue'?: TypedValueObject;
     'deleted'?: number;
 
+    marshal(): IProperty {
+      return {
+        ...this,
+        type: this.type?.marshal(),
+        typedValue: this.typedValue?.marshal(),
+      }
+    }
 }
 
 interface IProperty {
