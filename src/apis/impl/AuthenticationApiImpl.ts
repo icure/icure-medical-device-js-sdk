@@ -88,11 +88,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     )
   }
 
-  async completeAuthentication(
-    process: AuthenticationProcess,
-    validationCode: string,
-    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
-  ): Promise<AuthenticationResult> {
+  async completeAuthentication(process: AuthenticationProcess, validationCode: string): Promise<AuthenticationResult> {
     const result = await this.messageGatewayApi.validateProcess(process.requestId, validationCode).catch((e) => {
       if (process.bypassTokenCheck) {
         return true
@@ -101,7 +97,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     })
 
     if (result) {
-      return this._initUserAuthTokenAndCrypto(process.login, validationCode, getUserKeypair)
+      return this._initUserAuthTokenAndCrypto(process.login, validationCode)
     }
 
     throw this.errorHandler.createErrorWithMessage(
@@ -109,12 +105,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     )
   }
 
-  async authenticateAndAskAccessToItsExistingData(
-    userLogin: string,
-    shortLivedToken: string,
-    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
-  ): Promise<AuthenticationResult> {
-    const authenticationResult = await this._initUserAuthTokenAndCrypto(userLogin, shortLivedToken, getUserKeypair)
+  async authenticateAndAskAccessToItsExistingData(userLogin: string, shortLivedToken: string): Promise<AuthenticationResult> {
+    const authenticationResult = await this._initUserAuthTokenAndCrypto(userLogin, shortLivedToken)
 
     const loggedUser = await authenticationResult.medTechApi.userApi.getLoggedUser()
     if (!loggedUser) {
@@ -179,19 +171,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     return authenticationResult
   }
 
-  private async _initUserAuthTokenAndCrypto(
-    login: string,
-    token: string,
-    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
-  ): Promise<AuthenticationResult> {
+  private async _initUserAuthTokenAndCrypto(login: string, token: string): Promise<AuthenticationResult> {
     const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
 
-    const userKeyPair = await getUserKeypair(user.id!)
-    await authenticatedApi.initUserCrypto(userKeyPair)
+    const userKeyPairs = await authenticatedApi.initUserCrypto()
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
-      keyPair: userKeyPair,
+      keyPairs: userKeyPairs,
       token: authenticatedApi.password,
       groupId: user.groupId!,
       userId: user.id,
