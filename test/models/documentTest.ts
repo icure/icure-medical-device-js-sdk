@@ -31,5 +31,6 @@ describe('Document model test', () => {
     const marshalledDocument = document.marshal()
     const unmarshalledDocument = new Document(JSON.parse(JSON.stringify(marshalledDocument)))
     assert.deepEqual(document, unmarshalledDocument)
+    assert.deepEqual(document, new Document(document))
   });
 });

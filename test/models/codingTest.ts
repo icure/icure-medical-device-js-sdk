@@ -25,5 +25,6 @@ describe('Coding model test', () => {
     const marshalledCoding = coding.marshal()
     const unmarshalledCoding = new Coding(JSON.parse(JSON.stringify(marshalledCoding)))
     assert.deepEqual(coding, unmarshalledCoding)
+    assert.deepEqual(coding, new Coding(coding))
   });
 });

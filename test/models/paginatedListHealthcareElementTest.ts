@@ -20,5 +20,6 @@ describe('PaginatedListHealthcareElement model test', () => {
     const marshalledPaginatedListHealthcareElement = paginatedListHealthcareElement.marshal()
     const unmarshalledPaginatedListHealthcareElement = new PaginatedListHealthcareElement(JSON.parse(JSON.stringify(marshalledPaginatedListHealthcareElement)))
     assert.deepEqual(paginatedListHealthcareElement, unmarshalledPaginatedListHealthcareElement)
+    assert.deepEqual(paginatedListHealthcareElement, new PaginatedListHealthcareElement(paginatedListHealthcareElement))
   });
 });

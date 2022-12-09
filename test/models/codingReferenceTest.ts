@@ -18,5 +18,6 @@ describe('CodingReference model test', () => {
     const marshalledCodingReference = codingReference.marshal()
     const unmarshalledCodingReference = new CodingReference(JSON.parse(JSON.stringify(marshalledCodingReference)))
     assert.deepEqual(codingReference, unmarshalledCodingReference)
+    assert.deepEqual(codingReference, new CodingReference(codingReference))
   });
 });

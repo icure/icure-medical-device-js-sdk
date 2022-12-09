@@ -24,5 +24,6 @@ describe('SystemMetaDataOwnerEncrypted model test', () => {
     const marshalledSystemMetaDataOwnerEncrypted = systemMetaDataOwnerEncrypted.marshal()
     const unmarshalledSystemMetaDataOwnerEncrypted = new SystemMetaDataOwnerEncrypted(JSON.parse(JSON.stringify(marshalledSystemMetaDataOwnerEncrypted)))
     assert.deepEqual(systemMetaDataOwnerEncrypted, unmarshalledSystemMetaDataOwnerEncrypted)
+    assert.deepEqual(systemMetaDataOwnerEncrypted, new SystemMetaDataOwnerEncrypted(systemMetaDataOwnerEncrypted))
   });
 });

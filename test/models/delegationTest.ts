@@ -18,5 +18,6 @@ describe('Delegation model test', () => {
     const marshalledDelegation = delegation.marshal()
     const unmarshalledDelegation = new Delegation(JSON.parse(JSON.stringify(marshalledDelegation)))
     assert.deepEqual(delegation, unmarshalledDelegation)
+    assert.deepEqual(delegation, new Delegation(delegation))
   });
 });

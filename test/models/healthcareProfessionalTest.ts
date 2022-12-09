@@ -41,5 +41,6 @@ describe('HealthcareProfessional model test', () => {
     const marshalledHealthcareProfessional = healthcareProfessional.marshal()
     const unmarshalledHealthcareProfessional = new HealthcareProfessional(JSON.parse(JSON.stringify(marshalledHealthcareProfessional)))
     assert.deepEqual(healthcareProfessional, unmarshalledHealthcareProfessional)
+    assert.deepEqual(healthcareProfessional, new HealthcareProfessional(healthcareProfessional))
   });
 });

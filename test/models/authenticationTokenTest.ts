@@ -17,5 +17,6 @@ describe('AuthenticationToken model test', () => {
     const marshalledAuthenticationToken = authenticationToken.marshal()
     const unmarshalledAuthenticationToken = new AuthenticationToken(JSON.parse(JSON.stringify(marshalledAuthenticationToken)))
     assert.deepEqual(authenticationToken, unmarshalledAuthenticationToken)
+    assert.deepEqual(authenticationToken, new AuthenticationToken(authenticationToken))
   });
 });

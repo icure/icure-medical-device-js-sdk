@@ -30,5 +30,6 @@ describe('Content model test', () => {
     const marshalledContent = content.marshal()
     const unmarshalledContent = new Content(JSON.parse(JSON.stringify(marshalledContent)))
     assert.deepEqual(content, unmarshalledContent)
+    assert.deepEqual(content, new Content(content))
   });
 });

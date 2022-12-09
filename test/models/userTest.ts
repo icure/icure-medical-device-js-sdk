@@ -35,5 +35,6 @@ describe('User model test', () => {
     const marshalledUser = user.marshal()
     const unmarshalledUser = new User(JSON.parse(JSON.stringify(marshalledUser)))
     assert.deepEqual(user, unmarshalledUser)
+    assert.deepEqual(user, new User(user))
   });
 });

@@ -70,5 +70,6 @@ describe('Patient model test', () => {
     const marshalledPatient = patient.marshal()
     const unmarshalledPatient = new Patient(JSON.parse(JSON.stringify(marshalledPatient)))
     assert.deepEqual(patient, unmarshalledPatient)
+    assert.deepEqual(patient, new Patient(patient))
   });
 });

@@ -17,5 +17,6 @@ describe('Telecom model test', () => {
     const marshalledTelecom = telecom.marshal()
     const unmarshalledTelecom = new Telecom(JSON.parse(JSON.stringify(marshalledTelecom)))
     assert.deepEqual(telecom, unmarshalledTelecom)
+    assert.deepEqual(telecom, new Telecom(telecom))
   });
 });

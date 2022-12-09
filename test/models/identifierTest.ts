@@ -23,5 +23,6 @@ describe('Identifier model test', () => {
     const marshalledIdentifier = identifier.marshal()
     const unmarshalledIdentifier = new Identifier(JSON.parse(JSON.stringify(marshalledIdentifier)))
     assert.deepEqual(identifier, unmarshalledIdentifier)
+    assert.deepEqual(identifier, new Identifier(identifier))
   });
 });

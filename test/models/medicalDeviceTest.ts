@@ -37,5 +37,6 @@ describe('MedicalDevice model test', () => {
     const marshalledMedicalDevice = medicalDevice.marshal()
     const unmarshalledMedicalDevice = new MedicalDevice(JSON.parse(JSON.stringify(marshalledMedicalDevice)))
     assert.deepEqual(medicalDevice, unmarshalledMedicalDevice)
+    assert.deepEqual(medicalDevice, new MedicalDevice(medicalDevice))
   });
 });

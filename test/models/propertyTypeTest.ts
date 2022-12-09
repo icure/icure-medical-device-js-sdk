@@ -16,5 +16,6 @@ describe('PropertyType model test', () => {
     const marshalledPropertyType = propertyType.marshal()
     const unmarshalledPropertyType = new PropertyType(JSON.parse(JSON.stringify(marshalledPropertyType)))
     assert.deepEqual(propertyType, unmarshalledPropertyType)
+    assert.deepEqual(propertyType, new PropertyType(propertyType))
   });
 });

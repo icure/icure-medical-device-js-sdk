@@ -22,5 +22,6 @@ describe('TimeSeries model test', () => {
     const marshalledTimeSeries = timeSeries.marshal()
     const unmarshalledTimeSeries = new TimeSeries(JSON.parse(JSON.stringify(marshalledTimeSeries)))
     assert.deepEqual(timeSeries, unmarshalledTimeSeries)
+    assert.deepEqual(timeSeries, new TimeSeries(timeSeries))
   });
 });

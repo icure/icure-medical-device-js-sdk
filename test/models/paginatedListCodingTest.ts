@@ -21,5 +21,6 @@ describe('PaginatedListCoding model test', () => {
     const marshalledPaginatedListCoding = paginatedListCoding.marshal()
     const unmarshalledPaginatedListCoding = new PaginatedListCoding(JSON.parse(JSON.stringify(marshalledPaginatedListCoding)))
     assert.deepEqual(paginatedListCoding, unmarshalledPaginatedListCoding)
+    assert.deepEqual(paginatedListCoding, new PaginatedListCoding(paginatedListCoding))
   });
 });

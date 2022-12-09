@@ -20,5 +20,6 @@ describe('Property model test', () => {
     const marshalledProperty = property.marshal()
     const unmarshalledProperty = new Property(JSON.parse(JSON.stringify(marshalledProperty)))
     assert.deepEqual(property, unmarshalledProperty)
+    assert.deepEqual(property, new Property(property))
   });
 });

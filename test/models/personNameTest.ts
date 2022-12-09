@@ -22,5 +22,6 @@ describe('PersonName model test', () => {
     const marshalledPersonName = personName.marshal()
     const unmarshalledPersonName = new PersonName(JSON.parse(JSON.stringify(marshalledPersonName)))
     assert.deepEqual(personName, unmarshalledPersonName)
+    assert.deepEqual(personName, new PersonName(personName))
   });
 });

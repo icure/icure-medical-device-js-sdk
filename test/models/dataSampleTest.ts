@@ -40,5 +40,6 @@ describe('DataSample model test', () => {
     const marshalledDataSample = dataSample.marshal()
     const unmarshalledDataSample = new DataSample(JSON.parse(JSON.stringify(marshalledDataSample)))
     assert.deepEqual(dataSample, unmarshalledDataSample)
+    assert.deepEqual(dataSample, new DataSample(dataSample))
   });
 });

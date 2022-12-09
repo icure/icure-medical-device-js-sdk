@@ -36,5 +36,6 @@ describe('HealthcareElement model test', () => {
     const marshalledHealthcareElement = healthcareElement.marshal()
     const unmarshalledHealthcareElement = new HealthcareElement(JSON.parse(JSON.stringify(marshalledHealthcareElement)))
     assert.deepEqual(healthcareElement, unmarshalledHealthcareElement)
+    assert.deepEqual(healthcareElement, new HealthcareElement(healthcareElement))
   });
 });
