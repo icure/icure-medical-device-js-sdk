@@ -13,9 +13,9 @@ export function newPartnership(): Partnership {
 
 describe('Partnership model test', () => {
   it('Marshalling/Unmarshalling of Partnership model - Success', () => {
-    const address = newPartnership()
-    const marshalledPartnership = address.marshal()
-    const unmarshalledPartnership = new Partnership(marshalledPartnership)
-    assert.deepEqual(address, unmarshalledPartnership)
+    const partnership = newPartnership()
+    const marshalledPartnership = partnership.marshal()
+    const unmarshalledPartnership = new Partnership(JSON.parse(JSON.stringify(marshalledPartnership)))
+    assert.deepEqual(partnership, unmarshalledPartnership)
   });
 });

@@ -2,7 +2,6 @@ import 'mocha';
 
 import {SystemMetaDataOwner} from '../../src/models/SystemMetaDataOwner';
 import {assert} from "chai";
-import {newDelegation} from "./delegationTest";
 
 export function newSystemMetaDataOwner(): SystemMetaDataOwner {
   return new SystemMetaDataOwner({
@@ -16,9 +15,9 @@ export function newSystemMetaDataOwner(): SystemMetaDataOwner {
 
 describe('SystemMetaDataOwner model test', () => {
   it('Marshalling/Unmarshalling of SystemMetaDataOwner model - Success', () => {
-    const address = newSystemMetaDataOwner()
-    const marshalledSystemMetaDataOwner = address.marshal()
-    const unmarshalledSystemMetaDataOwner = new SystemMetaDataOwner(marshalledSystemMetaDataOwner)
-    assert.deepEqual(address, unmarshalledSystemMetaDataOwner)
+    const systemMetaDataOwner = newSystemMetaDataOwner()
+    const marshalledSystemMetaDataOwner = systemMetaDataOwner.marshal()
+    const unmarshalledSystemMetaDataOwner = new SystemMetaDataOwner(JSON.parse(JSON.stringify(marshalledSystemMetaDataOwner)))
+    assert.deepEqual(systemMetaDataOwner, unmarshalledSystemMetaDataOwner)
   });
 });

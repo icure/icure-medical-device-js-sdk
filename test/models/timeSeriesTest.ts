@@ -18,9 +18,9 @@ export function newTimeSeries(): TimeSeries {
 
 describe('TimeSeries model test', () => {
   it('Marshalling/Unmarshalling of TimeSeries model - Success', () => {
-    const address = newTimeSeries()
-    const marshalledTimeSeries = address.marshal()
-    const unmarshalledTimeSeries = new TimeSeries(marshalledTimeSeries)
-    assert.deepEqual(address, unmarshalledTimeSeries)
+    const timeSeries = newTimeSeries()
+    const marshalledTimeSeries = timeSeries.marshal()
+    const unmarshalledTimeSeries = new TimeSeries(JSON.parse(JSON.stringify(marshalledTimeSeries)))
+    assert.deepEqual(timeSeries, unmarshalledTimeSeries)
   });
 });

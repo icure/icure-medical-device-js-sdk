@@ -13,9 +13,9 @@ export function newAuthenticationToken(): AuthenticationToken {
 
 describe('AuthenticationToken model test', () => {
   it('Marshalling/Unmarshalling of AuthenticationToken model - Success', () => {
-    const address = newAuthenticationToken()
-    const marshalledAuthenticationToken = address.marshal()
-    const unmarshalledAuthenticationToken = new AuthenticationToken(marshalledAuthenticationToken)
-    assert.deepEqual(address, unmarshalledAuthenticationToken)
+    const authenticationToken = newAuthenticationToken()
+    const marshalledAuthenticationToken = authenticationToken.marshal()
+    const unmarshalledAuthenticationToken = new AuthenticationToken(JSON.parse(JSON.stringify(marshalledAuthenticationToken)))
+    assert.deepEqual(authenticationToken, unmarshalledAuthenticationToken)
   });
 });

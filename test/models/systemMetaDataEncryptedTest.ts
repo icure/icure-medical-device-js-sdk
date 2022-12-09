@@ -15,9 +15,9 @@ export function newSystemMetaDataEncrypted(): SystemMetaDataEncrypted {
 
 describe('SystemMetaDataEncrypted model test', () => {
   it('Marshalling/Unmarshalling of SystemMetaDataEncrypted model - Success', () => {
-    const address = newSystemMetaDataEncrypted()
-    const marshalledSystemMetaDataEncrypted = address.marshal()
-    const unmarshalledSystemMetaDataEncrypted = new SystemMetaDataEncrypted(marshalledSystemMetaDataEncrypted)
-    assert.deepEqual(address, unmarshalledSystemMetaDataEncrypted)
+    const systemMetaDataEncrypted = newSystemMetaDataEncrypted()
+    const marshalledSystemMetaDataEncrypted = systemMetaDataEncrypted.marshal()
+    const unmarshalledSystemMetaDataEncrypted = new SystemMetaDataEncrypted(JSON.parse(JSON.stringify(marshalledSystemMetaDataEncrypted)))
+    assert.deepEqual(systemMetaDataEncrypted, unmarshalledSystemMetaDataEncrypted)
   });
 });

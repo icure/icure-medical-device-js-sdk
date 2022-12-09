@@ -14,9 +14,9 @@ export function newDelegation(): Delegation {
 
 describe('Delegation model test', () => {
   it('Marshalling/Unmarshalling of Delegation model - Success', () => {
-    const address = newDelegation()
-    const marshalledDelegation = address.marshal()
-    const unmarshalledDelegation = new Delegation(marshalledDelegation)
-    assert.deepEqual(address, unmarshalledDelegation)
+    const delegation = newDelegation()
+    const marshalledDelegation = delegation.marshal()
+    const unmarshalledDelegation = new Delegation(JSON.parse(JSON.stringify(marshalledDelegation)))
+    assert.deepEqual(delegation, unmarshalledDelegation)
   });
 });

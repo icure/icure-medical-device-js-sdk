@@ -33,9 +33,9 @@ export function newMedicalDevice(): MedicalDevice {
 
 describe('MedicalDevice model test', () => {
   it('Marshalling/Unmarshalling of MedicalDevice model - Success', () => {
-    const address = newMedicalDevice()
-    const marshalledMedicalDevice = address.marshal()
-    const unmarshalledMedicalDevice = new MedicalDevice(marshalledMedicalDevice)
-    assert.deepEqual(address, unmarshalledMedicalDevice)
+    const medicalDevice = newMedicalDevice()
+    const marshalledMedicalDevice = medicalDevice.marshal()
+    const unmarshalledMedicalDevice = new MedicalDevice(JSON.parse(JSON.stringify(marshalledMedicalDevice)))
+    assert.deepEqual(medicalDevice, unmarshalledMedicalDevice)
   });
 });

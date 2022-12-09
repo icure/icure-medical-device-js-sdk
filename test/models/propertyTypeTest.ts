@@ -12,9 +12,9 @@ export function newPropertyType(): PropertyType {
 
 describe('PropertyType model test', () => {
   it('Marshalling/Unmarshalling of PropertyType model - Success', () => {
-    const address = newPropertyType()
-    const marshalledPropertyType = address.marshal()
-    const unmarshalledPropertyType = new PropertyType(marshalledPropertyType)
-    assert.deepEqual(address, unmarshalledPropertyType)
+    const propertyType = newPropertyType()
+    const marshalledPropertyType = propertyType.marshal()
+    const unmarshalledPropertyType = new PropertyType(JSON.parse(JSON.stringify(marshalledPropertyType)))
+    assert.deepEqual(propertyType, unmarshalledPropertyType)
   });
 });

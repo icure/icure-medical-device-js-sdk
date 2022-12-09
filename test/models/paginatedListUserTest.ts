@@ -16,9 +16,9 @@ function newPaginatedListUser() {
 
 describe('PaginatedListUser model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListUser model - Success', () => {
-    const address = newPaginatedListUser()
-    const marshalledPaginatedListUser = address.marshal()
-    const unmarshalledPaginatedListUser = new PaginatedListUser(marshalledPaginatedListUser)
-    assert.deepEqual(address, unmarshalledPaginatedListUser)
+    const paginatedListUser = newPaginatedListUser()
+    const marshalledPaginatedListUser = paginatedListUser.marshal()
+    const unmarshalledPaginatedListUser = new PaginatedListUser(JSON.parse(JSON.stringify(marshalledPaginatedListUser)))
+    assert.deepEqual(paginatedListUser, unmarshalledPaginatedListUser)
   });
 });

@@ -16,9 +16,9 @@ function newPaginatedListHealthcareProfessional() {
 
 describe('PaginatedListHealthcareProfessional model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListHealthcareProfessional model - Success', () => {
-    const address = newPaginatedListHealthcareProfessional()
-    const marshalledPaginatedListHealthcareProfessional = address.marshal()
-    const unmarshalledPaginatedListHealthcareProfessional = new PaginatedListHealthcareProfessional(marshalledPaginatedListHealthcareProfessional)
-    assert.deepEqual(address, unmarshalledPaginatedListHealthcareProfessional)
+    const paginatedListHealthcareProfessional = newPaginatedListHealthcareProfessional()
+    const marshalledPaginatedListHealthcareProfessional = paginatedListHealthcareProfessional.marshal()
+    const unmarshalledPaginatedListHealthcareProfessional = new PaginatedListHealthcareProfessional(JSON.parse(JSON.stringify(marshalledPaginatedListHealthcareProfessional)))
+    assert.deepEqual(paginatedListHealthcareProfessional, unmarshalledPaginatedListHealthcareProfessional)
   });
 });

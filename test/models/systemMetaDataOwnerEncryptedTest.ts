@@ -20,9 +20,9 @@ export function newSystemMetaDataOwnerEncrypted(): SystemMetaDataOwnerEncrypted 
 
 describe('SystemMetaDataOwnerEncrypted model test', () => {
   it('Marshalling/Unmarshalling of SystemMetaDataOwnerEncrypted model - Success', () => {
-    const address = newSystemMetaDataOwnerEncrypted()
-    const marshalledSystemMetaDataOwnerEncrypted = address.marshal()
-    const unmarshalledSystemMetaDataOwnerEncrypted = new SystemMetaDataOwnerEncrypted(marshalledSystemMetaDataOwnerEncrypted)
-    assert.deepEqual(address, unmarshalledSystemMetaDataOwnerEncrypted)
+    const systemMetaDataOwnerEncrypted = newSystemMetaDataOwnerEncrypted()
+    const marshalledSystemMetaDataOwnerEncrypted = systemMetaDataOwnerEncrypted.marshal()
+    const unmarshalledSystemMetaDataOwnerEncrypted = new SystemMetaDataOwnerEncrypted(JSON.parse(JSON.stringify(marshalledSystemMetaDataOwnerEncrypted)))
+    assert.deepEqual(systemMetaDataOwnerEncrypted, unmarshalledSystemMetaDataOwnerEncrypted)
   });
 });

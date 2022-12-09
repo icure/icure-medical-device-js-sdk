@@ -26,9 +26,9 @@ export function newContent(): Content {
 
 describe('Content model test', () => {
   it('Marshalling/Unmarshalling of Content model - Success', () => {
-    const address = newContent()
-    const marshalledContent = address.marshal()
-    const unmarshalledContent = new Content(marshalledContent)
-    assert.deepEqual(address, unmarshalledContent)
+    const content = newContent()
+    const marshalledContent = content.marshal()
+    const unmarshalledContent = new Content(JSON.parse(JSON.stringify(marshalledContent)))
+    assert.deepEqual(content, unmarshalledContent)
   });
 });

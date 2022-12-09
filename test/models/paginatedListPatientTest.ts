@@ -16,9 +16,9 @@ function newPaginatedListPatient() {
 
 describe('PaginatedListPatient model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListPatient model - Success', () => {
-    const address = newPaginatedListPatient()
-    const marshalledPaginatedListPatient = address.marshal()
-    const unmarshalledPaginatedListPatient = new PaginatedListPatient(marshalledPaginatedListPatient)
-    assert.deepEqual(address, unmarshalledPaginatedListPatient)
+    const paginatedListPatient = newPaginatedListPatient()
+    const marshalledPaginatedListPatient = paginatedListPatient.marshal()
+    const unmarshalledPaginatedListPatient = new PaginatedListPatient(JSON.parse(JSON.stringify(marshalledPaginatedListPatient)))
+    assert.deepEqual(paginatedListPatient, unmarshalledPaginatedListPatient)
   });
 });

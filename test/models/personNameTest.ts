@@ -18,9 +18,9 @@ export function newPersonName(): PersonName {
 
 describe('PersonName model test', () => {
   it('Marshalling/Unmarshalling of PersonName model - Success', () => {
-    const address = newPersonName()
-    const marshalledPersonName = address.marshal()
-    const unmarshalledPersonName = new PersonName(marshalledPersonName)
-    assert.deepEqual(address, unmarshalledPersonName)
+    const personName = newPersonName()
+    const marshalledPersonName = personName.marshal()
+    const unmarshalledPersonName = new PersonName(JSON.parse(JSON.stringify(marshalledPersonName)))
+    assert.deepEqual(personName, unmarshalledPersonName)
   });
 });

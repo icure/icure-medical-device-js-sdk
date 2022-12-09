@@ -36,9 +36,9 @@ export function newDataSample(makeContent = false): DataSample {
 
 describe('DataSample model test', () => {
   it('Marshalling/Unmarshalling of DataSample model - Success', () => {
-    const address = newDataSample()
-    const marshalledDataSample = address.marshal()
-    const unmarshalledDataSample = new DataSample(marshalledDataSample)
-    assert.deepEqual(address, unmarshalledDataSample)
+    const dataSample = newDataSample()
+    const marshalledDataSample = dataSample.marshal()
+    const unmarshalledDataSample = new DataSample(JSON.parse(JSON.stringify(marshalledDataSample)))
+    assert.deepEqual(dataSample, unmarshalledDataSample)
   });
 });

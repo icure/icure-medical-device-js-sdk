@@ -16,9 +16,9 @@ function newPaginatedListMedicalDevice() {
 
 describe('PaginatedListMedicalDevice model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListMedicalDevice model - Success', () => {
-    const address = newPaginatedListMedicalDevice()
-    const marshalledPaginatedListMedicalDevice = address.marshal()
-    const unmarshalledPaginatedListMedicalDevice = new PaginatedListMedicalDevice(marshalledPaginatedListMedicalDevice)
-    assert.deepEqual(address, unmarshalledPaginatedListMedicalDevice)
+    const paginatedListMedicalDevice = newPaginatedListMedicalDevice()
+    const marshalledPaginatedListMedicalDevice = paginatedListMedicalDevice.marshal()
+    const unmarshalledPaginatedListMedicalDevice = new PaginatedListMedicalDevice(JSON.parse(JSON.stringify(marshalledPaginatedListMedicalDevice)))
+    assert.deepEqual(paginatedListMedicalDevice, unmarshalledPaginatedListMedicalDevice)
   });
 });

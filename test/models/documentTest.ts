@@ -27,9 +27,9 @@ export function newDocument(): Document {
 
 describe('Document model test', () => {
   it('Marshalling/Unmarshalling of Document model - Success', () => {
-    const address = newDocument()
-    const marshalledDocument = address.marshal()
-    const unmarshalledDocument = new Document(marshalledDocument)
-    assert.deepEqual(address, unmarshalledDocument)
+    const document = newDocument()
+    const marshalledDocument = document.marshal()
+    const unmarshalledDocument = new Document(JSON.parse(JSON.stringify(marshalledDocument)))
+    assert.deepEqual(document, unmarshalledDocument)
   });
 });

@@ -13,6 +13,7 @@ import {HealthcareProfessionalFilter} from "../../src/filter";
 import {expect} from "chai";
 import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {v4 as uuid} from "uuid";
+import {CodingReference} from "../../src/models/CodingReference";
 
 setLocalStorage(fetch)
 
@@ -48,20 +49,20 @@ describe("HealthcareProfessional Filters Test", function () {
     //Create more hcps
     hcp1 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_01',
-      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
-      codes: new Set([{type: 'practitioner-specialty', code: `gastroenterologist-${id}`}])
+      labels: new Set([new CodingReference({type: 'hcp-type', code: `physician-${id}`})]),
+      codes: new Set([new CodingReference({type: 'practitioner-specialty', code: `gastroenterologist-${id}`})])
     }))
 
     hcp2 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_02',
-      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
-      codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
+      labels: new Set([new CodingReference({type: 'hcp-type', code: `physician-${id}`})]),
+      codes: new Set([new CodingReference({type: 'practitioner-specialty', code: `cardiologist-${id}`})])
     }))
 
     hcp3 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
       name: 'HCP_03',
-      labels: new Set([{type: 'hcp-type', code: `physician-${id}`}]),
-      codes: new Set([{type: 'practitioner-specialty', code: `cardiologist-${id}`}])
+      labels: new Set([new CodingReference({type: 'hcp-type', code: `physician-${id}`})]),
+      codes: new Set([new CodingReference({type: 'practitioner-specialty', code: `cardiologist-${id}`})])
     }))
 
   });

@@ -12,9 +12,9 @@ export function newPaginatedDocumentKeyAndIdPairObject(): PaginatedDocumentKeyAn
 
 describe('PaginatedDocumentKeyAndIdPairObject model test', () => {
   it('Marshalling/Unmarshalling of PaginatedDocumentKeyAndIdPairObject model - Success', () => {
-    const address = newPaginatedDocumentKeyAndIdPairObject()
-    const marshalledPaginatedDocumentKeyAndIdPairObject = address.marshal()
-    const unmarshalledPaginatedDocumentKeyAndIdPairObject = new PaginatedDocumentKeyAndIdPairObject(marshalledPaginatedDocumentKeyAndIdPairObject)
-    assert.deepEqual(address, unmarshalledPaginatedDocumentKeyAndIdPairObject)
+    const paginatedDocumentKeyAndIdPairObject = newPaginatedDocumentKeyAndIdPairObject()
+    const marshalledPaginatedDocumentKeyAndIdPairObject = paginatedDocumentKeyAndIdPairObject.marshal()
+    const unmarshalledPaginatedDocumentKeyAndIdPairObject = new PaginatedDocumentKeyAndIdPairObject(JSON.parse(JSON.stringify(marshalledPaginatedDocumentKeyAndIdPairObject)))
+    assert.deepEqual(paginatedDocumentKeyAndIdPairObject, unmarshalledPaginatedDocumentKeyAndIdPairObject)
   });
 });

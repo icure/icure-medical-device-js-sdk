@@ -66,9 +66,9 @@ export function newPatient(): Patient {
 
 describe('Patient model test', () => {
   it('Marshalling/Unmarshalling of Patient model - Success', () => {
-    const address = newPatient()
-    const marshalledPatient = address.marshal()
-    const unmarshalledPatient = new Patient(marshalledPatient)
-    assert.deepEqual(address, unmarshalledPatient)
+    const patient = newPatient()
+    const marshalledPatient = patient.marshal()
+    const unmarshalledPatient = new Patient(JSON.parse(JSON.stringify(marshalledPatient)))
+    assert.deepEqual(patient, unmarshalledPatient)
   });
 });

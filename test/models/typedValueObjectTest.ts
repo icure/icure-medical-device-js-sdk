@@ -17,9 +17,9 @@ export function newTypedValueObject(): TypedValueObject {
 
 describe('TypedValueObject model test', () => {
   it('Marshalling/Unmarshalling of TypedValueObject model - Success', () => {
-    const address = newTypedValueObject()
-    const marshalledTypedValueObject = address.marshal()
-    const unmarshalledTypedValueObject = new TypedValueObject(marshalledTypedValueObject)
-    assert.deepEqual(address, unmarshalledTypedValueObject)
+    const typedValueObject = newTypedValueObject()
+    const marshalledTypedValueObject = typedValueObject.marshal()
+    const unmarshalledTypedValueObject = new TypedValueObject(JSON.parse(JSON.stringify(marshalledTypedValueObject)))
+    assert.deepEqual(typedValueObject, unmarshalledTypedValueObject)
   });
 });

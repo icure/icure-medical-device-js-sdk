@@ -37,9 +37,9 @@ export function newHealthcareProfessional(): HealthcareProfessional {
 
 describe('HealthcareProfessional model test', () => {
   it('Marshalling/Unmarshalling of HealthcareProfessional model - Success', () => {
-    const address = newHealthcareProfessional()
-    const marshalledHealthcareProfessional = address.marshal()
-    const unmarshalledHealthcareProfessional = new HealthcareProfessional(marshalledHealthcareProfessional)
-    assert.deepEqual(address, unmarshalledHealthcareProfessional)
+    const healthcareProfessional = newHealthcareProfessional()
+    const marshalledHealthcareProfessional = healthcareProfessional.marshal()
+    const unmarshalledHealthcareProfessional = new HealthcareProfessional(JSON.parse(JSON.stringify(marshalledHealthcareProfessional)))
+    assert.deepEqual(healthcareProfessional, unmarshalledHealthcareProfessional)
   });
 });

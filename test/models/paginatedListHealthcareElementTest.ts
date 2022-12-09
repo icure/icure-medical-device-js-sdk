@@ -16,9 +16,9 @@ function newPaginatedListHealthcareElement() {
 
 describe('PaginatedListHealthcareElement model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListHealthcareElement model - Success', () => {
-    const address = newPaginatedListHealthcareElement()
-    const marshalledPaginatedListHealthcareElement = address.marshal()
-    const unmarshalledPaginatedListHealthcareElement = new PaginatedListHealthcareElement(marshalledPaginatedListHealthcareElement)
-    assert.deepEqual(address, unmarshalledPaginatedListHealthcareElement)
+    const paginatedListHealthcareElement = newPaginatedListHealthcareElement()
+    const marshalledPaginatedListHealthcareElement = paginatedListHealthcareElement.marshal()
+    const unmarshalledPaginatedListHealthcareElement = new PaginatedListHealthcareElement(JSON.parse(JSON.stringify(marshalledPaginatedListHealthcareElement)))
+    assert.deepEqual(paginatedListHealthcareElement, unmarshalledPaginatedListHealthcareElement)
   });
 });

@@ -12,9 +12,9 @@ export function newPatientHealthCareParty(): PatientHealthCareParty {
 
 describe('PatientHealthCareParty model test', () => {
   it('Marshalling/Unmarshalling of PatientHealthCareParty model - Success', () => {
-    const address = newPatientHealthCareParty()
-    const marshalledPatientHealthCareParty = address.marshal()
-    const unmarshalledPatientHealthCareParty = new PatientHealthCareParty(marshalledPatientHealthCareParty)
-    assert.deepEqual(address, unmarshalledPatientHealthCareParty)
+    const patientHealthCareParty = newPatientHealthCareParty()
+    const marshalledPatientHealthCareParty = patientHealthCareParty.marshal()
+    const unmarshalledPatientHealthCareParty = new PatientHealthCareParty(JSON.parse(JSON.stringify(marshalledPatientHealthCareParty)))
+    assert.deepEqual(patientHealthCareParty, unmarshalledPatientHealthCareParty)
   });
 });

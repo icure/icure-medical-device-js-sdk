@@ -14,9 +14,9 @@ export function newCodingReference(): CodingReference {
 
 describe('CodingReference model test', () => {
   it('Marshalling/Unmarshalling of CodingReference model - Success', () => {
-    const address = newCodingReference()
-    const marshalledCodingReference = address.marshal()
-    const unmarshalledCodingReference = new CodingReference(marshalledCodingReference)
-    assert.deepEqual(address, unmarshalledCodingReference)
+    const codingReference = newCodingReference()
+    const marshalledCodingReference = codingReference.marshal()
+    const unmarshalledCodingReference = new CodingReference(JSON.parse(JSON.stringify(marshalledCodingReference)))
+    assert.deepEqual(codingReference, unmarshalledCodingReference)
   });
 });

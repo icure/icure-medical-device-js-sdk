@@ -31,9 +31,9 @@ export function newUser(): User {
 
 describe('User model test', () => {
   it('Marshalling/Unmarshalling of User model - Success', () => {
-    const address = newUser()
-    const marshalledUser = address.marshal()
-    const unmarshalledUser = new User(marshalledUser)
-    assert.deepEqual(address, unmarshalledUser)
+    const user = newUser()
+    const marshalledUser = user.marshal()
+    const unmarshalledUser = new User(JSON.parse(JSON.stringify(marshalledUser)))
+    assert.deepEqual(user, unmarshalledUser)
   });
 });

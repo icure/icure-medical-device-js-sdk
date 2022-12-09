@@ -22,9 +22,9 @@ export function newMeasure(): Measure {
 
 describe('Measure model test', () => {
   it('Marshalling/Unmarshalling of Measure model - Success', () => {
-    const address = newMeasure()
-    const marshalledMeasure = address.marshal()
-    const unmarshalledMeasure = new Measure(marshalledMeasure)
-    assert.deepEqual(address, unmarshalledMeasure)
+    const measure = newMeasure()
+    const marshalledMeasure = measure.marshal()
+    const unmarshalledMeasure = new Measure(JSON.parse(JSON.stringify(marshalledMeasure)))
+    assert.deepEqual(measure, unmarshalledMeasure)
   });
 });

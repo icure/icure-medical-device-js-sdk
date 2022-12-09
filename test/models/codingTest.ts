@@ -21,9 +21,9 @@ export function newCoding(): Coding {
 
 describe('Coding model test', () => {
   it('Marshalling/Unmarshalling of Coding model - Success', () => {
-    const address = newCoding()
-    const marshalledCoding = address.marshal()
-    const unmarshalledCoding = new Coding(marshalledCoding)
-    assert.deepEqual(address, unmarshalledCoding)
+    const coding = newCoding()
+    const marshalledCoding = coding.marshal()
+    const unmarshalledCoding = new Coding(JSON.parse(JSON.stringify(marshalledCoding)))
+    assert.deepEqual(coding, unmarshalledCoding)
   });
 });

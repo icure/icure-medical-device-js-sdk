@@ -32,9 +32,9 @@ export function newHealthcareElement(): HealthcareElement {
 
 describe('HealthcareElement model test', () => {
   it('Marshalling/Unmarshalling of HealthcareElement model - Success', () => {
-    const address = newHealthcareElement()
-    const marshalledHealthcareElement = address.marshal()
-    const unmarshalledHealthcareElement = new HealthcareElement(marshalledHealthcareElement)
-    assert.deepEqual(address, unmarshalledHealthcareElement)
+    const healthcareElement = newHealthcareElement()
+    const marshalledHealthcareElement = healthcareElement.marshal()
+    const unmarshalledHealthcareElement = new HealthcareElement(JSON.parse(JSON.stringify(marshalledHealthcareElement)))
+    assert.deepEqual(healthcareElement, unmarshalledHealthcareElement)
   });
 });

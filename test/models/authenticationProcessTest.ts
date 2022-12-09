@@ -13,9 +13,9 @@ function newAuthenticationProcess(): AuthenticationProcess {
 
 describe('AuthenticationProcess model test', () => {
   it('Marshalling/Unmarshalling of AuthenticationProcess model - Success', () => {
-    const address = newAuthenticationProcess()
-    const marshalledAuthenticationProcess = address.marshal()
-    const unmarshalledAuthenticationProcess = new AuthenticationProcess(marshalledAuthenticationProcess)
-    assert.deepEqual(address, unmarshalledAuthenticationProcess)
+    const authenticationProcess = newAuthenticationProcess()
+    const marshalledAuthenticationProcess = authenticationProcess.marshal()
+    const unmarshalledAuthenticationProcess = new AuthenticationProcess(JSON.parse(JSON.stringify(marshalledAuthenticationProcess)))
+    assert.deepEqual(authenticationProcess, unmarshalledAuthenticationProcess)
   });
 });

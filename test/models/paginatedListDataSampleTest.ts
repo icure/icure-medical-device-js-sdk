@@ -17,9 +17,9 @@ function newPaginatedListDataSample() {
 
 describe('PaginatedListDataSample model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListDataSample model - Success', () => {
-    const address = newPaginatedListDataSample()
-    const marshalledPaginatedListDataSample = address.marshal()
-    const unmarshalledPaginatedListDataSample = new PaginatedListDataSample(marshalledPaginatedListDataSample)
-    assert.deepEqual(address, unmarshalledPaginatedListDataSample)
+    const paginatedListDataSample = newPaginatedListDataSample()
+    const marshalledPaginatedListDataSample = paginatedListDataSample.marshal()
+    const unmarshalledPaginatedListDataSample = new PaginatedListDataSample(JSON.parse(JSON.stringify(marshalledPaginatedListDataSample)))
+    assert.deepEqual(paginatedListDataSample, unmarshalledPaginatedListDataSample)
   });
 });

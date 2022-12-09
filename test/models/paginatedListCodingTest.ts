@@ -17,9 +17,9 @@ function newPaginatedListCoding() {
 
 describe('PaginatedListCoding model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListCoding model - Success', () => {
-    const address = newPaginatedListCoding()
-    const marshalledPaginatedListCoding = address.marshal()
-    const unmarshalledPaginatedListCoding = new PaginatedListCoding(marshalledPaginatedListCoding)
-    assert.deepEqual(address, unmarshalledPaginatedListCoding)
+    const paginatedListCoding = newPaginatedListCoding()
+    const marshalledPaginatedListCoding = paginatedListCoding.marshal()
+    const unmarshalledPaginatedListCoding = new PaginatedListCoding(JSON.parse(JSON.stringify(marshalledPaginatedListCoding)))
+    assert.deepEqual(paginatedListCoding, unmarshalledPaginatedListCoding)
   });
 });

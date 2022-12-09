@@ -13,9 +13,9 @@ export function newTelecom(): Telecom {
 
 describe('Telecom model test', () => {
   it('Marshalling/Unmarshalling of Telecom model - Success', () => {
-    const address = newTelecom()
-    const marshalledTelecom = address.marshal()
-    const unmarshalledTelecom = new Telecom(marshalledTelecom)
-    assert.deepEqual(address, unmarshalledTelecom)
+    const telecom = newTelecom()
+    const marshalledTelecom = telecom.marshal()
+    const unmarshalledTelecom = new Telecom(JSON.parse(JSON.stringify(marshalledTelecom)))
+    assert.deepEqual(telecom, unmarshalledTelecom)
   });
 });

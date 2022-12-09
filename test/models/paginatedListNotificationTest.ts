@@ -16,9 +16,9 @@ function newPaginatedListNotification() {
 
 describe('PaginatedListNotification model test', () => {
   it('Marshalling/Unmarshalling of PaginatedListNotification model - Success', () => {
-    const address = newPaginatedListNotification()
-    const marshalledPaginatedListNotification = address.marshal()
-    const unmarshalledPaginatedListNotification = new PaginatedListNotification(marshalledPaginatedListNotification)
-    assert.deepEqual(address, unmarshalledPaginatedListNotification)
+    const paginatedListNotification = newPaginatedListNotification()
+    const marshalledPaginatedListNotification = paginatedListNotification.marshal()
+    const unmarshalledPaginatedListNotification = new PaginatedListNotification(JSON.parse(JSON.stringify(marshalledPaginatedListNotification)))
+    assert.deepEqual(paginatedListNotification, unmarshalledPaginatedListNotification)
   });
 });

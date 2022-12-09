@@ -19,9 +19,9 @@ export function newIdentifier(): Identifier {
 
 describe('Identifier model test', () => {
   it('Marshalling/Unmarshalling of Identifier model - Success', () => {
-    const address = newIdentifier()
-    const marshalledIdentifier = address.marshal()
-    const unmarshalledIdentifier = new Identifier(marshalledIdentifier)
-    assert.deepEqual(address, unmarshalledIdentifier)
+    const identifier = newIdentifier()
+    const marshalledIdentifier = identifier.marshal()
+    const unmarshalledIdentifier = new Identifier(JSON.parse(JSON.stringify(marshalledIdentifier)))
+    assert.deepEqual(identifier, unmarshalledIdentifier)
   });
 });

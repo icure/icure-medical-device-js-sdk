@@ -16,9 +16,9 @@ export function newProperty(): Property {
 
 describe('Property model test', () => {
   it('Marshalling/Unmarshalling of Property model - Success', () => {
-    const address = newProperty()
-    const marshalledProperty = address.marshal()
-    const unmarshalledProperty = new Property(marshalledProperty)
-    assert.deepEqual(address, unmarshalledProperty)
+    const property = newProperty()
+    const marshalledProperty = property.marshal()
+    const unmarshalledProperty = new Property(JSON.parse(JSON.stringify(marshalledProperty)))
+    assert.deepEqual(property, unmarshalledProperty)
   });
 });
