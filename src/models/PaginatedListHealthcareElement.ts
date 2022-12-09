@@ -15,7 +15,12 @@ import {PaginatedDocumentKeyAndIdPairObject} from './PaginatedDocumentKeyAndIdPa
 
 export class PaginatedListHealthcareElement {
 constructor(json: IPaginatedListHealthcareElement) {
-  Object.assign(this as PaginatedListHealthcareElement, json)
+  const { rows, nextKeyPair, ...simpleProperties } = json
+
+  Object.assign(this as PaginatedListHealthcareElement, simpleProperties as IPaginatedListHealthcareElement)
+
+  this.rows = rows ? [...rows]?.map(p => new HealthcareElement(p)) : []
+  this.nextKeyPair = nextKeyPair && new PaginatedDocumentKeyAndIdPairObject(nextKeyPair)
 }
 
     'pageSize': number;
@@ -23,6 +28,13 @@ constructor(json: IPaginatedListHealthcareElement) {
     'rows': Array<HealthcareElement>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+    marshal(): IPaginatedListHealthcareElement {
+      return {
+        ...this,
+        rows: this.rows?.map(p => p.marshal()),
+        nextKeyPair: this.nextKeyPair?.marshal(),
+      }
+    }
 }
 
 interface IPaginatedListHealthcareElement {

@@ -15,10 +15,27 @@ import {CodingReference} from './CodingReference';
 import {PersonName} from './PersonName';
 import {Property} from './Property';
 import {SystemMetaDataOwner} from './SystemMetaDataOwner';
+import {SystemMetaDataEncrypted} from "./SystemMetaDataEncrypted";
+import {b64_2ab, ua2b64} from "@icure/api";
 
 export class HealthcareProfessional {
 constructor(json: IHealthcareProfessional) {
-  Object.assign(this as HealthcareProfessional, json)
+  const { labels, codes, names, gender, addresses, picture, specialityCodes, properties, systemMetaData, ...simpleProperties } = json
+
+  Object.assign(this as HealthcareProfessional, simpleProperties as IHealthcareProfessional)
+
+  this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
+  this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
+
+  this.names = names?.map(n => new PersonName(n)) ?? []
+  this.gender = gender as HealthcareProfessionalGenderEnum
+  this.addresses = addresses?.map(a => new Address(a)) ?? []
+  this.picture = !picture ? undefined : (picture as unknown instanceof ArrayBuffer) ? picture : (typeof (picture as unknown) === 'string') ? b64_2ab(picture as unknown as string) : undefined
+  this.specialityCodes = specialityCodes && new Set([...specialityCodes].map((it)=> new CodingReference(it)))
+  this.properties = properties ? new Set(([...properties])?.map(p => new Property(p))) : new Set()
+
+  this.systemMetaData = systemMetaData && new SystemMetaDataOwner(systemMetaData)
+
 }
 
     /**
@@ -96,12 +113,29 @@ constructor(json: IHealthcareProfessional) {
     */
     'picture'?: ArrayBuffer;
     /**
+    * Medical specialty of the healthcare party codified using FHIR or Kmehr codificaiton scheme
+    */
+    'specialityCodes'?: Set<CodingReference>;
+    /**
     * Text notes.
     */
     'notes'?: string;
     'properties': Set<Property>;
     'systemMetaData'?: SystemMetaDataOwner;
 
+    marshal(): IHealthcareProfessional {
+      return {
+        ...this,
+        labels: this.labels ? [...this.labels].map((it)=> it.marshal()) : undefined,
+        codes: this.codes ? [...this.codes].map((it)=> it.marshal()) : undefined,
+        names: this.names?.map(n => n.marshal()) ?? undefined,
+        addresses: this.addresses?.map(a => a.marshal()) ?? undefined,
+        picture: this.picture ? ua2b64(this.picture) : undefined,
+        specialityCodes: this.specialityCodes ? [...this.specialityCodes].map((it)=> it.marshal()) : undefined,
+        properties: this.properties ? [...this.properties].map((it)=> it.marshal()) : undefined,
+        systemMetaData: this.systemMetaData ? this.systemMetaData.marshal() : undefined,
+      }
+    }
 }
 
 interface IHealthcareProfessional {

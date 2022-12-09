@@ -19,7 +19,7 @@ export namespace HealthcareElementMapper {
       id: dto.id,
       identifiers: map(dto.identifiers, toIdentifier),
       codes: mapSet(new Set(dto.codes), toCodingReference),
-      tags: mapSet(new Set(dto.tags), toCodingReference),
+      labels: mapSet(new Set(dto.tags), toCodingReference),
       rev: dto.rev,
       created: dto.created,
       modified: dto.modified,
@@ -47,7 +47,7 @@ export namespace HealthcareElementMapper {
     return new HealthElement({
       id: id,
       identifiers: map(obj.identifiers, toIdentifierDto),
-      tags: mapSetToArray(obj.tags, toCodeStub),
+      tags: mapSetToArray(obj.labels, toCodeStub),
       codes: mapSetToArray(obj.codes, toCodeStub),
       rev: obj.rev,
       created: obj.created,

@@ -17,7 +17,9 @@ import {CodingReference} from './CodingReference';
 */
 export class Identifier {
 constructor(json: IIdentifier) {
-  Object.assign(this as Identifier, json)
+  const { type, ...simpleProperties } = json
+  Object.assign(this as Identifier, simpleProperties as IIdentifier)
+  this.type = type && new CodingReference(type)
 }
 
     'id'?: string;
@@ -28,6 +30,13 @@ constructor(json: IIdentifier) {
     'type'?: CodingReference;
     'use'?: string;
     'value'?: string;
+
+    marshal(): IIdentifier {
+      return {
+        ...this,
+        type: this.type?.marshal(),
+      }
+    }
 
 }
 

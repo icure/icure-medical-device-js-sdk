@@ -19,6 +19,11 @@ constructor(json: IPaginatedDocumentKeyAndIdPairObject) {
     'startKey'?: any;
     'startKeyDocId'?: string;
 
+    marshal(): IPaginatedDocumentKeyAndIdPairObject {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface IPaginatedDocumentKeyAndIdPairObject {

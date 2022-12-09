@@ -34,7 +34,7 @@ describe('User API', () => {
 
     // When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only and no duplicates
     const userUpdatedWithUpdatedDelegationsOnMedicalInformation = await api.userApi.shareAllFutureDataWith([delegation], 'medicalInformation')
-    assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation.sharingDataWith.medicalInformation.has(delegation))
+    assert(userUpdatedWithUpdatedDelegationsOnMedicalInformation.sharingDataWith.medicalInformation?.has(delegation))
 
     // When a user already shares data with the provided dataOwner, the user is returned successfully, without any additional request to iCure
     const userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges = await api.userApi.shareAllFutureDataWith(
@@ -42,7 +42,7 @@ describe('User API', () => {
       'medicalInformation'
     )
 
-    assert(userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges.sharingDataWith.medicalInformation.has(delegation))
+    assert(userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges.sharingDataWith.medicalInformation?.has(delegation))
     assert(
       JSON.stringify(userUpdatedWithUpdatedDelegationsOnMedicalInformation) ===
         JSON.stringify(userUpdatedWithUpdatedDelegationsOnMedicalInformationButNoChanges)
@@ -57,13 +57,13 @@ describe('User API', () => {
     // When a user shares data with the provided dataOwner, the user is returned successfully, with additional data sharing entries only on the right type
     const userUpdatedWithUpdatedDelegationsOnAll = await api.userApi.shareAllFutureDataWith([delegation], 'all')
 
-    assert(userUpdatedWithUpdatedDelegationsOnAll.sharingDataWith.all.has(delegation))
+    assert(userUpdatedWithUpdatedDelegationsOnAll.sharingDataWith.all?.has(delegation))
     assert(!userUpdatedWithUpdatedDelegationsOnAll.sharingDataWith?.medicalInformation?.has(delegation))
 
     // When a user want to stop to share data with the provided dataOwner, the user is returned successfully, with removed data sharing entries only on provided type
     const userUpdatedWithRemovedDelegationsOnMedicalInformation = await api.userApi.stopSharingDataWith([delegation], 'medicalInformation')
 
-    assert(userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith.all.has(delegation))
+    assert(userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith.all?.has(delegation))
     assert(!userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith?.medicalInformation?.has(delegation))
   })
 })

@@ -5,6 +5,7 @@ import { DataSampleFilter } from '../../src/filter'
 
 import { assert, expect, use as chaiUse } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
+import { Content } from '../../src/models/Content'
 import { CodingReference } from '../../src/models/CodingReference'
 import {
   getEnvironmentInitializer,
@@ -57,7 +58,7 @@ describe('Data Samples API', () => {
     const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient)
     const dataSampleToCreate = new DataSample({
       labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
-      content: { en: { stringValue: 'Hello world' } },
+      content: { en: new Content({ stringValue: 'Hello world' }) },
       healthcareElementIds: new Set([healthElement!.id!]),
     })
 
@@ -80,10 +81,10 @@ describe('Data Samples API', () => {
     const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient)
 
     // When
-    const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, {
+    const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
       ...createdDataSample,
       healthcareElementIds: new Set([healthElement!.id!]),
-    })
+    }))
 
     // Then
     assert(modifiedDataSample != undefined)
@@ -104,7 +105,7 @@ describe('Data Samples API', () => {
         patient.id!,
         new DataSample({
           labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
-          content: { en: { stringValue: 'Hello world' } },
+          content: { en: new Content({ stringValue: 'Hello world' }) },
           healthcareElementIds: new Set(['I-DO-NOT-EXIST']),
         })
       )
@@ -127,7 +128,7 @@ describe('Data Samples API', () => {
       patient.id!,
       new DataSample({
         labels: new Set([new CodingReference({ type: 'FILTER-IC-TEST', code: 'TEST' })]),
-        content: { en: { stringValue: 'Hello world' } },
+        content: { en: new Content({ stringValue: 'Hello world' }) },
       })
     )
 
@@ -154,7 +155,7 @@ describe('Data Samples API', () => {
       patient.id!,
       new DataSample({
         labels: new Set([new CodingReference({ type: 'FILTER-HE-IC-TEST', code: 'TEST' })]),
-        content: { en: { stringValue: 'Hello world' } },
+        content: { en: new Content({ stringValue: 'Hello world' }) },
         healthcareElementIds: new Set([healthElement!.id!]),
       })
     )
@@ -309,7 +310,7 @@ describe('Data Samples API', () => {
     const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
     const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow' }))
-    const content = { en: { stringValue: 'Hello world' } }
+    const content = { en: new Content({ stringValue: 'Hello world' }) }
     const contentString = JSON.stringify(content)
     const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({ content }))
 

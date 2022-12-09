@@ -15,7 +15,12 @@ import {PaginatedDocumentKeyAndIdPairObject} from './PaginatedDocumentKeyAndIdPa
 
 export class PaginatedListCoding {
 constructor(json: IPaginatedListCoding) {
-  Object.assign(this as PaginatedListCoding, json)
+  const { rows, nextKeyPair, ...simpleProperties } = json
+
+  Object.assign(this as PaginatedListCoding, simpleProperties as IPaginatedListCoding)
+
+  this.rows = rows ? [...rows]?.map(p => new Coding(p)) : []
+  this.nextKeyPair = nextKeyPair && new PaginatedDocumentKeyAndIdPairObject(nextKeyPair)
 }
 
     'pageSize': number;
@@ -23,6 +28,13 @@ constructor(json: IPaginatedListCoding) {
     'rows': Array<Coding>;
     'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+    marshal(): IPaginatedListCoding {
+      return {
+        ...this,
+        rows: this.rows?.map(p => p.marshal()),
+        nextKeyPair: this.nextKeyPair?.marshal(),
+      }
+    }
 }
 
 interface IPaginatedListCoding {

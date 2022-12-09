@@ -24,7 +24,7 @@ export namespace DataSampleMapper {
       ? new DataSample(
           filterUndefined({
             id: obj.id,
-            identifier: map(obj.identifier, toIdentifier),
+            identifiers: map(obj.identifier, toIdentifier),
             content: mapReduce(obj.content, toContent),
             qualifiedLinks: obj.qualifiedLinks,
             codes: mapSet(new Set(obj.codes), toCodingReference),
@@ -109,7 +109,7 @@ export namespace DataSampleMapper {
       ? new Service(
           filterUndefined({
             id: forceUuid(obj.id),
-            identifier: map(obj.identifier, toIdentifierDto),
+            identifier: map(obj.identifiers, toIdentifierDto),
             content: mapReduce(obj.content, toContentDto),
             qualifiedLinks: obj.qualifiedLinks,
             codes: mapSetToArray(obj.codes, toCodeStub),

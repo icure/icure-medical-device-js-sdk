@@ -2,3 +2,4 @@
 --require source-map-support/register
 --timeout=15000
 --recursive
+--extension ["ts"]

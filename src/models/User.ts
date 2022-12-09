@@ -12,10 +12,16 @@
 
 import {AuthenticationToken} from './AuthenticationToken';
 import {Property} from './Property';
+import {Delegation} from "./Delegation";
 
 export class User {
 constructor(json: IUser) {
-  Object.assign(this as User, json)
+  const { properties, roles, sharingDataWith, authenticationTokens, ...simpleProperties } = json
+  Object.assign(this as User, simpleProperties as IUser)
+  this.properties = properties ? new Set(([...properties])?.map(p => new Property(p))) : new Set()
+  this.roles = roles ? new Set(([...roles])) : new Set()
+  this.sharingDataWith = sharingDataWith ? Object.entries(sharingDataWith).map(([k,v]) => [k, new Set([...v])] as [SharedDataType, Set<string>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {} as any
+  this.authenticationTokens = authenticationTokens ? Object.entries(authenticationTokens).map(([k,v]) => [k, new AuthenticationToken(v)] as [string, AuthenticationToken]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {} as any
 }
 
     /**
@@ -81,7 +87,7 @@ constructor(json: IUser) {
   /**
    * Ids of the dataOwners with who the user is sharing all new data he is creating in iCure : All Data Types that may be shared can be found in SharedDataType enum
    */
-  'sharingDataWith': { [key in SharedDataType]: Set<string>; };
+  'sharingDataWith': { [key in SharedDataType]?: Set<string>; };
   /**
    * email address of the user (used for token exchange or password recovery).
    */
@@ -95,6 +101,15 @@ constructor(json: IUser) {
    */
   'authenticationTokens': { [key: string]: AuthenticationToken; };
 
+  marshal(): IUser {
+    return {
+      ...this,
+      roles: [...this.roles],
+      properties: [...this.properties].map(p => p.marshal()),
+      sharingDataWith: Object.entries(this.sharingDataWith).map(([k,v]) => [k, [...v]] as [SharedDataType, string[]]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}),
+      authenticationTokens: Object.entries(this.authenticationTokens).map(([k,v]) => [k, v.marshal()] as [string, AuthenticationToken]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}),
+    }
+  }
 }
 
 export type SharedDataType = 'all'
@@ -121,7 +136,7 @@ interface IUser {
   'healthcarePartyId'?: string;
   'patientId'?: string;
   'deviceId'?: string;
-  'sharingDataWith'?: { [key in SharedDataType]: Set<string>; };
+  'sharingDataWith'?: { [key in SharedDataType]?: Set<string>; };
   'email'?: string;
   'mobilePhone'?: string;
   'authenticationTokens'?: { [key: string]: AuthenticationToken; };

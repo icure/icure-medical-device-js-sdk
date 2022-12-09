@@ -20,7 +20,16 @@ import {SystemMetaDataEncrypted} from "./SystemMetaDataEncrypted";
 */
 export class DataSample {
 constructor(json: IDataSample) {
-  Object.assign(this as DataSample, json)
+  const { identifiers, healthcareElementIds, canvasesIds, content, codes, labels, systemMetaData, ...simpleProperties } = json
+
+  Object.assign(this as DataSample, simpleProperties as IDataSample)
+
+  this.identifiers = identifiers?.map((item) => new Identifier(item)) ?? []
+  this.healthcareElementIds = healthcareElementIds ? new Set([...healthcareElementIds]) : new Set()
+  this.canvasesIds = canvasesIds ? new Set([...canvasesIds]) : new Set()
+  this.content = content ? Object.entries(content).map(([k,v]) => [k, new Content(v)] as [string, Content]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
+  this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
+  this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
 }
 
     /**
@@ -34,7 +43,7 @@ constructor(json: IDataSample) {
     /**
     * Typically used for business / client identifiers. An identifier should identify a data sample uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
     */
-    'identifier': Array<Identifier>;
+    'identifiers': Array<Identifier>;
     /**
     * Id of the batch that embeds this data sample
     */
@@ -105,12 +114,24 @@ constructor(json: IDataSample) {
     'labels': Set<CodingReference>;
     'systemMetaData'?: SystemMetaDataEncrypted;
 
+  marshal(): IDataSample {
+    return {
+      ...this,
+      identifiers: this.identifiers?.map((item) => item.marshal()),
+      healthcareElementIds: this.healthcareElementIds ? Array.from(this.healthcareElementIds) : undefined,
+      canvasesIds: this.canvasesIds ? Array.from(this.canvasesIds) : undefined,
+      content: this.content ? Object.entries(this.content).map(([k,v]) => [k, v.marshal()] as [string, Content]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : undefined,
+      codes: this.codes ? Array.from(this.codes).map((it)=> it.marshal()) : undefined,
+      labels: this.labels ? Array.from(this.labels).map((it)=> it.marshal()) : undefined,
+    }
+  }
+
 }
 
 interface IDataSample {
   'id'?: string;
   'transactionId'?: string;
-  'identifier'?: Array<Identifier>;
+  'identifiers'?: Array<Identifier>;
   'batchId'?: string;
   'healthcareElementIds'?: Set<string>;
   'canvasesIds'?: Set<string>;

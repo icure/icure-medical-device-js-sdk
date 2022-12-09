@@ -24,6 +24,11 @@ constructor(json: ICodingReference) {
     'code'?: string;
     'version'?: string;
 
+    marshal(): ICodingReference {
+      return {
+        ...this,
+      }
+    }
 }
 
 interface ICodingReference {

@@ -3,7 +3,12 @@ import {Notification} from "./Notification"
 
 export class PaginatedListNotification {
   constructor(json: IPaginatedListNotification) {
-    Object.assign(this as PaginatedListNotification, json)
+    const { rows, nextKeyPair, ...simpleProperties } = json
+
+    Object.assign(this as PaginatedListNotification, simpleProperties as IPaginatedListNotification)
+
+    this.rows = rows ? [...rows]?.map(p => new Notification(p)) : []
+    this.nextKeyPair = nextKeyPair && new PaginatedDocumentKeyAndIdPairObject(nextKeyPair)
   }
 
   'pageSize': number;
@@ -11,6 +16,13 @@ export class PaginatedListNotification {
   'rows': Array<Notification>;
   'nextKeyPair'?: PaginatedDocumentKeyAndIdPairObject;
 
+  marshal(): IPaginatedListNotification {
+    return {
+      ...this,
+      rows: this.rows?.map(p => p.marshal()),
+      nextKeyPair: this.nextKeyPair?.marshal(),
+    }
+  }
 }
 
 interface IPaginatedListNotification {
