@@ -37,7 +37,7 @@ jobs:
         run: git push --follow-tags -f
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          latestTag="$(git describe --abbrev=0 --tags)"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
@@ -50,17 +50,24 @@ jobs:
     name: Release note
     needs: [if_merged]
     runs-on: ubuntu-latest
+    env:
+      REPO: icure/icure-medical-device-js-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(gh api  -H "Accept: application/vnd.github+json" /repos/icure/icure-medical-device-js-sdk/tags --jq '.[0].name')"
+          lastReleaseDate="$(gh api -H "Accept: application/vnd.github+json" /repos/$REPO/releases/latest | jq '.published_at' -r)"
+          prNotes="$(gh api -X GET -H 'Accept: application/vnd.github.v3+json' search/issues -f q="repo:$REPO is:pull-request is:merged merged:>$lastReleaseDate" -f per_page=100 | jq '.items[] | select(.body != null) | "## \(.title)\r\n\(.body//"")\r\n----"' -r)"
+          latestTag="$(git describe --abbrev=0 --tags)"
+          currentBranch="$(git branch --show-current)"
 
+          echo 'PR_NOTES='$prNotes >> $GITHUB_ENV
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
+          echo 'CURRENT_BRANCH='$currentBranch >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create a release 📝
-        run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="master" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false
+        run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="$CURRENT_BRANCH" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false -f body="$PR_NOTES"
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}

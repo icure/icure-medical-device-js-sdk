@@ -69,7 +69,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     return dataOwnerId
   }
 
-  async initCryptoFor(user: User, keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
+  async initCryptoFor(user: User, keyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]> {
     const dataOwnerId = this.getDataOwnerIdOf(user)
     const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
@@ -115,7 +115,9 @@ export class DataOwnerApiImpl implements DataOwnerApi {
           privateKey: privateKey,
         })
       }
+      return [{ publicKey, privateKey }]
     }
+    return userKeyPairs.map((kp) => ({ publicKey: jwk2spki(kp.publicKey), privateKey: jwk2pkcs8(kp.privateKey) }))
   }
 
   private async _updateUserToAddNewlyCreatedPublicKey(user: User, dataOwner: Patient | Device | HealthcareParty, dataOwnerPublicKey: string) {
