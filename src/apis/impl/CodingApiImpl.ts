@@ -41,7 +41,7 @@ export class CodingApiImpl implements CodingApi {
     }
 
     const codesToCreate = codingsToCreate.map((d) => CodingMapper.toCode(d))
-    const codesToUpdate = codingsToCreate.map((d) => CodingMapper.toCode(d))
+    const codesToUpdate = codingsToUpdate.map((d) => CodingMapper.toCode(d))
 
     const createdCodes = await Promise.all(
       codesToCreate.map((c) =>
