@@ -104,6 +104,7 @@ constructor(json: IUser) {
   marshal(): IUser {
     return {
       ...this,
+      roles: [...this.roles],
       properties: [...this.properties].map(p => p.marshal()),
       sharingDataWith: Object.entries(this.sharingDataWith).map(([k,v]) => [k, [...v]] as [SharedDataType, string[]]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}),
       authenticationTokens: Object.entries(this.authenticationTokens).map(([k,v]) => [k, v.marshal()] as [string, AuthenticationToken]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}),
