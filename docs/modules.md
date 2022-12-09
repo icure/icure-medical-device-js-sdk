@@ -694,7 +694,7 @@ ___
 
 #### Defined in
 
-[src/apis/medTechApi.ts:334](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/medTechApi.ts#L334)
+[src/apis/MedTechApi.ts:334](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/medTechApi.ts#L334)
 
 ___
 

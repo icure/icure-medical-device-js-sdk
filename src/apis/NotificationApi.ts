@@ -1,6 +1,7 @@
-import {MaintenanceTaskStatusEnum, Notification} from '../models/Notification'
-import {Filter} from '../filter/Filter'
-import {PaginatedListNotification} from '../models/PaginatedListNotification'
+import { MaintenanceTaskStatusEnum, Notification } from '../models/Notification'
+import { Filter } from '../filter/Filter'
+import { PaginatedListNotification } from '../models/PaginatedListNotification'
+import { Connection } from '../models/Connection'
 
 /**
  * The NotificationApi interface provides methods to subscribe to notifications.
@@ -36,13 +37,15 @@ export interface NotificationApi {
    * @param notificationId the id of the Notification to retrieve.
    * @return a Promise containing the Notification or undefined if something goes wrong.
    */
-  getNotification(notificationId: string): Promise<Notification | undefined>;
+  getNotification(notificationId: string): Promise<Notification | undefined>
 
   /**
    * Gets all the Notifications with status "pending" that the current dataOwner can access
+   *
+   * @param fromDate : Default value is now less 30 days
    * @return an Array of the Notifications matching those criteria
    */
-  getPendingNotifications(): Promise<Array<Notification>>;
+  getPendingNotificationsAfter(fromDate?: number): Promise<Array<Notification>>
 
   /**
    * Updates the status of a Notification.
@@ -50,5 +53,23 @@ export interface NotificationApi {
    * @param newStatus the new status
    * @return the updated Notification
    */
-  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>;
+  updateNotificationStatus(notification: Notification, newStatus: MaintenanceTaskStatusEnum): Promise<Notification | undefined>
+
+  /**
+   * Opens a WebSocket Connection in order to receive all the Notification corresponding to specific filter criteria.
+   * @param eventTypes Type of event you would like to listen. It can be CREATE, UPDATE or DELETE
+   * @param filter Filter criteria to filter to the notification you would like to receive
+   * @param eventFired Action applied each time you receive a notification through the WebSocket
+   * @param options Options to configure the WebSocket.
+   *    - keepAlive : How long to keep connection alive (ms);
+   *    - lifetime : How long to keep the WebSocket alive (ms);
+   *    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;
+   *    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts)
+   */
+  subscribeToNotificationEvents(
+    eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
+    filter: Filter<Notification>,
+    eventFired: (dataSample: Notification) => Promise<void>,
+    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
+  ): Promise<Connection>
 }

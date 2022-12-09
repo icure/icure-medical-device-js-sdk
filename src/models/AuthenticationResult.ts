@@ -1,4 +1,4 @@
-import {MedTechApi} from "../apis/medTechApi";
+import {MedTechApi} from "../apis/MedTechApi";
 
 export class AuthenticationResult {
   constructor(json: IAuthenticationResult) {
@@ -6,16 +6,16 @@ export class AuthenticationResult {
   }
 
   'medTechApi': MedTechApi;
-  'keyPair': [string, string];
+  'keyPair': { privateKey: string, publicKey: string };
   'token': string;
   'groupId': string;
   'userId': string;
-
 }
 
 interface IAuthenticationResult {
   'medTechApi'?: MedTechApi;
-  'keyPair'?: [string, string];
+  'keyPair'?: { privateKey: string, publicKey: string };
   'token'?: string;
   'groupId'?: string;
-  'userId'?: string;}
+  'userId'?: string;
+}

@@ -4,3 +4,4 @@ dist/
 /.swagger-codegen/
 /node_modules/
 /.nyc_output/
+/test/scratch

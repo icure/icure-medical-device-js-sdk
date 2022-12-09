@@ -38,6 +38,16 @@ constructor(json: IHealthcareProfessional) {
     */
     'modified'?: number;
     /**
+     * A label is an item from a codification system that qualifies a doctor as being member of a certain class, whatever the value it might have taken. If the label qualifies the content of a field, it means that whatever the content of the field, the label will always apply. LOINC is a codification system typically used for labels.
+     * Example: HealthcareProfessional is an organisation
+     */
+    'labels': Set<CodingReference>;
+    /**
+     * A code is an item from a codification system that qualifies the content of this doctor.
+     * Example: doctor's specialty
+     */
+    'codes': Set<CodingReference>;
+    /**
     * the soft delete timestamp. When a user is ”deleted“, this is set to a non null value: the moment of the deletion
     */
     'deletionDate'?: number;
@@ -86,10 +96,6 @@ constructor(json: IHealthcareProfessional) {
     */
     'picture'?: ArrayBuffer;
     /**
-    * Medical specialty of the healthcare party codified using FHIR or Kmehr codificaiton scheme
-    */
-    'specialityCodes': Set<CodingReference>;
-    /**
     * Text notes.
     */
     'notes'?: string;
@@ -103,6 +109,8 @@ interface IHealthcareProfessional {
   'rev'?: string;
   'created'?: number;
   'modified'?: number;
+  'labels'?: Set<CodingReference>;
+  'codes'?: Set<CodingReference>;
   'deletionDate'?: number;
   'name'?: string;
   'lastName'?: string;

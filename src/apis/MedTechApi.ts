@@ -23,6 +23,12 @@ import {
   IccReceiptXApi,
   IccTimeTableXApi,
   IccUserXApi,
+  KeyStorageFacade,
+  KeyStorageImpl,
+  LocalStorageImpl,
+  pkcs8ToJwk,
+  spkiToJwk,
+  StorageFacade,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { DataSampleApi } from './DataSampleApi'
@@ -46,8 +52,13 @@ import { NotificationApiImpl } from './impl/NotificationApiImpl'
 import { NotificationApi } from './NotificationApi'
 import { MessageGatewayApi } from './MessageGatewayApi'
 import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
+import { ErrorHandlerImpl } from '../services/impl/ErrorHandlerImpl'
+import { ErrorHandler } from '../services/ErrorHandler'
+import { Sanitizer } from '../services/Sanitizer'
+import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
 import { DataOwnerApi } from './DataOwnerApi'
+import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi
@@ -61,12 +72,16 @@ export class MedTechApi {
   private readonly _dataOwnerApi: DataOwnerApi
   private readonly _cryptoApi: IccCryptoXApi
 
-  private readonly _basePath: string
-  private readonly _username: string | undefined
-  private readonly _password: string | undefined
+  private readonly _iCureBaseUrl: string
+  private readonly _username: string
+  private readonly _password: string
 
   private readonly _authenticationApi: AuthenticationApi | undefined
   private readonly _messageGatewayApi: MessageGatewayApi | undefined
+  private readonly _errorHandler: ErrorHandler
+  private readonly _sanitizer: Sanitizer
+  private readonly _storage: StorageFacade<string>
+  private readonly _keyStorage: KeyStorageFacade
   private readonly _baseApi: {
     cryptoApi: IccCryptoXApi
     authApi: IccAuthApi
@@ -121,31 +136,53 @@ export class MedTechApi {
       dataOwnerApi: IccDataOwnerXApi
     },
     basePath: string,
-    username: string | undefined,
-    password: string | undefined,
+    username: string,
+    password: string,
     msgGtwUrl: string | undefined = undefined,
     msgGtwSpecId: string | undefined = undefined,
     authProcessByEmailId: string | undefined = undefined,
-    authProcessBySmsId: string | undefined = undefined
+    authProcessBySmsId: string | undefined = undefined,
+    storage?: StorageFacade<string>,
+    keyStorage?: KeyStorageFacade
   ) {
-    this._basePath = basePath
+    this._iCureBaseUrl = basePath
     this._username = username
     this._password = password
 
-    this._messageGatewayApi = msgGtwUrl && msgGtwSpecId ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, username, password) : undefined
+    this._errorHandler = new ErrorHandlerImpl()
+    this._sanitizer = new SanitizerImpl(this._errorHandler)
+
+    this._storage = storage || new LocalStorageImpl()
+    this._keyStorage = keyStorage || new KeyStorageImpl(this._storage)
+
+    this._messageGatewayApi =
+      msgGtwUrl && msgGtwSpecId
+        ? new MessageGatewayApiImpl(msgGtwUrl, msgGtwSpecId, this._errorHandler, this._sanitizer, username, password)
+        : undefined
     this._authenticationApi =
       authProcessByEmailId && authProcessBySmsId && this._messageGatewayApi
-        ? new AuthenticationApiImpl(this._messageGatewayApi, basePath, authProcessByEmailId, authProcessBySmsId)
+        ? new AuthenticationApiImpl(
+            this._messageGatewayApi,
+            basePath,
+            authProcessByEmailId,
+            authProcessBySmsId,
+            this._errorHandler,
+            this._sanitizer,
+            api.cryptoApi.crypto,
+            this._storage,
+            this._keyStorage
+          )
         : undefined
-    this._dataSampleApi = new DataSampleApiImpl(api, basePath, username, password)
-    this._codingApi = new CodingApiImpl(api)
-    this._medicalDeviceApi = new MedicalDeviceApiImpl(api)
-    this._patientApi = new PatientApiImpl(api, basePath, username, password)
-    this._userApi = new UserApiImpl(api, this._messageGatewayApi, basePath, username, password)
-    this._healthcareElementApi = new HealthcareElementApiImpl(api)
-    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api)
-    this._notificationApi = new NotificationApiImpl(api)
-    this._dataOwnerApi = new DataOwnerApiImpl(api)
+    this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password)
+    this._codingApi = new CodingApiImpl(api, this._errorHandler)
+    this._medicalDeviceApi = new MedicalDeviceApiImpl(api, this._errorHandler)
+    this._patientApi = new PatientApiImpl(api, this._errorHandler, basePath, username, password)
+    this._userApi = new UserApiImpl(api, this._messageGatewayApi, this._errorHandler, this._sanitizer, basePath, username, password)
+    this._healthcareElementApi = new HealthcareElementApiImpl(api, this._errorHandler, basePath, username, password)
+
+    this._healthcareProfessionalApi = new HealthcareProfessionalApiImpl(api, this._errorHandler)
+    this._notificationApi = new NotificationApiImpl(api, this._errorHandler, basePath, username, password)
+    this._dataOwnerApi = new DataOwnerApiImpl(api, this._errorHandler, this._keyStorage)
 
     this._baseApi = api
     this._cryptoApi = api.cryptoApi
@@ -194,84 +231,64 @@ export class MedTechApi {
   get authenticationApi(): AuthenticationApi {
     if (!this._authenticationApi) {
       throw Error(
-        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGtwUrl, authProcessId and msgGtwSpecId"
+        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, authProcessByEmailId and authProcessBySMSId"
       )
     }
 
     return this._authenticationApi
   }
 
-  get basePath(): string {
-    return this._basePath
+  get iCureBaseUrl(): string {
+    return this._iCureBaseUrl
   }
 
-  get username(): string | undefined {
+  get username(): string {
     return this._username
   }
 
-  get password(): string | undefined {
+  get password(): string {
     return this._password
   }
 
-  get baseApi(): {
-    cryptoApi: IccCryptoXApi
-    authApi: IccAuthApi
-    userApi: IccUserXApi
-    codeApi: IccCodeXApi
-    patientApi: IccPatientXApi
-    healthcarePartyApi: IccHcpartyXApi
-    accessLogApi: IccAccesslogXApi
-    contactApi: IccContactXApi
-    healthcareElementApi: IccHelementXApi
-    deviceApi: IccDeviceApi
-    documentApi: IccDocumentXApi
-    formApi: IccFormXApi
-    invoiceApi: IccInvoiceXApi
-    insuranceApi: IccInsuranceApi
-    messageApi: IccMessageXApi
-    entityReferenceApi: IccEntityrefApi
-    receiptApi: IccReceiptXApi
-    calendarItemApi: IccCalendarItemXApi
-    classificationApi: IccClassificationXApi
-    timetableApi: IccTimeTableXApi
-    groupApi: IccGroupApi
-  } {
-    return this._baseApi
+  get storage(): StorageFacade<string> {
+    return this._storage
   }
 
-  async addKeyPair(keyId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
-    await this.cryptoApi.RSA.storeKeyPair(keyId, {
-      publicKey: this.cryptoApi.utils.spkiToJwk(hex2ua(keyPair.publicKey)),
-      privateKey: this.cryptoApi.utils.pkcs8ToJwk(hex2ua(keyPair.privateKey)),
-    })
+  get keyStorage(): KeyStorageFacade {
+    return this._keyStorage
   }
 
-  async initUserCrypto(
-    overwriteExistingKeys: boolean = false,
-    keyPair?: { publicKey: string; privateKey: string }
-  ): Promise<{ publicKey: string; privateKey: String }> {
+  async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
+    const jwk = {
+      publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
+      privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
+    }
+    await this.cryptoApi.cacheKeyPair(jwk)
+    await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
+  }
+
+  async initUserCrypto(keyPair?: { publicKey: string; privateKey: string }): Promise<void> {
     const currentUser = await this.userApi.getLoggedUser()
-    const userKeyPair = await this._dataOwnerApi.initCryptoFor(currentUser, overwriteExistingKeys, keyPair)
-
-    await this.addKeyPair(this._dataOwnerApi.getDataOwnerIdOf(currentUser), userKeyPair)
-
-    return userKeyPair
+    await this._dataOwnerApi.initCryptoFor(currentUser, keyPair)
   }
 }
 
 export class MedTechApiBuilder {
-  private iCureBasePath?: string
+  private iCureBaseUrl?: string = ICURE_CLOUD_URL
   private userName?: string
   private password?: string
   private crypto?: Crypto
-  private msgGtwUrl?: string
-  private msgGtwSpecId?: string
+
+  private msgGwUrl?: string = MSG_GW_CLOUD_URL
+  private msgGwSpecId?: string
   private authProcessByEmailId?: string
   private authProcessBySmsId?: string
   private _preventCookieUsage: boolean = false
+  private _storage?: StorageFacade<string>
+  private _keyStorage?: KeyStorageFacade
 
-  withICureBasePath(newICureBasePath: string): MedTechApiBuilder {
-    this.iCureBasePath = newICureBasePath
+  withICureBaseUrl(newICureBaseUrl: string): MedTechApiBuilder {
+    this.iCureBaseUrl = newICureBaseUrl
     return this
   }
 
@@ -285,13 +302,13 @@ export class MedTechApiBuilder {
     return this
   }
 
-  withMsgGtwUrl(newMsgGtwUrl: string | undefined): MedTechApiBuilder {
-    this.msgGtwUrl = newMsgGtwUrl
+  withMsgGwUrl(newMsgGwUrl: string | undefined): MedTechApiBuilder {
+    this.msgGwUrl = newMsgGwUrl
     return this
   }
 
-  withMsgGtwSpecId(newSpecId: string | undefined): MedTechApiBuilder {
-    this.msgGtwSpecId = newSpecId
+  withMsgGwSpecId(newSpecId: string | undefined): MedTechApiBuilder {
+    this.msgGwSpecId = newSpecId
     return this
   }
 
@@ -315,28 +332,65 @@ export class MedTechApiBuilder {
     return this
   }
 
+  withStorage(storage: StorageFacade<string>): MedTechApiBuilder {
+    this._storage = storage
+    return this
+  }
+
+  withKeyStorage(keyStorage: KeyStorageFacade): MedTechApiBuilder {
+    this._keyStorage = keyStorage
+    return this
+  }
+
   async build(): Promise<MedTechApi> {
-    return Api(this.iCureBasePath!, this.userName!, this.password!, this.crypto, fetch, this._preventCookieUsage).then((api) => {
-      return new MedTechApi(
-        api,
-        this.iCureBasePath!,
-        this.userName,
-        this.password,
-        this.msgGtwUrl,
-        this.msgGtwSpecId,
-        this.authProcessByEmailId,
-        this.authProcessBySmsId
-      )
-    })
+    if (this.iCureBaseUrl == undefined) {
+      throw new Error('iCureBaseUrl is required')
+    }
+    if (this.userName == undefined) {
+      throw new Error('userName is required')
+    }
+    if (this.password == undefined) {
+      throw new Error('password is required')
+    }
+
+    return Api(
+      this.iCureBaseUrl,
+      this.userName,
+      this.password,
+      this.crypto,
+      fetch,
+      this._preventCookieUsage,
+      undefined,
+      this._storage,
+      this._keyStorage
+    ).then(
+      (api) =>
+        new MedTechApi(
+          api,
+          this.iCureBaseUrl!,
+          this.userName!,
+          this.password!,
+          this.msgGwUrl,
+          this.msgGwSpecId,
+          this.authProcessByEmailId,
+          this.authProcessBySmsId,
+          this._storage,
+          this._keyStorage
+        )
+    )
   }
 }
 
 export const medTechApi = (api?: MedTechApi) => {
   const apiBuilder = new MedTechApiBuilder()
   if (api) {
-    const apiBuilder1 = apiBuilder.withICureBasePath(api.basePath).withCrypto(api.cryptoApi.crypto)
-    const apiBuilder2 = api.username ? apiBuilder1.withUserName(api.username) : apiBuilder1
-    return api.password ? apiBuilder2.withPassword(api.password) : apiBuilder2
+    return apiBuilder
+      .withICureBaseUrl(api.iCureBaseUrl)
+      .withCrypto(api.cryptoApi.crypto)
+      .withUserName(api.username)
+      .withPassword(api.password)
+      .withStorage(api.storage)
+      .withKeyStorage(api.keyStorage)
   }
 
   return apiBuilder
