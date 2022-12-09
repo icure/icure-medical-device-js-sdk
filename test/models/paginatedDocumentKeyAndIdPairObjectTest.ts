@@ -15,7 +15,7 @@ describe('PaginatedDocumentKeyAndIdPairObject model test', () => {
     const paginatedDocumentKeyAndIdPairObject = newPaginatedDocumentKeyAndIdPairObject()
     const marshalledPaginatedDocumentKeyAndIdPairObject = paginatedDocumentKeyAndIdPairObject.marshal()
     const unmarshalledPaginatedDocumentKeyAndIdPairObject = new PaginatedDocumentKeyAndIdPairObject(JSON.parse(JSON.stringify(marshalledPaginatedDocumentKeyAndIdPairObject)))
-    assert.deepEqual(paginatedDocumentKeyAndIdPairObject, unmarshalledPaginatedDocumentKeyAndIdPairObject)
-    assert.deepEqual(paginatedDocumentKeyAndIdPairObject, new PaginatedDocumentKeyAndIdPairObject(paginatedDocumentKeyAndIdPairObject))
+    assert.deepEqual(unmarshalledPaginatedDocumentKeyAndIdPairObject, paginatedDocumentKeyAndIdPairObject)
+    assert.deepEqual(new PaginatedDocumentKeyAndIdPairObject(paginatedDocumentKeyAndIdPairObject), paginatedDocumentKeyAndIdPairObject)
   });
 });

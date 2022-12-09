@@ -14,9 +14,14 @@ export namespace HealthcareProfessionalMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference;
   import toProperty = PropertyStubMapper.toProperty;
   import toCodeStub = CodeStubDtoMapper.toCodeStub;
+  import toAddressDto = AddressMapper.toAddressDto;
+  import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
+  import toPersonNameDto = PersonNameDtoMapper.toPersonNameDto;
 
   export const toHealthcareProfessional = (obj: HealthcareParty) => new HealthcareProfessional({
     id: obj.id,
+    created: obj.created,
+    modified: obj.modified,
     labels: mapSet(new Set(obj.tags), toCodingReference),
     codes: mapSet(new Set(obj.codes), toCodingReference),
     names: map(obj.names, toPersonName),
@@ -31,6 +36,7 @@ export namespace HealthcareProfessionalMapper {
     gender: obj.gender,
     civility: obj.civility,
     speciality: obj.speciality,
+    specialityCodes: mapSet(new Set(obj.specialityCodes), toCodingReference),
     parentId: obj.parentId,
     picture: obj.picture,
     notes: obj.notes,
@@ -45,12 +51,14 @@ export namespace HealthcareProfessionalMapper {
 
   export const toHealthcarePartyDto = (obj: HealthcareProfessional) => new HealthcareParty({
     id: forceUuid(obj.id),
+    created: obj.created,
+    modified: obj.modified,
     tags: mapSetToArray(obj.labels, toCodeStub),
     codes: mapSetToArray(obj.codes, toCodeStub),
-    names: map(obj.names, toPersonName),
-    addresses: map(obj.addresses, toAddress),
+    names: map(obj.names, toPersonNameDto),
+    addresses: map(obj.addresses, toAddressDto),
     languages: obj.languages,
-    properties: mapSetToArray(obj.properties, toProperty),
+    properties: mapSetToArray(obj.properties, toPropertyStubDto),
     rev: obj.rev,
     deletionDate: obj.deletionDate,
     name: obj.name,
@@ -59,6 +67,7 @@ export namespace HealthcareProfessionalMapper {
     gender: obj.gender,
     civility: obj.civility,
     speciality: obj.speciality,
+    specialityCodes: mapSetToArray(obj.specialityCodes, toCodeStub),
     parentId: obj.parentId,
     picture: obj.picture,
     notes: obj.notes,

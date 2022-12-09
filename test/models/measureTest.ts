@@ -25,7 +25,7 @@ describe('Measure model test', () => {
     const measure = newMeasure()
     const marshalledMeasure = measure.marshal()
     const unmarshalledMeasure = new Measure(JSON.parse(JSON.stringify(marshalledMeasure)))
-    assert.deepEqual(measure, unmarshalledMeasure)
-    assert.deepEqual(measure, new Measure(measure))
+    assert.deepEqual(unmarshalledMeasure, measure)
+    assert.deepEqual(new Measure(measure), measure)
   });
 });

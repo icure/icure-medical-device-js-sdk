@@ -19,7 +19,7 @@ describe('PaginatedListNotification model test', () => {
     const paginatedListNotification = newPaginatedListNotification()
     const marshalledPaginatedListNotification = paginatedListNotification.marshal()
     const unmarshalledPaginatedListNotification = new PaginatedListNotification(JSON.parse(JSON.stringify(marshalledPaginatedListNotification)))
-    assert.deepEqual(paginatedListNotification, unmarshalledPaginatedListNotification)
-    assert.deepEqual(paginatedListNotification, new PaginatedListNotification(paginatedListNotification))
+    assert.deepEqual(unmarshalledPaginatedListNotification, paginatedListNotification)
+    assert.deepEqual(new PaginatedListNotification(paginatedListNotification), paginatedListNotification)
   });
 });

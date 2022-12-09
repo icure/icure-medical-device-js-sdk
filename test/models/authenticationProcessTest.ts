@@ -16,7 +16,7 @@ describe('AuthenticationProcess model test', () => {
     const authenticationProcess = newAuthenticationProcess()
     const marshalledAuthenticationProcess = authenticationProcess.marshal()
     const unmarshalledAuthenticationProcess = new AuthenticationProcess(JSON.parse(JSON.stringify(marshalledAuthenticationProcess)))
-    assert.deepEqual(authenticationProcess, unmarshalledAuthenticationProcess)
-    assert.deepEqual(authenticationProcess, new AuthenticationProcess(authenticationProcess))
+    assert.deepEqual(unmarshalledAuthenticationProcess, authenticationProcess)
+    assert.deepEqual(new AuthenticationProcess(authenticationProcess), authenticationProcess)
   });
 });

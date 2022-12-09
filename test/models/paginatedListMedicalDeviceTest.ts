@@ -19,7 +19,7 @@ describe('PaginatedListMedicalDevice model test', () => {
     const paginatedListMedicalDevice = newPaginatedListMedicalDevice()
     const marshalledPaginatedListMedicalDevice = paginatedListMedicalDevice.marshal()
     const unmarshalledPaginatedListMedicalDevice = new PaginatedListMedicalDevice(JSON.parse(JSON.stringify(marshalledPaginatedListMedicalDevice)))
-    assert.deepEqual(paginatedListMedicalDevice, unmarshalledPaginatedListMedicalDevice)
-    assert.deepEqual(paginatedListMedicalDevice, new PaginatedListMedicalDevice(paginatedListMedicalDevice))
+    assert.deepEqual(unmarshalledPaginatedListMedicalDevice, paginatedListMedicalDevice)
+    assert.deepEqual(new PaginatedListMedicalDevice(paginatedListMedicalDevice), paginatedListMedicalDevice)
   });
 });

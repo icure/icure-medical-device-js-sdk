@@ -1,5 +1,6 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {Patient} from '../../src/models/Patient';
 import {assert} from "chai";
 import {newAddress} from "./addressTest";
@@ -12,7 +13,7 @@ import {newProperty} from "./propertyTest";
 
 export function newPatient(): Patient {
   return new Patient({
-    id: "id",
+    id: uuid(),
     rev: "rev",
     created: 123,
     modified: 456,
@@ -69,7 +70,7 @@ describe('Patient model test', () => {
     const patient = newPatient()
     const marshalledPatient = patient.marshal()
     const unmarshalledPatient = new Patient(JSON.parse(JSON.stringify(marshalledPatient)))
-    assert.deepEqual(patient, unmarshalledPatient)
-    assert.deepEqual(patient, new Patient(patient))
+    assert.deepEqual(unmarshalledPatient, patient)
+    assert.deepEqual(new Patient(patient), patient)
   });
 });

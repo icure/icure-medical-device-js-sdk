@@ -13,6 +13,7 @@ export namespace NotificationMapper {
   import toProperty = PropertyStubMapper.toProperty;
   import toIdentifier = IdentifierDtoMapper.toIdentifier;
   import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+  import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
   export const toNotification = (obj?: MaintenanceTask) => obj ? new Notification({
     id: obj.id,
     rev: obj.rev,
@@ -44,7 +45,7 @@ export namespace NotificationMapper {
     endOfLife: obj.endOfLife,
     author: obj.author,
     responsible: obj.responsible,
-    properties: obj.properties,
+    properties: map(obj.properties, toPropertyStubDto),
     taskType: obj.type,
     delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
     encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),

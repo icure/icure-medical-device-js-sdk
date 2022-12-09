@@ -18,7 +18,7 @@ describe('SystemMetaDataOwner model test', () => {
     const systemMetaDataOwner = newSystemMetaDataOwner()
     const marshalledSystemMetaDataOwner = systemMetaDataOwner.marshal()
     const unmarshalledSystemMetaDataOwner = new SystemMetaDataOwner(JSON.parse(JSON.stringify(marshalledSystemMetaDataOwner)))
-    assert.deepEqual(systemMetaDataOwner, unmarshalledSystemMetaDataOwner)
-    assert.deepEqual(systemMetaDataOwner, new SystemMetaDataOwner(systemMetaDataOwner))
+    assert.deepEqual(unmarshalledSystemMetaDataOwner, systemMetaDataOwner)
+    assert.deepEqual(new SystemMetaDataOwner(systemMetaDataOwner), systemMetaDataOwner)
   });
 });

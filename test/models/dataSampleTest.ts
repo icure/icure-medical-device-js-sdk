@@ -1,16 +1,16 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {DataSample} from '../../src/models/DataSample';
 import {assert} from "chai";
 import {newContent} from "./contentTest";
 import {newIdentifier} from "./identifierTest";
 import {newCodingReference} from "./codingReferenceTest";
-import {newSystemMetaDataOwner} from "./systemMetaDataOwnerTest";
 import {newSystemMetaDataEncrypted} from "./systemMetaDataEncryptedTest";
 
 export function newDataSample(makeContent = false): DataSample {
   return new DataSample({
-    id: "id",
+    id: uuid(),
     transactionId: "transactionId",
     identifiers: [newIdentifier()],
     batchId: "batchId",
@@ -39,7 +39,7 @@ describe('DataSample model test', () => {
     const dataSample = newDataSample()
     const marshalledDataSample = dataSample.marshal()
     const unmarshalledDataSample = new DataSample(JSON.parse(JSON.stringify(marshalledDataSample)))
-    assert.deepEqual(dataSample, unmarshalledDataSample)
-    assert.deepEqual(dataSample, new DataSample(dataSample))
+    assert.deepEqual(unmarshalledDataSample, dataSample)
+    assert.deepEqual(new DataSample(dataSample), dataSample)
   });
 });

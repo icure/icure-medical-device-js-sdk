@@ -1,5 +1,6 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {MedicalDevice} from '../../src/models/MedicalDevice';
 import {assert} from "chai";
 import {newCodingReference} from "./codingReferenceTest";
@@ -8,7 +9,7 @@ import {newSystemMetaDataOwner} from "./systemMetaDataOwnerTest";
 
 export function newMedicalDevice(): MedicalDevice {
   return new MedicalDevice({
-    id: "id",
+    id: uuid(),
     rev: "rev",
     created: 123,
     modified: 456,
@@ -36,7 +37,7 @@ describe('MedicalDevice model test', () => {
     const medicalDevice = newMedicalDevice()
     const marshalledMedicalDevice = medicalDevice.marshal()
     const unmarshalledMedicalDevice = new MedicalDevice(JSON.parse(JSON.stringify(marshalledMedicalDevice)))
-    assert.deepEqual(medicalDevice, unmarshalledMedicalDevice)
-    assert.deepEqual(medicalDevice, new MedicalDevice(medicalDevice))
+    assert.deepEqual(unmarshalledMedicalDevice, medicalDevice)
+    assert.deepEqual(new MedicalDevice(medicalDevice), medicalDevice)
   });
 });

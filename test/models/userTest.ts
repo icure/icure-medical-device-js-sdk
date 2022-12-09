@@ -1,5 +1,6 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {User} from '../../src/models/User';
 import {assert} from "chai";
 import {newProperty} from "./propertyTest";
@@ -7,7 +8,7 @@ import {newAuthenticationToken} from "./authenticationTokenTest";
 
 export function newUser(): User {
   return new User({
-    id: "id",
+    id: uuid(),
     rev: "rev",
     deletionDate: 123,
     created: 456,
@@ -34,7 +35,7 @@ describe('User model test', () => {
     const user = newUser()
     const marshalledUser = user.marshal()
     const unmarshalledUser = new User(JSON.parse(JSON.stringify(marshalledUser)))
-    assert.deepEqual(user, unmarshalledUser)
-    assert.deepEqual(user, new User(user))
+    assert.deepEqual(unmarshalledUser, user)
+    assert.deepEqual(new User(user), user)
   });
 });

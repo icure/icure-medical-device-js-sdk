@@ -20,7 +20,7 @@ describe('TypedValueObject model test', () => {
     const typedValueObject = newTypedValueObject()
     const marshalledTypedValueObject = typedValueObject.marshal()
     const unmarshalledTypedValueObject = new TypedValueObject(JSON.parse(JSON.stringify(marshalledTypedValueObject)))
-    assert.deepEqual(typedValueObject, unmarshalledTypedValueObject)
-    assert.deepEqual(typedValueObject, new TypedValueObject(typedValueObject))
+    assert.deepEqual(unmarshalledTypedValueObject, typedValueObject)
+    assert.deepEqual(new TypedValueObject(typedValueObject), typedValueObject)
   });
 });

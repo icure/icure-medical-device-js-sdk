@@ -20,7 +20,7 @@ describe('PaginatedListDataSample model test', () => {
     const paginatedListDataSample = newPaginatedListDataSample()
     const marshalledPaginatedListDataSample = paginatedListDataSample.marshal()
     const unmarshalledPaginatedListDataSample = new PaginatedListDataSample(JSON.parse(JSON.stringify(marshalledPaginatedListDataSample)))
-    assert.deepEqual(paginatedListDataSample, unmarshalledPaginatedListDataSample)
-    assert.deepEqual(paginatedListDataSample, new PaginatedListDataSample(paginatedListDataSample))
+    assert.deepEqual(unmarshalledPaginatedListDataSample, paginatedListDataSample)
+    assert.deepEqual(new PaginatedListDataSample(paginatedListDataSample), paginatedListDataSample)
   });
 });

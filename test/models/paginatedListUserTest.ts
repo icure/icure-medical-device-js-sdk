@@ -19,7 +19,7 @@ describe('PaginatedListUser model test', () => {
     const paginatedListUser = newPaginatedListUser()
     const marshalledPaginatedListUser = paginatedListUser.marshal()
     const unmarshalledPaginatedListUser = new PaginatedListUser(JSON.parse(JSON.stringify(marshalledPaginatedListUser)))
-    assert.deepEqual(paginatedListUser, unmarshalledPaginatedListUser)
-    assert.deepEqual(paginatedListUser, new PaginatedListUser(paginatedListUser))
+    assert.deepEqual(unmarshalledPaginatedListUser, paginatedListUser)
+    assert.deepEqual(new PaginatedListUser(paginatedListUser), paginatedListUser)
   });
 });

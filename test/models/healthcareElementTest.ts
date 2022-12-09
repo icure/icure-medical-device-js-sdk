@@ -1,5 +1,6 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {HealthcareElement} from '../../src/models/HealthcareElement';
 import {assert} from "chai";
 import {newIdentifier} from "./identifierTest";
@@ -8,7 +9,7 @@ import {newSystemMetaDataEncrypted} from "./systemMetaDataEncryptedTest";
 
 export function newHealthcareElement(): HealthcareElement {
   return new HealthcareElement({
-    id: "id",
+    id: uuid(),
     identifiers: [newIdentifier()],
     rev: "rev",
     created: 123,
@@ -35,7 +36,7 @@ describe('HealthcareElement model test', () => {
     const healthcareElement = newHealthcareElement()
     const marshalledHealthcareElement = healthcareElement.marshal()
     const unmarshalledHealthcareElement = new HealthcareElement(JSON.parse(JSON.stringify(marshalledHealthcareElement)))
-    assert.deepEqual(healthcareElement, unmarshalledHealthcareElement)
-    assert.deepEqual(healthcareElement, new HealthcareElement(healthcareElement))
+    assert.deepEqual(unmarshalledHealthcareElement, healthcareElement)
+    assert.deepEqual(new HealthcareElement(healthcareElement), healthcareElement)
   });
 });

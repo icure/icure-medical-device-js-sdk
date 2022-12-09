@@ -15,7 +15,7 @@ describe('PatientHealthCareParty model test', () => {
     const patientHealthCareParty = newPatientHealthCareParty()
     const marshalledPatientHealthCareParty = patientHealthCareParty.marshal()
     const unmarshalledPatientHealthCareParty = new PatientHealthCareParty(JSON.parse(JSON.stringify(marshalledPatientHealthCareParty)))
-    assert.deepEqual(patientHealthCareParty, unmarshalledPatientHealthCareParty)
-    assert.deepEqual(patientHealthCareParty, new PatientHealthCareParty(patientHealthCareParty))
+    assert.deepEqual(unmarshalledPatientHealthCareParty, patientHealthCareParty)
+    assert.deepEqual(new PatientHealthCareParty(patientHealthCareParty), patientHealthCareParty)
   });
 });

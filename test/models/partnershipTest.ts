@@ -16,7 +16,7 @@ describe('Partnership model test', () => {
     const partnership = newPartnership()
     const marshalledPartnership = partnership.marshal()
     const unmarshalledPartnership = new Partnership(JSON.parse(JSON.stringify(marshalledPartnership)))
-    assert.deepEqual(partnership, unmarshalledPartnership)
-    assert.deepEqual(partnership, new Partnership(partnership))
+    assert.deepEqual(unmarshalledPartnership, partnership)
+    assert.deepEqual(new Partnership(partnership), partnership)
   });
 });

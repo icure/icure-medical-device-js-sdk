@@ -1,5 +1,6 @@
 import 'mocha';
 
+import {v4 as uuid} from 'uuid';
 import {HealthcareProfessional} from '../../src/models/HealthcareProfessional';
 import {assert} from "chai";
 import {newAddress} from "./addressTest";
@@ -10,7 +11,7 @@ import {newSystemMetaDataOwner} from "./systemMetaDataOwnerTest";
 
 export function newHealthcareProfessional(): HealthcareProfessional {
   return new HealthcareProfessional({
-    id: "id",
+    id: uuid(),
     rev: "rev",
     created: 123,
     modified: 456,
@@ -40,7 +41,7 @@ describe('HealthcareProfessional model test', () => {
     const healthcareProfessional = newHealthcareProfessional()
     const marshalledHealthcareProfessional = healthcareProfessional.marshal()
     const unmarshalledHealthcareProfessional = new HealthcareProfessional(JSON.parse(JSON.stringify(marshalledHealthcareProfessional)))
-    assert.deepEqual(healthcareProfessional, unmarshalledHealthcareProfessional)
-    assert.deepEqual(healthcareProfessional, new HealthcareProfessional(healthcareProfessional))
+    assert.deepEqual(unmarshalledHealthcareProfessional, healthcareProfessional)
+    assert.deepEqual(new HealthcareProfessional(healthcareProfessional), healthcareProfessional)
   });
 });

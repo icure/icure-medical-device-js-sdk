@@ -4,14 +4,23 @@ import { SystemMetaDataOwner } from '../models/SystemMetaDataOwner'
 import { forceUuid, map, mapSetToArray } from './utils'
 import { CodeStubDtoMapper } from './codeStubCodingReference'
 import { PropertyStubMapper } from './property'
+import {IdentifierDtoMapper} from "./identifier";
 
 export namespace MedicalDeviceMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference
   import toProperty = PropertyStubMapper.toProperty
+  import toPropertyStubDto = PropertyStubMapper.toPropertyStubDto;
+  import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
+  import toCodeStub = CodeStubDtoMapper.toCodeStub;
+  import toIdentifier = IdentifierDtoMapper.toIdentifier;
 
   export const toMedicalDevice = (dto: Device) =>
     new MedicalDevice({
       id: dto.id,
+      author: dto.author,
+      responsible: dto.responsible,
+      endOfLife: dto.endOfLife,
+      identifiers: map(dto.identifiers, toIdentifier),
       labels: new Set(map(dto.tags, toCodingReference)),
       codes: new Set(map(dto.codes, toCodingReference)),
       properties: new Set(map(dto.properties, toProperty)),
@@ -39,9 +48,13 @@ export namespace MedicalDeviceMapper {
   export const toDeviceDto = (obj: MedicalDevice) =>
     new Device({
       id: forceUuid(obj.id),
-      tags: mapSetToArray(obj.labels, toCodingReference),
-      codes: mapSetToArray(obj.codes, toCodingReference),
-      properties: mapSetToArray(obj.properties, toProperty),
+      author: obj.author,
+      responsible: obj.responsible,
+      endOfLife: obj.endOfLife,
+      identifier: map(obj.identifiers, toIdentifierDto),
+      tags: mapSetToArray(obj.labels, toCodeStub),
+      codes: mapSetToArray(obj.codes, toCodeStub),
+      properties: mapSetToArray(obj.properties, toPropertyStubDto),
       rev: obj.rev,
       deletionDate: obj.deletionDate,
       name: obj.name,

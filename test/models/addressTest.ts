@@ -27,7 +27,7 @@ describe('Address model test', () => {
     const address = newAddress()
     const marshalledAddress = address.marshal()
     const unmarshalledAddress = new Address(JSON.parse(JSON.stringify(marshalledAddress)))
-    assert.deepEqual(address, unmarshalledAddress)
-    assert.deepEqual(address, new Address(address))
+    assert.deepEqual(unmarshalledAddress, address)
+    assert.deepEqual(new Address(address), address)
   });
 });
