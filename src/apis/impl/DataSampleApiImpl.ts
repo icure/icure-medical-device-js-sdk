@@ -5,8 +5,8 @@ import { PaginatedListDataSample } from '../../models/PaginatedListDataSample'
 import { Document } from '../../models/Document'
 import { DataSampleApi } from '../DataSampleApi'
 import {
-  Contact as ContactDto,
-  Document as DocumentDto,
+  Contact as ContactDto, ContactByServiceIdsFilter,
+  Document as DocumentDto, FilterChainContact,
   FilterChainService,
   IccContactXApi,
   IccCryptoXApi,
@@ -81,6 +81,10 @@ export class DataSampleApiImpl implements DataSampleApi {
     this.dataOwnerApi = api.dataOwnerApi
     this.documentApi = api.documentApi
     this.healthcareElementApi = api.healthcareElementApi
+  }
+
+  clearContactCache() {
+    this.contactsCache.invalidateAll()
   }
 
   async createOrModifyDataSampleFor(patientId: string, dataSample: DataSample): Promise<DataSample> {
@@ -619,7 +623,9 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     if (dataSampleIdsToSearch.length > 0) {
       const notCachedContacts = (
-        (await this.contactApi.filterByWithUser(currentUser, undefined, dataSampleIdsToSearch.length, undefined).catch((e) => {
+        (await this.contactApi.filterByWithUser(currentUser, undefined, dataSampleIdsToSearch.length, new FilterChainContact({
+          filter: new ContactByServiceIdsFilter({ids: dataSampleIdsToSearch}),
+        })).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
         })) as PaginatedListContact
       ).rows
