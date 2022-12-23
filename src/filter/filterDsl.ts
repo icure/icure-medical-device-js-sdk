@@ -45,6 +45,7 @@ import { NotificationsAfterDateFilter } from './notification/NotificationsAfterD
 import { UsersByPatientIdFilter } from './user/UsersByPatientIdFilter'
 import { PatientByHealthcarePartySsinsFilter } from './patient/PatientByHealthcarePartySsinsFilter'
 import { HealthcareProfessionalByLabelCodeFilter } from './hcp/HealthcareProfessionalByLabelCodeFilter'
+import {HealthcareProfessionalByNameFilter} from "./hcp/HealthcareProfessionalByNameFilter";
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>>
@@ -231,6 +232,7 @@ export class PatientFilter implements FilterBuilder<Patient> {
 }
 
 export class HealthcareProfessionalFilter implements FilterBuilder<HealthcareProfessional> {
+  _matches?: string
   _byIds?: string[]
   _union?: HealthcareProfessionalFilter[]
   _intersection?: HealthcareProfessionalFilter[]
@@ -252,6 +254,11 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
     return this
   }
 
+  byMatches(searchString: string): HealthcareProfessionalFilter {
+    this._matches = searchString
+    return this
+  }
+
   union(filters: HealthcareProfessionalFilter[]): HealthcareProfessionalFilter {
     this._union = filters
     return this
@@ -264,6 +271,7 @@ export class HealthcareProfessionalFilter implements FilterBuilder<HealthcarePro
 
   async build(): Promise<Filter<HealthcareProfessional>> {
     const filters = [
+      this._matches && ({ name: this._matches, $type: 'HealthcareProfessionalByNameFilter' } as HealthcareProfessionalByNameFilter),
       this._byIds && ({ ids: this._byIds, $type: 'HealthcareProfessionalByIdsFilter' } as HealthcareProfessionalByIdsFilter),
       this._byLabelCodeFilter
     ].filter((x) => !!x) as Filter<HealthcareProfessional>[]
