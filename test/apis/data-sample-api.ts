@@ -22,6 +22,7 @@ import { it } from 'mocha'
 import { Patient } from '../../index'
 chaiUse(require('chai-as-promised'))
 import { deepEquality } from '../../src/utils/equality'
+import {DataSampleApiImpl} from "../../src/apis/impl/DataSampleApiImpl";
 
 setLocalStorage(fetch)
 
@@ -48,6 +49,59 @@ describe('Data Samples API', () => {
     assert(createdDataSample != undefined)
     assert(createdDataSample.id != undefined)
   })
+
+  it('Delete a Data Sample - Success', async () => {
+    // Given
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const medtechApi = apiAndUser.api
+
+    const patient = await TestUtils.getOrCreatePatient(medtechApi)
+
+    // When
+    const createdDataSample = await TestUtils.createDataSampleForPatient(medtechApi, patient)
+    const deletedDataSample = await medtechApi.dataSampleApi.deleteDataSample(createdDataSample.id!)
+    // Then
+    assert(createdDataSample != undefined)
+    assert(createdDataSample.id != undefined)
+    assert(deletedDataSample === createdDataSample.id)
+  })
+
+  it('Delete Data Samples - with data in cache - Success', async () => {
+    // Given
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const medtechApi = apiAndUser.api
+
+    const patient = await TestUtils.getOrCreatePatient(medtechApi)
+
+    // When
+    const createdDataSamples = await TestUtils.createDataSamplesForPatient(medtechApi, patient)
+    const deletedDataSamples = await medtechApi.dataSampleApi.deleteDataSamples(createdDataSamples.map((ds) => ds.id!))
+    // Then
+    assert(deletedDataSamples.length == 2)
+    assert(createdDataSamples[0].id != undefined)
+    assert(createdDataSamples[1].id != undefined)
+    expect(deletedDataSamples).to.have.members(createdDataSamples.map((ds) => ds.id!))
+  })
+
+
+  it('Delete Data Samples - without data in cache - Success', async () => {
+    // Given
+    const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const medtechApi = apiAndUser.api
+
+    const patient = await TestUtils.getOrCreatePatient(medtechApi)
+
+    // When
+    const createdDataSamples = await TestUtils.createDataSamplesForPatient(medtechApi, patient)
+    ;(medtechApi.dataSampleApi as DataSampleApiImpl).clearContactCache()
+    const deletedDataSamples = await medtechApi.dataSampleApi.deleteDataSamples(createdDataSamples.map((ds) => ds.id!))
+    // Then
+    assert(deletedDataSamples.length == 2)
+    assert(createdDataSamples[0].id != undefined)
+    assert(createdDataSamples[1].id != undefined)
+    expect(deletedDataSamples).to.have.members(createdDataSamples.map((ds) => ds.id!))
+  })
+
 
   it('Create Data Sample linked to HealthElement - Success', async () => {
     // Given
