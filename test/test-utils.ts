@@ -324,6 +324,23 @@ export class TestUtils {
     )
   }
 
+  static createDataSamplesForPatient(medtechApi: MedTechApi, patient: Patient) {
+    return medtechApi.dataSampleApi.createOrModifyDataSamplesFor(
+      patient.id!,
+      [
+        new DataSample({
+          labels: new Set([new CodingReference({type: 'IC-TEST', code: 'TEST'})]),
+          content: {en: new Content({stringValue: 'Hello world'})},
+        }),
+        new DataSample({
+          labels: new Set([new CodingReference({type: 'IC-TEST', code: 'TEST'})]),
+          content: {en: new Content({stringValue: 'Good night world'})},
+        })
+      ]
+    )
+  }
+
+
   static createHealthElementForPatient(medtechApi: MedTechApi, patient: Patient) {
     return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
