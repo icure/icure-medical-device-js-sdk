@@ -39,11 +39,16 @@ export class CachedMap<V> {
     delete this.cachedElements[key];
   }
 
-  invalidateAll(keys: Array<string>) {
-    keys.forEach((keyToDelete) => {
-      this.invalidate(keyToDelete);
-    });
+  invalidateAll(keys?: Array<string>) {
+    if (keys) {
+      keys.forEach((keyToDelete) => {
+        this.invalidate(keyToDelete);
+      })
+    } else {
+      this.invalidateAll(Object.keys(this.cachedElements))
+    }
   }
+
 
   put(key: string, value: V) {
     if (Object.entries(this.cachedElements).length == this.maxSize) {
