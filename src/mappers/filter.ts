@@ -21,6 +21,7 @@ import {
   DeviceByIdsFilter as DeviceByIdsFilterDto,
   HealthcareParty as HealthcarePartyDto,
   HealthcarePartyByIdsFilter as HealthcarePartyByIdsFilterDto,
+  HealthcarePartyByNameFilter as HealthcarePartyByNameFilterDto,
   HealthcarePartyByTagCodeFilter as HealthcarePartyByTagCodeFilterDto,
   HealthElement as HealthElementDto,
   HealthElementByHcPartyFilter as HealthElementByHcPartyFilterDto,
@@ -97,6 +98,7 @@ import {IdentifierDtoMapper} from "./identifier";
 import {HealthcareProfessional} from "../models/HealthcareProfessional";
 import {AllHealthcareProfessionalsFilter} from "../filter/hcp/AllHealthcareProfessionalsFilter";
 import {HealthcareProfessionalByIdsFilter} from "../filter/hcp/HealthcareProfessionalByIdsFilter";
+import {HealthcareProfessionalByNameFilter} from "../filter/hcp/HealthcareProfessionalByNameFilter";
 import {User} from "../models/User";
 import {UserByIdsFilter} from "../filter/user/UserByIdsFilter";
 import {AllUsersFilter} from "../filter/user/AllUsersFilter";
@@ -336,6 +338,9 @@ export namespace FilterMapper {
     if (filter['$type'] === 'HealthcareProfessionalByIdsFilter') {
       return toHealthcarePartyByIdsFilterDto(filter as HealthcareProfessionalByIdsFilter);
     }
+    if (filter['$type'] === 'HealthcareProfessionalByNameFilter') {
+      return toHealthcarePartyByNameFilterDto(filter as HealthcareProfessionalByNameFilter);
+    }
     if (filter['$type'] === 'HealthcareProfessionalByLabelCodeFilter') {
       return toHealthcarePartyByTagCodeFilterDto(filter as HealthcareProfessionalByLabelCodeFilter);
     }
@@ -355,6 +360,9 @@ export namespace FilterMapper {
 
   const toHealthcarePartyByIdsFilterDto = (filter: HealthcareProfessionalByIdsFilter) =>
     new HealthcarePartyByIdsFilterDto({desc: filter.description, ids: filter.ids})
+
+  const toHealthcarePartyByNameFilterDto = (filter: HealthcareProfessionalByNameFilter) =>
+    new HealthcarePartyByNameFilterDto({desc: filter.description, name: filter.name, descending: filter.descending})
 
   const toHealthcarePartyByTagCodeFilterDto = (filter: HealthcareProfessionalByLabelCodeFilter) =>
     new HealthcarePartyByTagCodeFilterDto({desc: filter.description, tagType: filter.labelType, tagCode: filter.labelCode, codeType: filter.codeType, codeCode: filter.codeCode})
