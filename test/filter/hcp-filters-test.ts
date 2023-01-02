@@ -60,7 +60,8 @@ describe("HealthcareProfessional Filters Test", function () {
     }))
 
     hcp3 = await hcp1Api.healthcareProfessionalApi.createOrModifyHealthcareProfessional(new HealthcareProfessional({
-      name: 'HCP_03',
+      firstName: 'John',
+      lastName: 'Keats',
       labels: new Set([new CodingReference({type: 'hcp-type', code: `physician-${id}`})]),
       codes: new Set([new CodingReference({type: 'practitioner-specialty', code: `cardiologist-${id}`})])
     }))
@@ -80,6 +81,35 @@ describe("HealthcareProfessional Filters Test", function () {
       expect([...hcp.codes][0].code).to.eq(`cardiologist-${id}`)
     });
   })
+
+  it("HcpsByNameFilter test - Success", async function () {
+    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byMatches('eat')
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(1)
+    hcps.rows.forEach( (hcp) => {
+      expect(hcp.lastName?.toLowerCase()).to.include("eat")
+    });
+  })
+
+  it("HcpsByNameFilter on firstname as well test - Success", async function () {
+    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter()
+        .byMatches('eatsjo')
+        .build()
+    );
+
+    expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.greaterThanOrEqual(1)
+    hcps.rows.forEach( (hcp) => {
+      expect(`${hcp.lastName?.toLowerCase()}${hcp.firstName?.toLowerCase()}`).to.include("eatsjo")
+    });
+  })
+
 
   it("HcpsByPatientIdFilter by type test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
