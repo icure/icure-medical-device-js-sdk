@@ -55,6 +55,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Fetch git history ⚙️
+      - run: git fetch --prune --unshallow --tags
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
           lastReleaseDate="$(gh api -H "Accept: application/vnd.github+json" /repos/$REPO/releases/latest | jq '.published_at' -r)"
@@ -66,7 +68,7 @@ jobs:
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
           echo 'CURRENT_BRANCH='$currentBranch >> $GITHUB_ENV
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
       - name: Create a release 📝
         run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="$CURRENT_BRANCH" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false -f body="$PR_NOTES"
         env:
