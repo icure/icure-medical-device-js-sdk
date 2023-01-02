@@ -23,7 +23,7 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Authenticate with private NPM package
-        run: echo "npmAuthToken: \"${{ secrets.NPM_TOKEN }}\"" > ~/.yarnrc
+        run: echo "npmAuthToken:\"${{ secrets.NPM_TOKEN }}\"" > ~/.yarnrc
       - name: Install dependencies, test and build 🔧
         run: yarn install --frozen-lockfile && yarn run build
       - name: Creation new version (Major) 🏷️
