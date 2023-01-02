@@ -110,9 +110,9 @@ export class DataOwnerApiImpl implements DataOwnerApi {
         await this._updateUserToAddNewlyCreatedPublicKey(user, dataOwner.dataOwner, publicKey)
       } else if (dataOwner.dataOwner.publicKey != publicKey) {
         console.log(`Adding a new RSA Key Pair to user ${user.id}`)
-        await this.cryptoApi.addRawKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
-          publicKey: publicKey,
-          privateKey: privateKey,
+        await this.cryptoApi.addKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
+          publicKey: await this.cryptoApi.RSA.importKey('jwk', jwks.publicKey, ['encrypt']),
+          privateKey: await this.cryptoApi.RSA.importKey('jwk', jwks.privateKey, ['decrypt'])
         })
       }
       return [{ publicKey, privateKey }]
