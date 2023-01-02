@@ -41,7 +41,7 @@ jobs:
         run: git push --follow-tags -f
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(git describe --abbrev=0 --tags)"
+          latestTag="$(git describe --tags $(git rev-list --tags --max-count=1))"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
@@ -65,7 +65,7 @@ jobs:
         run: |
           lastReleaseDate="$(gh api -H "Accept: application/vnd.github+json" /repos/$REPO/releases/latest | jq '.published_at' -r)"
           prNotes="$(gh api -X GET -H 'Accept: application/vnd.github.v3+json' search/issues -f q="repo:$REPO is:pull-request is:merged merged:>$lastReleaseDate" -f per_page=100 | jq '.items[] | select(.body != null) | "## \(.title)\r\n\(.body//"")\r\n----"' -r)"
-          latestTag="$(git describe --abbrev=0 --tags)"
+          latestTag="$(git describe --tags $(git rev-list --tags --max-count=1))"
           currentBranch="$(git branch --show-current)"
 
           echo 'PR_NOTES='$prNotes >> $GITHUB_ENV
