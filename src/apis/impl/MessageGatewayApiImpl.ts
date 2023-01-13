@@ -1,6 +1,6 @@
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { AuthenticationProcessBody, EmailMessage, SMSMessage } from '../../utils/msgGtwMessageFactory'
-import { XHR } from '@icure/api'
+import { b2a, XHR } from '@icure/api'
 import { v4 as uuid } from 'uuid'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Sanitizer } from '../../services/Sanitizer'
@@ -31,8 +31,7 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     this.fetchImpl = fetchImpl
     this.msgGtwUrl = msgGtwUrl
     this.specId = specId
-    this.authHeader =
-      !!username && !!password ? new Header('Authorization', 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')) : null
+    this.authHeader = !!username && !!password ? new Header('Authorization', 'Basic ' + b2a(`${username}:${password}`)) : null
     this.headers = [new Header('Content-Type', 'application/json')]
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer

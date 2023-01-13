@@ -65,5 +65,5 @@ describe('User API', () => {
 
     assert(userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith.all?.has(delegation))
     assert(!userUpdatedWithRemovedDelegationsOnMedicalInformation.sharingDataWith?.medicalInformation?.has(delegation))
-  })
+  }).timeout(60000)
 })

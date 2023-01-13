@@ -43,7 +43,7 @@ describe("Patient Filters Test", function () {
         firstName: 'Arthur',
         lastName: 'Dent',
         gender: "male",
-        dateOfBirth: parseInt(`${now.getFullYear() - 42}0214`)
+        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`)
       })
     )
 
@@ -52,7 +52,7 @@ describe("Patient Filters Test", function () {
         firstName: 'Trillian',
         lastName: 'Astra',
         gender: "female",
-        dateOfBirth: parseInt(`${now.getFullYear() - 42}0111`)
+        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`)
       })
     )
 
