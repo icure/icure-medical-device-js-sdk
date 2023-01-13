@@ -253,12 +253,16 @@ export class TestUtils {
       'Antoine',
       'Duchâteau',
       hcpId,
-      false
+      false,
+      8
     )
 
     const emails = await TestUtils.getEmail(email)
 
     const subjectCode = emails.subject!
+
+    //assert(subjectCode.length === 8, 'The subject code should be 8 characters long')
+
     const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
       anonymousMedTechApi.generateRSAKeypair()
     )

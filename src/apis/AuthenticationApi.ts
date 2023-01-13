@@ -25,6 +25,7 @@ export interface AuthenticationApi {
    * @param bypassTokenCheck Prevent the token check during the validation process. Activates this flag **ONLY** for
    * dedicated use cases and users, like the submission on the Apple / Google Store. (false by default)
    *
+   * @param validationCodeLength The length of the validation code to send to the user. (6 by default)
    * @return The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
    */
   startAuthentication(
@@ -34,7 +35,8 @@ export interface AuthenticationApi {
     firstName?: string,
     lastName?: string,
     healthcareProfessionalId?: string,
-    bypassTokenCheck?: boolean
+    bypassTokenCheck?: boolean,
+    validationCodeLength?: number,
   ): Promise<AuthenticationProcess>
 
   /**
