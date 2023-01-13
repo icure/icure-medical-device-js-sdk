@@ -12,6 +12,8 @@ jobs:
     name: Build & Publish to NPM
     if: github.event.pull_request.merged == true && (contains(github.event.pull_request.labels.*.name, 'SemVer.Major') || contains(github.event.pull_request.labels.*.name, 'SemVer.Minor') || contains(github.event.pull_request.labels.*.name, 'SemVer.Patch'))
     runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,8 +24,10 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
+      - name: Authenticate with private NPM package
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
       - name: Install dependencies, test and build 🔧
-        run: yarn install && yarn run build
+        run: yarn install --frozen-lockfile && yarn run build
       - name: Creation new version (Major) 🏷️
         if: ${{ contains(github.event.pull_request.labels.*.name, 'SemVer.Major') }}
         run: yarn version --major
@@ -37,7 +41,7 @@ jobs:
         run: git push --follow-tags -f
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
-          latestTag="$(git describe --abbrev=0 --tags)"
+          latestTag="$(git describe --tags --abbrev=0 $(git rev-list --tags --max-count=1) | sed 's/v//')"
 
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
         env:
@@ -55,18 +59,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Fetch git history ⚙️
+        run: git fetch --prune --unshallow --tags
       - name: Set LATEST_TAG environment variable ⚙️
         run: |
           lastReleaseDate="$(gh api -H "Accept: application/vnd.github+json" /repos/$REPO/releases/latest | jq '.published_at' -r)"
           prNotes="$(gh api -X GET -H 'Accept: application/vnd.github.v3+json' search/issues -f q="repo:$REPO is:pull-request is:merged merged:>$lastReleaseDate" -f per_page=100 | jq '.items[] | select(.body != null) | "## \(.title)\r\n\(.body//"")\r\n----"' -r)"
-          latestTag="$(git describe --abbrev=0 --tags)"
+          latestTag="$(git describe --tags --abbrev=0 $(git rev-list --tags --max-count=1) | sed 's/v//')"
           currentBranch="$(git branch --show-current)"
 
           echo 'PR_NOTES='$prNotes >> $GITHUB_ENV
           echo 'LATEST_TAG='$latestTag >> $GITHUB_ENV
           echo 'CURRENT_BRANCH='$currentBranch >> $GITHUB_ENV
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
       - name: Create a release 📝
         run: gh api --method POST /repos/icure/icure-medical-device-js-sdk/releases -f tag_name="$LATEST_TAG" -f target_commitish="$CURRENT_BRANCH" -f name="$LATEST_TAG" -F draft=false -F generate_release_notes=true -F prerelease=false -f body="$PR_NOTES"
         env:
