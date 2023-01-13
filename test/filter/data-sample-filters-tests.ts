@@ -165,7 +165,7 @@ describe("Data Sample Filters Tests", function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
       await new DataSampleFilter()
         .forDataOwner(hcp1User.healthcarePartyId!)
-        .byLabelCodeFilter(
+        .byLabelCodeDateFilter(
           'SNOMEDCT',
           '617'
         )
@@ -183,7 +183,7 @@ describe("Data Sample Filters Tests", function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
       await new DataSampleFilter()
         .forDataOwner(hcp1User.healthcarePartyId!)
-        .byLabelCodeFilter(
+        .byLabelCodeDateFilter(
           undefined,
           undefined,
           'SNOMEDCT',

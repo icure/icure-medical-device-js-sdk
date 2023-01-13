@@ -188,7 +188,7 @@ describe('Data Samples API', () => {
 
     const filter = await new DataSampleFilter()
       .forDataOwner(hcp.id!)
-      .byLabelCodeFilter('FILTER-IC-TEST', 'TEST')
+      .byLabelCodeDateFilter('FILTER-IC-TEST', 'TEST')
       .forPatients(medtechApi.cryptoApi, [patient])
       .build()
 
@@ -216,7 +216,7 @@ describe('Data Samples API', () => {
 
     const filter = await new DataSampleFilter()
       .forDataOwner(loggedUser.healthcarePartyId!)
-      .byLabelCodeFilter('FILTER-HE-IC-TEST', 'TEST')
+      .byLabelCodeDateFilter('FILTER-HE-IC-TEST', 'TEST')
       .byHealthElementIds([healthElement!.id!])
       .build()
 
