@@ -14,6 +14,7 @@ import {CodingReference} from './CodingReference';
 import {Content} from './Content';
 import {Identifier} from './Identifier';
 import {SystemMetaDataEncrypted} from "./SystemMetaDataEncrypted";
+import {SystemMetaDataOwnerEncrypted} from "./SystemMetaDataOwnerEncrypted";
 
 /**
 * A Data Sample represents a medical information, provided by a Data Owner concerning one specific [Patient], for a T moment.       Provided by a Data Owner means that the data sample may have been either provided by a [HealthcareProfessional] or a [Patient], either collected by a [MedicalDevice].         Data Samples provided by the patient include subjective information, such as complaints, reason for visit, feelings, etc. or objective information       like bio-metric measures (blood pressure, temperature, heart beat, etc.), or physical exam description, diagnosis, prescription, integration of lab reports from another [HealthcareProfessional], action plan, etc.      Any action performed by the [HealthcareProfessional] (which is relevant for a [HealthcareElement] of a [Patient]) is considered as a [DataSample].       The data samples can be linked to healthcare elements or other structuring elements of the medical record
@@ -30,6 +31,7 @@ constructor(json: IDataSample) {
   this.content = content ? Object.entries(content).map(([k,v]) => [k, new Content(v)] as [string, Content]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
   this.codes = codes ? new Set([...codes].map((it)=> new CodingReference(it))) : new Set()
   this.labels = labels ? new Set([...labels].map((it)=> new CodingReference(it))) : new Set()
+  this.systemMetaData = systemMetaData && new SystemMetaDataOwnerEncrypted(systemMetaData)
 }
 
     /**
@@ -123,6 +125,7 @@ constructor(json: IDataSample) {
       content: this.content ? Object.entries(this.content).map(([k,v]) => [k, v.marshal()] as [string, Content]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : undefined,
       codes: this.codes ? Array.from(this.codes).map((it)=> it.marshal()) : undefined,
       labels: this.labels ? Array.from(this.labels).map((it)=> it.marshal()) : undefined,
+      systemMetaData: this.systemMetaData ? this.systemMetaData.marshal() : undefined
     }
   }
 
