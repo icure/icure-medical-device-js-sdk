@@ -296,14 +296,13 @@ describe('Data Samples API', () => {
   })
 
   it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const { api: h1api, user: h1user } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow' }))
 
-    const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
-    const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, patient)
+    const createdDataSample = await TestUtils.createDataSampleForPatient(h1api, patient)
 
     // When
-    const sharedDataSample = await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcp1ApiAndUser.user.healthcarePartyId!)
+    const sharedDataSample = await h1api.dataSampleApi.giveAccessTo(createdDataSample, h1user.healthcarePartyId!)
 
     // Then
     assert(deepEquality(createdDataSample, sharedDataSample))
@@ -376,5 +375,23 @@ describe('Data Samples API', () => {
     expect(JSON.stringify((await h1api.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
     expect(JSON.stringify((await pApi.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
     expect(h2api.dataSampleApi.getDataSample(dataSample.id!)).to.be.rejected
+  })
+
+  it("Should be able to create a DataSample and retrieve the associated patientId", async () => {
+    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow' }))
+
+    expect(patient.id).not.to.be.undefined
+
+    const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
+      content: {
+        en: new Content({ stringValue: 'I am a beautiful string'})
+      }
+    }))
+
+    const patientId = await h1api.dataSampleApi.extractPatientId(dataSample)
+
+    expect(patientId).to.be.eq(patient.id!)
+
   })
 })
