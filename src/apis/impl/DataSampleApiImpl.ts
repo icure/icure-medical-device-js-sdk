@@ -165,7 +165,13 @@ export class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact.services!.map(
         (service) =>
           DataSampleMapper.toDataSample(
-            service,
+            {
+              ...service,
+              secretForeignKeys: createdOrModifiedContact.secretForeignKeys,
+              cryptedForeignKeys: createdOrModifiedContact.cryptedForeignKeys,
+              delegations: createdOrModifiedContact.delegations,
+              encryptionKeys: createdOrModifiedContact.encryptionKeys
+            },
             createdOrModifiedContact.id,
             createdOrModifiedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == service.id))
           )!
