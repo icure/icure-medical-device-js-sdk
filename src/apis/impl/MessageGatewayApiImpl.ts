@@ -69,12 +69,12 @@ export class MessageGatewayApiImpl implements MessageGatewayApi {
     return true
   }
 
-  async startProcess(processId: string, processBody: AuthenticationProcessBody): Promise<string> {
+  async startProcess(processId: string, processBody: AuthenticationProcessBody, validationCodeLength: number = 6): Promise<string> {
     const requestId = uuid()
 
     await XHR.sendCommand(
       'POST',
-      `${this.msgGtwUrl}/${this.specId}/process/${processId}/${requestId}`,
+      `${this.msgGtwUrl}/${this.specId}/process/${processId}/${requestId}?codeLength=${validationCodeLength}`,
       this.headers,
       processBody,
       this.fetchImpl,

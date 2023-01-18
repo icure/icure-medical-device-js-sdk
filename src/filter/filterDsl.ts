@@ -600,7 +600,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this
   }
 
-  byLabelCodeFilter(
+  byLabelCodeDateFilter(
     tagType?: string,
     tagCode?: string,
     codeType?: string,
