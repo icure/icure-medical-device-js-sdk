@@ -59,7 +59,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     firstName: string = '',
     lastName: string = '',
     healthcareProfessionalId: string = '',
-    bypassTokenCheck: boolean = false
+    bypassTokenCheck: boolean = false,
+    validationCodeLength: number = 6,
   ): Promise<AuthenticationProcess> {
     if (!email && !phoneNumber) {
       throw this.errorHandler.createErrorWithMessage(
@@ -77,7 +78,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       email: email,
       mobilePhone: phoneNumber,
       hcpId: healthcareProfessionalId,
-    })
+    }, validationCodeLength)
 
     if (!!requestId) {
       return new AuthenticationProcess({ requestId, login: (email ?? phoneNumber)!, bypassTokenCheck: bypassTokenCheck })
