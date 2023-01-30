@@ -83,10 +83,12 @@ describe('A Healthcare Party', () => {
 
     // The Patient exists
     const email = getTempEmail()
+    const patientNote = 'He is moon knight'
     const newPatient = await hcp1Api.patientApi.createOrModifyPatient(
       new Patient({
         firstName: 'Marc',
         lastName: 'Specter',
+        note: patientNote,
         addresses: [
           new Address({
             addressType: 'home',
@@ -102,6 +104,7 @@ describe('A Healthcare Party', () => {
       })
     )
     assert(!!newPatient)
+    expect(newPatient.note).to.equal(patientNote)
 
     // Some Data Samples and Healthcare Elements were created for the Patient
     const newDS1 = await TestUtils.createDataSampleForPatient(hcp1Api, newPatient)
@@ -186,6 +189,10 @@ describe('A Healthcare Party', () => {
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!)
     await TestUtils.retrieveDataSampleAndExpectSuccess(updatedApi, newDS1.id!)
     await TestUtils.retrieveDataSampleAndExpectSuccess(updatedApi, newDS2.id!)
+
+    // Should not destroy existing encrypted data
+    expect((await hcp1Api.patientApi.getPatient(newPatient.id!)).note).to.equal(patientNote)
+    expect((await updatedApi.patientApi.getPatient(newPatient.id!)).note).to.equal(patientNote)
   }).timeout(6000000)
 
   it('should not be able to create a new User if the Patient has no contact information', async () => {
