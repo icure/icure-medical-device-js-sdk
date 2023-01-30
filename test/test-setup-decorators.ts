@@ -1,5 +1,5 @@
 import { bootstrapOssKraken, retry, setup, setupCouchDb, checkIfDockerIsOnline, bootstrapCloudKraken } from '@icure/test-setup'
-import { Api, Apis, hex2ua, pkcs8ToJwk, spkiToJwk } from '@icure/api'
+import { Api, Apis, hex2ua, pkcs8ToJwk, spkiToJwk } from '@icure/test-setup-api'
 import { webcrypto } from 'crypto'
 import { TestVars, UserDetails } from './test-utils'
 import { createGroup } from '@icure/test-setup/groups'
@@ -166,7 +166,7 @@ export class GroupInitializer implements EnvInitializer {
   async execute(env: TestVars): Promise<TestVars> {
     const updatedEnvs = !!this.initializer ? await this.initializer.execute(env) : env
     const api = await Api(updatedEnvs.iCureUrl, updatedEnvs.adminLogin, updatedEnvs.adminPassword, webcrypto as any, this.fetchImpl)
-    const doesGroupExists = await api.groupApi.getGroup(updatedEnvs.testGroupId).catch( () => null)
+    const doesGroupExists = await api.groupApi.getGroup(updatedEnvs.testGroupId).catch(() => null)
     if (!doesGroupExists) {
       await createGroup(api, updatedEnvs.testGroupId)
     }

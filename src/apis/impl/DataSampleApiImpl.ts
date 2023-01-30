@@ -5,8 +5,10 @@ import { PaginatedListDataSample } from '../../models/PaginatedListDataSample'
 import { Document } from '../../models/Document'
 import { DataSampleApi } from '../DataSampleApi'
 import {
-  Contact as ContactDto, ContactByServiceIdsFilter,
-  Document as DocumentDto, FilterChainContact,
+  Contact as ContactDto,
+  ContactByServiceIdsFilter,
+  Document as DocumentDto,
+  FilterChainContact,
   FilterChainService,
   IccContactXApi,
   IccCryptoXApi,
@@ -38,6 +40,7 @@ import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import toDelegationDto = DelegationMapper.toDelegationDto
+import { extendMany, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -170,7 +173,7 @@ export class DataSampleApiImpl implements DataSampleApi {
               secretForeignKeys: createdOrModifiedContact.secretForeignKeys,
               cryptedForeignKeys: createdOrModifiedContact.cryptedForeignKeys,
               delegations: createdOrModifiedContact.delegations,
-              encryptionKeys: createdOrModifiedContact.encryptionKeys
+              encryptionKeys: createdOrModifiedContact.encryptionKeys,
             },
             createdOrModifiedContact.id,
             createdOrModifiedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == service.id))
@@ -459,10 +462,13 @@ export class DataSampleApiImpl implements DataSampleApi {
         ...existingDataSample.content,
         [contentIso]: new Content({ documentId: createdDocument.id }),
       }
-      await this.createOrModifyDataSampleFor(patientIdOfBatch!, new DataSample({
-        ...existingDataSample,
-        content: newDSContent,
-      }))
+      await this.createOrModifyDataSampleFor(
+        patientIdOfBatch!,
+        new DataSample({
+          ...existingDataSample,
+          content: newDSContent,
+        })
+      )
 
       // Add attachment to document
       const docEncKey = firstOrNull(await this._getDocumentEncryptionKeys(currentUser, createdDocument))
@@ -488,8 +494,33 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSample.id}`)
     }
 
-    // Does contact already have related delegations
-    if (contactOfDataSample.delegations != undefined && contactOfDataSample.delegations[delegatedTo] != undefined) {
+    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
+      this.crypto,
+      contactOfDataSample.id!,
+      dataOwnerId,
+      delegatedTo,
+      contactOfDataSample.delegations ?? {}
+    )
+    const newEncryptionKey = (
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(
+        this.crypto,
+        contactOfDataSample.id!,
+        dataOwnerId,
+        delegatedTo,
+        contactOfDataSample.encryptionKeys ?? {}
+      )
+    )[0]
+    const newCfk = (
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(
+        this.crypto,
+        contactOfDataSample.id!,
+        dataOwnerId,
+        delegatedTo,
+        contactOfDataSample.cryptedForeignKeys ?? {}
+      )
+    )[0]
+
+    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
       return dataSample
     }
 
@@ -498,54 +529,26 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
     }
 
-    return this.crypto
-      .extractDelegationsSFKs(contactOfDataSample, dataOwnerId)
-      .then((delKeys) => {
-        if (delKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt secret info of data sample ${dataSample.id}`)
-        }
-        return delKeys.extractedKeys.shift()!
-      })
-      .then(async (secretKey) => {
-        const newKeys = await this.crypto.extendedDelegationsAndCryptedForeignKeys(
-          contactOfDataSample,
-          contactPatient,
-          dataOwnerId,
-          delegatedTo,
-          secretKey
-        )
-        return new ContactDto({
-          ...contactOfDataSample,
-          delegations: newKeys.delegations,
-          cryptedForeignKeys: newKeys.cryptedForeignKeys,
-        })
-      })
-      .then(async (contactWithNewDelegationsAndCryptedFKeys) => {
-        return {
-          contact: contactWithNewDelegationsAndCryptedFKeys,
-          encKeys: await this.crypto.extractEncryptionsSKs(contactWithNewDelegationsAndCryptedFKeys, dataOwnerId),
-        }
-      })
-      .then(({ contact, encKeys }) => {
-        if (encKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} could not decrypt data sample ${dataSample.id}`)
-        }
+    const contactWithDelegations = await extendMany(
+      this.crypto,
+      dataOwnerId,
+      delegatedTo,
+      contactOfDataSample,
+      contactPatient,
+      newSecretIds,
+      newEncryptionKey
+    )
+    const updatedContact: ContactDto = await this.contactApi.modifyContactWithUser(currentUser, contactWithDelegations)
 
-        return { contact: contact, encKey: encKeys.extractedKeys.shift()! }
-      })
-      .then(({ contact, encKey }) => this.crypto.addDelegationsAndEncryptionKeys(null, contact, dataOwnerId, delegatedTo, null, encKey))
-      .then((contactWithUpdatedAccessRights) => this.contactApi.modifyContactWithUser(currentUser, contactWithUpdatedAccessRights))
-      .then((updatedContact: ContactDto) => {
-        if (updatedContact == undefined || updatedContact.services == undefined) {
-          throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to data sample ${dataSample.id} information`)
-        }
+    if (updatedContact == undefined || updatedContact.services == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to data sample ${dataSample.id} information`)
+    }
 
-        return DataSampleMapper.toDataSample(
-          updatedContact.services.find((service) => service.id == dataSample.id),
-          updatedContact.id,
-          updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined)
-        )!
-      })
+    return DataSampleMapper.toDataSample(
+      updatedContact.services.find((service) => service.id == dataSample.id),
+      updatedContact.id,
+      updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined)
+    )!
   }
 
   async concatenateFilterResults(
@@ -629,11 +632,18 @@ export class DataSampleApiImpl implements DataSampleApi {
 
     if (dataSampleIdsToSearch.length > 0) {
       const notCachedContacts = (
-        (await this.contactApi.filterByWithUser(currentUser, undefined, dataSampleIdsToSearch.length, new FilterChainContact({
-          filter: new ContactByServiceIdsFilter({ids: dataSampleIdsToSearch}),
-        })).catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })) as PaginatedListContact
+        (await this.contactApi
+          .filterByWithUser(
+            currentUser,
+            undefined,
+            dataSampleIdsToSearch.length,
+            new FilterChainContact({
+              filter: new ContactByServiceIdsFilter({ ids: dataSampleIdsToSearch }),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
+          })) as PaginatedListContact
       ).rows
 
       if (notCachedContacts == undefined) {
