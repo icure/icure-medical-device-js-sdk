@@ -1,4 +1,4 @@
-import { Api } from '@icure/api'
+import { Api } from '@icure/test-setup-api'
 import 'isomorphic-fetch'
 import { hardDeleteGroup } from '@icure/test-setup/groups'
 import { cleanup } from '@icure/test-setup'

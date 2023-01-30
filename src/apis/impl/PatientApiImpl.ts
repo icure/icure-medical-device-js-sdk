@@ -1,4 +1,4 @@
-import { Patient } from '../../models/Patient'
+import { EncryptedPatient, Patient, PotentiallyEncryptedPatient } from '../../models/Patient'
 import { PaginatedListPatient } from '../../models/PaginatedListPatient'
 import { PatientApi } from '../PatientApi'
 import { FilterChainPatient, IccContactXApi, IccCryptoXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi, Patient as PatientDto } from '@icure/api'
@@ -11,6 +11,7 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import { extendMany, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -49,25 +50,35 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
+    const dto = PatientMapper.toPatientDto(patient)
+    if (!dto) throw this.errorHandler.createErrorWithMessage(`Could not convert patient to DTO.\n${JSON.stringify(patient)}`)
+    return this._createOrModifyPatient(dto)
+  }
+
+  async modifyEncryptedPatient(modifiedPatient: EncryptedPatient): Promise<EncryptedPatient> {
+    const dto = PatientMapper.toPatientDto(modifiedPatient)
+    if (!dto) throw this.errorHandler.createErrorWithMessage(`Could not convert patient to DTO.\n${JSON.stringify(modifiedPatient)}`)
+    return this._createOrModifyPatient(dto)
+  }
+
+  private async _createOrModifyPatient(patientDto: PatientDto) {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
-    const createdOrUpdatedPatient = patient.rev
-      ? await this.patientApi.modifyPatientWithUser(currentUser, PatientMapper.toPatientDto(patient)).catch((e) => {
+    const createdOrUpdatedPatient = patientDto.rev
+      ? await this.patientApi.modifyPatientWithUser(currentUser, patientDto).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
         })
-      : await this.patientApi
-          .createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, PatientMapper.toPatientDto(patient)))
-          .catch((e) => {
-            throw this.errorHandler.createErrorFromAny(e)
-          })
+      : await this.patientApi.createPatientWithUser(currentUser, await this.patientApi.newInstance(currentUser, patientDto)).catch((e) => {
+          throw this.errorHandler.createErrorFromAny(e)
+        })
 
     if (createdOrUpdatedPatient) {
       return PatientMapper.toPatient(createdOrUpdatedPatient)!
     }
 
-    throw this.errorHandler.createErrorWithMessage(`Could not create / modify patient ${patient.id} with user ${currentUser.id}`)
+    throw this.errorHandler.createErrorWithMessage(`Could not create / modify patient ${patientDto.id} with user ${currentUser.id}`)
   }
 
   async deletePatient(patientId: string): Promise<string> {
@@ -87,15 +98,29 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async getPatient(patientId: string): Promise<Patient> {
+    return (await this._getPatient(patientId, true)) as Patient
+  }
+
+  getPatientAndTryDecrypt(patientId: string): Promise<PotentiallyEncryptedPatient> {
+    return this._getPatient(patientId, false)
+  }
+
+  private async _getPatient(patientId: string, requireDecrypted: boolean): Promise<PotentiallyEncryptedPatient> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const foundPatient = await this.patientApi.getPatientWithUser(currentUser, patientId).catch((e) => {
+    const foundPatient = await this.patientApi.getPotentiallyEncryptedPatientWithUser(currentUser, patientId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
     if (foundPatient) {
-      return PatientMapper.toPatient(foundPatient)!
+      if (foundPatient.decrypted) {
+        return PatientMapper.toPatient(foundPatient.patient)!
+      } else if (requireDecrypted) {
+        throw this.errorHandler.createErrorWithMessage(`Could not decrypt patient ${patientId} with current user ${currentUser.id}`)
+      } else {
+        return PatientMapper.toEncryptedPatient(foundPatient.patient)!
+      }
     }
 
     throw this.errorHandler.createErrorWithMessage(`Could not find patient ${patientId} with current user ${currentUser.id}`)
@@ -144,43 +169,36 @@ export class PatientApiImpl implements PatientApi {
       )
     }
 
-    if (patientToModify.delegations[delegatedTo] != undefined) {
+    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
+      this.cryptoApi,
+      patientToModify.id!,
+      dataOwnerId,
+      delegatedTo,
+      patientToModify.delegations ?? {}
+    )
+    const newEncryptionKey = (
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(
+        this.cryptoApi,
+        patientToModify.id!,
+        dataOwnerId,
+        delegatedTo,
+        patientToModify.encryptionKeys ?? {}
+      )
+    )[0]
+
+    if (!newSecretIds.length && !newEncryptionKey) {
       return patient
     }
 
-    const delKeys = await this.cryptoApi.extractDelegationsSFKs(patientToModify, dataOwnerId)
-    if (delKeys.extractedKeys.length == 0) {
-      throw this.errorHandler.createErrorWithMessage(
-        `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
-      )
-    }
-    const secretKey = delKeys.extractedKeys.shift()!
-    const patientWithNewDelegations = await this.cryptoApi
-      .addDelegationsAndEncryptionKeys(null, patientToModify, dataOwnerId, delegatedTo, secretKey, null)
-      .catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
-    const encKeys = await this.cryptoApi.extractEncryptionsSKs(patientWithNewDelegations, dataOwnerId)
-    if (encKeys.extractedKeys.length == 0) {
-      throw this.errorHandler.createErrorWithMessage(
-        `User ${currentUser.id} could not decrypt secret info of patient ${patient.id}. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
-      )
-    }
-    const encKey = encKeys.extractedKeys.shift()!
-    const patientWithUpdatedAccesses = await this.cryptoApi.addDelegationsAndEncryptionKeys(
-      null,
-      patientToModify,
+    const patientWithUpdatedAccesses = await extendMany(
+      this.cryptoApi,
       dataOwnerId,
       delegatedTo,
+      patientToModify,
       null,
-      encKey
+      newSecretIds,
+      newEncryptionKey
     )
-    // const currentPatient = await this.patientApi.getPatientWithUser(currentUser, patientWithUpdatedAccesses.id!)
-    // const patientToUpdate = new PatientDto({
-    //   ...currentPatient,
-    //   delegations: patientWithUpdatedAccesses.delegations,
-    //   encryptionKeys: patientWithUpdatedAccesses.encryptionKeys,
-    // })
     const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
     if (!updatedPatient) {
       throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
