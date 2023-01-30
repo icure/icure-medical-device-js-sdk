@@ -60,7 +60,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     lastName: string = '',
     healthcareProfessionalId: string = '',
     bypassTokenCheck: boolean = false,
-    validationCodeLength: number = 6,
+    validationCodeLength: number = 6
   ): Promise<AuthenticationProcess> {
     if (!email && !phoneNumber) {
       throw this.errorHandler.createErrorWithMessage(
@@ -70,15 +70,19 @@ export class AuthenticationApiImpl implements AuthenticationApi {
 
     const processId = email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId
 
-    const requestId = await this.messageGatewayApi.startProcess(processId, {
-      'g-recaptcha-response': recaptcha,
-      firstName: firstName,
-      lastName: lastName,
-      from: email != undefined ? this.sanitizer.validateEmail(email) : this.sanitizer.validateMobilePhone(phoneNumber!),
-      email: email,
-      mobilePhone: phoneNumber,
-      hcpId: healthcareProfessionalId,
-    }, validationCodeLength)
+    const requestId = await this.messageGatewayApi.startProcess(
+      processId,
+      {
+        'g-recaptcha-response': recaptcha,
+        firstName: firstName,
+        lastName: lastName,
+        from: email != undefined ? this.sanitizer.validateEmail(email) : this.sanitizer.validateMobilePhone(phoneNumber!),
+        email: email,
+        mobilePhone: phoneNumber,
+        hcpId: healthcareProfessionalId,
+      },
+      validationCodeLength
+    )
 
     if (!!requestId) {
       return new AuthenticationProcess({ requestId, login: (email ?? phoneNumber)!, bypassTokenCheck: bypassTokenCheck })
@@ -115,7 +119,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
         `There is no user currently logged in. You must call this method from an authenticated MedTechApi`
       )
     } else if (!!loggedUser.patientId) {
-      const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatient(loggedUser.patientId)
+      const patientDataOwner = await authenticationResult.medTechApi.patientApi.getPatientAndTryDecrypt(loggedUser.patientId)
       if (!patientDataOwner)
         throw this.errorHandler.createErrorWithMessage(
           `Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`

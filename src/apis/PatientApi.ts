@@ -1,8 +1,8 @@
-import {Filter} from '../filter/Filter'
-import {PaginatedListPatient} from '../models/PaginatedListPatient'
-import {Patient} from '../models/Patient'
-import {Connection} from '../models/Connection'
-import {SharingResult} from "../utils/interfaces";
+import { Filter } from '../filter/Filter'
+import { PaginatedListPatient } from '../models/PaginatedListPatient'
+import { EncryptedPatient, Patient, PotentiallyEncryptedPatient } from '../models/Patient'
+import { Connection } from '../models/Connection'
+import { SharingResult } from '../utils/interfaces'
 
 /**
  * The PatientApi interface provides methods to manage patients.
@@ -87,4 +87,21 @@ export interface PatientApi {
     eventFired: (patient: Patient) => Promise<void>,
     options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
+
+  /**
+   * Gets a patient and tries to decrypt its content. If it is not possible to decrypt the content only the unencrypted
+   * data will be available.
+   * This method is useful to allow new patient users to access some of their own data before their doctor actually
+   * gave them access to their own data: instead of giving an error if the data can't be decrypted (like what happens
+   * in getPatient) you will be able to get at least partial information.
+   */
+  getPatientAndTryDecrypt(patientId: string): Promise<PotentiallyEncryptedPatient>
+
+  /**
+   * Modifies an encrypted patient, ensuring that the modified patient does not include any data which should be
+   * encrypted.
+   * Similarly to getPatientAndTryDecrypt this method is useful when a patient needs to update his own data before
+   * an hcp gave him access to his own encrypted data.
+   */
+  modifyEncryptedPatient(modifiedPatient: EncryptedPatient): Promise<EncryptedPatient>
 }
