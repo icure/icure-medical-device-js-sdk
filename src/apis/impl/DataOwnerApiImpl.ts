@@ -153,15 +153,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
     const patientToUpdate = await this.patientApi.getPatientRaw(user.patientId!).then(async (patient) => {
       if (Object.keys(patient.encryptionKeys ?? {}).length || Object.keys(patient.delegations ?? {}).length) {
         return new Patient(
-          (
-            await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(
-              patient,
-              null,
-              user.patientId!,
-              user.patientId!,
-              this.cryptoApi.randomUuid()
-            )
-          ).modifiedObject
+          await this.cryptoApi.addDelegationsAndEncryptionKeys(null, patient, user.patientId!, user.patientId!, this.cryptoApi.randomUuid(), null)
         )
       } else {
         const initialised = await this.patientApi.initDelegationsAndEncryptionKeys(patient, userDto)
