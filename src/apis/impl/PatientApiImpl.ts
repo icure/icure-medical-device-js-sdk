@@ -159,11 +159,7 @@ export class PatientApiImpl implements PatientApi {
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const patientToModify = PatientMapper.toPatientDto(patient)!
 
-    if (
-      patientToModify.delegations == undefined ||
-      !patientToModify.delegations[dataOwnerId] ||
-      patientToModify.delegations[dataOwnerId].length == 0
-    ) {
+    if (patient.id !== dataOwnerId && !(patientToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
       throw this.errorHandler.createErrorWithMessage(
         `User ${currentUser.id} may not access patient information. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
       )
