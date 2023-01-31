@@ -10,48 +10,62 @@
  * Do not edit the class manually.
  */
 
-import {Delegation} from './Delegation';
+import { Delegation } from './Delegation'
 
 export class SystemMetaDataOwnerEncrypted {
-constructor(json: ISystemMetaDataOwnerEncrypted) {
-  const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, ...simpleProperties } = json
+  constructor(json: ISystemMetaDataOwnerEncrypted) {
+    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, ...simpleProperties } = json
 
-  Object.assign(this as SystemMetaDataOwnerEncrypted, simpleProperties as ISystemMetaDataOwnerEncrypted)
+    Object.assign(this as SystemMetaDataOwnerEncrypted, simpleProperties as ISystemMetaDataOwnerEncrypted)
 
-  this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
-  this.cryptedForeignKeys = cryptedForeignKeys ? Object.entries(cryptedForeignKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-  this.delegations = delegations ? Object.entries(delegations).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-  this.encryptionKeys = encryptionKeys ? Object.entries(encryptionKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-}
+    this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
+    this.cryptedForeignKeys = cryptedForeignKeys
+      ? Object.entries(cryptedForeignKeys)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+    this.delegations = delegations
+      ? Object.entries(delegations)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+    this.encryptionKeys = encryptionKeys
+      ? Object.entries(encryptionKeys)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+  }
 
-    'publicKey': string;
-    'hcPartyKeys': { [key: string]: Array<string>; };
-    'privateKeyShamirPartitions': { [key: string]: string; };
-    'secretForeignKeys': Array<string>;
-    'cryptedForeignKeys': { [key: string]: Set<Delegation>; };
-    'delegations': { [key: string]: Set<Delegation>; };
-    'encryptionKeys': { [key: string]: Set<Delegation>; };
-    'aesExchangeKeys' : { [key: string]: { [key: string]: { [key: string]: string }; }; };
-    'transferKeys' : { [key: string]: { [key: string]: string; }; };
+  'publicKey': string
+  'hcPartyKeys': { [key: string]: Array<string> }
+  'privateKeyShamirPartitions': { [key: string]: string }
+  'secretForeignKeys': Array<string>
+  'cryptedForeignKeys': { [key: string]: Set<Delegation> }
+  'delegations': { [key: string]: Set<Delegation> }
+  'encryptionKeys': { [key: string]: Set<Delegation> }
+  'aesExchangeKeys': { [key: string]: { [key: string]: { [key: string]: string } } }
+  'transferKeys': { [key: string]: { [key: string]: string } }
+  'encryptedSelf'?: string
 
-    marshal(): ISystemMetaDataOwnerEncrypted {
-return {
-        ...this,
-        cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-        delegations: Object.entries(this.delegations).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-        encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-      }
+  marshal(): ISystemMetaDataOwnerEncrypted {
+    return {
+      ...this,
+      cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      delegations: Object.entries(this.delegations).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
     }
+  }
 }
 
 interface ISystemMetaDataOwnerEncrypted {
-  'publicKey'?: string;
-  'hcPartyKeys'?: { [key: string]: Array<string>; };
-  'privateKeyShamirPartitions'?: { [key: string]: string; };
-  'secretForeignKeys'?: Array<string>;
-  'cryptedForeignKeys'?: { [key: string]: Set<Delegation>; };
-  'delegations'?: { [key: string]: Set<Delegation>; };
-  'encryptionKeys'?: { [key: string]: Set<Delegation>; };
-  'aesExchangeKeys' ?: { [key: string]: { [key: string]: { [key: string]: string }; }; };
-  'transferKeys' ?: { [key: string]: { [key: string]: string; }; };
+  publicKey?: string
+  hcPartyKeys?: { [key: string]: Array<string> }
+  privateKeyShamirPartitions?: { [key: string]: string }
+  secretForeignKeys?: Array<string>
+  cryptedForeignKeys?: { [key: string]: Set<Delegation> }
+  delegations?: { [key: string]: Set<Delegation> }
+  encryptionKeys?: { [key: string]: Set<Delegation> }
+  aesExchangeKeys?: { [key: string]: { [key: string]: { [key: string]: string } } }
+  transferKeys?: { [key: string]: { [key: string]: string } }
+  encryptedSelf?: string
 }
