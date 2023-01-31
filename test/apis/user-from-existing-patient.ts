@@ -329,8 +329,8 @@ describe('A Healthcare Party', () => {
     expect(hcpFound1).to.contain(heByHcp.id)
 
     //. ..but by sharing the patient with each other it can be found
-    const pu0 = await patientApi.patientApi.giveAccessTo(modifiedPatient, hcp1.id!)
-    const fullySharedPatient = await hcp1Api.patientApi.giveAccessTo(pu0, patient.id!)
+    await patientApi.patientApi.giveAccessTo(modifiedPatient, hcp1.id!)
+    const fullySharedPatient = await hcp1Api.patientApi.giveAccessTo(await hcp1Api.patientApi.getPatient(patient.id!), patient.id!)
     expect((await patientApi.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     expect((await hcp1Api.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     const filterPatient2 = await new HealthcareElementFilter()

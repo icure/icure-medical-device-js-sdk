@@ -1,18 +1,18 @@
-import {HealthcareElement} from "../models/HealthcareElement";
-import {HealthElement} from "@icure/api";
-import {forceUuid, map, mapSet, mapSetToArray, toMapArrayTransform, toMapSetTransform} from "./utils";
-import {SystemMetaDataEncrypted} from "../models/SystemMetaDataEncrypted";
-import {DelegationMapper} from "./delegation";
-import {IdentifierDtoMapper} from "./identifier";
-import {CodeStubDtoMapper} from "./codeStubCodingReference";
+import { HealthcareElement } from '../models/HealthcareElement'
+import { HealthElement } from '@icure/api'
+import { forceUuid, map, mapSet, mapSetToArray, toMapArrayTransform, toMapSetTransform } from './utils'
+import { SystemMetaDataEncrypted } from '../models/SystemMetaDataEncrypted'
+import { DelegationMapper } from './delegation'
+import { IdentifierDtoMapper } from './identifier'
+import { CodeStubDtoMapper } from './codeStubCodingReference'
 
 export namespace HealthcareElementMapper {
-  import toCodingReference = CodeStubDtoMapper.toCodingReference;
-  import toDelegation = DelegationMapper.toDelegation;
-  import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
-  import toCodeStub = CodeStubDtoMapper.toCodeStub;
-  import toDelegationDto = DelegationMapper.toDelegationDto;
-  import toIdentifier = IdentifierDtoMapper.toIdentifier;
+  import toCodingReference = CodeStubDtoMapper.toCodingReference
+  import toDelegation = DelegationMapper.toDelegation
+  import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto
+  import toCodeStub = CodeStubDtoMapper.toCodeStub
+  import toDelegationDto = DelegationMapper.toDelegationDto
+  import toIdentifier = IdentifierDtoMapper.toIdentifier
 
   export const toHealthcareElement = (dto: HealthElement) =>
     new HealthcareElement({
@@ -39,11 +39,12 @@ export namespace HealthcareElementMapper {
         cryptedForeignKeys: toMapSetTransform(dto.cryptedForeignKeys, toDelegation),
         delegations: toMapSetTransform(dto.delegations, toDelegation),
         encryptionKeys: toMapSetTransform(dto.encryptionKeys, toDelegation),
-      })
-    });
+        encryptedSelf: dto.encryptedSelf,
+      }),
+    })
 
   export const toHealthElementDto = (obj: HealthcareElement) => {
-    const id = forceUuid(obj.id);
+    const id = forceUuid(obj.id)
     return new HealthElement({
       id: id,
       identifiers: map(obj.identifiers, toIdentifierDto),
@@ -69,6 +70,7 @@ export namespace HealthcareElementMapper {
       cryptedForeignKeys: toMapArrayTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
       delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
       encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
-    });
-  };
+      encryptedSelf: obj.systemMetaData?.encryptedSelf,
+    })
+  }
 }
