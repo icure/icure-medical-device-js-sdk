@@ -490,8 +490,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const contactOfDataSample = (await this._getContactOfDataSample(currentUser, dataSample))[1]
 
-    if (contactOfDataSample == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSample.id}`)
+    if (contactOfDataSample == undefined)
+      throw this.errorHandler.createErrorWithMessage(
+        `Could not find the batch of the data sample ${dataSample.id}. User ${currentUser.id} may not have access to it.`
+      )
+
+    if (!(contactOfDataSample.delegations?.[dataOwnerId]?.length ?? 0)) {
+      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} can't access data sample ${dataSample.id}`)
     }
 
     const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
