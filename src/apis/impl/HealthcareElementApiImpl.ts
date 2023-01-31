@@ -215,11 +215,12 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
-    if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
+    if (!(healthElementToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
       throw this.errorHandler.createErrorWithMessage(
         `User ${currentUser.id} may not access healthcare element. Check that the healthcare element is owned by/shared to the actual user.`
       )
     }
+
     const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
       this.cryptoApi,
       healthcareElement.id!,
