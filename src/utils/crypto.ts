@@ -20,7 +20,7 @@ export async function findAndDecryptPotentiallyUnknownKeysForDelegate(
   if (meToDelegateKeys.length) {
     meAndDelegateKeys[delegateId] = meToDelegateKeys
   }
-  const decryptedForDelegate = await cryptoApi.extractKeysFromDelegationsForHcpHierarchy(myId, objectId, delegations)
+  const decryptedForDelegate = await cryptoApi.extractKeysFromDelegationsForHcpHierarchy(myId, objectId, meAndDelegateKeys)
   const filterOutSet = new Set(decryptedForDelegate.extractedKeys)
   return allDecrypted.extractedKeys.filter((x) => !filterOutSet.has(x))
 }
