@@ -26,7 +26,7 @@ import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
-import { extendMany, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -258,7 +258,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       )
     }
 
-    const heWithDelegations = await extendMany(
+    const heWithDelegations = await addManyDelegationKeys(
       this.cryptoApi,
       dataOwnerId,
       delegatedTo,

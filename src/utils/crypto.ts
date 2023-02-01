@@ -28,7 +28,7 @@ export async function findAndDecryptPotentiallyUnknownKeysForDelegate(
 /**
  * @internal this function is meant for internal use only.
  */
-export async function extendMany<T extends EncryptedEntity>(
+export async function addManyDelegationKeys<T extends EncryptedEntity>(
   cryptoApi: IccCryptoXApi,
   myId: string,
   delegateId: string,

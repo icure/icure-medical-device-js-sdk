@@ -1,6 +1,6 @@
 import { Filter } from '../filter/Filter'
 import { PaginatedListPatient } from '../models/PaginatedListPatient'
-import { EncryptedPatient, Patient, PotentiallyEncryptedPatient } from '../models/Patient'
+import { Patient, PotentiallyEncryptedPatient } from '../models/Patient'
 import { Connection } from '../models/Connection'
 import { SharingResult } from '../utils/interfaces'
 
@@ -105,8 +105,8 @@ export interface PatientApi {
   getPatientAndTryDecrypt(patientId: string): Promise<PotentiallyEncryptedPatient>
 
   /**
-   * Modifies an encrypted patient, ensuring that the modified patient does not include any data which should be
-   * encrypted.
+   * Modifies a potentially encrypted patient, ensuring that if originally the patient could not be decrypted then the
+   * modified patient does not change to data which should be encrypted according to the current api configuration.
    * Similarly to getPatientAndTryDecrypt this method is useful when a patient needs to update his own data before
    * an hcp gave him access to his own encrypted data.
    */
