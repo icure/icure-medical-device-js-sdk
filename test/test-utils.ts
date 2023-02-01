@@ -4,7 +4,7 @@ import { webcrypto } from 'crypto'
 import { hex2ua, KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
-import { Patient } from '../src/models/Patient'
+import { Patient, PotentiallyEncryptedPatient } from '../src/models/Patient'
 import { assert, expect } from 'chai'
 import { HealthcareElement } from '../src/models/HealthcareElement'
 import { Content } from '../src/models/Content'
@@ -348,7 +348,7 @@ export class TestUtils {
     ])
   }
 
-  static createHealthElementForPatient(medtechApi: MedTechApi, patient: Patient) {
+  static createHealthElementForPatient(medtechApi: MedTechApi, patient: PotentiallyEncryptedPatient) {
     return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         note: 'Hero Syndrome',
