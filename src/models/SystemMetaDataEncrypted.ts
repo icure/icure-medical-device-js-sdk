@@ -10,37 +10,54 @@
  * Do not edit the class manually.
  */
 
-import {Delegation} from './Delegation';
-import {Content} from "./Content";
+import { Delegation } from './Delegation'
+import { Content } from './Content'
 
 export class SystemMetaDataEncrypted {
-constructor(json: ISystemMetaDataEncrypted) {
-  const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys } = json
+  constructor(json: ISystemMetaDataEncrypted) {
+    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, encryptedSelf } = json
 
-  this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
-  this.cryptedForeignKeys = cryptedForeignKeys ? Object.entries(cryptedForeignKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-  this.delegations = delegations ? Object.entries(delegations).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-  this.encryptionKeys = encryptionKeys ? Object.entries(encryptionKeys).map(([k,v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>]).reduce((acc, [k,v]) => ({...acc, [k]: v}), {}) : {}
-}
-
-    'secretForeignKeys': Array<string>;
-    'cryptedForeignKeys': { [key: string]: Set<Delegation>; };
-    'delegations': { [key: string]: Set<Delegation>; };
-    'encryptionKeys': { [key: string]: Set<Delegation>; };
-
-    marshal(): ISystemMetaDataEncrypted {
-return {
-        ...this,
-        cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-        delegations: Object.entries(this.delegations).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-        encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k,v]) => ({...acc, [k]: [...v].map(d => d.marshal())}), {}),
-      }
+    this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
+    this.cryptedForeignKeys = cryptedForeignKeys
+      ? Object.entries(cryptedForeignKeys)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+    this.delegations = delegations
+      ? Object.entries(delegations)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+    this.encryptionKeys = encryptionKeys
+      ? Object.entries(encryptionKeys)
+          .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
+          .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+      : {}
+    if (encryptedSelf) {
+      this.encryptedSelf = encryptedSelf
     }
+  }
+
+  'secretForeignKeys': Array<string>
+  'cryptedForeignKeys': { [key: string]: Set<Delegation> }
+  'delegations': { [key: string]: Set<Delegation> }
+  'encryptionKeys': { [key: string]: Set<Delegation> }
+  'encryptedSelf'?: string
+
+  marshal(): ISystemMetaDataEncrypted {
+    return {
+      ...this,
+      cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      delegations: Object.entries(this.delegations).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+    }
+  }
 }
 
 interface ISystemMetaDataEncrypted {
-  'secretForeignKeys'?: Array<string>;
-  'cryptedForeignKeys'?: { [key: string]: Set<Delegation>; };
-  'delegations'?: { [key: string]: Set<Delegation>; };
-  'encryptionKeys'?: { [key: string]: Set<Delegation>; };
+  secretForeignKeys?: Array<string>
+  cryptedForeignKeys?: { [key: string]: Set<Delegation> }
+  delegations?: { [key: string]: Set<Delegation> }
+  encryptionKeys?: { [key: string]: Set<Delegation> }
+  encryptedSelf?: string
 }

@@ -1,8 +1,8 @@
-import {Filter} from '../filter/Filter'
-import {PaginatedListPatient} from '../models/PaginatedListPatient'
-import {Patient} from '../models/Patient'
-import {Connection} from '../models/Connection'
-import {SharingResult} from "../utils/interfaces";
+import { Filter } from '../filter/Filter'
+import { PaginatedListPatient } from '../models/PaginatedListPatient'
+import { Patient, PotentiallyEncryptedPatient } from '../models/Patient'
+import { Connection } from '../models/Connection'
+import { SharingResult } from '../utils/interfaces'
 
 /**
  * The PatientApi interface provides methods to manage patients.
@@ -51,13 +51,20 @@ export interface PatientApi {
   matchPatients(filter: Filter<Patient>): Promise<Array<string>>
 
   /**
-     * Service where current user gives access to the patient information to another dataOwner (HCP, patient or device).
-     * For this, the current user data owner should be able to access the patient provided in argument in order to provide access to another data owner.
-
-     * @param patient Patient the current data owner would like to share with another data owner
-     * @param delegatedTo ID of the data owner to which current user would like to give access
-     */
+   * Service where current user gives access to the patient information to another dataOwner (HCP, patient or device).
+   * For this, the current user data owner should be able to access the patient provided in argument in order to provide access to another data owner.
+   * @param patient Patient the current data owner would like to share with another data owner
+   * @param delegatedTo ID of the data owner to which current user would like to give access
+   */
   giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient>
+
+  /**
+   * Same as {@link giveAccessTo} but allowing also to share encrypted patients. This is useful if the delegator does
+   * not know the encryption key of the patient but has a secret id and wants to share it.
+   * @param patient Patient the current data owner would like to share with another data owner
+   * @param delegatedTo ID of the data owner to which current user would like to give access
+   */
+  giveAccessToPotentiallyEncrypted(patient: PotentiallyEncryptedPatient, delegatedTo: string): Promise<PotentiallyEncryptedPatient>
 
   /**
    * Service that allows a Data Owner to share all the data of a Patient with the patient itself.
@@ -87,4 +94,21 @@ export interface PatientApi {
     eventFired: (patient: Patient) => Promise<void>,
     options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
+
+  /**
+   * Gets a patient and tries to decrypt its content. If it is not possible to decrypt the content only the unencrypted
+   * data will be available.
+   * This method is useful to allow new patient users to access some of their own data before their doctor actually
+   * gave them access to their own data: instead of giving an error if the data can't be decrypted (like what happens
+   * in getPatient) you will be able to get at least partial information.
+   */
+  getPatientAndTryDecrypt(patientId: string): Promise<PotentiallyEncryptedPatient>
+
+  /**
+   * Modifies a potentially encrypted patient, ensuring that if originally the patient could not be decrypted then the
+   * modified patient does not change to data which should be encrypted according to the current api configuration.
+   * Similarly to getPatientAndTryDecrypt this method is useful when a patient needs to update his own data before
+   * an hcp gave him access to his own encrypted data.
+   */
+  modifyPotentiallyEncryptedPatient(modifiedPatient: PotentiallyEncryptedPatient): Promise<PotentiallyEncryptedPatient>
 }
