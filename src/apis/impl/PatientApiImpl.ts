@@ -153,13 +153,24 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
+    return PatientMapper.toPatient(await this._giveAccessTo(PatientMapper.toPatientDto(patient)!, delegatedTo))!
+  }
+
+  async giveAccessToPotentiallyEncrypted(patient: PotentiallyEncryptedPatient, delegatedTo: string): Promise<PotentiallyEncryptedPatient> {
+    if (patient instanceof Patient) {
+      return this.giveAccessTo(patient, delegatedTo)
+    } else {
+      return PatientMapper.toEncryptedPatient(await this._giveAccessTo(PatientMapper.toPatientDto(patient)!, delegatedTo))!
+    }
+  }
+
+  private async _giveAccessTo(patient: PatientDto, delegatedTo: string): Promise<PatientDto> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
-    const patientToModify = PatientMapper.toPatientDto(patient)!
 
-    if (patient.id !== dataOwnerId && !(patientToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
+    if (patient.id !== dataOwnerId && !(patient.delegations?.[dataOwnerId]?.length ?? 0)) {
       throw this.errorHandler.createErrorWithMessage(
         `User ${currentUser.id} may not access patient information. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
       )
@@ -167,40 +178,26 @@ export class PatientApiImpl implements PatientApi {
 
     const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
       this.cryptoApi,
-      patientToModify.id!,
+      patient.id!,
       dataOwnerId,
       delegatedTo,
-      patientToModify.delegations ?? {}
+      patient.delegations ?? {}
     )
     const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.cryptoApi,
-        patientToModify.id!,
-        dataOwnerId,
-        delegatedTo,
-        patientToModify.encryptionKeys ?? {}
-      )
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(this.cryptoApi, patient.id!, dataOwnerId, delegatedTo, patient.encryptionKeys ?? {})
     )[0]
 
     if (!newSecretIds.length && !newEncryptionKey) {
       return patient
     }
 
-    const patientWithUpdatedAccesses = await extendMany(
-      this.cryptoApi,
-      dataOwnerId,
-      delegatedTo,
-      patientToModify,
-      null,
-      newSecretIds,
-      newEncryptionKey
-    )
+    const patientWithUpdatedAccesses = await extendMany(this.cryptoApi, dataOwnerId, delegatedTo, patient, null, newSecretIds, newEncryptionKey)
     const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
     if (!updatedPatient) {
-      throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patientToModify.id} information`)
+      throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patient.id} information`)
     }
 
-    return PatientMapper.toPatient(updatedPatient)!
+    return updatedPatient
   }
 
   async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {

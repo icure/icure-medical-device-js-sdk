@@ -240,7 +240,9 @@ describe('A Healthcare Party', () => {
       expect((e as Error).message).to.eq('A User already exists for this Patient')
     }
   })
+})
 
+describe('A patient user', () => {
   it('should be able to create new data and modify non-encrypted data before being given full access to existing data', async () => {
     const email = getTempEmail()
     const patientNote = 'He is moon knight'
@@ -313,8 +315,10 @@ describe('A Healthcare Party', () => {
     // ...but it can be shared
     await patientApi.healthcareElementApi.giveAccessTo(heByPatient, hcp1.id!)
     await hcp1Api.healthcareElementApi.giveAccessTo(heByHcp, patient.id!)
+    hcp1Api.cryptoApi.emptyHcpCache(patient.id!)
+    hcp1Api.cryptoApi.emptyHcpCache(hcp1.id!)
     expect((await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).note).to.not.be.undefined
-    expect(await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).to.not.be.undefined
+    expect((await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).note).to.not.be.undefined
     // Originally medical data even if accessible can't be found by the other...
     const filterPatient1 = await new HealthcareElementFilter().forDataOwner(patient.id!).forPatients(patientApi.cryptoApi, [modifiedPatient]).build()
     const patientFound1 = await patientApi.healthcareElementApi.matchHealthcareElement(filterPatient1)
@@ -329,7 +333,7 @@ describe('A Healthcare Party', () => {
     expect(hcpFound1).to.contain(heByHcp.id)
 
     //. ..but by sharing the patient with each other it can be found
-    await patientApi.patientApi.giveAccessTo(modifiedPatient, hcp1.id!)
+    await patientApi.patientApi.giveAccessToPotentiallyEncrypted(await patientApi.patientApi.getPatientAndTryDecrypt(patient.id!), hcp1.id!)
     const fullySharedPatient = await hcp1Api.patientApi.giveAccessTo(await hcp1Api.patientApi.getPatient(patient.id!), patient.id!)
     expect((await patientApi.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     expect((await hcp1Api.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
