@@ -4,7 +4,7 @@ import { DataSample } from '../models/DataSample'
 import { HealthcareElement } from '../models/HealthcareElement'
 import { HealthcareProfessional } from '../models/HealthcareProfessional'
 import { MedicalDevice } from '../models/MedicalDevice'
-import { Patient, PatientGenderEnum } from '../models/Patient'
+import { Patient, PatientGenderEnum, PotentiallyEncryptedPatient } from '../models/Patient'
 import { User } from '../models/User'
 import { UserByIdsFilter } from './user/UserByIdsFilter'
 import { UnionFilter } from './UnionFilter'
@@ -346,7 +346,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
   _byIds?: string[]
   _byIdentifiers?: Identifier[]
   _byLabelCodeFilter?: HealthcareElementByHealthcarePartyLabelCodeFilter
-  _forPatients?: [IccCryptoXApi, Patient[]]
+  _forPatients?: [IccCryptoXApi, PotentiallyEncryptedPatient[]]
   _union?: HealthcareElementFilter[]
   _intersection?: HealthcareElementFilter[]
 
@@ -376,7 +376,7 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     return this
   }
 
-  forPatients(crypto: IccCryptoXApi, patients: Patient[]): HealthcareElementFilter {
+  forPatients(crypto: IccCryptoXApi, patients: PotentiallyEncryptedPatient[]): HealthcareElementFilter {
     this._forPatients = [crypto, patients]
     return this
   }
@@ -581,7 +581,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
   _byHealthcareElementIds?: string[]
   _byIdentifiers?: Identifier[]
   _byLabelCodeDateFilter?: DataSampleByHealthcarePartyTagCodeDateFilter
-  _forPatients?: [IccCryptoXApi, Patient[]]
+  _forPatients?: [IccCryptoXApi, PotentiallyEncryptedPatient[]]
   _union?: DataSampleFilter[]
   _intersection?: DataSampleFilter[]
 
@@ -620,7 +620,7 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
     return this
   }
 
-  forPatients(crypto: IccCryptoXApi, patients: Patient[]): DataSampleFilter {
+  forPatients(crypto: IccCryptoXApi, patients: PotentiallyEncryptedPatient[]): DataSampleFilter {
     this._forPatients = [crypto, patients]
     return this
   }
