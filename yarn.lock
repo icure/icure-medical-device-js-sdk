@@ -209,10 +209,23 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@^6.0.6":
+"@icure/api@^6.0.6", "@icure/test-setup-api@npm:@icure/api@6.0.6":
   version "6.0.6"
   resolved "https://registry.npmjs.org/@icure/api/-/api-6.0.6.tgz#61705e8cc4cb1843af6931962d38ea82698c0815"
   integrity sha512-iJoqyrdklynEQ8/lmUNun2g38JHh9XAv9PwXffrVCWCBi0D0Ea6oaOconnpVIVhqaQbwzY0mHTdQfSuhK2UK2w==
+  dependencies:
+    date-fns "^2.23.0"
+    libphonenumber-js "^1.7.18"
+    lodash "^4.17.21"
+    moment "^2.22.1"
+    text-encoding "^0.7.0"
+    uuid "^8.3.2"
+    uuid-encoder "^1.1.0"
+
+"@icure/api@^6.3.0":
+  version "6.3.0"
+  resolved "https://registry.npmjs.org/@icure/api/-/api-6.3.0.tgz#ef341b58eb9ebd84896be24e843a04267b385a9c"
+  integrity sha512-HIlKSF4D6714O6d+jvNI893cGdvLuXajuBdSwV5oQuW+Wh3s3yq5/8NU2/rJQPexuIXn8cSPAUsGpgiMF2b/mA==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
