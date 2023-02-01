@@ -112,7 +112,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
         console.log(`Adding a new RSA Key Pair to user ${user.id}`)
         await this.cryptoApi.addKeyPairForOwner(this.maintenanceTaskApi, UserMapper.toUserDto(user)!, dataOwner, {
           publicKey: await this.cryptoApi.RSA.importKey('jwk', jwks.publicKey, ['encrypt']),
-          privateKey: await this.cryptoApi.RSA.importKey('jwk', jwks.privateKey, ['decrypt'])
+          privateKey: await this.cryptoApi.RSA.importKey('jwk', jwks.privateKey, ['decrypt']),
         })
       }
       return [{ publicKey, privateKey }]
@@ -150,17 +150,21 @@ export class DataOwnerApiImpl implements DataOwnerApi {
       throw this.errorHandler.createErrorWithMessage(`Could not map user to iCure Base User version : Make sure your user info are valid`)
     }
 
-    const patientToUpdate = await this.patientApi
-      .getPatientRaw(user.patientId!)
-      .then((patient) => this.patientApi.initDelegationsAndEncryptionKeys(patient, userDto))
-      .then(async (patientWithDelsAndEncKeys) => {
+    const patientToUpdate = await this.patientApi.getPatientRaw(user.patientId!).then(async (patient) => {
+      if (Object.keys(patient.encryptionKeys ?? {}).length || Object.keys(patient.delegations ?? {}).length) {
+        return new Patient(
+          await this.cryptoApi.addDelegationsAndEncryptionKeys(null, patient, user.patientId!, user.patientId!, this.cryptoApi.randomUuid(), null)
+        )
+      } else {
+        const initialised = await this.patientApi.initDelegationsAndEncryptionKeys(patient, userDto)
         const currentPatient = await this.patientApi.getPatientRaw(user.patientId!)
         return new Patient({
           ...currentPatient,
-          delegations: Object.assign(patientWithDelsAndEncKeys.delegations ?? {}, currentPatient.delegations),
-          encryptionKeys: Object.assign(patientWithDelsAndEncKeys.encryptionKeys ?? {}, currentPatient.encryptionKeys),
+          delegations: Object.assign(initialised.delegations ?? {}, currentPatient.delegations),
+          encryptionKeys: Object.assign(initialised.encryptionKeys ?? {}, currentPatient.encryptionKeys),
         })
-      })
+      }
+    })
 
     await this.patientApi.modifyPatientWithUser(userDto, patientToUpdate)
     this.cryptoApi.emptyHcpCache(patientToUpdate.id!)

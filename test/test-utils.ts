@@ -1,10 +1,10 @@
-import { medTechApi, MedTechApi } from '../src/apis/MedTechApi'
+import { medTechApi, MedTechApi, MedTechApiBuilder } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
 import { hex2ua, KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
-import { Patient } from '../src/models/Patient'
+import { Patient, PotentiallyEncryptedPatient } from '../src/models/Patient'
 import { assert, expect } from 'chai'
 import { HealthcareElement } from '../src/models/HealthcareElement'
 import { Content } from '../src/models/Content'
@@ -159,8 +159,8 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
 function returnWithinBoundaries(element: number, upperBound: number, lowerBound: number): number {
   if (element <= upperBound && element >= lowerBound) return element
   else if (element > upperBound) return upperBound
-  if ( element <= upperBound && element >= lowerBound) return element
-  else if ( element > upperBound) return  upperBound
+  if (element <= upperBound && element >= lowerBound) return element
+  else if (element > upperBound) return upperBound
   else return lowerBound
 }
 
@@ -178,13 +178,17 @@ export class TestUtils {
     )
   }
 
-  static async createMedTechApiAndLoggedUserFor(iCureUrl: string, credentials: UserDetails): Promise<{ api: MedTechApi; user: User }> {
-    const medtechApi = await medTechApi()
+  static async createMedTechApiAndLoggedUserFor(
+    iCureUrl: string,
+    credentials: UserDetails,
+    additionalBuilderSteps: (b: MedTechApiBuilder) => MedTechApiBuilder = (b) => b
+  ): Promise<{ api: MedTechApi; user: User }> {
+    const builderApi = medTechApi()
       .withICureBaseUrl(iCureUrl)
       .withUserName(credentials.user)
       .withPassword(credentials.password)
       .withCrypto(webcrypto as any)
-      .build()
+    const medtechApi = await additionalBuilderSteps(builderApi).build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
     await medtechApi.cryptoApi
@@ -219,11 +223,14 @@ export class TestUtils {
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
-
-    if( (new Date().getTime() - this.lastRegisterCall) < registerThrottlingLimit) {
-      const throttlingWait = returnWithinBoundaries( (registerThrottlingLimit - this.registerAverageWait)*5 - this.registerAverageWait, registerThrottlingLimit, 0)
+    if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
+      const throttlingWait = returnWithinBoundaries(
+        (registerThrottlingLimit - this.registerAverageWait) * 5 - this.registerAverageWait,
+        registerThrottlingLimit,
+        0
+      )
       await sleep(throttlingWait)
-      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait)/5
+      this.registerAverageWait = this.registerAverageWait + (throttlingWait - this.registerAverageWait) / 5
     }
     this.lastRegisterCall = new Date().getTime()
 
@@ -329,23 +336,19 @@ export class TestUtils {
   }
 
   static createDataSamplesForPatient(medtechApi: MedTechApi, patient: Patient) {
-    return medtechApi.dataSampleApi.createOrModifyDataSamplesFor(
-      patient.id!,
-      [
-        new DataSample({
-          labels: new Set([new CodingReference({type: 'IC-TEST', code: 'TEST'})]),
-          content: {en: new Content({stringValue: 'Hello world'})},
-        }),
-        new DataSample({
-          labels: new Set([new CodingReference({type: 'IC-TEST', code: 'TEST'})]),
-          content: {en: new Content({stringValue: 'Good night world'})},
-        })
-      ]
-    )
+    return medtechApi.dataSampleApi.createOrModifyDataSamplesFor(patient.id!, [
+      new DataSample({
+        labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
+        content: { en: new Content({ stringValue: 'Hello world' }) },
+      }),
+      new DataSample({
+        labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
+        content: { en: new Content({ stringValue: 'Good night world' }) },
+      }),
+    ])
   }
 
-
-  static createHealthElementForPatient(medtechApi: MedTechApi, patient: Patient) {
+  static createHealthElementForPatient(medtechApi: MedTechApi, patient: PotentiallyEncryptedPatient) {
     return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         note: 'Hero Syndrome',

@@ -26,6 +26,7 @@ import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -214,13 +215,39 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
-    if (healthElementToModify.delegations == undefined || healthElementToModify.delegations[dataOwnerId].length == 0) {
+    if (!(healthElementToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
       throw this.errorHandler.createErrorWithMessage(
         `User ${currentUser.id} may not access healthcare element. Check that the healthcare element is owned by/shared to the actual user.`
       )
     }
 
-    if (healthElementToModify.delegations[delegatedTo] != undefined) {
+    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
+      this.cryptoApi,
+      healthcareElement.id!,
+      dataOwnerId,
+      delegatedTo,
+      healthElementToModify.delegations ?? {}
+    )
+    const newEncryptionKey = (
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(
+        this.cryptoApi,
+        healthcareElement.id!,
+        dataOwnerId,
+        delegatedTo,
+        healthElementToModify.encryptionKeys ?? {}
+      )
+    )[0]
+    const newCfk = (
+      await findAndDecryptPotentiallyUnknownKeysForDelegate(
+        this.cryptoApi,
+        healthcareElement.id!,
+        dataOwnerId,
+        delegatedTo,
+        healthElementToModify.cryptedForeignKeys ?? {}
+      )
+    )[0]
+
+    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
       return healthcareElement
     }
 
@@ -231,56 +258,24 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       )
     }
 
-    return this.cryptoApi
-      .extractDelegationsSFKs(healthElementToModify, dataOwnerId)
-      .then((delKeys) => {
-        if (delKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(
-            `User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`
-          )
-        }
-        return delKeys.extractedKeys.shift()!
-      })
-      .then(async (secretKey) => {
-        const newKeys = await this.cryptoApi.extendedDelegationsAndCryptedForeignKeys(
-          healthElementToModify,
-          healthcareElementPatient,
-          dataOwnerId,
-          delegatedTo,
-          secretKey
-        )
-        return new HealthElement({
-          ...healthElementToModify,
-          delegations: newKeys.delegations,
-          cryptedForeignKeys: newKeys.cryptedForeignKeys,
-        })
-      })
-      .then(async (heWithNewDelegationsAndCryptedFKeys) => {
-        return {
-          he: heWithNewDelegationsAndCryptedFKeys,
-          encKeys: await this.cryptoApi.extractEncryptionsSKs(heWithNewDelegationsAndCryptedFKeys, dataOwnerId),
-        }
-      })
-      .then(({ he, encKeys }) => {
-        if (encKeys.extractedKeys.length == 0) {
-          throw this.errorHandler.createErrorWithMessage(
-            `User ${currentUser.id} could not decrypt secret info of healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`
-          )
-        }
+    const heWithDelegations = await addManyDelegationKeys(
+      this.cryptoApi,
+      dataOwnerId,
+      delegatedTo,
+      healthElementToModify,
+      healthcareElementPatient,
+      newSecretIds,
+      newEncryptionKey
+    )
+    const updatedHe = await this.heApi.modifyHealthElementWithUser(currentUser, heWithDelegations)
 
-        return { he: he, encKey: encKeys.extractedKeys.shift()! }
-      })
-      .then(({ he, encKey }) => this.cryptoApi.addDelegationsAndEncryptionKeys(null, he, dataOwnerId, delegatedTo, null, encKey))
-      .then((healthElementWithUpdatedAccesses) => this.heApi.modifyHealthElementWithUser(currentUser, healthElementWithUpdatedAccesses))
-      .then((updatedHealthElement) => {
-        if (!updatedHealthElement) {
-          throw this.errorHandler.createErrorWithMessage(
-            `Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`
-          )
-        }
+    if (!updatedHe) {
+      throw this.errorHandler.createErrorWithMessage(
+        `Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`
+      )
+    }
 
-        return HealthcareElementMapper.toHealthcareElement(updatedHealthElement)!
-      })
+    return HealthcareElementMapper.toHealthcareElement(updatedHe)!
   }
 
   async concatenateFilterResults(

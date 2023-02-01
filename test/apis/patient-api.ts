@@ -7,38 +7,36 @@ import { HealthcareElement } from '../../src/models/HealthcareElement'
 import {
   getEnvironmentInitializer,
   getEnvVariables,
-  hcp1Username, hcp2Username, patUsername,
+  hcp1Username,
+  hcp2Username,
+  patUsername,
   setLocalStorage,
   TestUtils,
-  TestVars
+  TestVars,
 } from '../test-utils'
-import {MedTechApi} from "../../src/apis/MedTechApi";
-import {User} from "../../src/models/User";
-import {deepEquality} from "../../src/utils/equality";
+import { MedTechApi } from '../../src/apis/MedTechApi'
+import { User } from '../../src/models/User'
+import { deepEquality } from '../../src/utils/equality'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
+let env: TestVars | undefined
 let hcp1Api: MedTechApi | undefined
 let hcp1User: User | undefined
 
 describe('Patient API', () => {
-
-  before(async  function () {
+  before(async function () {
     this.timeout(600000)
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[hcp1Username]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcpApiAndUser.api
     hcp1User = hcpApiAndUser.user
-  });
+  })
 
   it('Can create a patient and a related Healthcare Element', async () => {
-
     const patientToCreate = new Patient({
       firstName: 'John',
       lastName: 'Snow',
@@ -71,14 +69,18 @@ describe('Patient API', () => {
   })
 
   it('Patient sharing its own information with HCP', async function () {
-    if (env!.backendType === "oss") this.skip()
-    const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcp1User!.healthcarePartyId!)
+    if (env!.backendType === 'oss') this.skip()
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.patAuthProcessId,
+      hcp1User!.healthcarePartyId!
+    )
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
 
-    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[hcp2Username]);
+    const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
@@ -94,9 +96,9 @@ describe('Patient API', () => {
     assert(hcpPatient.id == sharedPatient.id)
   }).timeout(60000)
 
-  it("Patient may not access info of another patient if he doesn't have any delegation", async function() {
-    if (env!.backendType === "oss") this.skip()
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername]);
+  it("Patient may not access info of another patient if he doesn't have any delegation", async function () {
+    if (env!.backendType === 'oss') this.skip()
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
@@ -129,9 +131,7 @@ describe('Patient API', () => {
   })
 
   it('HCP sharing healthcare element with another HCP', async () => {
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[hcp2Username]);
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
     const hcp2Api = hcp2ApiAndUser.api
     const hcp2User = hcp2ApiAndUser.user
 
@@ -147,9 +147,7 @@ describe('Patient API', () => {
   })
 
   it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[patUsername]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     console.log(patient.systemMetaData!.delegations)
@@ -159,17 +157,13 @@ describe('Patient API', () => {
 
     // Then
     assert(deepEquality(patient, sharedPatient))
-  });
+  })
 
   it('Delegator may not share info of Patient', async () => {
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[hcp2Username]);
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
     const hcp2Api = hcp2ApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env!.dataOwnerDetails[patUsername]);
+    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const patUser = patApiAndUser.user
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
@@ -192,6 +186,6 @@ describe('Patient API', () => {
     expect(hcp1Api!.patientApi.giveAccessTo(patient, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
     expect((await hcp1Api!.patientApi.getPatient(patient.id!)).note).to.equal(note)
     expect((await pApi.patientApi.getPatient(patient.id!)).note).to.equal(note)
-    expect((await h2api.patientApi.getPatient(patient.id!)).note).to.be.undefined
+    expect(h2api.patientApi.getPatient(patient.id!)).to.be.rejected
   }).timeout(60000)
 })
