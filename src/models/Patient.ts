@@ -76,56 +76,56 @@ export class Patient implements PotentiallyEncryptedPatient {
     this.systemMetaData = systemMetaData && new SystemMetaDataOwnerEncrypted(systemMetaData)
   }
 
-  'id'?: string | undefined
-  'rev'?: string | undefined
+  'id'?: string
+  'rev'?: string
   'identifiers': Identifier[]
-  'created'?: number | undefined
-  'modified'?: number | undefined
-  'author'?: string | undefined
-  'responsible'?: string | undefined
+  'created'?: number
+  'modified'?: number
+  'author'?: string
+  'responsible'?: string
   'labels': Set<CodingReference>
   'codes': Set<CodingReference>
-  'endOfLife'?: number | undefined
-  'deletionDate'?: number | undefined
-  'firstName'?: string | undefined
-  'lastName'?: string | undefined
+  'endOfLife'?: number
+  'deletionDate'?: number
+  'firstName'?: string
+  'lastName'?: string
   'names': PersonName[]
-  'companyName'?: string | undefined
+  'companyName'?: string
   'languages': string[]
   'addresses': Address[]
-  'civility'?: string | undefined
-  'gender'?: PatientGenderEnum | undefined
-  'birthSex'?: PatientBirthSexEnum | undefined
-  'mergeToPatientId'?: string | undefined
+  'civility'?: string
+  'gender'?: PatientGenderEnum
+  'birthSex'?: PatientBirthSexEnum
+  'mergeToPatientId'?: string
   'mergedIds': Set<string>
-  'alias'?: string | undefined
+  'alias'?: string
   'active': boolean
   'deactivationReason': PatientDeactivationReasonEnum
-  'ssin'?: string | undefined
-  'maidenName'?: string | undefined
-  'spouseName'?: string | undefined
-  'partnerName'?: string | undefined
-  'personalStatus'?: PatientPersonalStatusEnum | undefined
-  'dateOfBirth'?: number | undefined
-  'dateOfDeath'?: number | undefined
-  'placeOfBirth'?: string | undefined
-  'placeOfDeath'?: string | undefined
-  'deceased'?: boolean | undefined
-  'education'?: string | undefined
-  'profession'?: string | undefined
-  'note'?: string | undefined
-  'administrativeNote'?: string | undefined
-  'nationality'?: string | undefined
-  'race'?: string | undefined
-  'ethnicity'?: string | undefined
-  'picture'?: ArrayBuffer | undefined
-  'externalId'?: string | undefined
+  'ssin'?: string
+  'maidenName'?: string
+  'spouseName'?: string
+  'partnerName'?: string
+  'personalStatus'?: PatientPersonalStatusEnum
+  'dateOfBirth'?: number
+  'dateOfDeath'?: number
+  'placeOfBirth'?: string
+  'placeOfDeath'?: string
+  'deceased'?: boolean
+  'education'?: string
+  'profession'?: string
+  'note'?: string
+  'administrativeNote'?: string
+  'nationality'?: string
+  'race'?: string
+  'ethnicity'?: string
+  'picture'?: ArrayBuffer
+  'externalId'?: string
   'partnerships': Partnership[]
   'patientHealthCareParties': PatientHealthCareParty[]
   'patientProfessions': CodingReference[]
   'parameters': { [key: string]: string[] }
   'properties': Set<Property>
-  'systemMetaData'?: SystemMetaDataOwnerEncrypted | undefined
+  'systemMetaData'?: SystemMetaDataOwnerEncrypted
 
   marshal(): IPatient {
     return {
@@ -200,56 +200,56 @@ export class EncryptedPatient implements PotentiallyEncryptedPatient {
     this.systemMetaData = systemMetaData && new SystemMetaDataOwnerEncrypted(systemMetaData)
   }
 
-  'id'?: string | undefined
-  'rev'?: string | undefined
+  'id'?: string
+  'rev'?: string
   'identifiers': Identifier[]
-  'created'?: number | undefined
-  'modified'?: number | undefined
-  'author'?: string | undefined
-  'responsible'?: string | undefined
+  'created'?: number
+  'modified'?: number
+  'author'?: string
+  'responsible'?: string
   'labels': Set<CodingReference>
   'codes': Set<CodingReference>
-  'endOfLife'?: number | undefined
-  'deletionDate'?: number | undefined
-  'firstName'?: string | undefined
-  'lastName'?: string | undefined
+  'endOfLife'?: number
+  'deletionDate'?: number
+  'firstName'?: string
+  'lastName'?: string
   'names': PersonName[]
-  'companyName'?: string | undefined
+  'companyName'?: string
   'languages': string[]
   'addresses': Address[]
-  'civility'?: string | undefined
-  'gender'?: PatientGenderEnum | undefined
-  'birthSex'?: PatientBirthSexEnum | undefined
-  'mergeToPatientId'?: string | undefined
+  'civility'?: string
+  'gender'?: PatientGenderEnum
+  'birthSex'?: PatientBirthSexEnum
+  'mergeToPatientId'?: string
   'mergedIds': Set<string>
-  'alias'?: string | undefined
+  'alias'?: string
   'active': boolean
   'deactivationReason': PatientDeactivationReasonEnum
-  'ssin'?: string | undefined
-  'maidenName'?: string | undefined
-  'spouseName'?: string | undefined
-  'partnerName'?: string | undefined
-  'personalStatus'?: PatientPersonalStatusEnum | undefined
-  'dateOfBirth'?: number | undefined
-  'dateOfDeath'?: number | undefined
-  'placeOfBirth'?: string | undefined
-  'placeOfDeath'?: string | undefined
-  'deceased'?: boolean | undefined
-  'education'?: string | undefined
-  'profession'?: string | undefined
-  'note'?: string | undefined
-  'administrativeNote'?: string | undefined
-  'nationality'?: string | undefined
-  'race'?: string | undefined
-  'ethnicity'?: string | undefined
-  'picture'?: ArrayBuffer | undefined
-  'externalId'?: string | undefined
+  'ssin'?: string
+  'maidenName'?: string
+  'spouseName'?: string
+  'partnerName'?: string
+  'personalStatus'?: PatientPersonalStatusEnum
+  'dateOfBirth'?: number
+  'dateOfDeath'?: number
+  'placeOfBirth'?: string
+  'placeOfDeath'?: string
+  'deceased'?: boolean
+  'education'?: string
+  'profession'?: string
+  'note'?: string
+  'administrativeNote'?: string
+  'nationality'?: string
+  'race'?: string
+  'ethnicity'?: string
+  'picture'?: ArrayBuffer
+  'externalId'?: string
   'partnerships': Partnership[]
   'patientHealthCareParties': PatientHealthCareParty[]
   'patientProfessions': CodingReference[]
   'parameters': { [key: string]: string[] }
   'properties': Set<Property>
-  'systemMetaData'?: SystemMetaDataOwnerEncrypted | undefined
+  'systemMetaData'?: SystemMetaDataOwnerEncrypted
 
   marshal(): IPatient {
     return {

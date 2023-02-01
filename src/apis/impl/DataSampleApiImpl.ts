@@ -40,7 +40,7 @@ import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import toDelegationDto = DelegationMapper.toDelegationDto
-import { extendMany, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -534,7 +534,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
     }
 
-    const contactWithDelegations = await extendMany(
+    const contactWithDelegations = await addManyDelegationKeys(
       this.crypto,
       dataOwnerId,
       delegatedTo,
