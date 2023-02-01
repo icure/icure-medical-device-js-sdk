@@ -110,5 +110,5 @@ export interface PatientApi {
    * Similarly to getPatientAndTryDecrypt this method is useful when a patient needs to update his own data before
    * an hcp gave him access to his own encrypted data.
    */
-  modifyEncryptedPatient(modifiedPatient: EncryptedPatient): Promise<EncryptedPatient>
+  modifyPotentiallyEncryptedPatient(modifiedPatient: PotentiallyEncryptedPatient): Promise<PotentiallyEncryptedPatient>
 }

@@ -55,7 +55,7 @@ export class PatientApiImpl implements PatientApi {
     return this._createOrModifyPatient(dto)
   }
 
-  async modifyEncryptedPatient(modifiedPatient: EncryptedPatient): Promise<EncryptedPatient> {
+  async modifyPotentiallyEncryptedPatient(modifiedPatient: PotentiallyEncryptedPatient): Promise<PotentiallyEncryptedPatient> {
     const dto = PatientMapper.toPatientDto(modifiedPatient)
     if (!dto) throw this.errorHandler.createErrorWithMessage(`Could not convert patient to DTO.\n${JSON.stringify(modifiedPatient)}`)
     return this._createOrModifyPatient(dto)

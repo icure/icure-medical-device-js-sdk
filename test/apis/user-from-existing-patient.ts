@@ -291,20 +291,11 @@ describe('A patient user', () => {
     // ...can modify only non-encrypted data of patient and...
     const encryptedPatient = await patientApi.patientApi.getPatientAndTryDecrypt(patient.id!)
     expect(encryptedPatient).is.instanceof(EncryptedPatient)
-    expect(
-      patientApi.patientApi.modifyEncryptedPatient(
-        new EncryptedPatient({
-          ...encryptedPatient,
-          note: 'This is not allowed',
-        })
-      )
-    ).to.be.rejected
-    const modifiedPatient = await patientApi.patientApi.modifyEncryptedPatient(
-      new EncryptedPatient({
-        ...encryptedPatient,
-        lastName: 'Ghost',
-      })
-    )
+    encryptedPatient.note = 'This is not allowed'
+    expect(patientApi.patientApi.modifyPotentiallyEncryptedPatient(encryptedPatient)).to.be.rejected
+    encryptedPatient.note = undefined
+    encryptedPatient.lastName = 'Ghost'
+    const modifiedPatient = await patientApi.patientApi.modifyPotentiallyEncryptedPatient(encryptedPatient)
     expect((await patientApi.patientApi.getPatientAndTryDecrypt(patient.id!)).lastName).to.equal('Ghost')
     expect((await hcp1Api.patientApi.getPatient(patient.id!)).note).to.equal(patientNote) // Should not destroy encrypted data
     // ...can create medical data
