@@ -1,4 +1,4 @@
-import { EncryptedPatient, Patient, PotentiallyEncryptedPatient } from '../../models/Patient'
+import { Patient, PotentiallyEncryptedPatient } from '../../models/Patient'
 import { PaginatedListPatient } from '../../models/PaginatedListPatient'
 import { PatientApi } from '../PatientApi'
 import { FilterChainPatient, IccContactXApi, IccCryptoXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi, Patient as PatientDto } from '@icure/api'
@@ -11,7 +11,7 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { extendMany, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -52,16 +52,18 @@ export class PatientApiImpl implements PatientApi {
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
     const dto = PatientMapper.toPatientDto(patient)
     if (!dto) throw this.errorHandler.createErrorWithMessage(`Could not convert patient to DTO.\n${JSON.stringify(patient)}`)
-    return this._createOrModifyPatient(dto)
+    const modified = await this._createOrModifyPatient(dto, true)
+    if (modified instanceof Patient) return modified
+    throw this.errorHandler.createErrorWithMessage(`Could not decrypt patient after modification.\noriginal: ${patient}\nmodified: ${modified}`)
   }
 
   async modifyPotentiallyEncryptedPatient(modifiedPatient: PotentiallyEncryptedPatient): Promise<PotentiallyEncryptedPatient> {
     const dto = PatientMapper.toPatientDto(modifiedPatient)
     if (!dto) throw this.errorHandler.createErrorWithMessage(`Could not convert patient to DTO.\n${JSON.stringify(modifiedPatient)}`)
-    return this._createOrModifyPatient(dto)
+    return this._createOrModifyPatient(dto, modifiedPatient instanceof Patient)
   }
 
-  private async _createOrModifyPatient(patientDto: PatientDto) {
+  private async _createOrModifyPatient(patientDto: PatientDto, isDecrypted: boolean): Promise<PotentiallyEncryptedPatient> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -75,7 +77,7 @@ export class PatientApiImpl implements PatientApi {
         })
 
     if (createdOrUpdatedPatient) {
-      return PatientMapper.toPatient(createdOrUpdatedPatient)!
+      return isDecrypted ? PatientMapper.toPatient(createdOrUpdatedPatient)! : PatientMapper.toEncryptedPatient(createdOrUpdatedPatient)!
     }
 
     throw this.errorHandler.createErrorWithMessage(`Could not create / modify patient ${patientDto.id} with user ${currentUser.id}`)
@@ -191,7 +193,15 @@ export class PatientApiImpl implements PatientApi {
       return patient
     }
 
-    const patientWithUpdatedAccesses = await extendMany(this.cryptoApi, dataOwnerId, delegatedTo, patient, null, newSecretIds, newEncryptionKey)
+    const patientWithUpdatedAccesses = await addManyDelegationKeys(
+      this.cryptoApi,
+      dataOwnerId,
+      delegatedTo,
+      patient,
+      null,
+      newSecretIds,
+      newEncryptionKey
+    )
     const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
     if (!updatedPatient) {
       throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patient.id} information`)
