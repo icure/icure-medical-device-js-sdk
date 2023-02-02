@@ -34,13 +34,12 @@ import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { UtiDetector } from '../../utils/utiDetector'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
-import { toMap, toMapArrayTransform } from '../../mappers/utils'
-import { DelegationMapper } from '../../mappers/delegation'
+import { toMap } from '../../mappers/utils'
 import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import toDelegationDto = DelegationMapper.toDelegationDto
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+
+import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate, systemMetadataToEncryptedEntityStub } from '../../utils/crypto'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -158,9 +157,15 @@ export class DataSampleApiImpl implements DataSampleApi {
       })
     } else {
       const contactToCreate = await this.createContactDtoUsing(currentUser, existingPatient, dataSamples, existingContact)
-      createdOrModifiedContact = await this.contactApi.createContactWithUser(currentUser, contactToCreate).catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
+      createdOrModifiedContact = await this.contactApi
+        .createContactWithUser(currentUser, contactToCreate)
+        .catch((e) => {
+          throw this.errorHandler.createErrorFromAny(e)
+        })
+        .then((x) => {
+          if (!x) throw this.errorHandler.createErrorWithMessage(`Unexpected response for created contact: ${x}`)
+          return x
+        })
     }
 
     createdOrModifiedContact.services!.forEach((service) => this.contactsCache.put(service.id!, createdOrModifiedContact))
@@ -203,7 +208,7 @@ export class DataSampleApiImpl implements DataSampleApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(user)
     if (!dataOwnerId) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.'
@@ -232,13 +237,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     if (existingContact != null) {
       baseContact = {
         ...existingContact,
-        id: this.crypto.randomUuid(),
+        id: this.crypto.primitives.randomUuid(),
         rev: undefined,
         modified: Date.now(),
       }
     } else {
       baseContact = await this.contactApi
-        .newInstance(currentUser, contactPatient, new ContactDto({ id: this.crypto.randomUuid() }), true)
+        .newInstance(currentUser, contactPatient, new ContactDto({ id: this.crypto.primitives.randomUuid() }), true)
         .catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
         })
@@ -349,7 +354,7 @@ export class DataSampleApiImpl implements DataSampleApi {
         user,
         patient,
         new ContactDto({
-          id: this.crypto.randomUuid(),
+          id: this.crypto.primitives.randomUuid(),
           services: services.map(
             (service) =>
               new ServiceDto({
@@ -365,7 +370,10 @@ export class DataSampleApiImpl implements DataSampleApi {
         throw this.errorHandler.createErrorFromAny(e)
       })
 
-    return this.contactApi.createContactWithUser(user, contactToDeleteServices)
+    return this.contactApi.createContactWithUser(user, contactToDeleteServices).then((x) => {
+      if (!x) throw this.errorHandler.createErrorWithMessage(`Unexpected response for created contact: ${x}`)
+      return x
+    })
   }
 
   async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
@@ -444,11 +452,11 @@ export class DataSampleApiImpl implements DataSampleApi {
       }
 
       const documentToCreate = new DocumentDto({
-        id: this.crypto.randomUuid(),
+        id: this.crypto.primitives.randomUuid(),
         name: documentName,
         version: documentVersion,
         externalUuid: documentExternalUuid,
-        hash: this.crypto.sha256(body),
+        hash: this.crypto.primitives.sha256(body),
         mainUti: UtiDetector.getUtiFor(documentName),
       })
 
@@ -487,7 +495,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(currentUser)
     const contactOfDataSample = (await this._getContactOfDataSample(currentUser, dataSample))[1]
 
     if (contactOfDataSample == undefined)
@@ -592,24 +600,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(currentUser)
 
     if (!dataSample?.systemMetaData?.cryptedForeignKeys) {
       return undefined
     }
-    const cfksForAllDelegates = dataSample.systemMetaData.cryptedForeignKeys
 
-    if (!cfksForAllDelegates || !Object.keys(cfksForAllDelegates).length) {
-      console.log(`There is no cryptedForeignKeys in dataSample (${dataSample.id})`)
-      return undefined
-    }
-    return (
-      await this.crypto.extractKeysFromDelegationsForHcpHierarchy(
-        dataOwnerId,
-        dataSample.id!,
-        toMapArrayTransform(cfksForAllDelegates, toDelegationDto)!
-      )
-    ).extractedKeys[0]
+    return (await this.crypto.entities.owningEntityIdsOf(systemMetadataToEncryptedEntityStub(dataSample.systemMetaData), dataOwnerId))[0]
   }
 
   private async _getContactOfDataSample(currentUser: UserDto, dataSample: DataSample): Promise<[boolean, ContactDto?]> {
@@ -617,18 +614,16 @@ export class DataSampleApiImpl implements DataSampleApi {
     if (cachedContact) {
       return [true, cachedContact]
     } else {
-      let contact: ContactDto = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined
+      let contact = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined
       return [false, contact]
     }
   }
 
   private async _getPatientIdOfContact(currentUser: UserDto, contactDto: ContactDto): Promise<string | undefined> {
-    const keysFromDeleg = await this.crypto
-      .extractKeysHierarchyFromDelegationLikes(this.dataOwnerApi.getDataOwnerOf(currentUser), contactDto.id!, contactDto.cryptedForeignKeys!)
-      .catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
-    return keysFromDeleg.map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)).find((key) => key != undefined)
+    const keysFromDeleg = await this.crypto.entities.owningEntityIdsOf(contactDto, this.dataOwnerApi.getDataOwnerIdOf(currentUser)).catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+    return keysFromDeleg[0]
   }
 
   private async _findContactsForDataSampleIds(currentUser: UserDto, dataSampleIds: Array<string>): Promise<Array<ContactDto>> {
@@ -692,15 +687,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   private async _getDocumentEncryptionKeys(currentUser: UserDto, documentDto: DocumentDto): Promise<Array<string>> {
-    const keysFromDeleg = await this.crypto.extractKeysHierarchyFromDelegationLikes(
-      currentUser.healthcarePartyId!,
-      documentDto.id!,
-      documentDto.encryptionKeys!
-    )
-    return keysFromDeleg
-      .map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined))
-      .filter((key) => key != undefined)
-      .map((key) => key!)
+    return await this.crypto.entities.encryptionKeysOf(documentDto, this.dataOwnerApi.getDataOwnerIdOf(currentUser))
   }
 
   private async _getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string): Promise<DocumentDto> {

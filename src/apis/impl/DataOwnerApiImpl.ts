@@ -71,7 +71,7 @@ export class DataOwnerApiImpl implements DataOwnerApi {
 
   async initCryptoFor(user: User, keyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]> {
     const dataOwnerId = this.getDataOwnerIdOf(user)
-    const dataOwner = await this.cryptoApi.getDataOwner(dataOwnerId).catch((e) => {
+    const dataOwner = await this.dataOwnerApi.getDataOwner(dataOwnerId).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
 

@@ -200,19 +200,15 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async _getPatientIdOfHealthElement(currentUser: UserDto, healthElement: HealthElement): Promise<string | undefined> {
-    const keysFromDeleg = await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
-      this.dataOwnerApi.getDataOwnerOf(currentUser),
-      healthElement.id!,
-      healthElement.cryptedForeignKeys!
-    )
-    return keysFromDeleg.map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)).find((key) => key != undefined)
+    const keysFromDeleg = await this.cryptoApi.entities.owningEntityIdsOf(healthElement, this.dataOwnerApi.getDataOwnerIdOf(currentUser))
+    return keysFromDeleg[0]
   }
 
   async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(currentUser)
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
     if (!(healthElementToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
@@ -304,7 +300,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi.'
       )
     }
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(user)
     if (!dataOwnerId) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
@@ -331,7 +327,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       filter,
       eventFired,
       options,
-      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerOf(currentUser), [encrypted]))[0]
+      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerIdOf(currentUser), [encrypted]))[0]
     ).then((rs) => new ConnectionImpl(rs))
   }
 }

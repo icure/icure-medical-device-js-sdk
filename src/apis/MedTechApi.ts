@@ -168,7 +168,7 @@ export class MedTechApi {
             authProcessBySmsId,
             this._errorHandler,
             this._sanitizer,
-            api.cryptoApi.crypto,
+            api.cryptoApi.primitives.crypto,
             this._storage,
             this._keyStorage
           )
@@ -263,6 +263,7 @@ export class MedTechApi {
       publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
       privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
     }
+    // FIXME deprecated
     await this.cryptoApi.cacheKeyPair(jwk)
     await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
   }
@@ -386,7 +387,7 @@ export const medTechApi = (api?: MedTechApi) => {
   if (api) {
     return apiBuilder
       .withICureBaseUrl(api.iCureBaseUrl)
-      .withCrypto(api.cryptoApi.crypto)
+      .withCrypto(api.cryptoApi.primitives.crypto)
       .withUserName(api.username)
       .withPassword(api.password)
       .withStorage(api.storage)

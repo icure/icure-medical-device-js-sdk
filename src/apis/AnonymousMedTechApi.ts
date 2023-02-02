@@ -41,7 +41,7 @@ export class AnonymousMedTechApi {
       authProcessBySmsId,
       this._errorHandler,
       this._sanitizer,
-      api.cryptoApi.crypto,
+      api.cryptoApi.primitives.crypto,
       storage,
       keyStorage
     )
@@ -57,9 +57,9 @@ export class AnonymousMedTechApi {
   }
 
   async generateRSAKeypair(): Promise<{ privateKey: string; publicKey: string }> {
-    const { publicKey, privateKey } = await this.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(publicKey, 'spki'))
-    const privateKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(privateKey, 'pkcs8'))
+    const { publicKey, privateKey } = await this.cryptoApi.primitives.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await this.cryptoApi.primitives.RSA.exportKey(publicKey, 'spki'))
+    const privateKeyHex = ua2hex(await this.cryptoApi.primitives.RSA.exportKey(privateKey, 'pkcs8'))
 
     return { privateKey: privateKeyHex, publicKey: publicKeyHex }
   }
