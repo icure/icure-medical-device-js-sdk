@@ -38,8 +38,7 @@ import { toMap } from '../../mappers/utils'
 import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
-
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate, systemMetadataToEncryptedEntityStub } from '../../utils/crypto'
+import { systemMetadataToEncryptedEntityStub } from '../../utils/crypto'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -507,49 +506,20 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} can't access data sample ${dataSample.id}`)
     }
 
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.crypto,
-      contactOfDataSample.id!,
-      dataOwnerId,
-      delegatedTo,
-      contactOfDataSample.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.crypto,
-        contactOfDataSample.id!,
-        dataOwnerId,
-        delegatedTo,
-        contactOfDataSample.encryptionKeys ?? {}
-      )
-    )[0]
-    const newCfk = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.crypto,
-        contactOfDataSample.id!,
-        dataOwnerId,
-        delegatedTo,
-        contactOfDataSample.cryptedForeignKeys ?? {}
-      )
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
-      return dataSample
-    }
-
     const contactPatient = await this._getPatientOfContact(currentUser, contactOfDataSample)
     if (contactPatient == undefined) {
       throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
     }
 
-    const contactWithDelegations = await addManyDelegationKeys(
-      this.crypto,
-      dataOwnerId,
-      delegatedTo,
+    const secretIds = await this.crypto.entities.secretIdsOf(contactOfDataSample, dataOwnerId)
+    const encryptionKeys = await this.crypto.entities.encryptionKeysOf(contactOfDataSample, dataOwnerId)
+    const owningEntityIds = await this.crypto.entities.owningEntityIdsOf(contactOfDataSample, dataOwnerId)
+    const contactWithDelegations = await this.crypto.entities.entityWithExtendedEncryptedMetadata(
       contactOfDataSample,
-      contactPatient,
-      newSecretIds,
-      newEncryptionKey
+      delegatedTo,
+      secretIds,
+      encryptionKeys,
+      owningEntityIds
     )
     const updatedContact: ContactDto = await this.contactApi.modifyContactWithUser(currentUser, contactWithDelegations)
 
