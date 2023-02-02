@@ -11,7 +11,6 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -178,29 +177,15 @@ export class PatientApiImpl implements PatientApi {
       )
     }
 
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.cryptoApi,
-      patient.id!,
-      dataOwnerId,
-      delegatedTo,
-      patient.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(this.cryptoApi, patient.id!, dataOwnerId, delegatedTo, patient.encryptionKeys ?? {})
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey) {
-      return patient
-    }
-
-    const patientWithUpdatedAccesses = await addManyDelegationKeys(
-      this.cryptoApi,
-      dataOwnerId,
-      delegatedTo,
+    const secretIds = await this.cryptoApi.entities.secretIdsOf(patient, dataOwnerId)
+    const encryptionKeys = await this.cryptoApi.entities.encryptionKeysOf(patient, dataOwnerId)
+    const owningEntityIds = await this.cryptoApi.entities.owningEntityIdsOf(patient, dataOwnerId)
+    const patientWithUpdatedAccesses = await this.cryptoApi.entities.entityWithExtendedEncryptedMetadata(
       patient,
-      null,
-      newSecretIds,
-      newEncryptionKey
+      delegatedTo,
+      secretIds,
+      encryptionKeys,
+      owningEntityIds
     )
     const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
     if (!updatedPatient) {

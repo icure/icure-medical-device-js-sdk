@@ -26,7 +26,6 @@ import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -217,36 +216,6 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       )
     }
 
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.cryptoApi,
-      healthcareElement.id!,
-      dataOwnerId,
-      delegatedTo,
-      healthElementToModify.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.cryptoApi,
-        healthcareElement.id!,
-        dataOwnerId,
-        delegatedTo,
-        healthElementToModify.encryptionKeys ?? {}
-      )
-    )[0]
-    const newCfk = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.cryptoApi,
-        healthcareElement.id!,
-        dataOwnerId,
-        delegatedTo,
-        healthElementToModify.cryptedForeignKeys ?? {}
-      )
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
-      return healthcareElement
-    }
-
     const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
     if (healthcareElementPatient == undefined) {
       throw this.errorHandler.createErrorWithMessage(
@@ -254,15 +223,17 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       )
     }
 
-    const heWithDelegations = await addManyDelegationKeys(
-      this.cryptoApi,
-      dataOwnerId,
-      delegatedTo,
+    const secretIds = await this.cryptoApi.entities.secretIdsOf(healthElementToModify, dataOwnerId)
+    const encryptionKeys = await this.cryptoApi.entities.encryptionKeysOf(healthElementToModify, dataOwnerId)
+    const owningEntityIds = await this.cryptoApi.entities.owningEntityIdsOf(healthElementToModify, dataOwnerId)
+    const heWithDelegations = await this.cryptoApi.entities.entityWithExtendedEncryptedMetadata(
       healthElementToModify,
-      healthcareElementPatient,
-      newSecretIds,
-      newEncryptionKey
+      delegatedTo,
+      secretIds,
+      encryptionKeys,
+      owningEntityIds
     )
+
     const updatedHe = await this.heApi.modifyHealthElementWithUser(currentUser, heWithDelegations)
 
     if (!updatedHe) {
