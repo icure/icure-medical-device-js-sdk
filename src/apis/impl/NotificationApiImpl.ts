@@ -12,7 +12,7 @@ import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
-import {deepEquality} from "../../utils/equality";
+import { deepEquality } from '../../utils/equality'
 
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
@@ -128,14 +128,14 @@ export class NotificationApiImpl implements NotificationApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+    if (!this.dataOwnerApi.getDataOwnerIdOf(user)) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
     const filter = await new NotificationFilter()
       .afterDate(this._findAfterDateFilterValue(fromDate))
-      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .forDataOwner(this.dataOwnerApi.getDataOwnerIdOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }

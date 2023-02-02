@@ -191,6 +191,7 @@ export class TestUtils {
     const medtechApi = await additionalBuilderSteps(builderApi).build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
+    // FIXME deprecated
     await medtechApi.cryptoApi
       .loadKeyPairsAsTextInBrowserLocalStorage(
         foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
@@ -279,6 +280,7 @@ export class TestUtils {
     }
 
     const foundUser = await result.medTechApi.userApi.getLoggedUser()
+    // FIXME deprecated
     await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
       hex2ua(result.keyPairs[0].privateKey)

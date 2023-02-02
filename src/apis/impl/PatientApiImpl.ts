@@ -170,7 +170,7 @@ export class PatientApiImpl implements PatientApi {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(currentUser)
 
     if (patient.id !== dataOwnerId && !(patient.delegations?.[dataOwnerId]?.length ?? 0)) {
       throw this.errorHandler.createErrorWithMessage(
@@ -219,13 +219,13 @@ export class PatientApiImpl implements PatientApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    if (!this.dataOwnerApi.getDataOwnerOf(currentUser)) {
+    if (!this.dataOwnerApi.getDataOwnerIdOf(currentUser)) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
     return this.patientApi
-      .share(currentUser, patientId, this.dataOwnerApi.getDataOwnerOf(currentUser), [patientId], { [patientId]: ['all'] })
+      .share(currentUser, patientId, this.dataOwnerApi.getDataOwnerIdOf(currentUser), [patientId], { [patientId]: ['all'] })
       .then((res) => {
         return {
           patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,

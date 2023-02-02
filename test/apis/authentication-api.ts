@@ -196,9 +196,9 @@ describe('Authentication API', () => {
 
     const newApi = await newMedTechApi()
 
-    const { publicKey, privateKey } = await newApi.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
-    const privKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
+    const { publicKey, privateKey } = await newApi.cryptoApi.primitives.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(publicKey!, 'spki'))
+    const privKeyHex = ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(privateKey!, 'pkcs8'))
 
     try {
       await newApi.initUserCrypto({ privateKey: privKeyHex, publicKey: publicKeyHex })
@@ -276,6 +276,7 @@ describe('Authentication API', () => {
     }
 
     const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
+    // FIXME deprecated
     await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
       hex2ua(loginAuthResult.keyPairs[0].privateKey)
@@ -297,6 +298,7 @@ describe('Authentication API', () => {
     }
 
     // When he gave access back with his previous key
+    // FIXME deprecated
     patApiAndUser.api.cryptoApi.emptyHcpCache(currentPatient.id!)
     const accessBack = await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
     expect(accessBack).to.be.true
@@ -347,6 +349,7 @@ describe('Authentication API', () => {
     }
 
     const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
+    // FIXME deprecated
     await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
       hex2ua(loginAuthResult.keyPairs[0].privateKey)

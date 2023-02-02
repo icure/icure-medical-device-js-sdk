@@ -55,6 +55,7 @@ describe('A Healthcare Party', () => {
       .build()
 
     hcp1User = await hcp1Api.userApi.getLoggedUser()
+    // FIXME deprecated
     await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
       hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
       hex2ua(env.dataOwnerDetails[hcp1Username].privateKey)
@@ -284,6 +285,7 @@ describe('A patient user', () => {
     )
     await sleep(3000)
     const patientApi = authResult!.medTechApi
+    // FIXME deprecated
     patientApi.cryptoApi.emptyHcpCache(patient.id!)
 
     // When the patient has not been given access to his data he...
@@ -306,6 +308,7 @@ describe('A patient user', () => {
     // ...but it can be shared
     await patientApi.healthcareElementApi.giveAccessTo(heByPatient, hcp1.id!)
     await hcp1Api.healthcareElementApi.giveAccessTo(heByHcp, patient.id!)
+    // FIXME deprecated
     hcp1Api.cryptoApi.emptyHcpCache(patient.id!)
     hcp1Api.cryptoApi.emptyHcpCache(hcp1.id!)
     expect((await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).note).to.not.be.undefined

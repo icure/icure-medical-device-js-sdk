@@ -29,8 +29,8 @@ describe('Healthcare professional', () => {
       .withCrypto(webcrypto as any)
       .build()
 
-    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.RSA.generateKeyPair()
-    const keyPair = await medtechApi.cryptoApi.RSA.exportKeys(rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey }, 'jwk', 'jwk')
+    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.primitives.RSA.generateKeyPair()
+    const keyPair = await medtechApi.cryptoApi.primitives.RSA.exportKeys(rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey }, 'jwk', 'jwk')
 
     const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(
       new HealthcareProfessional({
