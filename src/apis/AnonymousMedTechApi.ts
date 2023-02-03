@@ -7,13 +7,16 @@ import { ErrorHandler } from '../services/ErrorHandler'
 import { Sanitizer } from '../services/Sanitizer'
 import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
+import { CryptoPrimitives } from '@icure/api/icc-x-api/crypto/CryptoPrimitives'
+import { MedTechCryptoStrategies } from '../services/MedTechCryptoStrategies'
+import { SimpleMedTechCryptoStrategies } from '../services/impl/SimpleMedTechCryptoStrategies'
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string
   private readonly _msgGwUrl: string
   private readonly _msgGwSpecId: string
   private readonly _authenticationApi: AuthenticationApi
-  private readonly _cryptoApi: IccCryptoXApi
+  private readonly _cryptoPrimitives: CryptoPrimitives
   private readonly _errorHandler: ErrorHandler
   private readonly _sanitizer: Sanitizer
 
@@ -23,9 +26,10 @@ export class AnonymousMedTechApi {
     msgGwSpecId: string,
     authProcessByEmailId: string,
     authProcessBySmsId: string,
-    api: { cryptoApi: IccCryptoXApi },
+    cryptoPrimitives: CryptoPrimitives,
     storage: StorageFacade<string>,
-    keyStorage: KeyStorageFacade
+    keyStorage: KeyStorageFacade,
+    cryptoStrategies: MedTechCryptoStrategies
   ) {
     this._iCureUrlPath = iCureUrlPath
     this._msgGwUrl = msgGwUrl
@@ -41,15 +45,12 @@ export class AnonymousMedTechApi {
       authProcessBySmsId,
       this._errorHandler,
       this._sanitizer,
-      api.cryptoApi.primitives.crypto,
+      cryptoPrimitives.crypto,
       storage,
-      keyStorage
+      keyStorage,
+      cryptoStrategies
     )
-    this._cryptoApi = api.cryptoApi
-  }
-
-  get cryptoApi(): IccCryptoXApi {
-    return this._cryptoApi
+    this._cryptoPrimitives = cryptoPrimitives
   }
 
   get authenticationApi(): AuthenticationApi {
@@ -57,9 +58,9 @@ export class AnonymousMedTechApi {
   }
 
   async generateRSAKeypair(): Promise<{ privateKey: string; publicKey: string }> {
-    const { publicKey, privateKey } = await this.cryptoApi.primitives.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await this.cryptoApi.primitives.RSA.exportKey(publicKey, 'spki'))
-    const privateKeyHex = ua2hex(await this.cryptoApi.primitives.RSA.exportKey(privateKey, 'pkcs8'))
+    const { publicKey, privateKey } = await this._cryptoPrimitives.RSA.generateKeyPair()
+    const publicKeyHex = ua2hex(await this._cryptoPrimitives.RSA.exportKey(publicKey, 'spki'))
+    const privateKeyHex = ua2hex(await this._cryptoPrimitives.RSA.exportKey(privateKey, 'pkcs8'))
 
     return { privateKey: privateKeyHex, publicKey: publicKeyHex }
   }
@@ -75,6 +76,7 @@ export class AnonymousMedTechApiBuilder {
   private crypto?: Crypto
   private storage?: StorageFacade<string>
   private keyStorage?: KeyStorageFacade
+  private cryptoStrategies: MedTechCryptoStrategies = new SimpleMedTechCryptoStrategies([])
 
   withICureBaseUrl(newICureBaseUrl: string): AnonymousMedTechApiBuilder {
     this.iCureBaseUrl = newICureBaseUrl.search('/rest/v[1-2]') == -1 ? newICureBaseUrl + '/rest/v2' : newICureBaseUrl
@@ -116,6 +118,11 @@ export class AnonymousMedTechApiBuilder {
     return this
   }
 
+  withCryptoStrategies(cryptoStrategies: MedTechCryptoStrategies): AnonymousMedTechApiBuilder {
+    this.cryptoStrategies = cryptoStrategies
+    return this
+  }
+
   preventCookieUsage(): AnonymousMedTechApiBuilder {
     this._preventCookieUsage = true
     return this
@@ -135,18 +142,16 @@ export class AnonymousMedTechApiBuilder {
     const _storage = this.storage ?? new LocalStorageImpl()
     const _keyStorage = this.keyStorage ?? new KeyStorageImpl(_storage)
 
-    return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage, undefined, _storage, _keyStorage).then(
-      (api) =>
-        new AnonymousMedTechApi(
-          this.iCureBaseUrl,
-          this.msgGwUrl!,
-          this.msgGwSpecId!,
-          this.authProcessByEmailId!,
-          this.authProcessBySmsId!,
-          api,
-          _storage,
-          _keyStorage
-        )
+    return new AnonymousMedTechApi(
+      this.iCureBaseUrl,
+      this.msgGwUrl!,
+      this.msgGwSpecId!,
+      this.authProcessByEmailId!,
+      this.authProcessBySmsId!,
+      new CryptoPrimitives(this.crypto),
+      _storage,
+      _keyStorage,
+      this.cryptoStrategies
     )
   }
 }

@@ -7,9 +7,10 @@ import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
 import { Sanitizer } from '../../services/Sanitizer'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
+import { KeyStorageFacade, retry, StorageFacade, ua2hex } from '@icure/api'
 import { User } from '../../models/User'
 import * as Crypto from 'crypto'
+import { MedTechCryptoStrategies } from '../../services/MedTechCryptoStrategies'
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
@@ -22,6 +23,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly crypto: Crypto
   private readonly storage: StorageFacade<string>
   private readonly keyStorage: KeyStorageFacade
+  private readonly cryptoStrategies: MedTechCryptoStrategies
 
   constructor(
     messageGatewayApi: MessageGatewayApi,
@@ -33,6 +35,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     crypto: Crypto,
     storage: StorageFacade<string>,
     keyStorage: KeyStorageFacade,
+    cryptoStrategies: MedTechCryptoStrategies,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -50,6 +53,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.sanitizer = sanitizer
     this.storage = storage
     this.keyStorage = keyStorage
+    this.cryptoStrategies = cryptoStrategies
   }
 
   async startAuthentication(
@@ -179,7 +183,12 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   private async _initUserAuthTokenAndCrypto(login: string, token: string): Promise<AuthenticationResult> {
     const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
 
-    const userKeyPairs = await authenticatedApi.initUserCrypto()
+    const userKeyPairs = await Promise.all(
+      Object.values(authenticatedApi.cryptoApi.userKeysManager.getDecryptionKeys()).map(async (pair) => ({
+        privateKey: ua2hex(await authenticatedApi.cryptoApi.primitives.RSA.exportKey(pair.privateKey, 'pkcs8')),
+        publicKey: ua2hex(await authenticatedApi.cryptoApi.primitives.RSA.exportKey(pair.publicKey, 'spki')),
+      }))
+    )
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
@@ -198,6 +207,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withCrypto(this.crypto)
       .withStorage(this.storage)
       .withKeyStorage(this.keyStorage)
+      .withCryptoStrategies(this.cryptoStrategies)
       .build()
 
     const user = await api.userApi.getLoggedUser()

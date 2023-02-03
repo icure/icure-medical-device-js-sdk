@@ -17,6 +17,7 @@ import { User } from '../../src/models/User'
 import { v4 as uuid } from 'uuid'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Connection } from '../../src/models/Connection'
+import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
 
 setLocalStorage(fetch)
 
@@ -36,11 +37,14 @@ describe('Subscription API', () => {
 
     if (env.backendType === 'oss') this.skip()
 
+    const credentials = env.dataOwnerDetails[hcp3Username]
+
     medtechApi = await medTechApi()
       .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails[hcp3Username].user)
-      .withPassword(env.dataOwnerDetails[hcp3Username].password)
+      .withUserName(credentials.user)
+      .withPassword(credentials.password)
       .withCrypto(webcrypto as any)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([{ privateKey: credentials.privateKey, publicKey: credentials.publicKey }]))
       .build()
 
     const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
@@ -50,16 +54,11 @@ describe('Subscription API', () => {
 
   async function doXOnYAndSubscribe<Y>(
     api: MedTechApi,
-    privateKey: string,
     options: {},
     connectionPromise: Promise<Connection>,
     x: () => Promise<Y>,
     statusListener: (status: string) => void
   ) {
-    const loggedUser = await api.userApi.getLoggedUser()
-    // FIXME deprecated
-    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(loggedUser.healthcarePartyId!, hex2ua(privateKey))
-
     const connection = (await connectionPromise).onConnected(() => statusListener('CONNECTED')).onClosed(() => statusListener('CLOSED'))
 
     await sleep(3000)
@@ -82,18 +81,12 @@ describe('Subscription API', () => {
         )
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      // FIXME deprecated
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: DataSample[] = []
       const statuses: string[] = []
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (ds) => {
           events.push(ds)
@@ -174,18 +167,12 @@ describe('Subscription API', () => {
         )
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      // FIXME deprecated
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: Notification[] = []
       const statuses: string[] = []
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (notification) => {
           events.push(notification)
@@ -233,18 +220,12 @@ describe('Subscription API', () => {
         )
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      // FIXME deprecated
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: HealthcareElement[] = []
       const statuses: string[] = []
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (healthcareElement) => {
           events.push(healthcareElement)
@@ -299,18 +280,12 @@ describe('Subscription API', () => {
       }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      // FIXME deprecated
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: Patient[] = []
       const statuses: string[] = []
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (patient) => {
           events.push(patient)
@@ -361,7 +336,6 @@ describe('Subscription API', () => {
 
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user)

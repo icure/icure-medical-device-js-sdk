@@ -11,6 +11,7 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import { encryptedStubEquals } from '@icure/api/icc-x-api/crypto/utils'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -187,6 +188,7 @@ export class PatientApiImpl implements PatientApi {
       encryptionKeys,
       owningEntityIds
     )
+    if (encryptedStubEquals(patientWithUpdatedAccesses, patient)) return patient
     const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
     if (!updatedPatient) {
       throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patient.id} information`)

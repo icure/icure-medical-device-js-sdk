@@ -108,8 +108,6 @@ describe('Healthcare professional', () => {
       .withCrypto(webcrypto as any)
       .build()
 
-    await hcpApi.initUserCrypto()
-
     // Then, HCP can create data
     const createdPatient = await hcpApi.patientApi.createOrModifyPatient(
       new Patient({

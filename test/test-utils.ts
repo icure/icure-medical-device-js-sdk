@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi, MedTechApiBuilder } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
+import { KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient, PotentiallyEncryptedPatient } from '../src/models/Patient'
@@ -30,6 +30,9 @@ import {
   UserInitializerComposite,
 } from './test-setup-decorators'
 import { checkIfDockerIsOnline } from '@icure/test-setup'
+import { SimpleMedTechCryptoStrategies } from '../src/services/impl/SimpleMedTechCryptoStrategies'
+import { Address } from '../src/models/Address'
+import { Telecom } from '../src/models/Telecom'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -188,21 +191,76 @@ export class TestUtils {
       .withUserName(credentials.user)
       .withPassword(credentials.password)
       .withCrypto(webcrypto as any)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([{ privateKey: credentials.privateKey, publicKey: credentials.publicKey }]))
     const medtechApi = await additionalBuilderSteps(builderApi).build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
-    // FIXME deprecated
-    await medtechApi.cryptoApi
-      .loadKeyPairsAsTextInBrowserLocalStorage(
-        foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-        hex2ua(credentials.privateKey)
-      )
-      .catch((error: any) => {
-        console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
-        console.error(error)
-      })
 
     return { api: medtechApi, user: foundUser }
+  }
+
+  static async createApiForNewPatient(
+    inviter: MedTechApi,
+    env: TestVars
+  ): Promise<{
+    api: MedTechApi
+    user: User
+  }> {
+    const hcpApi = await medTechApi(inviter)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .build()
+    const email = getTempEmail()
+    const patientNote = 'He is moon knight'
+    const newPatient = await hcpApi.patientApi.createOrModifyPatient(
+      new Patient({
+        firstName: 'Patient',
+        lastName: 'User',
+        note: patientNote,
+        addresses: [
+          new Address({
+            addressType: 'home',
+            description: 'London',
+            telecoms: [
+              new Telecom({
+                telecomType: 'email',
+                telecomNumber: email,
+              }),
+            ],
+          }),
+        ],
+      })
+    )
+
+    const messageFactory = new ICureTestEmail(newPatient)
+    await hcpApi.userApi.createAndInviteUser(newPatient, messageFactory, 3600)
+
+    // And PAT_1 accepts this invitation and changes his credentials
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .build()
+
+    const loginAndPassword = (await TestUtils.getEmail(email)).subject!
+
+    // When PAT_1 generates a key pair for himself
+    // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
+    // Then PAT_1 is able to log as a user
+    const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(
+      loginAndPassword.split('|')[0],
+      loginAndPassword.split('|')[1]
+    )
+
+    return {
+      api: authResult.medTechApi,
+      user: await authResult.medTechApi.userApi.getLoggedUser(),
+    }
   }
 
   static async getEmail(email: string): Promise<any> {
@@ -271,20 +329,13 @@ export class TestUtils {
 
     //assert(subjectCode.length === 8, 'The subject code should be 8 characters long')
 
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode)
 
     if (result?.medTechApi == undefined) {
       throw Error(`Couldn't sign up user by email for current test`)
     }
 
     const foundUser = await result.medTechApi.userApi.getLoggedUser()
-    // FIXME deprecated
-    await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(result.keyPairs[0].privateKey)
-    )
     assert(result)
     assert(result!.token != null)
     assert(result!.userId != null)
@@ -330,6 +381,16 @@ export class TestUtils {
   static createDataSampleForPatient(medtechApi: MedTechApi, patient: Patient) {
     return medtechApi.dataSampleApi.createOrModifyDataSampleFor(
       patient.id!,
+      new DataSample({
+        labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
+        content: { en: new Content({ stringValue: 'Hello world' }) },
+      })
+    )
+  }
+
+  static createDataSampleForPatientWithId(medtechApi: MedTechApi, patientId: string) {
+    return medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+      patientId!,
       new DataSample({
         labels: new Set([new CodingReference({ type: 'IC-TEST', code: 'TEST' })]),
         content: { en: new Content({ stringValue: 'Hello world' }) },
