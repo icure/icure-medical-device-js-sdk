@@ -409,15 +409,19 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
       this._forPatients &&
         ({
           healthcarePartyId: dataOwnerId,
-          patientSecretForeignKeys: (
-            await Promise.all(
-              this._forPatients[1].map(async (p) =>
-                p.systemMetaData
-                  ? await this._forPatients![0].entities.secretIdsOf(systemMetadataToEncryptedEntityStub(p.systemMetaData), dataOwnerId)
-                  : []
-              )
+          patientSecretForeignKeys: Array.from(
+            new Set(
+              (
+                await Promise.all(
+                  this._forPatients[1].map(async (p) =>
+                    p.systemMetaData
+                      ? await this._forPatients![0].entities.secretIdsOf(systemMetadataToEncryptedEntityStub(p.systemMetaData), dataOwnerId)
+                      : []
+                  )
+                )
+              ).reduce((t, v) => [...t, ...v])
             )
-          ).reduce((t, v) => t.concat(v[0]), [] as string[]),
+          ),
           $type: 'HealthcareElementByHealthcarePartyPatientFilter',
         } as HealthcareElementByHealthcarePartyPatientFilter),
     ].filter((x) => !!x) as Filter<HealthcareElement>[]
@@ -658,13 +662,19 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
       this._forPatients &&
         ({
           healthcarePartyId: doId,
-          patientSecretForeignKeys: (
-            await Promise.all(
-              this._forPatients[1].map(async (p) =>
-                p.systemMetaData ? await this._forPatients![0].entities.secretIdsOf(systemMetadataToEncryptedEntityStub(p.systemMetaData), doId) : []
-              )
+          patientSecretForeignKeys: Array.from(
+            new Set(
+              (
+                await Promise.all(
+                  this._forPatients[1].map(async (p) =>
+                    p.systemMetaData
+                      ? await this._forPatients![0].entities.secretIdsOf(systemMetadataToEncryptedEntityStub(p.systemMetaData), doId)
+                      : []
+                  )
+                )
+              ).reduce((t, v) => [...t, ...v])
             )
-          ).reduce((patientSecretForeignKeys, extractedKeys) => patientSecretForeignKeys.concat(extractedKeys.flat()), [] as string[]),
+          ),
           $type: 'DataSampleByHealthcarePartyPatientFilter',
         } as DataSampleByHealthcarePartyPatientFilter),
     ].filter((x) => !!x) as Filter<DataSample>[]
