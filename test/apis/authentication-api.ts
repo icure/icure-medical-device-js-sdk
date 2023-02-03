@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai'
+import { assert, expect, use as chaiUse } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
@@ -6,9 +6,12 @@ import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username,
 import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { webcrypto } from 'crypto'
 import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
-import { hex2ua, ua2hex } from '@icure/api'
+import { hex2ua, KeyStorageImpl, ua2hex } from '@icure/api'
 import { NotificationTypeEnum } from '../../src/models/Notification'
 import { MemoryStorage } from './utils/MemoryStorage'
+import { setEquality } from '../../src/utils/equality'
+import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
+chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
@@ -57,26 +60,18 @@ describe('Authentication API', () => {
     }
   })
 
-  it("Impossible to use authenticationApi if msgGtwUrl, msgGtwSpecId and authProcessId haven't been provided", async () => {
-    // Given
-    let api = await new MedTechApiBuilder()
-      .withUserName('fake-user-name')
-      .withPassword('fake-pwd')
-      .withICureBaseUrl(env!.iCureUrl)
-      .withMsgGwUrl(env!.msgGtwUrl)
-      .withCrypto(webcrypto as any)
-      .withAuthProcessByEmailId('fake-process-id')
-      .withAuthProcessBySmsId('fake-process-id')
-      .build()
-
-    try {
-      await api.authenticationApi.startAuthentication('recaptcha', 'email', undefined, 'firstname', 'lastname', 'fake-prof-id', false)
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq(
-        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, authProcessByEmailId and authProcessBySMSId"
-      )
-    }
+  it('Impossible to use instantiate a med tech api with wrong credentials', async () => {
+    expect(
+      new MedTechApiBuilder()
+        .withUserName('fake-user-name')
+        .withPassword('fake-pwd')
+        .withICureBaseUrl(env!.iCureUrl)
+        .withMsgGwUrl(env!.msgGtwUrl)
+        .withCrypto(webcrypto as any)
+        .withAuthProcessByEmailId('fake-process-id')
+        .withAuthProcessBySmsId('fake-process-id')
+        .build()
+    ).to.be.rejected
   }).timeout(60000)
 
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
@@ -174,14 +169,6 @@ describe('Authentication API', () => {
     assert(currentUser)
     assert(currentUser.patientId != null)
 
-    await api.initUserCrypto()
-    try {
-      await api.initUserCrypto()
-    } catch (e) {
-      expect(true, 'promise should not fail').eq(false)
-    }
-    expect(true, 'promise should not fail').eq(true)
-
     const newMedTechApi = async () =>
       await new MedTechApiBuilder()
         .withUserName(currentUser.login!)
@@ -194,26 +181,31 @@ describe('Authentication API', () => {
         .withAuthProcessBySmsId(env!.patAuthProcessId)
         .build()
 
+    const availableKeys = Object.keys(api.cryptoApi.userKeysManager.getDecryptionKeys())
+
     const newApi = await newMedTechApi()
 
-    const { publicKey, privateKey } = await newApi.cryptoApi.primitives.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(publicKey!, 'spki'))
-    const privKeyHex = ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(privateKey!, 'pkcs8'))
+    const availableKeysInNew = Object.keys(newApi.cryptoApi.userKeysManager.getDecryptionKeys())
 
-    try {
-      await newApi.initUserCrypto({ privateKey: privKeyHex, publicKey: publicKeyHex })
-      expect(true, 'promise should fail').to.eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
-    }
+    const randomKey = await newApi.cryptoApi.primitives.RSA.generateKeyPair()
 
-    try {
-      await (await newMedTechApi()).initUserCrypto()
-    } catch (e) {
-      expect(true, 'promise should not fail').eq(false)
-    }
+    expect(
+      medTechApi(newApi)
+        .withStorage(new MemoryStorage())
+        .withKeyStorage(new KeyStorageImpl(new MemoryStorage()))
+        .withCryptoStrategies(
+          new SimpleMedTechCryptoStrategies([
+            {
+              publicKey: ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(randomKey.publicKey, 'spki')),
+              privateKey: ua2hex(await newApi.cryptoApi.primitives.RSA.exportKey(randomKey.privateKey, 'pkcs8')),
+            },
+          ])
+        )
+        .build(),
+      "Can't instantiate an api with recovered keys which do not match a data owner key."
+    ).to.be.rejected
 
-    expect(true, 'promise should not fail').eq(true)
+    expect(setEquality(new Set(availableKeys), new Set(availableKeysInNew))).to.equal(true)
   }).timeout(60000)
 
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
@@ -267,20 +259,11 @@ describe('Authentication API', () => {
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
-    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode)
 
     if (loginAuthResult?.medTechApi == undefined) {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} on the new terminal`)
     }
-
-    const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
-    // FIXME deprecated
-    await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPairs[0].privateKey)
-    )
 
     // Then
     // User can create new data
@@ -298,14 +281,12 @@ describe('Authentication API', () => {
     }
 
     // When he gave access back with his previous key
-    // FIXME deprecated
-    patApiAndUser.api.cryptoApi.emptyHcpCache(currentPatient.id!)
-    const accessBack = await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
-    expect(accessBack).to.be.true
+    await patApiAndUser.api.cryptoApi.forceReload(true)
+    await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
+    expect(Object.keys(updatedApi.cryptoApi.userKeysManager.getDecryptionKeys())).to.have.length(1)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
@@ -340,20 +321,11 @@ describe('Authentication API', () => {
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
-    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode)
 
     if (loginAuthResult?.medTechApi == undefined) {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} after he lost his RSA keypair`)
     }
-
-    const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
-    // FIXME deprecated
-    await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPairs[0].privateKey)
-    )
 
     // Then
     // User can create new data
@@ -386,15 +358,11 @@ describe('Authentication API', () => {
     const patientPubKey = hcpNotification!.properties?.find((prop) => prop.id == 'dataOwnerConcernedPubKey')
     expect(patientPubKey).to.not.be.undefined
 
-    const accessBack = await hcpApiAndUser.api.dataOwnerApi.giveAccessBackTo(
-      patientId!.typedValue!.stringValue!,
-      patientPubKey!.typedValue!.stringValue!
-    )
-    expect(accessBack).to.be.true
+    await hcpApiAndUser.api.dataOwnerApi.giveAccessBackTo(patientId!.typedValue!.stringValue!, patientPubKey!.typedValue!.stringValue!)
 
     // Then
     const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
+    expect(Object.keys(updatedApi.cryptoApi.userKeysManager.getDecryptionKeys())).to.have.length(1)
 
     const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined

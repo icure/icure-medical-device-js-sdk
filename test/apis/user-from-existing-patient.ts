@@ -45,21 +45,11 @@ describe('A Healthcare Party', () => {
 
     if (env.backendType === 'oss') this.skip()
 
-    hcp1Api = await medTechApi()
-      .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails[hcp1Username].user)
-      .withPassword(env.dataOwnerDetails[hcp1Username].password)
-      .withMsgGwUrl(env!.msgGtwUrl)
-      .withMsgGwSpecId(env!.specId)
-      .withCrypto(webcrypto as any)
-      .build()
-
-    hcp1User = await hcp1Api.userApi.getLoggedUser()
-    // FIXME deprecated
-    await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
-      hex2ua(env.dataOwnerDetails[hcp1Username].privateKey)
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username], (builder) =>
+      builder.withMsgGwUrl(env!.msgGtwUrl).withMsgGwSpecId(env!.specId)
     )
+    hcp1Api = hcpApi1AndUser.api
+    hcp1User = hcpApi1AndUser.user
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
     const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])
@@ -190,7 +180,6 @@ describe('A Healthcare Party', () => {
     // Be careful : We need to empty the cache of the hcPartyKeys otherwise, the previous API will use the key of the
     // patient -> patient stocked in cache instead of the one created by the doctor when he gives access back to patient data
     const updatedApi = await medTechApi(newPatientApi).build()
-    await updatedApi.addKeyPair(newPatient.id!, authResult.keyPairs[0])
 
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE1.id!)
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!)
@@ -285,8 +274,6 @@ describe('A patient user', () => {
     )
     await sleep(3000)
     const patientApi = authResult!.medTechApi
-    // FIXME deprecated
-    patientApi.cryptoApi.emptyHcpCache(patient.id!)
 
     // When the patient has not been given access to his data he...
 
@@ -308,9 +295,6 @@ describe('A patient user', () => {
     // ...but it can be shared
     await patientApi.healthcareElementApi.giveAccessTo(heByPatient, hcp1.id!)
     await hcp1Api.healthcareElementApi.giveAccessTo(heByHcp, patient.id!)
-    // FIXME deprecated
-    hcp1Api.cryptoApi.emptyHcpCache(patient.id!)
-    hcp1Api.cryptoApi.emptyHcpCache(hcp1.id!)
     expect((await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).note).to.not.be.undefined
     expect((await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).note).to.not.be.undefined
     // Originally medical data even if accessible can't be found by the other...

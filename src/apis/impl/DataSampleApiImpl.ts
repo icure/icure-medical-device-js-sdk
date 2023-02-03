@@ -39,6 +39,7 @@ import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { systemMetadataToEncryptedEntityStub } from '../../utils/crypto'
+import { encryptedStubEquals } from '@icure/api/icc-x-api/crypto/utils'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -521,6 +522,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       encryptionKeys,
       owningEntityIds
     )
+    if (encryptedStubEquals(contactWithDelegations, contactOfDataSample)) return dataSample
     const updatedContact: ContactDto = await this.contactApi.modifyContactWithUser(currentUser, contactWithDelegations)
 
     if (updatedContact == undefined || updatedContact.services == undefined) {

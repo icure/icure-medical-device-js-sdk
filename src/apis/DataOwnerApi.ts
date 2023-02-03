@@ -23,5 +23,5 @@ export interface DataOwnerApi {
    */
   initCryptoFor(user: User, userKeyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]>
 
-  giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<boolean>
+  giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<void>
 }

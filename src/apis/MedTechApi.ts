@@ -29,8 +29,9 @@ import {
   pkcs8ToJwk,
   spkiToJwk,
   StorageFacade,
+  ua2hex,
 } from '@icure/api'
-import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
+import { DataOwner, IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { DataSampleApi } from './DataSampleApi'
 import { HealthcareProfessionalApi } from './HealthcareProfessionalApi'
 import { MedicalDeviceApi } from './MedicalDeviceApi'
@@ -59,6 +60,12 @@ import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
 import { DataOwnerApi } from './DataOwnerApi'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
+import { MedTechCryptoStrategies } from '../services/MedTechCryptoStrategies'
+import { SimpleMedTechCryptoStrategies } from '../services/impl/SimpleMedTechCryptoStrategies'
+import { CryptoStrategies } from '@icure/api/icc-x-api/crypto/CryptoStrategies'
+import { CryptoPrimitives } from '@icure/api/icc-x-api/crypto/CryptoPrimitives'
+import { KeyPair } from '@icure/api/icc-x-api/crypto/RSA'
+import { hexPublicKeysOf } from '@icure/api/icc-x-api/crypto/utils'
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi
@@ -82,6 +89,7 @@ export class MedTechApi {
   private readonly _sanitizer: Sanitizer
   private readonly _storage: StorageFacade<string>
   private readonly _keyStorage: KeyStorageFacade
+  private readonly _cryptoStrategies: MedTechCryptoStrategies
   private readonly _baseApi: {
     cryptoApi: IccCryptoXApi
     authApi: IccAuthApi
@@ -143,7 +151,8 @@ export class MedTechApi {
     authProcessByEmailId: string | undefined = undefined,
     authProcessBySmsId: string | undefined = undefined,
     storage?: StorageFacade<string>,
-    keyStorage?: KeyStorageFacade
+    keyStorage?: KeyStorageFacade,
+    cryptoStrategies: MedTechCryptoStrategies = new SimpleMedTechCryptoStrategies([])
   ) {
     this._iCureBaseUrl = basePath
     this._username = username
@@ -170,7 +179,8 @@ export class MedTechApi {
             this._sanitizer,
             api.cryptoApi.primitives.crypto,
             this._storage,
-            this._keyStorage
+            this._keyStorage,
+            cryptoStrategies
           )
         : undefined
     this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password)
@@ -186,6 +196,8 @@ export class MedTechApi {
 
     this._baseApi = api
     this._cryptoApi = api.cryptoApi
+
+    this._cryptoStrategies = cryptoStrategies
   }
 
   get codingApi(): CodingApi {
@@ -258,16 +270,26 @@ export class MedTechApi {
     return this._keyStorage
   }
 
+  get cryptoStrategies(): MedTechCryptoStrategies {
+    return this._cryptoStrategies
+  }
+
+  /**
+   * @deprecated this method is not needed anymore since crypto is automatically initialised on startup, and you can
+   * use crypto strategies to define how to behave in case some keys are not available.
+   */
   async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
     const jwk = {
       publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
       privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
     }
-    // FIXME deprecated
     await this.cryptoApi.cacheKeyPair(jwk)
-    await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
   }
 
+  /**
+   * @deprecated this method is not needed anymore since crypto is automatically initialised on startup, and you can
+   * use crypto strategies to define how to behave in case some keys are not available.
+   */
   async initUserCrypto(keyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]> {
     const currentUser = await this.userApi.getLoggedUser()
     return await this._dataOwnerApi.initCryptoFor(currentUser, keyPair)
@@ -287,6 +309,7 @@ export class MedTechApiBuilder {
   private _preventCookieUsage: boolean = false
   private _storage?: StorageFacade<string>
   private _keyStorage?: KeyStorageFacade
+  private _cryptoStrategies: MedTechCryptoStrategies = new SimpleMedTechCryptoStrategies([])
 
   withICureBaseUrl(newICureBaseUrl: string): MedTechApiBuilder {
     this.iCureBaseUrl = newICureBaseUrl
@@ -343,6 +366,11 @@ export class MedTechApiBuilder {
     return this
   }
 
+  withCryptoStrategies(cryptoStrategies: MedTechCryptoStrategies): MedTechApiBuilder {
+    this._cryptoStrategies = cryptoStrategies
+    return this
+  }
+
   async build(): Promise<MedTechApi> {
     if (this.iCureBaseUrl == undefined) {
       throw new Error('iCureBaseUrl is required')
@@ -363,7 +391,11 @@ export class MedTechApiBuilder {
       this._preventCookieUsage,
       undefined,
       this._storage,
-      this._keyStorage
+      this._keyStorage,
+      {
+        cryptoStrategies: new MedTechCryptoStrategiesBridge(this._cryptoStrategies),
+        createMaintenanceTasksOnNewKey: true,
+      }
     ).then(
       (api) =>
         new MedTechApi(
@@ -376,7 +408,8 @@ export class MedTechApiBuilder {
           this.authProcessByEmailId,
           this.authProcessBySmsId,
           this._storage,
-          this._keyStorage
+          this._keyStorage,
+          this._cryptoStrategies
         )
     )
   }
@@ -392,7 +425,79 @@ export const medTechApi = (api?: MedTechApi) => {
       .withPassword(api.password)
       .withStorage(api.storage)
       .withKeyStorage(api.keyStorage)
+      .withCryptoStrategies(api.cryptoStrategies)
   }
 
   return apiBuilder
+}
+
+class MedTechCryptoStrategiesBridge implements CryptoStrategies {
+  constructor(private readonly medtechStrategies: MedTechCryptoStrategies) {}
+
+  async generateNewKeyForDataOwner(self: DataOwner, cryptoPrimitives: CryptoPrimitives): Promise<KeyPair<CryptoKey> | boolean> {
+    const canGenerate = await this.medtechStrategies.allowNewKeyPairGeneration(self)
+    if (canGenerate) {
+      const newKey = await cryptoPrimitives.RSA.generateKeyPair()
+      await this.medtechStrategies.notifyKeyPairGeneration({
+        privateKey: ua2hex(await cryptoPrimitives.RSA.exportKey(newKey.privateKey, 'pkcs8')),
+        publicKey: ua2hex(await cryptoPrimitives.RSA.exportKey(newKey.publicKey, 'spki')),
+      })
+      return newKey
+    } else return false
+  }
+
+  async recoverAndVerifySelfHierarchyKeys(
+    keysData: {
+      dataOwner: DataOwner
+      unknownKeys: string[]
+      unavailableKeys: string[]
+    }[],
+    cryptoPrimitives: CryptoPrimitives
+  ): Promise<{
+    [dataOwnerId: string]: {
+      recoveredKeys: {
+        [keyPairFingerprint: string]: KeyPair<CryptoKey>
+      }
+      keyAuthenticity: {
+        [keyPairFingerprint: string]: boolean
+      }
+    }
+  }> {
+    if (keysData.length !== 1) {
+      throw new Error('Data owners of MedTech api should have no hierarchy.')
+    }
+    const recovered = await this.medtechStrategies.recoverKeys(keysData[0].dataOwner, [...keysData[0].unavailableKeys, ...keysData[0].unknownKeys])
+    const existingKeys = hexPublicKeysOf(keysData[0].dataOwner)
+    if (recovered.some(({ publicKey }) => !existingKeys.has(publicKey)))
+      throw new Error(
+        'All public keys provided by a med-tech crypto strategy key recovery should already be present in the data owner.' +
+          `\nRecovered keys: ${recovered}` +
+          `\nData owner: ${keysData[0].dataOwner}`
+      )
+    const unknownKeys = new Set(keysData[0].unknownKeys)
+    const unavailableKeys = new Set(keysData[0].unavailableKeys)
+    return Promise.resolve({
+      [keysData[0].dataOwner.id!]: {
+        recoveredKeys: Object.fromEntries(
+          await Promise.all(
+            recovered
+              .filter((x) => unavailableKeys.has(x.publicKey.slice(-32)))
+              .map(
+                async (x): Promise<[string, KeyPair<CryptoKey>]> => [
+                  x.publicKey.slice(-32),
+                  await cryptoPrimitives.RSA.importKeyPair('pkcs8', hex2ua(x.privateKey), 'spki', hex2ua(x.publicKey)),
+                ]
+              )
+          )
+        ),
+        keyAuthenticity: Object.fromEntries(
+          recovered.filter((x) => unknownKeys.has(x.publicKey.slice(-32))).map((x) => [x.publicKey.slice(-32), true])
+        ),
+      },
+    })
+  }
+
+  async verifyDelegatePublicKeys(delegate: DataOwner, publicKeys: string[], cryptoPrimitives: CryptoPrimitives): Promise<string[]> {
+    return await this.medtechStrategies.verifyDelegatePublicKeys(delegate, publicKeys, cryptoPrimitives)
+  }
 }
