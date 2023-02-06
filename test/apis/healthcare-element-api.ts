@@ -4,30 +4,33 @@ import 'isomorphic-fetch'
 import { v4 as uuid } from 'uuid'
 import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
-import { User} from "../../src/models/User";
-import {HealthcareElement } from '../../src/models/HealthcareElement'
+import { User } from '../../src/models/User'
+import { HealthcareElement } from '../../src/models/HealthcareElement'
 import {
   getEnvironmentInitializer,
-  getEnvVariables, hcp1Username,
-  hcp2Username, hcp3Username, patUsername,
+  getEnvVariables,
+  hcp1Username,
+  hcp2Username,
+  hcp3Username,
+  patUsername,
   setLocalStorage,
   TestUtils,
-  TestVars
+  TestVars,
 } from '../test-utils'
 import { HealthcareElementFilter } from '../../src/filter'
 import { it } from 'mocha'
-import {deepEquality} from "../../src/utils/equality";
+import { deepEquality } from '../../src/utils/equality'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined;
-let patApi: MedTechApi | undefined;
-let patUser: User | undefined;
-let hcp2Api: MedTechApi | undefined;
-let hcp2User: User | undefined;
-let hcp1Api: MedTechApi | undefined;
-let hcp1User: User | undefined;
+let env: TestVars | undefined
+let patApi: MedTechApi | undefined
+let patUser: User | undefined
+let hcp2Api: MedTechApi | undefined
+let hcp2User: User | undefined
+let hcp1Api: MedTechApi | undefined
+let hcp1User: User | undefined
 
 function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
   return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
@@ -41,31 +44,28 @@ function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Pati
 describe('Healthcare Element API', () => {
   before(async function () {
     this.timeout(600000)
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[patUsername]);
-    patApi = patApiAndUser.api;
-    patUser = patApiAndUser.user;
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
 
-    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[hcp1Username]);
-    hcp1Api = hcp1ApiAndUser.api;
-    hcp1User = hcp1ApiAndUser.user;
+    const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
+    hcp1Api = hcp1ApiAndUser.api
+    hcp1User = hcp1ApiAndUser.user
 
-    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env.iCureUrl,
-      env.dataOwnerDetails[hcp2Username]);
+    const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp2Username])
     hcp2Api = hcp2ApiAndUser.api
     hcp2User = hcp2ApiAndUser.user
+
+    const patApiAndUser = await TestUtils.createApiForNewPatient(hcp1Api, env!)
+    patApi = patApiAndUser.api
+    patUser = patApiAndUser.user
+    await hcp1Api.patientApi.giveAccessTo(await hcp1Api.patientApi.getPatient(patUser.patientId!), patUser.patientId!)
+    await hcp1Api.patientApi.giveAccessTo(await hcp1Api.patientApi.getPatient(patUser.patientId!), hcp2User.healthcarePartyId!)
   })
 
   it('Patient sharing healthcare element with HCP', async () => {
-    const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!);
+    const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!)
 
-    const currentHcp = await hcp2Api!.healthcareProfessionalApi.getHealthcareProfessional(hcp2User!.healthcarePartyId!);
+    const currentHcp = await hcp2Api!.healthcareProfessionalApi.getHealthcareProfessional(hcp2User!.healthcarePartyId!)
 
     const createdHealthcareElement = await createHealthcareElementForPatient(patApi!, currentPatient)
     const sharedHealthcareElement = await patApi!.healthcareElementApi.giveAccessTo(createdHealthcareElement, currentHcp.id!)
@@ -116,14 +116,11 @@ describe('Healthcare Element API', () => {
     const createdHealthcareElement = await createHealthcareElementForPatient(patApi!, patient)
 
     // When
-    const sharedHealthcareElement = await patApi!.healthcareElementApi.giveAccessTo(
-      createdHealthcareElement,
-      patUser!.patientId!
-    )
+    const sharedHealthcareElement = await patApi!.healthcareElementApi.giveAccessTo(createdHealthcareElement, patUser!.patientId!)
 
     // Then
     assert(deepEquality(createdHealthcareElement, sharedHealthcareElement))
-  });
+  })
 
   it('Delegator may not share info of Healthcare element', async () => {
     const patient = await TestUtils.createDefaultPatient(hcp1Api!)
