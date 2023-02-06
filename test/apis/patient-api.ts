@@ -98,9 +98,10 @@ describe('Patient API', () => {
 
   it("Patient may not access info of another patient if he doesn't have any delegation", async function () {
     if (env!.backendType === 'oss') this.skip()
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
+    const patApiAndUser = await TestUtils.createApiForNewPatient(hcp1Api!, env!)
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
+    await hcp1Api!.patientApi.giveAccessTo((await hcp1Api?.patientApi.getPatient(patUser.patientId!))!, patUser.patientId!)
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
@@ -114,9 +115,10 @@ describe('Patient API', () => {
   })
 
   it('Patient may access info of another patient if he has the appropriate delegation', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
+    const patApiAndUser = await TestUtils.createApiForNewPatient(hcp1Api!, env!)
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
+    await hcp1Api!.patientApi.giveAccessTo((await hcp1Api!.patientApi.getPatient(patUser.patientId!))!, patUser.patientId!)
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
@@ -147,13 +149,13 @@ describe('Patient API', () => {
   })
 
   it('Optimization - No delegation sharing if delegated already has access to patient', async () => {
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
+    const patApiAndUser = await TestUtils.createApiForNewPatient(hcp1Api!, env!)
+    await hcp1Api!.patientApi.giveAccessTo((await hcp1Api?.patientApi.getPatient(patApiAndUser.user.patientId!))!, patApiAndUser.user.patientId!)
 
     const patient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
-    console.log(patient.systemMetaData!.delegations)
 
     // When
-    const sharedPatient = await patApiAndUser.api.patientApi.giveAccessTo(patient, patient!.id!)
+    const sharedPatient = await hcp1Api!.patientApi.giveAccessTo(patient, patient.id!)
 
     // Then
     assert(deepEquality(patient, sharedPatient))
@@ -163,7 +165,7 @@ describe('Patient API', () => {
     const hcp2ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
     const hcp2Api = hcp2ApiAndUser.api
 
-    const patApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
+    const patApiAndUser = await TestUtils.createApiForNewPatient(hcp2Api, env!)
     const patUser = patApiAndUser.user
 
     const createdPatient = await TestUtils.createDefaultPatient(hcp1Api!)
@@ -179,7 +181,8 @@ describe('Patient API', () => {
 
   it('Give access to will fail if the patient version does not match the latest', async () => {
     const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
-    const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
+    const { api: pApi, user: p } = await TestUtils.createApiForNewPatient(hcp1Api!, env!)
+    await hcp1Api!.patientApi.giveAccessTo((await hcp1Api?.patientApi.getPatient(p.patientId!))!, p.patientId!)
     const note = 'Winter is coming'
     const patient = await hcp1Api!.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow', note }))
     await hcp1Api!.patientApi.giveAccessTo(patient, pApi.dataOwnerApi.getDataOwnerIdOf(p))

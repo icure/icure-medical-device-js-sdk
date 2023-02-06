@@ -260,7 +260,6 @@ describe('Data Samples API', () => {
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
 
-    // await patApi.patientApi.giveAccessTo(patient, hcpApiAndUser.user.healthcarePartyId!)
     const createdDataSample = await TestUtils.createDataSampleForPatientWithId(hcpApi, patUser.patientId!)
 
     // When

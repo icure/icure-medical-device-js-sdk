@@ -26,6 +26,7 @@ import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { encryptedStubEquals } from '@icure/api/icc-x-api/crypto/utils'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -233,7 +234,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       encryptionKeys,
       owningEntityIds
     )
-
+    if (encryptedStubEquals(healthElementToModify, heWithDelegations)) return healthcareElement
     const updatedHe = await this.heApi.modifyHealthElementWithUser(currentUser, heWithDelegations)
 
     if (!updatedHe) {
