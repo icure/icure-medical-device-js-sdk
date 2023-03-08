@@ -102,8 +102,8 @@ export function subscribeToEntityEvents<
 ): Promise<ICureRSocket<any, any>> {
   const auth = encodeSimpleAuthMetadata(username, password)
   const setup = {
-    keepAlive: 15,
-    lifetime: 30,
+    keepAlive: 60_000,
+    lifetime: 180_000,
     dataMimeType: APPLICATION_JSON.string,
     metadataMimeType: MESSAGE_RSOCKET_COMPOSITE_METADATA.string,
     ...options,
