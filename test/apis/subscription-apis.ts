@@ -155,18 +155,9 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE DataSample with options', async () => {
-      await createDataSampleAndSubscribe(
-        {
-          keepAlive: 100,
-          lifetime: 10000,
-        },
-        ['CREATE'],
-        medtechApi!!,
-        medtechApi!!,
-        async () => {
-          await createDataSample()
-        }
-      )
+      await createDataSampleAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'], medtechApi!!, medtechApi!!, async () => {
+        await createDataSample()
+      })
     }).timeout(60000)
 
     it('CREATE DataSample without options with another instance of medtechApi', async () => {
@@ -180,18 +171,9 @@ describe('Subscription API', () => {
     it('CREATE DataSample with options with another instance of medtechApi', async () => {
       const subscriptionApi = await initialiseMedTechApi(hcp3Username)
 
-      await createDataSampleAndSubscribe(
-        {
-          keepAlive: 100,
-          lifetime: 10000,
-        },
-        ['CREATE'],
-        medtechApi!!,
-        subscriptionApi!!,
-        async () => {
-          await createDataSample()
-        }
-      )
+      await createDataSampleAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'], medtechApi!!, subscriptionApi!!, async () => {
+        await createDataSample()
+      })
     }).timeout(60000)
 
     it('DELETE DataSample without options', async () => {
@@ -320,7 +302,7 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE HealthcareElement with options', async () => {
-      await createHealthcareElementAndSubscribe({ keepAlive: 100, lifetime: 10000 }, ['CREATE'])
+      await createHealthcareElementAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
     }).timeout(60000)
   })
 
@@ -378,7 +360,7 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE Patient with options', async () => {
-      await createPatientAndSubscribe({ keepAlive: 100, lifetime: 10000 }, ['CREATE'])
+      await createPatientAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
     }).timeout(60000)
   })
 
@@ -432,7 +414,7 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE User with options', async () => {
-      await createUserAndSubscribe({ keepAlive: 100, lifetime: 10000 }, ['CREATE'])
+      await createUserAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
     }).timeout(60000)
   })
 })
