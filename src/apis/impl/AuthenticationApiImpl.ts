@@ -11,6 +11,7 @@ import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
 import { User } from '../../models/User'
 import * as Crypto from 'crypto'
 
+export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string
@@ -60,7 +61,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     lastName: string = '',
     healthcareProfessionalId: string = '',
     bypassTokenCheck: boolean = false,
-    validationCodeLength: number = 6
+    validationCodeLength: number = 6,
+    recaptchaType: RecaptchaType = 'recaptcha'
   ): Promise<AuthenticationProcess> {
     if (!email && !phoneNumber) {
       throw this.errorHandler.createErrorWithMessage(
@@ -73,7 +75,8 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     const requestId = await this.messageGatewayApi.startProcess(
       processId,
       {
-        'g-recaptcha-response': recaptcha,
+        'g-recaptcha-response': recaptchaType === 'recaptcha' ? recaptcha : undefined,
+        'friendly-captcha-response': recaptchaType === 'friendly-captcha' ? recaptcha : undefined,
         firstName: firstName,
         lastName: lastName,
         from: email != undefined ? this.sanitizer.validateEmail(email) : this.sanitizer.validateMobilePhone(phoneNumber!),

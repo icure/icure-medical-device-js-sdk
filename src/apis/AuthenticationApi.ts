@@ -1,6 +1,8 @@
 import { AuthenticationProcess } from '../models/AuthenticationProcess'
 import { AuthenticationResult } from '../models/AuthenticationResult'
 
+export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
+
 /**
  * The AuthenticationApi interface provides methods to authenticate and register users.
  */
@@ -26,6 +28,7 @@ export interface AuthenticationApi {
    * dedicated use cases and users, like the submission on the Apple / Google Store. (false by default)
    *
    * @param validationCodeLength The length of the validation code to send to the user. (6 by default)
+   * @param recaptchaType Use it if a friendly-captcha {@link https://friendlycaptcha.com/} is used instead of the reCAPTCHA v3. The value of this parameter shoud be "friendly-captcha"
    * @return The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
    */
   startAuthentication(
@@ -37,6 +40,7 @@ export interface AuthenticationApi {
     healthcareProfessionalId?: string,
     bypassTokenCheck?: boolean,
     validationCodeLength?: number,
+    recaptchaType?: RecaptchaType
   ): Promise<AuthenticationProcess>
 
   /**
