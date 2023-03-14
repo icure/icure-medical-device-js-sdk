@@ -74,6 +74,8 @@ export type TestVars = {
   dataOwnerDetails: { [key: string]: UserDetails }
 }
 
+export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
+
 export function getEnvVariables(): TestVars {
   const masterHcpDetails =
     !!process.env.ICURE_TEST_MASTER_LOGIN &&
@@ -221,7 +223,9 @@ export class TestUtils {
     authProcessId: string,
     hcpId: string,
     storage?: StorageFacade<string>,
-    keyStorage?: KeyStorageFacade
+    keyStorage?: KeyStorageFacade,
+    recaptcha?: string,
+    recaptchaType?: RecaptchaType
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
     if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
       const throttlingWait = returnWithinBoundaries(
@@ -254,14 +258,15 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'a58afe0e-02dc-431b-8155-0351140099e4',
+      recaptcha ?? 'a58afe0e-02dc-431b-8155-0351140099e4',
       email,
       undefined,
       'Antoine',
       'Duchâteau',
       hcpId,
       false,
-      8
+      8,
+      recaptchaType
     )
 
     const emails = await TestUtils.getEmail(email)
