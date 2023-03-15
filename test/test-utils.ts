@@ -254,7 +254,7 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
+      'a58afe0e-02dc-431b-8155-0351140099e4',
       email,
       undefined,
       'Antoine',

@@ -93,7 +93,7 @@ describe('Authentication API', () => {
     // When
     try {
       await anonymousMedTechApi.authenticationApi.startAuthentication(
-        'process.env.ICURE_RECAPTCHA',
+        'a58afe0e-02dc-431b-8155-0351140099e4',
         undefined,
         undefined,
         'Tom',
@@ -121,7 +121,7 @@ describe('Authentication API', () => {
     // When
     try {
       await anonymousMedTechApi.authenticationApi.startAuthentication(
-        'process.env.ICURE_RECAPTCHA',
+        'a58afe0e-02dc-431b-8155-0351140099e4',
         '',
         '',
         'Tom',
@@ -261,7 +261,7 @@ describe('Authentication API', () => {
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
+      'a58afe0e-02dc-431b-8155-0351140099e4',
       patApiAndUser.user.email
     )
 
@@ -330,7 +330,7 @@ describe('Authentication API', () => {
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
+      'a58afe0e-02dc-431b-8155-0351140099e4',
       patApiAndUser.user.email
     )
 
