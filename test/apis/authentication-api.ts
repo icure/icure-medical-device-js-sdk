@@ -267,9 +267,7 @@ describe('Authentication API', () => {
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
-    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode)
 
     if (loginAuthResult?.medTechApi == undefined) {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} on the new terminal`)
@@ -338,9 +336,7 @@ describe('Authentication API', () => {
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
-    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode)
 
     if (loginAuthResult?.medTechApi == undefined) {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} after he lost his RSA keypair`)
