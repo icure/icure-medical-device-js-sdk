@@ -1,7 +1,6 @@
 import { AuthenticationProcess } from '../models/AuthenticationProcess'
 import { AuthenticationResult } from '../models/AuthenticationResult'
-
-export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
+import { RecaptchaType } from '../models/RecaptchaType'
 
 /**
  * The AuthenticationApi interface provides methods to authenticate and register users.
@@ -28,7 +27,7 @@ export interface AuthenticationApi {
    * dedicated use cases and users, like the submission on the Apple / Google Store. (false by default)
    *
    * @param validationCodeLength The length of the validation code to send to the user. (6 by default)
-   * @param recaptchaType Use it if a friendly-captcha {@link https://friendlycaptcha.com/} is used instead of the reCAPTCHA v3. The value of this parameter shoud be "friendly-captcha"
+   * @param recaptchaType The type of ReCAPTCHA you used during your authentication flow. Can either be Google reCAPTCHA v3 <Add the link> or the friendly-captcha {@link https://friendlycaptcha.com/}. Use the friendly-recaptcha if you would like to avoid tracking solution of Google reCAPTCHA.
    * @return The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
    */
   startAuthentication(

@@ -9,9 +9,9 @@ import { Sanitizer } from '../../services/Sanitizer'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
 import { User } from '../../models/User'
+import { RecaptchaType } from '../../models/RecaptchaType'
 import * as Crypto from 'crypto'
 
-export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string

@@ -30,6 +30,7 @@ import {
   UserInitializerComposite,
 } from './test-setup-decorators'
 import { checkIfDockerIsOnline } from '@icure/test-setup'
+import { RecaptchaType } from '../src/models/RecaptchaType'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -73,8 +74,6 @@ export type TestVars = {
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
 }
-
-export type RecaptchaType = 'recaptcha' | 'friendly-captcha'
 
 export function getEnvVariables(): TestVars {
   const masterHcpDetails =
@@ -224,8 +223,8 @@ export class TestUtils {
     hcpId: string,
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade,
-    recaptcha?: string,
-    recaptchaType?: RecaptchaType
+    recaptcha: string = 'a58afe0e-02dc-431b-8155-0351140099e4',
+    recaptchaType: RecaptchaType = 'recaptcha'
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
     if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
       const throttlingWait = returnWithinBoundaries(
@@ -258,7 +257,7 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      recaptcha ?? 'a58afe0e-02dc-431b-8155-0351140099e4',
+      recaptcha,
       email,
       undefined,
       'Antoine',
