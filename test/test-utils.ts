@@ -270,9 +270,7 @@ export class TestUtils {
 
     //assert(subjectCode.length === 8, 'The subject code should be 8 characters long')
 
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode)
 
     if (result?.medTechApi == undefined) {
       throw Error(`Couldn't sign up user by email for current test`)
