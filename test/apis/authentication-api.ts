@@ -260,10 +260,7 @@ describe('Authentication API', () => {
       .withStorage(new MemoryStorage())
       .build()
 
-    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
-      patApiAndUser.user.email
-    )
+    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication('process.env.ICURE_RECAPTCHA', patApiAndUser.user.email)
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
@@ -329,10 +326,7 @@ describe('Authentication API', () => {
       .withStorage(new MemoryStorage())
       .build()
 
-    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
-      patApiAndUser.user.email
-    )
+    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication('process.env.ICURE_RECAPTCHA', patApiAndUser.user.email)
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
