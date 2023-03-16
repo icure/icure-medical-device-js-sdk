@@ -13,14 +13,15 @@ const adminPassword = process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn'
 const groupId = process.env.ICURE_TEST_GROUP_ID ?? 'test-group'
 const iCureUrl = process.env.ICURE_TS_TEST_URL ?? 'http://127.0.0.1:16044'
 
-// if (testEnvironment === 'docker') {
-//   cleanup('test/scratch', composeFileUrl, 'mock', 'haproxy').then(() => {
-//     console.log('OK')
-//   })
-// } else if (testEnvironment === 'acceptance') {
-//   Api(iCureUrl, adminLogin, adminPassword, webcrypto as any, fetch).then((api) => {
-//     hardDeleteGroup(api, groupId).then(() => {
-//       console.log('OK')
-//     })
-//   })
-// }
+if (testEnvironment === 'docker') {
+  cleanup('test/scratch', composeFileUrl, 'mock', 'haproxy').then(() => {
+    console.log('OK')
+  })
+} else if (testEnvironment === 'acceptance') {
+  Api(iCureUrl, adminLogin, adminPassword, webcrypto as any, fetch).then((api) => {
+    hardDeleteGroup(api, groupId).then(() => {
+      console.log('OK')
+    })
+  })
+}
+
