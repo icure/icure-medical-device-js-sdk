@@ -73,6 +73,7 @@ export type TestVars = {
   adminPassword: string
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
+  friendlyCaptchaKey: string
 }
 
 export function getEnvVariables(): TestVars {
@@ -104,6 +105,9 @@ export function getEnvVariables(): TestVars {
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
+    friendlyCaptchaKey:
+      process.env.ICURE_FRIENDLY_CAPTCHA ??
+      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy',
   }
 }
 

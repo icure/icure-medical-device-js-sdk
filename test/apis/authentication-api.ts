@@ -152,7 +152,6 @@ describe('Authentication API', () => {
 
   it('HCP should be capable of signing up using email with friendlyCaptchaData', async () => {
     // When
-    const recaptcha = 'fake-friendly-captcha'
     const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(
       env!.iCureUrl,
       env!.msgGtwUrl,
@@ -161,7 +160,7 @@ describe('Authentication API', () => {
       hcpId!,
       undefined,
       undefined,
-      recaptcha,
+      env!.friendlyCaptchaKey,
       'friendly-captcha'
     )
     const currentUser = hcpApiAndUser.user
@@ -193,7 +192,6 @@ describe('Authentication API', () => {
 
   it('Patient should be able to signing up through email with friendlyCaptchaData', async () => {
     // When
-    const recaptcha = 'fake-friendly-captcha'
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(
       env!.iCureUrl,
       env!.msgGtwUrl,
@@ -202,7 +200,7 @@ describe('Authentication API', () => {
       hcpId!,
       undefined,
       undefined,
-      recaptcha,
+      env!.friendlyCaptchaKey,
       'friendly-captcha'
     )
 
