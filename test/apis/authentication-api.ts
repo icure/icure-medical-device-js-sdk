@@ -142,9 +142,59 @@ describe('Authentication API', () => {
     assert(currentHcp.lastName == 'Duchâteau')
   }).timeout(60000)
 
+  it('HCP should be capable of signing up using email with friendlyCaptchaData', async () => {
+    // When
+    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.hcpAuthProcessId,
+      hcpId!,
+      undefined,
+      undefined,
+      env!.friendlyCaptchaKey,
+      'friendly-captcha'
+    )
+    const currentUser = hcpApiAndUser.user
+
+    // Then
+    assert(currentUser)
+    assert(currentUser.healthcarePartyId != null)
+
+    const currentHcp = await hcpApiAndUser.api.healthcareProfessionalApi.getHealthcareProfessional(currentUser.healthcarePartyId!)
+    assert(currentHcp)
+    assert(currentHcp.firstName == 'Antoine')
+    assert(currentHcp.lastName == 'Duchâteau')
+  }).timeout(60000)
+
   it('Patient should be able to signing up through email', async () => {
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(env!.iCureUrl, env!.msgGtwUrl, env!.specId, env!.patAuthProcessId, hcpId!)
+
+    // Then
+    const currentUser = patApiAndUser.user
+    assert(currentUser)
+    assert(currentUser.patientId != null)
+
+    const currentPatient = await patApiAndUser.api.patientApi.getPatient(currentUser.patientId!)
+    assert(currentPatient)
+    assert(currentPatient.firstName == 'Antoine')
+    assert(currentPatient.lastName == 'Duchâteau')
+  }).timeout(60000)
+
+  it('Patient should be able to signing up through email with friendlyCaptchaData', async () => {
+    // When
+    const patApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.patAuthProcessId,
+      hcpId!,
+      undefined,
+      undefined,
+      env!.friendlyCaptchaKey,
+      'friendly-captcha'
+    )
 
     // Then
     const currentUser = patApiAndUser.user

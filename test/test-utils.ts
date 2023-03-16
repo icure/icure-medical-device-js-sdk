@@ -30,6 +30,7 @@ import {
   UserInitializerComposite,
 } from './test-setup-decorators'
 import { checkIfDockerIsOnline } from '@icure/test-setup'
+import { RecaptchaType } from '../src/models/RecaptchaType'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -73,6 +74,7 @@ export type TestVars = {
   recaptcha: string
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
+  friendlyCaptchaKey: string
 }
 
 export function getEnvVariables(): TestVars {
@@ -105,6 +107,9 @@ export function getEnvVariables(): TestVars {
     recaptcha: process.env.ICURE_RECAPTCHA ?? '',
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
+    friendlyCaptchaKey:
+      process.env.ICURE_FRIENDLY_CAPTCHA ??
+      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy',
   }
 }
 
@@ -223,7 +228,9 @@ export class TestUtils {
     authProcessId: string,
     hcpId: string,
     storage?: StorageFacade<string>,
-    keyStorage?: KeyStorageFacade
+    keyStorage?: KeyStorageFacade,
+    recaptcha: string = 'process.env.ICURE_RECAPTCHA',
+    recaptchaType: RecaptchaType = 'recaptcha'
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
     if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
       const throttlingWait = returnWithinBoundaries(
@@ -264,7 +271,8 @@ export class TestUtils {
       'Duchâteau',
       hcpId,
       false,
-      8
+      8,
+      recaptchaType
     )
 
     const emails = await TestUtils.getEmail(email)

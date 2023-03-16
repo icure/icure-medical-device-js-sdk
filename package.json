@@ -20,6 +20,7 @@
     "make-doc": "yarn run typedoc --excludeInternal --out docs index.ts && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(../README.md\\) / \\[Exports\\]\\(../modules.md\\)#[\\@icure/medical-device-sdk](../modules.md)#' `find ./docs -name '*.md'` && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(README.md\\) / Exports##' ./docs/modules.md && rm ./docs/README.md",
     "sync-doc": "rsync --exclude README.md --exclude .nojekyll -va docs/ ../medtech-docs/sdks/references/",
     "test": "nyc mocha \"test/**/*.ts\" --require ts-node/register --require source-map-support/register --timeout=60000 --recursive || [[ $CLEANUP == 1 ]] && yarn clean",
+    "test-arm": "export COMPOSE_FILE_URL=https://raw.githubusercontent.com/icure/icure-e2e-test-setup/arm64/docker-compose-cloud.yaml && nyc mocha \"test/**/*.ts\" --require ts-node/register --require source-map-support/register --timeout=60000 --recursive",
     "test-oss": "export COMPOSE_FILE_URL=https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose.yaml && export BACKEND_TYPE=oss && nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive || [[ $CLEANUP == 1 ]] && yarn clean",
     "clean": "npx ts-node ./test/cleanup.ts"
   },
