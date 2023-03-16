@@ -26,6 +26,7 @@ jobs:
           ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
           ICURE_TEST_ADMIN_PWD: ${{ secrets.ICURE_TEST_ADMIN_PWD }}
+          ICURE_FRIENDLY_CAPTCHA: ${{ secrets.ICURE_FRIENDLY_CAPTCHA }}
         run: yarn test
       - name: Clean up database
         if: always()
