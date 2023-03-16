@@ -54,11 +54,7 @@ export interface AuthenticationApi {
    * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
    * user.
    */
-  completeAuthentication(
-    process: AuthenticationProcess,
-    validationCode: string,
-    getUserKeypair: (userId: string) => Promise<{ privateKey: string; publicKey: string }>
-  ): Promise<AuthenticationResult>
+  completeAuthentication(process: AuthenticationProcess, validationCode: string): Promise<AuthenticationResult>
 
   /**
    * Completes the authentication process of a user created from a Patient.
