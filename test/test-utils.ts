@@ -30,6 +30,7 @@ import {
   UserInitializerComposite,
 } from './test-setup-decorators'
 import { checkIfDockerIsOnline } from '@icure/test-setup'
+import { RecaptchaType } from '../src/models/RecaptchaType'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -72,6 +73,7 @@ export type TestVars = {
   adminPassword: string
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
+  friendlyCaptchaKey: string
 }
 
 export function getEnvVariables(): TestVars {
@@ -103,6 +105,9 @@ export function getEnvVariables(): TestVars {
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
+    friendlyCaptchaKey:
+      process.env.ICURE_FRIENDLY_CAPTCHA ??
+      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy',
   }
 }
 
@@ -221,7 +226,9 @@ export class TestUtils {
     authProcessId: string,
     hcpId: string,
     storage?: StorageFacade<string>,
-    keyStorage?: KeyStorageFacade
+    keyStorage?: KeyStorageFacade,
+    recaptcha: string = 'process.env.ICURE_RECAPTCHA',
+    recaptchaType: RecaptchaType = 'recaptcha'
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
     if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
       const throttlingWait = returnWithinBoundaries(
@@ -254,14 +261,15 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
+      recaptcha,
       email,
       undefined,
       'Antoine',
       'Duchâteau',
       hcpId,
       false,
-      8
+      8,
+      recaptchaType
     )
 
     const emails = await TestUtils.getEmail(email)
@@ -270,9 +278,7 @@ export class TestUtils {
 
     //assert(subjectCode.length === 8, 'The subject code should be 8 characters long')
 
-    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode, () =>
-      anonymousMedTechApi.generateRSAKeypair()
-    )
+    const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode)
 
     if (result?.medTechApi == undefined) {
       throw Error(`Couldn't sign up user by email for current test`)
