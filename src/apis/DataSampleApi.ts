@@ -151,5 +151,5 @@ export interface DataSampleApi {
     options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 
-  extractPatientId(dataSample: DataSample): Promise<String | undefined>
+  extractPatientId(dataSample: DataSample): Promise<string | undefined>
 }

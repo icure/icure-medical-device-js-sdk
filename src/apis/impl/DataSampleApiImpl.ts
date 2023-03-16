@@ -588,7 +588,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     ).then((rs) => new ConnectionImpl(rs))
   }
 
-  async extractPatientId(dataSample: DataSample): Promise<String | undefined> {
+  async extractPatientId(dataSample: DataSample): Promise<string | undefined> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
