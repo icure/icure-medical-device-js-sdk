@@ -24,4 +24,3 @@ if (testEnvironment === 'docker') {
     })
   })
 }
-
