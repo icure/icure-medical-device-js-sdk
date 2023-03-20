@@ -93,7 +93,7 @@ describe('Authentication API', () => {
     // When
     try {
       await anonymousMedTechApi.authenticationApi.startAuthentication(
-        'process.env.ICURE_RECAPTCHA',
+        env!.recaptcha,
         undefined,
         undefined,
         'Tom',
@@ -120,15 +120,7 @@ describe('Authentication API', () => {
 
     // When
     try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(
-        'process.env.ICURE_RECAPTCHA',
-        '',
-        '',
-        'Tom',
-        'Gideon',
-        env!.patAuthProcessId,
-        false
-      )
+      await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, '', '', 'Tom', 'Gideon', env!.patAuthProcessId, false)
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
       expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its phone number')
@@ -260,7 +252,7 @@ describe('Authentication API', () => {
       .withStorage(new MemoryStorage())
       .build()
 
-    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication('process.env.ICURE_RECAPTCHA', patApiAndUser.user.email)
+    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, patApiAndUser.user.email)
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
@@ -326,7 +318,7 @@ describe('Authentication API', () => {
       .withStorage(new MemoryStorage())
       .build()
 
-    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication('process.env.ICURE_RECAPTCHA', patApiAndUser.user.email)
+    const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, patApiAndUser.user.email)
 
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!

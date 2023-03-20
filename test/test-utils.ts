@@ -70,6 +70,7 @@ export type TestVars = {
   backendType: string
   adminLogin: string
   adminPassword: string
+  recaptcha: string
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
 }
@@ -101,6 +102,7 @@ export function getEnvVariables(): TestVars {
     backendType: process.env.BACKEND_TYPE ?? 'kraken',
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
+    recaptcha: process.env.ICURE_RECAPTCHA ?? '',
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
   }
@@ -251,10 +253,11 @@ export class TestUtils {
     }
 
     const anonymousMedTechApi = await builder.build()
+    const env = getEnvVariables()
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      'process.env.ICURE_RECAPTCHA',
+      env!.recaptcha,
       email,
       undefined,
       'Antoine',
