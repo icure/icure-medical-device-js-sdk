@@ -32,15 +32,15 @@ import { DocumentMapper } from '../../mappers/document'
 import { FilterMapper } from '../../mappers/filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { UtiDetector } from '../../utils/utiDetector'
-import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { toMap, toMapArrayTransform } from '../../mappers/utils'
 import { DelegationMapper } from '../../mappers/delegation'
 import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import toDelegationDto = DelegationMapper.toDelegationDto
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { Connection, ConnectionImpl } from '../../models/Connection'
+import toDelegationDto = DelegationMapper.toDelegationDto
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -585,7 +585,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       eventFired,
       options,
       async (encrypted) => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0]
-    ).then((rs) => new ConnectionImpl(rs))
+    ).then((ws) => new ConnectionImpl(ws))
   }
 
   async extractPatientId(dataSample: DataSample): Promise<string | undefined> {

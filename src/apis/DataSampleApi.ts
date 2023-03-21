@@ -1,9 +1,9 @@
-import {DataSample} from '../models/DataSample'
-import {Document} from '../models/Document'
-import {Filter} from '../filter/Filter'
-import {PaginatedListDataSample} from '../models/PaginatedListDataSample'
-import {Connection} from '../models/Connection'
-import {Patient} from "../models/Patient";
+import { DataSample } from '../models/DataSample'
+import { Document } from '../models/Document'
+import { Filter } from '../filter/Filter'
+import { PaginatedListDataSample } from '../models/PaginatedListDataSample'
+import { Connection } from '../models/Connection'
+import { Patient } from '../models/Patient'
 
 /**
  * The DataSampleApi interface provides methods to manage data samples.

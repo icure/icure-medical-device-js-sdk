@@ -25,7 +25,7 @@ import { Patient } from '../../models/Patient'
 import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {

@@ -11,8 +11,8 @@ import { NotificationFilter } from '../../filter'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
-import {deepEquality} from "../../utils/equality";
+import { subscribeToEntityEvents } from '../../utils/websocket'
+import { deepEquality } from '../../utils/equality'
 
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
