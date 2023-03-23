@@ -1,14 +1,24 @@
 import { SharedDataType, User } from '../../models/User'
 import { PaginatedListUser } from '../../models/PaginatedListUser'
 import { UserApi } from '../UserApi'
-import { FilterChainUser, IccContactXApi, IccCryptoXApi, IccDocumentXApi, IccHcpartyXApi, IccPatientXApi, IccUserApi, IccUserXApi } from '@icure/api'
+import {
+  FilterChainUser,
+  IccAuthApi,
+  IccContactXApi,
+  IccCryptoXApi,
+  IccDocumentXApi,
+  IccHcpartyXApi,
+  IccPatientXApi,
+  IccUserApi,
+  IccUserXApi,
+} from '@icure/api'
 import { UserMapper } from '../../mappers/user'
 import { forceUuid } from '../../mappers/utils'
 import { FilterMapper } from '../../mappers/filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { Filter } from '../../filter/Filter'
 import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { Patient } from '../../models/Patient'
 import { UserFilter } from '../../filter'
 import { filteredContactsFromAddresses } from '../../utils/addressUtils'
@@ -19,6 +29,7 @@ import { Sanitizer } from '../../services/Sanitizer'
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
+  private readonly authApi: IccAuthApi
   private readonly hcpApi: IccHcpartyXApi
   private readonly username: string | undefined
   private readonly basePath: string
@@ -31,6 +42,7 @@ export class UserApiImpl implements UserApi {
     api: {
       healthcarePartyApi: IccHcpartyXApi
       cryptoApi: IccCryptoXApi
+      authApi: IccAuthApi
       userApi: IccUserXApi
       patientApi: IccPatientXApi
       contactApi: IccContactXApi
@@ -46,6 +58,7 @@ export class UserApiImpl implements UserApi {
     this.basePath = basePath
     this.username = username
     this.password = password
+    this.authApi = api.authApi
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer
     this.userApi = api.userApi
@@ -199,9 +212,17 @@ export class UserApiImpl implements UserApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<User> | undefined,
     eventFired: (user: User) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    return subscribeToEntityEvents(this.basePath, this.username!, this.password!, 'User', eventTypes, filter, eventFired, options)
+    return subscribeToEntityEvents(
+      this.basePath,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      'User',
+      eventTypes,
+      filter,
+      eventFired,
+      options
+    )
       .then((rs) => new ConnectionImpl(rs))
       .catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)

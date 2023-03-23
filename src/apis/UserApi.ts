@@ -95,7 +95,7 @@ export interface UserApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<User>,
     eventFired: (user: User) => Promise<void>,
-    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
+    options?: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 
   /**
