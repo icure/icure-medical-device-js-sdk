@@ -12,14 +12,11 @@ import { DataSampleMapper } from '../mappers/serviceDataSample'
 import { HealthcareElement } from '../models/HealthcareElement'
 import { HealthcareElementMapper } from '../mappers/healthcareElement'
 import { NotificationMapper } from '../mappers/notification'
-import pino from 'pino'
-
+import log, { LogLevelDesc } from 'loglevel'
 export type EventTypes = 'CREATE' | 'UPDATE' | 'DELETE'
 type Subscribable = 'Patient' | 'DataSample' | 'User' | 'HealthcareElement' | 'Notification'
 
-const logger = pino({
-  level: process.env.WEBSOCKET_LOG_LEVEL || 'info',
-})
+log.setLevel((process.env.WEBSOCKET_LOG_LEVEL as LogLevelDesc) ?? 'info')
 
 export function subscribeToEntityEvents(
   basePath: string,
@@ -145,7 +142,7 @@ export function subscribeToEntityEvents<
       try {
         await config[entityClass].mapper(data).then((o) => eventFired(o))
       } catch (e) {
-        logger.error(e)
+        log.error(e)
       }
     }
   )
@@ -227,7 +224,7 @@ export class WebSocketWrapper {
     this.socket = new WebSocket(`${this.url};tokenid=${await this.tokenProvider()}`)
 
     this.socket.on('open', async () => {
-      logger.debug('WebSocket connection opened')
+      log.debug('WebSocket connection opened')
 
       this.retries = 0
 
@@ -235,23 +232,20 @@ export class WebSocketWrapper {
     })
 
     this.socket.on('message', (event: Buffer) => {
-      logger.debug({
-        data: event.subarray(0, 20),
-        msg: 'WebSocket message received (first 20 bytes)',
-      })
+      log.debug('WebSocket message received', event)
 
       const dataAsString = event.toString('utf8')
 
       // Handle ping messages
       if (dataAsString === 'ping') {
-        logger.debug({ msg: 'Received ping, sending pong' })
+        log.debug('Received ping, sending pong')
 
         this.send('pong')
         this.lastPingReceived = Date.now()
 
         this.intervalId = setTimeout(() => {
           if (Date.now() - this.lastPingReceived > this.pingLifetime) {
-            logger.error(`No ping received in the last ${this.pingLifetime} ms`)
+            log.error(`No ping received in the last ${this.pingLifetime} ms`)
             this.socket?.close()
           }
         }, this.pingLifetime)
@@ -264,12 +258,12 @@ export class WebSocketWrapper {
         const data = JSON.parse(dataAsString)
         this.messageCallback(data)
       } catch (error) {
-        logger.error({ error }, 'Failed to parse WebSocket message')
+        log.error('Failed to parse WebSocket message', error)
       }
     })
 
     this.socket.on('close', (code, reason) => {
-      logger.debug({ code, reason: reason.toString('utf8') }, 'WebSocket connection closed')
+      log.debug('WebSocket connection closed', code, reason.toString('utf8'))
 
       this.callStatusCallbacks('CLOSED')
 
@@ -286,7 +280,7 @@ export class WebSocketWrapper {
     })
 
     this.socket.on('error', async (err) => {
-      logger.error({ error: err }, 'WebSocket error')
+      log.error('WebSocket error', err)
 
       this.callStatusCallbacks('ERROR', err)
 
