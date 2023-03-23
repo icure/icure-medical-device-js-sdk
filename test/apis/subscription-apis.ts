@@ -68,15 +68,23 @@ describe('Subscription API', () => {
     const loggedUser = await api.userApi.getLoggedUser()
     await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(loggedUser.healthcarePartyId!, hex2ua(privateKey))
 
-    const connection = (await connectionPromise).onConnected(() => statusListener('CONNECTED')).onClosed(() => statusListener('CLOSED'))
+    const connection = (await connectionPromise)
+      .onClosed(async () => {
+        statusListener('CLOSED')
+        await sleep(3_000)
+      })
+      .onConnected(() => {
+        statusListener('CONNECTED')
+        setTimeout(async () => {
+          await x()
+        }, 0)
+      })
 
-    await sleep(3000)
+    await sleep(20_000)
 
-    await x()
-
-    await sleep(10000)
     connection.close()
-    await sleep(5000)
+
+    await sleep(3_000)
   }
 
   describe('Can subscribe to Data Samples', async () => {
@@ -155,9 +163,18 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE DataSample with options', async () => {
-      await createDataSampleAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'], medtechApi!!, medtechApi!!, async () => {
-        await createDataSample()
-      })
+      await createDataSampleAndSubscribe(
+        {
+          keepAlive: 100000,
+          lifetime: 200000,
+        },
+        ['CREATE'],
+        medtechApi!!,
+        medtechApi!!,
+        async () => {
+          await createDataSample()
+        }
+      )
     }).timeout(60000)
 
     it('CREATE DataSample without options with another instance of medtechApi', async () => {
@@ -171,9 +188,18 @@ describe('Subscription API', () => {
     it('CREATE DataSample with options with another instance of medtechApi', async () => {
       const subscriptionApi = await initialiseMedTechApi(hcp3Username)
 
-      await createDataSampleAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'], medtechApi!!, subscriptionApi!!, async () => {
-        await createDataSample()
-      })
+      await createDataSampleAndSubscribe(
+        {
+          keepAlive: 100000,
+          lifetime: 200000,
+        },
+        ['CREATE'],
+        medtechApi!!,
+        subscriptionApi!!,
+        async () => {
+          await createDataSample()
+        }
+      )
     }).timeout(60000)
 
     it('DELETE DataSample without options', async () => {
@@ -181,7 +207,16 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('DELETE DataSample with options', async () => {
-      await createDataSampleAndSubscribe({ keepAlive: 100, lifetime: 10000 }, ['DELETE'], medtechApi!!, medtechApi!!, async () => deleteDataSample())
+      await createDataSampleAndSubscribe(
+        {
+          keepAlive: 100,
+          lifetime: 10000,
+        },
+        ['DELETE'],
+        medtechApi!!,
+        medtechApi!!,
+        async () => deleteDataSample()
+      )
     }).timeout(60000)
   })
 

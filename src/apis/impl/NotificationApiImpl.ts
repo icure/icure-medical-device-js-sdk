@@ -1,6 +1,6 @@
 import { NotificationApi } from '../NotificationApi'
 import { MaintenanceTaskStatusEnum, Notification } from '../../models/Notification'
-import { FilterChainMaintenanceTask, IccHcpartyXApi, IccUserXApi, MaintenanceTask, User } from '@icure/api'
+import { FilterChainMaintenanceTask, IccAuthApi, IccHcpartyXApi, IccUserXApi, MaintenanceTask, User } from '@icure/api'
 import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
 import { NotificationMapper } from '../../mappers/notification'
 import { PaginatedListNotification } from '../../models/PaginatedListNotification'
@@ -17,6 +17,7 @@ import { deepEquality } from '../../utils/equality'
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
   private readonly userApi: IccUserXApi
+  private readonly authApi: IccAuthApi
   private readonly maintenanceTaskApi: IccMaintenanceTaskXApi
   private readonly hcpApi: IccHcpartyXApi
   private readonly errorHandler: ErrorHandler
@@ -26,7 +27,13 @@ export class NotificationApiImpl implements NotificationApi {
   private readonly password?: string
 
   constructor(
-    api: { userApi: IccUserXApi; maintenanceTaskApi: IccMaintenanceTaskXApi; healthcarePartyApi: IccHcpartyXApi; dataOwnerApi: IccDataOwnerXApi },
+    api: {
+      userApi: IccUserXApi
+      authApi: IccAuthApi
+      maintenanceTaskApi: IccMaintenanceTaskXApi
+      healthcarePartyApi: IccHcpartyXApi
+      dataOwnerApi: IccDataOwnerXApi
+    },
     errorHandler: ErrorHandler,
     basePath: string,
     username: string | undefined,
@@ -35,6 +42,7 @@ export class NotificationApiImpl implements NotificationApi {
     this.basePath = basePath
     this.username = username
     this.password = password
+    this.authApi = api.authApi
 
     this.dataOwnerApi = api.dataOwnerApi
     this.userApi = api.userApi
@@ -180,8 +188,7 @@ export class NotificationApiImpl implements NotificationApi {
 
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'Notification',
       eventTypes,
       filter,

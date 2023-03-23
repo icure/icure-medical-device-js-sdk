@@ -10,6 +10,7 @@ import {
   Document as DocumentDto,
   FilterChainContact,
   FilterChainService,
+  IccAuthApi,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
@@ -44,6 +45,7 @@ import toDelegationDto = DelegationMapper.toDelegationDto
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
+  private readonly authApi: IccAuthApi
   private readonly userApi: IccUserXApi
   private readonly patientApi: IccPatientXApi
   private readonly contactApi: IccContactXApi
@@ -67,6 +69,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       dataOwnerApi: IccDataOwnerXApi
       documentApi: IccDocumentXApi
       healthcareElementApi: IccHelementXApi
+      authApi: IccAuthApi
     },
     errorHandler: ErrorHandler,
     basePath: string,
@@ -84,6 +87,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     this.dataOwnerApi = api.dataOwnerApi
     this.documentApi = api.documentApi
     this.healthcareElementApi = api.healthcareElementApi
+    this.authApi = api.authApi
   }
 
   clearContactCache() {
@@ -577,8 +581,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'DataSample',
       eventTypes,
       filter,

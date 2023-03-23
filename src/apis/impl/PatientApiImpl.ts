@@ -1,7 +1,16 @@
 import { Patient, PotentiallyEncryptedPatient } from '../../models/Patient'
 import { PaginatedListPatient } from '../../models/PaginatedListPatient'
 import { PatientApi } from '../PatientApi'
-import { FilterChainPatient, IccContactXApi, IccCryptoXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi, Patient as PatientDto } from '@icure/api'
+import {
+  FilterChainPatient,
+  IccAuthApi,
+  IccContactXApi,
+  IccCryptoXApi,
+  IccDocumentXApi,
+  IccPatientXApi,
+  IccUserXApi,
+  Patient as PatientDto,
+} from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { FilterMapper } from '../../mappers/filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
@@ -15,6 +24,7 @@ import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate 
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
+  private readonly authApi: IccAuthApi
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
@@ -28,6 +38,7 @@ export class PatientApiImpl implements PatientApi {
   constructor(
     api: {
       cryptoApi: IccCryptoXApi
+      authApi: IccAuthApi
       userApi: IccUserXApi
       patientApi: IccPatientXApi
       contactApi: IccContactXApi
@@ -47,6 +58,7 @@ export class PatientApiImpl implements PatientApi {
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
     this.dataOwnerApi = api.dataOwnerApi
+    this.authApi = api.authApi
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
@@ -252,8 +264,7 @@ export class PatientApiImpl implements PatientApi {
     })
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'Patient',
       eventTypes,
       filter,
