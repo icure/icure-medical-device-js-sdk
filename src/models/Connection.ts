@@ -2,7 +2,6 @@ import { ConnectionStatus, WebSocketWrapper } from '../utils/websocket'
 
 export interface Connection {
   close(): void
-  onNotConnected(callback: () => void): Connection
   onConnected(callback: () => void): Connection
   onClosed(callback: () => void): Connection
   onError(callback: (e?: string) => void): Connection
@@ -19,14 +18,6 @@ export class ConnectionImpl implements Connection {
 
   close() {
     this.wsw.close()
-  }
-
-  onNotConnected(callback: () => void): Connection {
-    this.wsw?.addStatusCallback('NOT_CONNECTED', (ws: WebSocketWrapper) => {
-      this.connectionStatus = 'NOT_CONNECTED'
-      callback()
-    })
-    return this
   }
 
   onConnected(callback: () => void): Connection {

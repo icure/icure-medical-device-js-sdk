@@ -143,7 +143,7 @@ export function subscribeToEntityEvents<
   )
 }
 
-export type ConnectionStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'CLOSED' | 'ERROR'
+export type ConnectionStatus = 'CONNECTED' | 'CLOSED' | 'ERROR'
 export type StatusCallback = (ws: WebSocketWrapper) => void
 export type ErrorStatusCallback = (ws: WebSocketWrapper, error?: Error) => void
 export type ConnectionStatusFunction = {
@@ -199,7 +199,6 @@ export class WebSocketWrapper {
 
   public addStatusCallback(status: ConnectionStatus, callback: ConnectionStatusFunction[ConnectionStatus]) {
     switch (status) {
-      case 'NOT_CONNECTED':
       case 'CONNECTED':
       case 'CLOSED':
         if (!this.statusCallbacks[status]) this.statusCallbacks[status] = []
@@ -287,7 +286,6 @@ export class WebSocketWrapper {
 
   private callStatusCallbacks(event: ConnectionStatus, error?: Error) {
     switch (event) {
-      case 'NOT_CONNECTED':
       case 'CONNECTED':
       case 'CLOSED':
         this.statusCallbacks?.[event]?.forEach((callback) => callback(this))
