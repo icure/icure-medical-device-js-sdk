@@ -132,11 +132,6 @@ export function subscribeToEntityEvents<
           ws.send(JSON.stringify(subscription))
         },
       ],
-      ERROR: [
-        async (ws: WebSocketWrapper, error?: Error) => {
-          throw error
-        },
-      ],
     },
     async (data: any) => {
       try {
