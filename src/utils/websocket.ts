@@ -6,16 +6,20 @@ import { User } from '../models/User'
 import { Notification } from '../models/Notification'
 import { FilterMapper } from '../mappers/filter'
 import { UserMapper } from '../mappers/user'
-import { AbstractFilter, HealthElement, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
+import { HealthElement, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
 import { PatientMapper } from '../mappers/patient'
 import { DataSampleMapper } from '../mappers/serviceDataSample'
 import { HealthcareElement } from '../models/HealthcareElement'
 import { HealthcareElementMapper } from '../mappers/healthcareElement'
 import { NotificationMapper } from '../mappers/notification'
+import pino from 'pino'
 
 export type EventTypes = 'CREATE' | 'UPDATE' | 'DELETE'
 type Subscribable = 'Patient' | 'DataSample' | 'User' | 'HealthcareElement' | 'Notification'
-type SubscribableEntity = Patient | DataSample | User | HealthcareElement | Notification
+
+const logger = pino({
+  level: process.env.WEBSOCKET_LOG_LEVEL || 'info',
+})
 
 export function subscribeToEntityEvents(
   basePath: string,
@@ -137,11 +141,11 @@ export function subscribeToEntityEvents<
         },
       ],
     },
-    (data: any) => {
+    async (data: any) => {
       try {
-        config[entityClass].mapper(data).then((o) => eventFired(o))
+        await config[entityClass].mapper(data).then((o) => eventFired(o))
       } catch (e) {
-        console.error(e)
+        logger.error(e)
       }
     }
   )
@@ -223,7 +227,7 @@ export class WebSocketWrapper {
     this.socket = new WebSocket(`${this.url};tokenid=${await this.tokenProvider()}`)
 
     this.socket.on('open', async () => {
-      console.debug('WebSocket connection opened')
+      logger.debug('WebSocket connection opened')
 
       this.retries = 0
 
@@ -231,20 +235,23 @@ export class WebSocketWrapper {
     })
 
     this.socket.on('message', (event: Buffer) => {
-      console.debug('WebSocket message received:', event)
+      logger.debug({
+        data: event.subarray(0, 20),
+        msg: 'WebSocket message received (first 20 bytes)',
+      })
 
       const dataAsString = event.toString('utf8')
 
       // Handle ping messages
       if (dataAsString === 'ping') {
-        console.debug('Received ping, sending pong')
+        logger.debug({ msg: 'Received ping, sending pong' })
 
         this.send('pong')
         this.lastPingReceived = Date.now()
 
         this.intervalId = setTimeout(() => {
           if (Date.now() - this.lastPingReceived > this.pingLifetime) {
-            console.error(`No ping received in the last ${this.pingLifetime} ms`)
+            logger.error(`No ping received in the last ${this.pingLifetime} ms`)
             this.socket?.close()
           }
         }, this.pingLifetime)
@@ -257,12 +264,12 @@ export class WebSocketWrapper {
         const data = JSON.parse(dataAsString)
         this.messageCallback(data)
       } catch (error) {
-        console.error('Failed to parse WebSocket message:', error)
+        logger.error({ error }, 'Failed to parse WebSocket message')
       }
     })
 
     this.socket.on('close', (code, reason) => {
-      console.debug('WebSocket connection closed:', code, reason.toString('utf8'))
+      logger.debug({ code, reason: reason.toString('utf8') }, 'WebSocket connection closed')
 
       this.callStatusCallbacks('CLOSED')
 
@@ -279,7 +286,7 @@ export class WebSocketWrapper {
     })
 
     this.socket.on('error', async (err) => {
-      console.error('WebSocket error:', err)
+      logger.error({ error: err }, 'WebSocket error')
 
       this.callStatusCallbacks('ERROR', err)
 
