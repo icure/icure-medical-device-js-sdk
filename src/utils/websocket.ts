@@ -143,7 +143,7 @@ export function subscribeToEntityEvents<
   )
 }
 
-export type ConnectionStatus = 'CONNECTED' | 'CLOSED' | 'ERROR'
+export type ConnectionStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'CLOSED' | 'ERROR'
 export type StatusCallback = (ws: WebSocketWrapper) => void
 export type ErrorStatusCallback = (ws: WebSocketWrapper, error?: Error) => void
 export type ConnectionStatusFunction = {
