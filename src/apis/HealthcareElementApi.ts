@@ -1,8 +1,8 @@
-import {Filter} from '../filter/Filter'
-import {HealthcareElement} from '../models/HealthcareElement'
-import {PaginatedListHealthcareElement} from '../models/PaginatedListHealthcareElement'
-import {Connection} from "../models/Connection";
-import {Patient} from "../models/Patient";
+import { Filter } from '../filter/Filter'
+import { HealthcareElement } from '../models/HealthcareElement'
+import { PaginatedListHealthcareElement } from '../models/PaginatedListHealthcareElement'
+import { Connection } from '../models/Connection'
+import { Patient } from '../models/Patient'
 
 /**
  * The HealthcareElementApi interface provides methods to manage healthcare elements.
@@ -105,6 +105,6 @@ export interface HealthcareElementApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<HealthcareElement>,
     eventFired: (dataSample: HealthcareElement) => Promise<void>,
-    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
+    options?: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 }

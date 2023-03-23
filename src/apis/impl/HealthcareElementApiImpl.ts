@@ -322,7 +322,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<HealthcareElement> | undefined,
     eventFired: (dataSample: HealthcareElement) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser()
 

@@ -73,11 +73,9 @@ describe('Subscription API', () => {
         statusListener('CLOSED')
         await sleep(3_000)
       })
-      .onConnected(() => {
+      .onConnected(async () => {
         statusListener('CONNECTED')
-        setTimeout(async () => {
-          await x()
-        }, 0)
+        await x()
       })
 
     await sleep(20_000)
@@ -88,14 +86,18 @@ describe('Subscription API', () => {
   }
 
   describe('Can subscribe to Data Samples', async () => {
-    const createDataSampleAndSubscribe = async (
-      options: {},
+    const subscribeAndCreateDataSample = async (
+      options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number },
       eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[],
       creationApi: MedTechApi,
       subscriptionApi: MedTechApi,
       supplier: () => Promise<void>
     ) => {
-      const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (ds: DataSample) => Promise<void>) =>
+      const connectionPromise = async (
+        options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number },
+        dataOwnerId: string,
+        eventListener: (ds: DataSample) => Promise<void>
+      ) =>
         subscriptionApi!.dataSampleApi.subscribeToDataSampleEvents(
           eventTypes,
           await new DataSampleFilter().forDataOwner(dataOwnerId).build(),
@@ -157,16 +159,16 @@ describe('Subscription API', () => {
     }
 
     it('CREATE DataSample without options', async () => {
-      await createDataSampleAndSubscribe({}, ['CREATE'], medtechApi!!, medtechApi!!, async () => {
+      await subscribeAndCreateDataSample({}, ['CREATE'], medtechApi!!, medtechApi!!, async () => {
         await createDataSample()
       })
     }).timeout(60000)
 
     it('CREATE DataSample with options', async () => {
-      await createDataSampleAndSubscribe(
+      await subscribeAndCreateDataSample(
         {
-          keepAlive: 100000,
-          lifetime: 200000,
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
         },
         ['CREATE'],
         medtechApi!!,
@@ -180,7 +182,7 @@ describe('Subscription API', () => {
     it('CREATE DataSample without options with another instance of medtechApi', async () => {
       const subscriptionApi = await initialiseMedTechApi(hcp3Username)
 
-      await createDataSampleAndSubscribe({}, ['CREATE'], medtechApi!!, subscriptionApi!!, async () => {
+      await subscribeAndCreateDataSample({}, ['CREATE'], medtechApi!!, subscriptionApi!!, async () => {
         await createDataSample()
       })
     }).timeout(60000)
@@ -188,10 +190,10 @@ describe('Subscription API', () => {
     it('CREATE DataSample with options with another instance of medtechApi', async () => {
       const subscriptionApi = await initialiseMedTechApi(hcp3Username)
 
-      await createDataSampleAndSubscribe(
+      await subscribeAndCreateDataSample(
         {
-          keepAlive: 100000,
-          lifetime: 200000,
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
         },
         ['CREATE'],
         medtechApi!!,
@@ -203,14 +205,14 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('DELETE DataSample without options', async () => {
-      await createDataSampleAndSubscribe({}, ['DELETE'], medtechApi!!, medtechApi!!, async () => deleteDataSample())
+      await subscribeAndCreateDataSample({}, ['DELETE'], medtechApi!!, medtechApi!!, async () => deleteDataSample())
     }).timeout(60000)
 
     it('DELETE DataSample with options', async () => {
-      await createDataSampleAndSubscribe(
+      await subscribeAndCreateDataSample(
         {
-          keepAlive: 100,
-          lifetime: 10000,
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
         },
         ['DELETE'],
         medtechApi!!,
@@ -221,7 +223,7 @@ describe('Subscription API', () => {
   })
 
   describe('Can subscribe to Notifications', async () => {
-    const createNotificationAndSubscribe = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
+    const subscribeAndCreateNotification = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (notification: Notification) => Promise<void>) =>
         medtechApi!.notificationApi.subscribeToNotificationEvents(
           eventTypes,
@@ -270,16 +272,22 @@ describe('Subscription API', () => {
     }
 
     it('CREATE Notification without options', async () => {
-      await createNotificationAndSubscribe({}, ['CREATE'])
+      await subscribeAndCreateNotification({}, ['CREATE'])
     }).timeout(60000)
 
     it('CREATE Notification with options', async () => {
-      await createNotificationAndSubscribe({ keepAlive: 100, lifetime: 10000 }, ['CREATE'])
+      await subscribeAndCreateNotification(
+        {
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
+        },
+        ['CREATE']
+      )
     }).timeout(60000)
   })
 
   describe('Can subscribe to HealthcareElements', async () => {
-    const createHealthcareElementAndSubscribe = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
+    const subscribeAndCreateHealthcareElement = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (healthcareElement: HealthcareElement) => Promise<void>) =>
         medtechApi!.healthcareElementApi.subscribeToHealthcareElementEvents(
           eventTypes,
@@ -333,16 +341,22 @@ describe('Subscription API', () => {
     }
 
     it('CREATE HealthcareElement without options', async () => {
-      await createHealthcareElementAndSubscribe({}, ['CREATE'])
+      await subscribeAndCreateHealthcareElement({}, ['CREATE'])
     }).timeout(60000)
 
     it('CREATE HealthcareElement with options', async () => {
-      await createHealthcareElementAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
+      await subscribeAndCreateHealthcareElement(
+        {
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
+        },
+        ['CREATE']
+      )
     }).timeout(60000)
   })
 
   describe('Can subscribe to Patients', async () => {
-    const createPatientAndSubscribe = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
+    const subscribeAndCreatePatient = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (patient: Patient) => Promise<void>) => {
         await sleep(2000)
         return medtechApi!.patientApi.subscribeToPatientEvents(
@@ -391,16 +405,22 @@ describe('Subscription API', () => {
     }
 
     it('CREATE Patient without option', async () => {
-      await createPatientAndSubscribe({}, ['CREATE'])
+      await subscribeAndCreatePatient({}, ['CREATE'])
     }).timeout(60000)
 
     it('CREATE Patient with options', async () => {
-      await createPatientAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
+      await subscribeAndCreatePatient(
+        {
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
+        },
+        ['CREATE']
+      )
     }).timeout(60000)
   })
 
   describe('Can subscribe to User', async () => {
-    const createUserAndSubscribe = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
+    const subscribeAndCreateUser = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => {
         await sleep(2000)
         return medtechApi!.userApi.subscribeToUserEvents(eventTypes, await new UserFilter().build(), eventListener, options)
@@ -445,11 +465,17 @@ describe('Subscription API', () => {
     }
 
     it('CREATE User without options', async () => {
-      await createUserAndSubscribe({}, ['CREATE'])
+      await subscribeAndCreateUser({}, ['CREATE'])
     }).timeout(60000)
 
     it('CREATE User with options', async () => {
-      await createUserAndSubscribe({ keepAlive: 100000, lifetime: 200000 }, ['CREATE'])
+      await subscribeAndCreateUser(
+        {
+          connectionRetryIntervalMs: 10_000,
+          connectionMaxRetry: 5,
+        },
+        ['CREATE']
+      )
     }).timeout(60000)
   })
 })

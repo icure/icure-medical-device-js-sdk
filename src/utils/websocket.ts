@@ -6,7 +6,7 @@ import { User } from '../models/User'
 import { Notification } from '../models/Notification'
 import { FilterMapper } from '../mappers/filter'
 import { UserMapper } from '../mappers/user'
-import { HealthElement, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
+import { AbstractFilter, HealthElement, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
 import { PatientMapper } from '../mappers/patient'
 import { DataSampleMapper } from '../mappers/serviceDataSample'
 import { HealthcareElement } from '../models/HealthcareElement'
@@ -66,6 +66,7 @@ export function subscribeToEntityEvents(
   options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number },
   decryptor: (encrypted: MaintenanceTask) => Promise<MaintenanceTask>
 ): Promise<WebSocketWrapper>
+
 export function subscribeToEntityEvents<
   O extends Patient | DataSample | User | HealthcareElement | Notification,
   T extends PatientDto | Service | HealthElement | MaintenanceTask
@@ -79,93 +80,79 @@ export function subscribeToEntityEvents<
   options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {},
   decryptor?: (encrypted: T) => Promise<T>
 ): Promise<WebSocketWrapper> {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocketWrapper(
-      basePath.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
-      tokenProvider,
-      options.connectionMaxRetry ?? 5,
-      options.connectionRetryIntervalMs ?? 1_000,
-      {
-        CONNECTED: [
-          async (ws: WebSocketWrapper) => {
-            const subscription = {
-              eventTypes,
-              entityClass:
-                entityClass === 'User'
-                  ? 'org.taktik.icure.entities.User'
-                  : entityClass === 'Patient'
-                  ? 'org.taktik.icure.entities.Patient'
-                  : entityClass === 'DataSample'
-                  ? 'org.taktik.icure.entities.embed.Service'
-                  : entityClass === 'HealthcareElement'
-                  ? 'org.taktik.icure.entities.HealthElement'
-                  : entityClass === 'Notification'
-                  ? 'org.taktik.icure.entities.MaintenanceTask'
-                  : undefined,
-              filter: filter
-                ? {
-                    filter:
-                      entityClass === 'User'
-                        ? FilterMapper.toAbstractFilterDto<User>(filter, 'User')
-                        : entityClass === 'Patient'
-                        ? FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')
-                        : entityClass === 'DataSample'
-                        ? FilterMapper.toAbstractFilterDto<DataSample>(filter, 'DataSample')
-                        : entityClass === 'HealthcareElement'
-                        ? FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')
-                        : entityClass === 'Notification'
-                        ? FilterMapper.toAbstractFilterDto<Notification>(filter, 'Notification')
-                        : undefined,
-                  }
-                : undefined,
-            }
+  const config = {
+    User: {
+      qualifiedName: 'org.taktik.icure.entities.User',
+      filter: (filter: Filter<User>) => FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+      mapper: (data: UserDto) => Promise.resolve(UserMapper.toUser(data as UserDto)! as O),
+    },
+    Patient: {
+      qualifiedName: 'org.taktik.icure.entities.Patient',
+      filter: (filter: Filter<Patient>) => FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
+      mapper: (data: PatientDto) => decryptor!(data as PatientDto as T).then((p) => PatientMapper.toPatient(p as PatientDto)! as O),
+    },
+    DataSample: {
+      qualifiedName: 'org.taktik.icure.entities.embed.Service',
+      filter: (filter: Filter<DataSample>) => FilterMapper.toAbstractFilterDto<DataSample>(filter, 'DataSample'),
+      mapper: (data: Service) => decryptor!(data as Service as T).then((s) => DataSampleMapper.toDataSample(s as Service)! as O),
+    },
+    HealthcareElement: {
+      qualifiedName: 'org.taktik.icure.entities.HealthElement',
+      filter: (filter: Filter<HealthcareElement>) => FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'),
+      mapper: (data: HealthElement) =>
+        decryptor!(data as HealthElement as T).then((h) => HealthcareElementMapper.toHealthcareElement(h as HealthElement)! as O),
+    },
+    Notification: {
+      qualifiedName: 'org.taktik.icure.entities.MaintenanceTask',
+      filter: (filter: Filter<Notification>) => FilterMapper.toAbstractFilterDto<Notification>(filter, 'Notification'),
+      mapper: (data: MaintenanceTask) =>
+        decryptor!(data as MaintenanceTask as T).then((n) => NotificationMapper.toNotification(n as MaintenanceTask)! as O),
+    },
+  }
 
-            ws.send(JSON.stringify(subscription))
-          },
-        ],
-        ERROR: [
-          async (ws: WebSocketWrapper, error?: string) => {
-            reject(error)
-          },
-        ],
-      },
-      (data: any) => {
-        try {
-          if (entityClass === 'User') {
-            eventFired(UserMapper.toUser(data as UserDto)! as O).catch((e) => console.error(e))
+  return WebSocketWrapper.create(
+    basePath.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
+    tokenProvider,
+    options.connectionMaxRetry ?? 5,
+    options.connectionRetryIntervalMs ?? 1_000,
+    {
+      CONNECTED: [
+        async (ws: WebSocketWrapper) => {
+          const subscription = {
+            eventTypes,
+            entityClass: config[entityClass].qualifiedName,
+            filter: filter
+              ? {
+                  filter: config[entityClass].filter(filter),
+                }
+              : undefined,
           }
-          if (entityClass === 'Patient') {
-            decryptor!(data as PatientDto as T)
-              .then((p) => eventFired(PatientMapper.toPatient(p)! as O))
-              .catch((e) => console.error(e))
-          }
-          if (entityClass === 'DataSample') {
-            decryptor!(data as Service as T)
-              .then((s) => eventFired(DataSampleMapper.toDataSample(s as Service)! as O))
-              .catch((e) => console.error(e))
-          }
-          if (entityClass === 'HealthcareElement') {
-            decryptor!(data as HealthElement as T)
-              .then((he) => eventFired(HealthcareElementMapper.toHealthcareElement(he as HealthElement)! as O))
-              .catch((e) => console.error(e))
-          }
-          if (entityClass === 'Notification') {
-            decryptor!(data as MaintenanceTask as T)
-              .then((mt) => eventFired(NotificationMapper.toNotification(mt as MaintenanceTask)! as O))
-              .catch((e) => console.error(e))
-          }
-        } catch (e) {
-          console.error(e)
-        }
+
+          ws.send(JSON.stringify(subscription))
+        },
+      ],
+      ERROR: [
+        async (ws: WebSocketWrapper, error?: Error) => {
+          throw error
+        },
+      ],
+    },
+    (data: any) => {
+      try {
+        config[entityClass]
+          .mapper(data)
+          .then((o) => eventFired(o))
+          .catch((e) => console.error(e))
+      } catch (e) {
+        console.error(e)
       }
-    )
-    resolve(ws)
-  })
+    }
+  )
 }
 
 export type ConnectionStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'CLOSED' | 'ERROR'
 export type StatusCallback = (ws: WebSocketWrapper) => void
-export type ErrorStatusCallback = (ws: WebSocketWrapper, error?: string) => void
+export type ErrorStatusCallback = (ws: WebSocketWrapper, error?: Error) => void
 export type ConnectionStatusFunction = {
   [K in ConnectionStatus]: K extends 'ERROR' ? ErrorStatusCallback : StatusCallback
 }
@@ -175,37 +162,33 @@ export type ConnectionStatusFunctions = {
 export type WebSocketWrapperMessageCallback = (data: any) => void
 
 export class WebSocketWrapper {
-  private readonly url: string
-  private readonly tokenProvider: () => Promise<string>
-  private readonly maxRetries: number
-  private readonly retryDelay: number
   private readonly pingLifetime: number = 20_000
-  private statusCallbacks: ConnectionStatusFunctions = {}
-  private readonly messageCallback: WebSocketWrapperMessageCallback
   private socket: WebSocket | null = null
   private retries = 0
   private closed = false
   private lastPingReceived = Date.now()
   private intervalId?: NodeJS.Timeout | number
 
-  constructor(
+  private constructor(
+    private readonly url: string,
+    private readonly tokenProvider: () => Promise<string>,
+    private readonly maxRetries = 3,
+    private readonly retryDelay = 1000,
+    private readonly statusCallbacks: ConnectionStatusFunctions = {},
+    private readonly messageCallback: WebSocketWrapperMessageCallback = () => {}
+  ) {}
+
+  public static async create(
     url: string,
     tokenProvider: () => Promise<string>,
-    maxRetries = 3,
-    retryDelay = 1000,
-    statusCallback?: ConnectionStatusFunctions,
+    maxRetries?: number,
+    retryDelay?: number,
+    statusCallbacks?: ConnectionStatusFunctions,
     messageCallback?: WebSocketWrapperMessageCallback
-  ) {
-    this.url = url
-    this.tokenProvider = tokenProvider
-    this.maxRetries = maxRetries
-    this.retryDelay = retryDelay
-
-    this.statusCallbacks = statusCallback || {}
-
-    this.messageCallback = messageCallback || (() => {})
-
-    setTimeout(() => this.connect(), 0)
+  ): Promise<WebSocketWrapper> {
+    const ws = new WebSocketWrapper(url, tokenProvider, maxRetries, retryDelay, statusCallbacks, messageCallback)
+    await ws.connect()
+    return ws
   }
 
   public send(data: Buffer | ArrayBuffer | string) {
@@ -237,17 +220,16 @@ export class WebSocketWrapper {
 
   private async connect() {
     if (this.retries >= this.maxRetries) {
-      console.error('WebSocket connection failed after', this.maxRetries, 'retries')
-      return
+      throw new Error('WebSocket connection failed after ' + this.maxRetries + ' retries')
     }
 
     this.socket = new WebSocket(`${this.url};tokenid=${await this.tokenProvider()}`)
 
     this.socket.on('open', async () => {
       console.debug('WebSocket connection opened')
-      // Reset the retry counter
+
       this.retries = 0
-      // Call all status callbacks
+
       this.callStatusCallbacks('CONNECTED')
     })
 
@@ -299,10 +281,10 @@ export class WebSocketWrapper {
       }, this.retryDelay)
     })
 
-    this.socket.on('error', async (event: any) => {
-      console.error('WebSocket error:', event)
+    this.socket.on('error', async (err) => {
+      console.error('WebSocket error:', err)
 
-      this.callStatusCallbacks('ERROR')
+      this.callStatusCallbacks('ERROR', err)
 
       if (this.socket) {
         this.socket.close()
@@ -310,7 +292,7 @@ export class WebSocketWrapper {
     })
   }
 
-  private callStatusCallbacks(event: ConnectionStatus, error?: string) {
+  private callStatusCallbacks(event: ConnectionStatus, error?: Error) {
     switch (event) {
       case 'NOT_CONNECTED':
       case 'CONNECTED':

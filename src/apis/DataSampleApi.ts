@@ -148,7 +148,7 @@ export interface DataSampleApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<DataSample>,
     eventFired: (dataSample: DataSample) => Promise<void>,
-    options?: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
+    options?: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 
   extractPatientId(dataSample: DataSample): Promise<string | undefined>

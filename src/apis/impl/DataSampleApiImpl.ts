@@ -576,7 +576,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<DataSample> | undefined,
     eventFired: (dataSample: DataSample) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(

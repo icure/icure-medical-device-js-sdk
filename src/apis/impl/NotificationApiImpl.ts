@@ -182,7 +182,7 @@ export class NotificationApiImpl implements NotificationApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Notification>,
     eventFired: (dataSample: Notification) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser()
 
