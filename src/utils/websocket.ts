@@ -139,10 +139,7 @@ export function subscribeToEntityEvents<
     },
     (data: any) => {
       try {
-        config[entityClass]
-          .mapper(data)
-          .then((o) => eventFired(o))
-          .catch((e) => console.error(e))
+        config[entityClass].mapper(data).then((o) => eventFired(o))
       } catch (e) {
         console.error(e)
       }
