@@ -230,9 +230,7 @@ export class TestUtils {
     recaptcha: string,
     recaptchaType: RecaptchaType,
     storage?: StorageFacade<string>,
-    keyStorage?: KeyStorageFacade,
-    recaptcha: string = 'process.env.ICURE_RECAPTCHA',
-    recaptchaType: RecaptchaType = 'recaptcha'
+    keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
     if (new Date().getTime() - this.lastRegisterCall < registerThrottlingLimit) {
       const throttlingWait = returnWithinBoundaries(
