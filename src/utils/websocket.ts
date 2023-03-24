@@ -160,7 +160,7 @@ export class WebSocketWrapper {
   private retries = 0
   private closed = false
   private lastPingReceived = Date.now()
-  private intervalId?: NodeJS.Timeout | number
+  private intervalIds: (NodeJS.Timeout | number)[] = []
 
   private constructor(
     private readonly url: string,
@@ -220,7 +220,11 @@ export class WebSocketWrapper {
     this.socket.on('open', async () => {
       log.debug('WebSocket connection opened')
 
-      this.retries = 0
+      this.intervalIds.push(
+        setTimeout(() => {
+          this.retries = 0
+        }, (this.maxRetries + 1) * this.retryDelay)
+      )
 
       this.callStatusCallbacks('CONNECTED')
     })
@@ -237,12 +241,14 @@ export class WebSocketWrapper {
         this.send('pong')
         this.lastPingReceived = Date.now()
 
-        this.intervalId = setTimeout(() => {
-          if (Date.now() - this.lastPingReceived > this.pingLifetime) {
-            log.error(`No ping received in the last ${this.pingLifetime} ms`)
-            this.socket?.close()
-          }
-        }, this.pingLifetime)
+        this.intervalIds.push(
+          setTimeout(() => {
+            if (Date.now() - this.lastPingReceived > this.pingLifetime) {
+              log.error(`No ping received in the last ${this.pingLifetime} ms`)
+              this.socket?.close()
+            }
+          }, this.pingLifetime)
+        )
 
         return
       }
@@ -261,7 +267,8 @@ export class WebSocketWrapper {
 
       this.callStatusCallbacks('CLOSED')
 
-      clearTimeout(this.intervalId)
+      this.intervalIds.forEach((id) => clearTimeout(id as number))
+      this.intervalIds = []
 
       if (this.closed) {
         return
