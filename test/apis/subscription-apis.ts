@@ -446,7 +446,9 @@ describe('Subscription API', () => {
             env!.msgGtwUrl,
             env!.specId,
             env!.patAuthProcessId,
-            loggedUser.healthcarePartyId!
+            loggedUser.healthcarePartyId!,
+            env!.recaptcha,
+            'recaptcha'
           )
 
           const currentUser = patApiAndUser.user

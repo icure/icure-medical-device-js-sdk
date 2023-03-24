@@ -75,7 +75,9 @@ describe('Patient API', () => {
       env.msgGtwUrl,
       env.specId,
       env.patAuthProcessId,
-      hcp1User.healthcarePartyId!
+      hcp1User.healthcarePartyId!,
+      env.recaptcha,
+      'recaptcha'
     )
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
