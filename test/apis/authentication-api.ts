@@ -183,10 +183,10 @@ describe('Authentication API', () => {
       env!.specId,
       env!.hcpAuthProcessId,
       hcpId!,
-      undefined,
-      undefined,
       env!.friendlyCaptchaKey,
-      'friendly-captcha'
+      'friendly-captcha',
+      undefined,
+      undefined
     )
     const currentUser = hcpApiAndUser.user
 
@@ -256,10 +256,10 @@ describe('Authentication API', () => {
       env!.specId,
       env!.patAuthProcessId,
       hcpId!,
-      undefined,
-      undefined,
       env!.friendlyCaptchaKey,
-      'friendly-captcha'
+      'friendly-captcha',
+      undefined,
+      undefined
     )
 
     // Then
