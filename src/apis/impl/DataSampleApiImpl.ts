@@ -10,6 +10,7 @@ import {
   Document as DocumentDto,
   FilterChainContact,
   FilterChainService,
+  IccAuthApi,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
@@ -32,18 +33,19 @@ import { DocumentMapper } from '../../mappers/document'
 import { FilterMapper } from '../../mappers/filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { UtiDetector } from '../../utils/utiDetector'
-import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { toMap, toMapArrayTransform } from '../../mappers/utils'
 import { DelegationMapper } from '../../mappers/delegation'
 import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import toDelegationDto = DelegationMapper.toDelegationDto
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { Connection, ConnectionImpl } from '../../models/Connection'
+import toDelegationDto = DelegationMapper.toDelegationDto
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
+  private readonly authApi: IccAuthApi
   private readonly userApi: IccUserXApi
   private readonly patientApi: IccPatientXApi
   private readonly contactApi: IccContactXApi
@@ -67,6 +69,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       dataOwnerApi: IccDataOwnerXApi
       documentApi: IccDocumentXApi
       healthcareElementApi: IccHelementXApi
+      authApi: IccAuthApi
     },
     errorHandler: ErrorHandler,
     basePath: string,
@@ -84,6 +87,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     this.dataOwnerApi = api.dataOwnerApi
     this.documentApi = api.documentApi
     this.healthcareElementApi = api.healthcareElementApi
+    this.authApi = api.authApi
   }
 
   clearContactCache() {
@@ -572,23 +576,22 @@ export class DataSampleApiImpl implements DataSampleApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<DataSample> | undefined,
     eventFired: (dataSample: DataSample) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'DataSample',
       eventTypes,
       filter,
       eventFired,
       options,
       async (encrypted) => (await this.contactApi.decryptServices(currentUser.healthcarePartyId!, [encrypted]))[0]
-    ).then((rs) => new ConnectionImpl(rs))
+    ).then((ws) => new ConnectionImpl(ws))
   }
 
-  async extractPatientId(dataSample: DataSample): Promise<String | undefined> {
+  async extractPatientId(dataSample: DataSample): Promise<string | undefined> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })

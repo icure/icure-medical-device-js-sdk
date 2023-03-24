@@ -30,6 +30,7 @@ import {
   UserInitializerComposite,
 } from './test-setup-decorators'
 import { checkIfDockerIsOnline } from '@icure/test-setup'
+import { RecaptchaType } from '../src/models/RecaptchaType'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -73,6 +74,7 @@ export type TestVars = {
   recaptcha: string
   masterHcp: UserDetails | undefined
   dataOwnerDetails: { [key: string]: UserDetails }
+  friendlyCaptchaKey: string
 }
 
 export function getEnvVariables(): TestVars {
@@ -102,9 +104,12 @@ export function getEnvVariables(): TestVars {
     backendType: process.env.BACKEND_TYPE ?? 'kraken',
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
-    recaptcha: process.env.ICURE_RECAPTCHA ?? '',
+    recaptcha: process.env.ICURE_RECAPTCHA ?? uuid(),
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
+    friendlyCaptchaKey:
+      process.env.ICURE_FRIENDLY_CAPTCHA ??
+      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy',
   }
 }
 
@@ -222,6 +227,8 @@ export class TestUtils {
     msgGtwSpecId: string,
     authProcessId: string,
     hcpId: string,
+    recaptcha: string,
+    recaptchaType: RecaptchaType,
     storage?: StorageFacade<string>,
     keyStorage?: KeyStorageFacade
   ): Promise<{ api: MedTechApi; user: User; token: string }> {
@@ -257,14 +264,15 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      env!.recaptcha,
+      recaptcha,
       email,
       undefined,
       'Antoine',
       'Duchâteau',
       hcpId,
       false,
-      8
+      8,
+      recaptchaType
     )
 
     const emails = await TestUtils.getEmail(email)

@@ -1,20 +1,30 @@
 import { Patient, PotentiallyEncryptedPatient } from '../../models/Patient'
 import { PaginatedListPatient } from '../../models/PaginatedListPatient'
 import { PatientApi } from '../PatientApi'
-import { FilterChainPatient, IccContactXApi, IccCryptoXApi, IccDocumentXApi, IccPatientXApi, IccUserXApi, Patient as PatientDto } from '@icure/api'
+import {
+  FilterChainPatient,
+  IccAuthApi,
+  IccContactXApi,
+  IccCryptoXApi,
+  IccDocumentXApi,
+  IccPatientXApi,
+  IccUserXApi,
+  Patient as PatientDto,
+} from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { FilterMapper } from '../../mappers/filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { Filter } from '../../filter/Filter'
 import { PatientMapper } from '../../mappers/patient'
 import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
+  private readonly authApi: IccAuthApi
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
   private readonly dataOwnerApi: IccDataOwnerXApi
@@ -28,6 +38,7 @@ export class PatientApiImpl implements PatientApi {
   constructor(
     api: {
       cryptoApi: IccCryptoXApi
+      authApi: IccAuthApi
       userApi: IccUserXApi
       patientApi: IccPatientXApi
       contactApi: IccContactXApi
@@ -47,6 +58,7 @@ export class PatientApiImpl implements PatientApi {
     this.patientApi = api.patientApi
     this.cryptoApi = api.cryptoApi
     this.dataOwnerApi = api.dataOwnerApi
+    this.authApi = api.authApi
   }
 
   async createOrModifyPatient(patient: Patient): Promise<Patient> {
@@ -245,15 +257,14 @@ export class PatientApiImpl implements PatientApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<Patient> | undefined,
     eventFired: (patient: Patient) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'Patient',
       eventTypes,
       filter,

@@ -5,6 +5,7 @@ import { HealthcareElementApi } from '../HealthcareElementApi'
 import {
   FilterChainPatient,
   HealthElement,
+  IccAuthApi,
   IccContactXApi,
   IccCryptoXApi,
   IccDocumentXApi,
@@ -25,7 +26,7 @@ import { Patient } from '../../models/Patient'
 import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
-import { subscribeToEntityEvents } from '../../utils/rsocket'
+import { subscribeToEntityEvents } from '../../utils/websocket'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
@@ -33,6 +34,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly heApi: IccHelementXApi
   private readonly patientApi: IccPatientXApi
   private readonly cryptoApi: IccCryptoXApi
+  private readonly authApi: IccAuthApi
   private readonly dataOwnerApi: IccDataOwnerXApi
   private readonly errorHandler: ErrorHandler
 
@@ -43,6 +45,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   constructor(
     api: {
       cryptoApi: IccCryptoXApi
+      authApi: IccAuthApi
       userApi: IccUserXApi
       patientApi: IccPatientXApi
       contactApi: IccContactXApi
@@ -59,6 +62,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     this.basePath = basePath
     this.username = username
     this.password = password
+    this.authApi = api.authApi
     this.userApi = api.userApi
     this.heApi = api.healthcareElementApi
     this.patientApi = api.patientApi
@@ -318,14 +322,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     eventTypes: ('CREATE' | 'UPDATE' | 'DELETE')[],
     filter: Filter<HealthcareElement> | undefined,
     eventFired: (dataSample: HealthcareElement) => Promise<void>,
-    options: { keepAlive?: number; lifetime?: number; connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
+    options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
     const currentUser = await this.userApi.getCurrentUser()
 
     return subscribeToEntityEvents(
       this.basePath,
-      this.username!,
-      this.password!,
+      async () => await this.authApi.token('GET', '/ws/v1/notification'),
       'HealthcareElement',
       eventTypes,
       filter,
