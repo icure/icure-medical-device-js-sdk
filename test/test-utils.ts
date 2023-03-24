@@ -104,7 +104,7 @@ export function getEnvVariables(): TestVars {
     backendType: process.env.BACKEND_TYPE ?? 'kraken',
     adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
     adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
-    recaptcha: process.env.ICURE_RECAPTCHA ?? '',
+    recaptcha: process.env.ICURE_RECAPTCHA ?? uuid(),
     masterHcp: masterHcpDetails,
     dataOwnerDetails: {},
     friendlyCaptchaKey:
@@ -264,7 +264,7 @@ export class TestUtils {
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
-      env!.recaptcha,
+      recaptcha,
       email,
       undefined,
       'Antoine',
