@@ -17,6 +17,7 @@ import { User } from '../../src/models/User'
 import { v4 as uuid } from 'uuid'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Connection } from '../../src/models/Connection'
+import { WebSocketWrapper } from '../../src/utils/websocket'
 
 setLocalStorage(fetch)
 
@@ -478,6 +479,33 @@ describe('Subscription API', () => {
         },
         ['CREATE']
       )
+    }).timeout(60000)
+  })
+
+  describe('Retry mechanism', async () => {
+    it('Should fails 10 times and then cut', async () => {
+      const statuses: string[] = []
+
+      const ws = await WebSocketWrapper.create(
+        env!.iCureUrl.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
+        async () => 'fake-token',
+        10,
+        500,
+        {
+          CONNECTED: [() => statuses.push('CONNECTED')],
+          CLOSED: [() => statuses.push('CLOSED')],
+          ERROR: [(ws, error) => statuses.push('ERROR')],
+        },
+        (data) => {
+          throw new Error('Test')
+        }
+      )
+
+      await sleep(20000)
+
+      assert(statuses.length === 20, 'The statuses have not been recorded')
+      assert(statuses.filter((status) => status === 'ERROR').length === 10, 'There should be 10 errors status')
+      assert(statuses.filter((status) => status === 'CLOSED').length === 10, 'There should be 10 closed status')
     }).timeout(60000)
   })
 })
