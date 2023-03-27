@@ -4,7 +4,7 @@ export interface Connection {
   close(): void
   onConnected(callback: () => void): Connection
   onClosed(callback: () => void): Connection
-  onError(callback: (e?: string) => void): Connection
+  onError(callback: (e?: Error) => void): Connection
 }
 
 export class ConnectionImpl implements Connection {
@@ -36,8 +36,8 @@ export class ConnectionImpl implements Connection {
     return this
   }
 
-  onError(callback: (e?: string) => void): Connection {
-    this.wsw?.addStatusCallback('ERROR', (ws: WebSocketWrapper, e?: string) => {
+  onError(callback: (e?: Error) => void): Connection {
+    this.wsw?.addStatusCallback('ERROR', (ws: WebSocketWrapper, e?: Error) => {
       this.connectionStatus = 'ERROR'
       callback(e)
     })
