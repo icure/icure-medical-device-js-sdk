@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / PaginatedListUser
+[@icure/medical-device-sdk](../modules) / PaginatedListUser
 
 # Class: PaginatedListUser
 
@@ -6,18 +6,18 @@
 
 ### Constructors
 
-- [constructor](PaginatedListUser.md#constructor)
+- [constructor](PaginatedListUser#constructor)
 
 ### Properties
 
-- [nextKeyPair](PaginatedListUser.md#nextkeypair)
-- [pageSize](PaginatedListUser.md#pagesize)
-- [rows](PaginatedListUser.md#rows)
-- [totalSize](PaginatedListUser.md#totalsize)
+- [nextKeyPair](PaginatedListUser#nextkeypair)
+- [pageSize](PaginatedListUser#pagesize)
+- [rows](PaginatedListUser#rows)
+- [totalSize](PaginatedListUser#totalsize)
 
 ### Methods
 
-- [marshal](PaginatedListUser.md#marshal)
+- [marshal](PaginatedListUser#marshal)
 
 ## Constructors
 
@@ -33,17 +33,17 @@
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L17)
+[src/models/PaginatedListUser.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L17)
 
 ## Properties
 
 ### nextKeyPair
 
-• `Optional` **nextKeyPair**: [`PaginatedDocumentKeyAndIdPairObject`](PaginatedDocumentKeyAndIdPairObject.md)
+• `Optional` **nextKeyPair**: [`PaginatedDocumentKeyAndIdPairObject`](PaginatedDocumentKeyAndIdPairObject)
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L29)
+[src/models/PaginatedListUser.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L29)
 
 ___
 
@@ -53,17 +53,17 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L26)
+[src/models/PaginatedListUser.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L26)
 
 ___
 
 ### rows
 
-• **rows**: [`User`](User.md)[]
+• **rows**: [`User`](User)[]
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L28)
+[src/models/PaginatedListUser.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L28)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L27)
+[src/models/PaginatedListUser.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L27)
 
 ## Methods
 
@@ -87,4 +87,4 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListUser.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListUser.ts#L31)
+[src/models/PaginatedListUser.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListUser.ts#L31)

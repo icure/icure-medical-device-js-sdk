@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Filter
+[@icure/medical-device-sdk](../modules) / Filter
 
 # Class: Filter
 
@@ -15,15 +15,15 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](Filter.md#constructor)
+- [constructor](Filter#constructor)
 
 ### Properties
 
-- [description](Filter.md#description)
+- [description](Filter#description)
 
 ### Methods
 
-- [marshal](Filter.md#marshal)
+- [marshal](Filter#marshal)
 
 ## Constructors
 
@@ -39,7 +39,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Filter.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Filter.ts#L15)
+[src/models/Filter.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Filter.ts#L15)
 
 ## Properties
 
@@ -49,7 +49,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Filter.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Filter.ts#L19)
+[src/models/Filter.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Filter.ts#L19)
 
 ## Methods
 
@@ -63,4 +63,4 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Filter.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Filter.ts#L21)
+[src/models/Filter.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Filter.ts#L21)

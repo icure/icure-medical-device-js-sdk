@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / UuidEncoder
+[@icure/medical-device-sdk](../modules) / UuidEncoder
 
 # Class: UuidEncoder
 
@@ -6,21 +6,21 @@
 
 ### Constructors
 
-- [constructor](UuidEncoder.md#constructor)
+- [constructor](UuidEncoder#constructor)
 
 ### Properties
 
-- [base](UuidEncoder.md#base)
-- [encStr](UuidEncoder.md#encstr)
-- [isCaseSensitive](UuidEncoder.md#iscasesensitive)
+- [base](UuidEncoder#base)
+- [encStr](UuidEncoder#encstr)
+- [isCaseSensitive](UuidEncoder#iscasesensitive)
 
 ### Methods
 
-- [decode](UuidEncoder.md#decode)
-- [encode](UuidEncoder.md#encode)
-- [setBaseEncodingStr](UuidEncoder.md#setbaseencodingstr)
-- [isCaseSensitiveBase](UuidEncoder.md#iscasesensitivebase)
-- [resolveEncodingStr](UuidEncoder.md#resolveencodingstr)
+- [decode](UuidEncoder#decode)
+- [encode](UuidEncoder#encode)
+- [setBaseEncodingStr](UuidEncoder#setbaseencodingstr)
+- [isCaseSensitiveBase](UuidEncoder#iscasesensitivebase)
+- [resolveEncodingStr](UuidEncoder#resolveencodingstr)
 
 ## Constructors
 

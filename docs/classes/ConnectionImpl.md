@@ -1,28 +1,28 @@
-[@icure/medical-device-sdk](../modules.md) / ConnectionImpl
+[@icure/medical-device-sdk](../modules) / ConnectionImpl
 
 # Class: ConnectionImpl
 
 ## Implements
 
-- [`Connection`](../interfaces/Connection.md)
+- [`Connection`](../interfaces/Connection)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](ConnectionImpl.md#constructor)
+- [constructor](ConnectionImpl#constructor)
 
 ### Properties
 
-- [connectionStatus](ConnectionImpl.md#connectionstatus)
-- [wsw](ConnectionImpl.md#wsw)
+- [connectionStatus](ConnectionImpl#connectionstatus)
+- [wsw](ConnectionImpl#wsw)
 
 ### Methods
 
-- [close](ConnectionImpl.md#close)
-- [onClosed](ConnectionImpl.md#onclosed)
-- [onConnected](ConnectionImpl.md#onconnected)
-- [onError](ConnectionImpl.md#onerror)
+- [close](ConnectionImpl#close)
+- [onClosed](ConnectionImpl#onclosed)
+- [onConnected](ConnectionImpl#onconnected)
+- [onError](ConnectionImpl#onerror)
 
 ## Constructors
 
@@ -38,7 +38,7 @@
 
 #### Defined in
 
-[src/models/Connection.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L14)
+[src/models/Connection.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L14)
 
 ## Properties
 
@@ -48,7 +48,7 @@
 
 #### Defined in
 
-[src/models/Connection.ts:12](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L12)
+[src/models/Connection.ts:12](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L12)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:11](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L11)
+[src/models/Connection.ts:11](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L11)
 
 ## Methods
 
@@ -72,17 +72,17 @@ ___
 
 #### Implementation of
 
-[Connection](../interfaces/Connection.md).[close](../interfaces/Connection.md#close)
+[Connection](../interfaces/Connection).[close](../interfaces/Connection#close)
 
 #### Defined in
 
-[src/models/Connection.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L19)
+[src/models/Connection.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L19)
 
 ___
 
 ### onClosed
 
-▸ **onClosed**(`callback`): [`Connection`](../interfaces/Connection.md)
+▸ **onClosed**(`callback`): [`Connection`](../interfaces/Connection)
 
 #### Parameters
 
@@ -92,21 +92,21 @@ ___
 
 #### Returns
 
-[`Connection`](../interfaces/Connection.md)
+[`Connection`](../interfaces/Connection)
 
 #### Implementation of
 
-[Connection](../interfaces/Connection.md).[onClosed](../interfaces/Connection.md#onclosed)
+[Connection](../interfaces/Connection).[onClosed](../interfaces/Connection#onclosed)
 
 #### Defined in
 
-[src/models/Connection.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L31)
+[src/models/Connection.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L31)
 
 ___
 
 ### onConnected
 
-▸ **onConnected**(`callback`): [`Connection`](../interfaces/Connection.md)
+▸ **onConnected**(`callback`): [`Connection`](../interfaces/Connection)
 
 #### Parameters
 
@@ -116,21 +116,21 @@ ___
 
 #### Returns
 
-[`Connection`](../interfaces/Connection.md)
+[`Connection`](../interfaces/Connection)
 
 #### Implementation of
 
-[Connection](../interfaces/Connection.md).[onConnected](../interfaces/Connection.md#onconnected)
+[Connection](../interfaces/Connection).[onConnected](../interfaces/Connection#onconnected)
 
 #### Defined in
 
-[src/models/Connection.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L23)
+[src/models/Connection.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L23)
 
 ___
 
 ### onError
 
-▸ **onError**(`callback`): [`Connection`](../interfaces/Connection.md)
+▸ **onError**(`callback`): [`Connection`](../interfaces/Connection)
 
 #### Parameters
 
@@ -140,12 +140,12 @@ ___
 
 #### Returns
 
-[`Connection`](../interfaces/Connection.md)
+[`Connection`](../interfaces/Connection)
 
 #### Implementation of
 
-[Connection](../interfaces/Connection.md).[onError](../interfaces/Connection.md#onerror)
+[Connection](../interfaces/Connection).[onError](../interfaces/Connection#onerror)
 
 #### Defined in
 
-[src/models/Connection.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L39)
+[src/models/Connection.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Connection.ts#L39)

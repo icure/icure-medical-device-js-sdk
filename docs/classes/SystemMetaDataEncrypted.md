@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / SystemMetaDataEncrypted
+[@icure/medical-device-sdk](../modules) / SystemMetaDataEncrypted
 
 # Class: SystemMetaDataEncrypted
 
@@ -6,19 +6,19 @@
 
 ### Constructors
 
-- [constructor](SystemMetaDataEncrypted.md#constructor)
+- [constructor](SystemMetaDataEncrypted#constructor)
 
 ### Properties
 
-- [cryptedForeignKeys](SystemMetaDataEncrypted.md#cryptedforeignkeys)
-- [delegations](SystemMetaDataEncrypted.md#delegations)
-- [encryptedSelf](SystemMetaDataEncrypted.md#encryptedself)
-- [encryptionKeys](SystemMetaDataEncrypted.md#encryptionkeys)
-- [secretForeignKeys](SystemMetaDataEncrypted.md#secretforeignkeys)
+- [cryptedForeignKeys](SystemMetaDataEncrypted#cryptedforeignkeys)
+- [delegations](SystemMetaDataEncrypted#delegations)
+- [encryptedSelf](SystemMetaDataEncrypted#encryptedself)
+- [encryptionKeys](SystemMetaDataEncrypted#encryptionkeys)
+- [secretForeignKeys](SystemMetaDataEncrypted#secretforeignkeys)
 
 ### Methods
 
-- [marshal](SystemMetaDataEncrypted.md#marshal)
+- [marshal](SystemMetaDataEncrypted#marshal)
 
 ## Constructors
 
@@ -34,7 +34,7 @@
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L17)
+[src/models/SystemMetaDataEncrypted.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L17)
 
 ## Properties
 
@@ -44,11 +44,11 @@
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L42)
+[src/models/SystemMetaDataEncrypted.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L42)
 
 ___
 
@@ -58,11 +58,11 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L43)
+[src/models/SystemMetaDataEncrypted.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L43)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L45)
+[src/models/SystemMetaDataEncrypted.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L45)
 
 ___
 
@@ -82,11 +82,11 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L44)
+[src/models/SystemMetaDataEncrypted.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L44)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L41)
+[src/models/SystemMetaDataEncrypted.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L41)
 
 ## Methods
 
@@ -110,4 +110,4 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataEncrypted.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataEncrypted.ts#L47)
+[src/models/SystemMetaDataEncrypted.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataEncrypted.ts#L47)

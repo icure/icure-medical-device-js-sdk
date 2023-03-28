@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / PaginatedListCoding
+[@icure/medical-device-sdk](../modules) / PaginatedListCoding
 
 # Class: PaginatedListCoding
 
@@ -6,18 +6,18 @@
 
 ### Constructors
 
-- [constructor](PaginatedListCoding.md#constructor)
+- [constructor](PaginatedListCoding#constructor)
 
 ### Properties
 
-- [nextKeyPair](PaginatedListCoding.md#nextkeypair)
-- [pageSize](PaginatedListCoding.md#pagesize)
-- [rows](PaginatedListCoding.md#rows)
-- [totalSize](PaginatedListCoding.md#totalsize)
+- [nextKeyPair](PaginatedListCoding#nextkeypair)
+- [pageSize](PaginatedListCoding#pagesize)
+- [rows](PaginatedListCoding#rows)
+- [totalSize](PaginatedListCoding#totalsize)
 
 ### Methods
 
-- [marshal](PaginatedListCoding.md#marshal)
+- [marshal](PaginatedListCoding#marshal)
 
 ## Constructors
 
@@ -33,17 +33,17 @@
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L17)
+[src/models/PaginatedListCoding.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L17)
 
 ## Properties
 
 ### nextKeyPair
 
-• `Optional` **nextKeyPair**: [`PaginatedDocumentKeyAndIdPairObject`](PaginatedDocumentKeyAndIdPairObject.md)
+• `Optional` **nextKeyPair**: [`PaginatedDocumentKeyAndIdPairObject`](PaginatedDocumentKeyAndIdPairObject)
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L29)
+[src/models/PaginatedListCoding.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L29)
 
 ___
 
@@ -53,17 +53,17 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L26)
+[src/models/PaginatedListCoding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L26)
 
 ___
 
 ### rows
 
-• **rows**: [`Coding`](Coding.md)[]
+• **rows**: [`Coding`](Coding)[]
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L28)
+[src/models/PaginatedListCoding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L28)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L27)
+[src/models/PaginatedListCoding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L27)
 
 ## Methods
 
@@ -87,4 +87,4 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L31)
+[src/models/PaginatedListCoding.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PaginatedListCoding.ts#L31)

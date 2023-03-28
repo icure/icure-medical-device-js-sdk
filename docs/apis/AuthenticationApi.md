@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / AuthenticationApi
+[@icure/medical-device-sdk](../modules) / AuthenticationApi
 
 # SDK API: AuthenticationApi
 
@@ -8,9 +8,9 @@ The AuthenticationApi interface provides methods to authenticate and register us
 
 ### Methods
 
-- [authenticateAndAskAccessToItsExistingData](AuthenticationApi.md#authenticateandaskaccesstoitsexistingdata)
-- [completeAuthentication](AuthenticationApi.md#completeauthentication)
-- [startAuthentication](AuthenticationApi.md#startauthentication)
+- [authenticateAndAskAccessToItsExistingData](AuthenticationApi#authenticateandaskaccesstoitsexistingdata)
+- [completeAuthentication](AuthenticationApi#completeauthentication)
+- [startAuthentication](AuthenticationApi#startauthentication)
 
 ## Methods
 
@@ -39,7 +39,7 @@ user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L72)
+[src/apis/AuthenticationApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/AuthenticationApi.ts#L72)
 
 ___
 
@@ -67,7 +67,7 @@ user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L57)
+[src/apis/AuthenticationApi.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/AuthenticationApi.ts#L57)
 
 ___
 
@@ -92,7 +92,7 @@ Provide at least one authentication tool (email and/or phoneNumber) to start the
 | `healthcareProfessionalId?` | `string` | The id of the healthcare professional inviting the user to register. Use the id of the hcp in charge of the database where you want to add this new user. (Mandatory for registration only) |
 | `bypassTokenCheck?` | `boolean` | Prevent the token check during the validation process. Activates this flag **ONLY** for dedicated use cases and users, like the submission on the Apple / Google Store. (false by default) |
 | `validationCodeLength?` | `number` | The length of the validation code to send to the user. (6 by default) |
-| `recaptchaType?` | [`RecaptchaType`](../modules.md#recaptchatype) | The type of ReCAPTCHA you used during your authentication flow. Can either be Google reCAPTCHA v3 [https://developers.google.com/recaptcha/docs/v3](https://developers.google.com/recaptcha/docs/v3) or the * friendly-captcha [https://friendlycaptcha.com/](https://friendlycaptcha.com/). Use the friendly-recaptcha if you would like to avoid tracking solution of Google reCAPTCHA. |
+| `recaptchaType?` | [`RecaptchaType`](../modules#recaptchatype) | The type of ReCAPTCHA you used during your authentication flow. Can either be Google reCAPTCHA v3 [https://developers.google.com/recaptcha/docs/v3](https://developers.google.com/recaptcha/docs/v3) or the * friendly-captcha [https://friendlycaptcha.com/](https://friendlycaptcha.com/). Use the friendly-recaptcha if you would like to avoid tracking solution of Google reCAPTCHA. |
 
 #### Returns
 
@@ -102,4 +102,4 @@ The AuthenticationProcess information needed to complete the authentication in t
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L33)
+[src/apis/AuthenticationApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/AuthenticationApi.ts#L33)

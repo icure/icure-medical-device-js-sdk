@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / StorageFacade
+[@icure/medical-device-sdk](../modules) / StorageFacade
 
 # Interface: StorageFacade<T\>
 
@@ -10,15 +10,15 @@
 
 ## Implemented by
 
-- [`LocalStorageImpl`](../classes/LocalStorageImpl.md)
+- [`LocalStorageImpl`](../classes/LocalStorageImpl)
 
 ## Table of contents
 
 ### Methods
 
-- [getItem](StorageFacade.md#getitem)
-- [removeItem](StorageFacade.md#removeitem)
-- [setItem](StorageFacade.md#setitem)
+- [getItem](StorageFacade#getitem)
+- [removeItem](StorageFacade#removeitem)
+- [setItem](StorageFacade#setitem)
 
 ## Methods
 

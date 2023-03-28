@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / SystemMetaDataOwnerEncrypted
+[@icure/medical-device-sdk](../modules) / SystemMetaDataOwnerEncrypted
 
 # Class: SystemMetaDataOwnerEncrypted
 
@@ -6,24 +6,24 @@
 
 ### Constructors
 
-- [constructor](SystemMetaDataOwnerEncrypted.md#constructor)
+- [constructor](SystemMetaDataOwnerEncrypted#constructor)
 
 ### Properties
 
-- [aesExchangeKeys](SystemMetaDataOwnerEncrypted.md#aesexchangekeys)
-- [cryptedForeignKeys](SystemMetaDataOwnerEncrypted.md#cryptedforeignkeys)
-- [delegations](SystemMetaDataOwnerEncrypted.md#delegations)
-- [encryptedSelf](SystemMetaDataOwnerEncrypted.md#encryptedself)
-- [encryptionKeys](SystemMetaDataOwnerEncrypted.md#encryptionkeys)
-- [hcPartyKeys](SystemMetaDataOwnerEncrypted.md#hcpartykeys)
-- [privateKeyShamirPartitions](SystemMetaDataOwnerEncrypted.md#privatekeyshamirpartitions)
-- [publicKey](SystemMetaDataOwnerEncrypted.md#publickey)
-- [secretForeignKeys](SystemMetaDataOwnerEncrypted.md#secretforeignkeys)
-- [transferKeys](SystemMetaDataOwnerEncrypted.md#transferkeys)
+- [aesExchangeKeys](SystemMetaDataOwnerEncrypted#aesexchangekeys)
+- [cryptedForeignKeys](SystemMetaDataOwnerEncrypted#cryptedforeignkeys)
+- [delegations](SystemMetaDataOwnerEncrypted#delegations)
+- [encryptedSelf](SystemMetaDataOwnerEncrypted#encryptedself)
+- [encryptionKeys](SystemMetaDataOwnerEncrypted#encryptionkeys)
+- [hcPartyKeys](SystemMetaDataOwnerEncrypted#hcpartykeys)
+- [privateKeyShamirPartitions](SystemMetaDataOwnerEncrypted#privatekeyshamirpartitions)
+- [publicKey](SystemMetaDataOwnerEncrypted#publickey)
+- [secretForeignKeys](SystemMetaDataOwnerEncrypted#secretforeignkeys)
+- [transferKeys](SystemMetaDataOwnerEncrypted#transferkeys)
 
 ### Methods
 
-- [marshal](SystemMetaDataOwnerEncrypted.md#marshal)
+- [marshal](SystemMetaDataOwnerEncrypted#marshal)
 
 ## Constructors
 
@@ -39,7 +39,7 @@
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L16)
+[src/models/SystemMetaDataOwnerEncrypted.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L16)
 
 ## Properties
 
@@ -53,7 +53,7 @@
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L46)
+[src/models/SystemMetaDataOwnerEncrypted.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L46)
 
 ___
 
@@ -63,11 +63,11 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L43)
+[src/models/SystemMetaDataOwnerEncrypted.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L43)
 
 ___
 
@@ -77,11 +77,11 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L44)
+[src/models/SystemMetaDataOwnerEncrypted.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L44)
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L48)
+[src/models/SystemMetaDataOwnerEncrypted.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L48)
 
 ___
 
@@ -101,11 +101,11 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `Set`<[`Delegation`](Delegation.md)\>
+▪ [key: `string`]: `Set`<[`Delegation`](Delegation)\>
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L45)
+[src/models/SystemMetaDataOwnerEncrypted.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L45)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L40)
+[src/models/SystemMetaDataOwnerEncrypted.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L40)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L41)
+[src/models/SystemMetaDataOwnerEncrypted.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L41)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L39)
+[src/models/SystemMetaDataOwnerEncrypted.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L39)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L42)
+[src/models/SystemMetaDataOwnerEncrypted.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L42)
 
 ___
 
@@ -167,7 +167,7 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L47)
+[src/models/SystemMetaDataOwnerEncrypted.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L47)
 
 ## Methods
 
@@ -181,4 +181,4 @@ ___
 
 #### Defined in
 
-[src/models/SystemMetaDataOwnerEncrypted.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/SystemMetaDataOwnerEncrypted.ts#L50)
+[src/models/SystemMetaDataOwnerEncrypted.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/SystemMetaDataOwnerEncrypted.ts#L50)

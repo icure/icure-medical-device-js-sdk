@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / PropertyType
+[@icure/medical-device-sdk](../modules) / PropertyType
 
 # Class: PropertyType
 
@@ -15,16 +15,16 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](PropertyType.md#constructor)
+- [constructor](PropertyType#constructor)
 
 ### Properties
 
-- [identifier](PropertyType.md#identifier)
-- [type](PropertyType.md#type)
+- [identifier](PropertyType#identifier)
+- [type](PropertyType#type)
 
 ### Methods
 
-- [marshal](PropertyType.md#marshal)
+- [marshal](PropertyType#marshal)
 
 ## Constructors
 
@@ -40,7 +40,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/PropertyType.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PropertyType.ts#L15)
+[src/models/PropertyType.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PropertyType.ts#L15)
 
 ## Properties
 
@@ -50,17 +50,17 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/PropertyType.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PropertyType.ts#L21)
+[src/models/PropertyType.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PropertyType.ts#L21)
 
 ___
 
 ### type
 
-• `Optional` **type**: [`PropertyTypeTypeEnum`](../modules.md#propertytypetypeenum)
+• `Optional` **type**: [`PropertyTypeTypeEnum`](../modules#propertytypetypeenum)
 
 #### Defined in
 
-[src/models/PropertyType.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PropertyType.ts#L22)
+[src/models/PropertyType.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PropertyType.ts#L22)
 
 ## Methods
 
@@ -74,4 +74,4 @@ ___
 
 #### Defined in
 
-[src/models/PropertyType.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PropertyType.ts#L24)
+[src/models/PropertyType.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PropertyType.ts#L24)

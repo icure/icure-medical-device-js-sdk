@@ -1,73 +1,73 @@
-[@icure/medical-device-sdk](../modules.md) / EncryptedPatient
+[@icure/medical-device-sdk](../modules) / EncryptedPatient
 
 # Class: EncryptedPatient
 
 ## Implements
 
-- [`PotentiallyEncryptedPatient`](../interfaces/PotentiallyEncryptedPatient.md)
+- [`PotentiallyEncryptedPatient`](../interfaces/PotentiallyEncryptedPatient)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](EncryptedPatient.md#constructor)
+- [constructor](EncryptedPatient#constructor)
 
 ### Properties
 
-- [active](EncryptedPatient.md#active)
-- [addresses](EncryptedPatient.md#addresses)
-- [administrativeNote](EncryptedPatient.md#administrativenote)
-- [alias](EncryptedPatient.md#alias)
-- [author](EncryptedPatient.md#author)
-- [birthSex](EncryptedPatient.md#birthsex)
-- [civility](EncryptedPatient.md#civility)
-- [codes](EncryptedPatient.md#codes)
-- [companyName](EncryptedPatient.md#companyname)
-- [created](EncryptedPatient.md#created)
-- [dateOfBirth](EncryptedPatient.md#dateofbirth)
-- [dateOfDeath](EncryptedPatient.md#dateofdeath)
-- [deactivationReason](EncryptedPatient.md#deactivationreason)
-- [deceased](EncryptedPatient.md#deceased)
-- [deletionDate](EncryptedPatient.md#deletiondate)
-- [education](EncryptedPatient.md#education)
-- [endOfLife](EncryptedPatient.md#endoflife)
-- [ethnicity](EncryptedPatient.md#ethnicity)
-- [externalId](EncryptedPatient.md#externalid)
-- [firstName](EncryptedPatient.md#firstname)
-- [gender](EncryptedPatient.md#gender)
-- [id](EncryptedPatient.md#id)
-- [identifiers](EncryptedPatient.md#identifiers)
-- [labels](EncryptedPatient.md#labels)
-- [languages](EncryptedPatient.md#languages)
-- [lastName](EncryptedPatient.md#lastname)
-- [maidenName](EncryptedPatient.md#maidenname)
-- [mergeToPatientId](EncryptedPatient.md#mergetopatientid)
-- [mergedIds](EncryptedPatient.md#mergedids)
-- [modified](EncryptedPatient.md#modified)
-- [names](EncryptedPatient.md#names)
-- [nationality](EncryptedPatient.md#nationality)
-- [note](EncryptedPatient.md#note)
-- [parameters](EncryptedPatient.md#parameters)
-- [partnerName](EncryptedPatient.md#partnername)
-- [partnerships](EncryptedPatient.md#partnerships)
-- [patientHealthCareParties](EncryptedPatient.md#patienthealthcareparties)
-- [patientProfessions](EncryptedPatient.md#patientprofessions)
-- [personalStatus](EncryptedPatient.md#personalstatus)
-- [picture](EncryptedPatient.md#picture)
-- [placeOfBirth](EncryptedPatient.md#placeofbirth)
-- [placeOfDeath](EncryptedPatient.md#placeofdeath)
-- [profession](EncryptedPatient.md#profession)
-- [properties](EncryptedPatient.md#properties)
-- [race](EncryptedPatient.md#race)
-- [responsible](EncryptedPatient.md#responsible)
-- [rev](EncryptedPatient.md#rev)
-- [spouseName](EncryptedPatient.md#spousename)
-- [ssin](EncryptedPatient.md#ssin)
-- [systemMetaData](EncryptedPatient.md#systemmetadata)
+- [active](EncryptedPatient#active)
+- [addresses](EncryptedPatient#addresses)
+- [administrativeNote](EncryptedPatient#administrativenote)
+- [alias](EncryptedPatient#alias)
+- [author](EncryptedPatient#author)
+- [birthSex](EncryptedPatient#birthsex)
+- [civility](EncryptedPatient#civility)
+- [codes](EncryptedPatient#codes)
+- [companyName](EncryptedPatient#companyname)
+- [created](EncryptedPatient#created)
+- [dateOfBirth](EncryptedPatient#dateofbirth)
+- [dateOfDeath](EncryptedPatient#dateofdeath)
+- [deactivationReason](EncryptedPatient#deactivationreason)
+- [deceased](EncryptedPatient#deceased)
+- [deletionDate](EncryptedPatient#deletiondate)
+- [education](EncryptedPatient#education)
+- [endOfLife](EncryptedPatient#endoflife)
+- [ethnicity](EncryptedPatient#ethnicity)
+- [externalId](EncryptedPatient#externalid)
+- [firstName](EncryptedPatient#firstname)
+- [gender](EncryptedPatient#gender)
+- [id](EncryptedPatient#id)
+- [identifiers](EncryptedPatient#identifiers)
+- [labels](EncryptedPatient#labels)
+- [languages](EncryptedPatient#languages)
+- [lastName](EncryptedPatient#lastname)
+- [maidenName](EncryptedPatient#maidenname)
+- [mergeToPatientId](EncryptedPatient#mergetopatientid)
+- [mergedIds](EncryptedPatient#mergedids)
+- [modified](EncryptedPatient#modified)
+- [names](EncryptedPatient#names)
+- [nationality](EncryptedPatient#nationality)
+- [note](EncryptedPatient#note)
+- [parameters](EncryptedPatient#parameters)
+- [partnerName](EncryptedPatient#partnername)
+- [partnerships](EncryptedPatient#partnerships)
+- [patientHealthCareParties](EncryptedPatient#patienthealthcareparties)
+- [patientProfessions](EncryptedPatient#patientprofessions)
+- [personalStatus](EncryptedPatient#personalstatus)
+- [picture](EncryptedPatient#picture)
+- [placeOfBirth](EncryptedPatient#placeofbirth)
+- [placeOfDeath](EncryptedPatient#placeofdeath)
+- [profession](EncryptedPatient#profession)
+- [properties](EncryptedPatient#properties)
+- [race](EncryptedPatient#race)
+- [responsible](EncryptedPatient#responsible)
+- [rev](EncryptedPatient#rev)
+- [spouseName](EncryptedPatient#spousename)
+- [ssin](EncryptedPatient#ssin)
+- [systemMetaData](EncryptedPatient#systemmetadata)
 
 ### Methods
 
-- [marshal](EncryptedPatient.md#marshal)
+- [marshal](EncryptedPatient#marshal)
 
 ## Constructors
 
@@ -83,7 +83,7 @@
 
 #### Defined in
 
-[src/models/Patient.ts:150](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L150)
+[src/models/Patient.ts:150](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L150)
 
 ## Properties
 
@@ -95,27 +95,27 @@ Is the patient active (boolean).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[active](../interfaces/PotentiallyEncryptedPatient.md#active)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[active](../interfaces/PotentiallyEncryptedPatient#active)
 
 #### Defined in
 
-[src/models/Patient.ts:226](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L226)
+[src/models/Patient.ts:226](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L226)
 
 ___
 
 ### addresses
 
-• **addresses**: [`Address`](Address.md)[]
+• **addresses**: [`Address`](Address)[]
 
 the list of addresses (with address type).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[addresses](../interfaces/PotentiallyEncryptedPatient.md#addresses)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[addresses](../interfaces/PotentiallyEncryptedPatient#addresses)
 
 #### Defined in
 
-[src/models/Patient.ts:219](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L219)
+[src/models/Patient.ts:219](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L219)
 
 ___
 
@@ -127,11 +127,11 @@ An administrative note, not confidential.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[administrativeNote](../interfaces/PotentiallyEncryptedPatient.md#administrativenote)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[administrativeNote](../interfaces/PotentiallyEncryptedPatient#administrativenote)
 
 #### Defined in
 
-[src/models/Patient.ts:241](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L241)
+[src/models/Patient.ts:241](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L241)
 
 ___
 
@@ -143,11 +143,11 @@ An alias of the person, nickname, ...
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[alias](../interfaces/PotentiallyEncryptedPatient.md#alias)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[alias](../interfaces/PotentiallyEncryptedPatient#alias)
 
 #### Defined in
 
-[src/models/Patient.ts:225](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L225)
+[src/models/Patient.ts:225](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L225)
 
 ___
 
@@ -159,27 +159,27 @@ The id of the [User] that created this patient. When creating the patient, this 
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[author](../interfaces/PotentiallyEncryptedPatient.md#author)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[author](../interfaces/PotentiallyEncryptedPatient#author)
 
 #### Defined in
 
-[src/models/Patient.ts:208](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L208)
+[src/models/Patient.ts:208](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L208)
 
 ___
 
 ### birthSex
 
-• `Optional` **birthSex**: [`PatientBirthSexEnum`](../modules.md#patientbirthsexenum)
+• `Optional` **birthSex**: [`PatientBirthSexEnum`](../modules#patientbirthsexenum)
 
 the birth sex of the patient: male, female, indeterminate, unknown
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[birthSex](../interfaces/PotentiallyEncryptedPatient.md#birthsex)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[birthSex](../interfaces/PotentiallyEncryptedPatient#birthsex)
 
 #### Defined in
 
-[src/models/Patient.ts:222](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L222)
+[src/models/Patient.ts:222](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L222)
 
 ___
 
@@ -191,27 +191,27 @@ Mr., Ms., Pr., Dr. ...
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[civility](../interfaces/PotentiallyEncryptedPatient.md#civility)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[civility](../interfaces/PotentiallyEncryptedPatient#civility)
 
 #### Defined in
 
-[src/models/Patient.ts:220](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L220)
+[src/models/Patient.ts:220](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L220)
 
 ___
 
 ### codes
 
-• **codes**: `Set`<[`CodingReference`](CodingReference.md)\>
+• **codes**: `Set`<[`CodingReference`](CodingReference)\>
 
 A code is an item from a codification system that qualifies the content of this patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[codes](../interfaces/PotentiallyEncryptedPatient.md#codes)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[codes](../interfaces/PotentiallyEncryptedPatient#codes)
 
 #### Defined in
 
-[src/models/Patient.ts:211](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L211)
+[src/models/Patient.ts:211](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L211)
 
 ___
 
@@ -223,11 +223,11 @@ the name of the company this patient is member of.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[companyName](../interfaces/PotentiallyEncryptedPatient.md#companyname)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[companyName](../interfaces/PotentiallyEncryptedPatient#companyname)
 
 #### Defined in
 
-[src/models/Patient.ts:217](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L217)
+[src/models/Patient.ts:217](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L217)
 
 ___
 
@@ -239,11 +239,11 @@ the creation date of the patient (encoded as epoch).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[created](../interfaces/PotentiallyEncryptedPatient.md#created)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[created](../interfaces/PotentiallyEncryptedPatient#created)
 
 #### Defined in
 
-[src/models/Patient.ts:206](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L206)
+[src/models/Patient.ts:206](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L206)
 
 ___
 
@@ -255,11 +255,11 @@ The birthdate encoded as a fuzzy date on 8 positions (YYYYMMDD) MM and/or DD can
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[dateOfBirth](../interfaces/PotentiallyEncryptedPatient.md#dateofbirth)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[dateOfBirth](../interfaces/PotentiallyEncryptedPatient#dateofbirth)
 
 #### Defined in
 
-[src/models/Patient.ts:233](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L233)
+[src/models/Patient.ts:233](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L233)
 
 ___
 
@@ -271,27 +271,27 @@ The date of death encoded as a fuzzy date on 8 positions (YYYYMMDD) MM and/or DD
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[dateOfDeath](../interfaces/PotentiallyEncryptedPatient.md#dateofdeath)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[dateOfDeath](../interfaces/PotentiallyEncryptedPatient#dateofdeath)
 
 #### Defined in
 
-[src/models/Patient.ts:234](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L234)
+[src/models/Patient.ts:234](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L234)
 
 ___
 
 ### deactivationReason
 
-• **deactivationReason**: [`PatientDeactivationReasonEnum`](../modules.md#patientdeactivationreasonenum)
+• **deactivationReason**: [`PatientDeactivationReasonEnum`](../modules#patientdeactivationreasonenum)
 
 When not active, the reason for deactivation.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[deactivationReason](../interfaces/PotentiallyEncryptedPatient.md#deactivationreason)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[deactivationReason](../interfaces/PotentiallyEncryptedPatient#deactivationreason)
 
 #### Defined in
 
-[src/models/Patient.ts:227](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L227)
+[src/models/Patient.ts:227](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L227)
 
 ___
 
@@ -303,11 +303,11 @@ Is the patient deceased.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[deceased](../interfaces/PotentiallyEncryptedPatient.md#deceased)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[deceased](../interfaces/PotentiallyEncryptedPatient#deceased)
 
 #### Defined in
 
-[src/models/Patient.ts:237](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L237)
+[src/models/Patient.ts:237](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L237)
 
 ___
 
@@ -319,11 +319,11 @@ the soft delete timestamp. When a patient is ”deleted“, this is set to a non
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[deletionDate](../interfaces/PotentiallyEncryptedPatient.md#deletiondate)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[deletionDate](../interfaces/PotentiallyEncryptedPatient#deletiondate)
 
 #### Defined in
 
-[src/models/Patient.ts:213](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L213)
+[src/models/Patient.ts:213](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L213)
 
 ___
 
@@ -335,11 +335,11 @@ The level of education (college degree, undergraduate, phd).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[education](../interfaces/PotentiallyEncryptedPatient.md#education)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[education](../interfaces/PotentiallyEncryptedPatient#education)
 
 #### Defined in
 
-[src/models/Patient.ts:238](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L238)
+[src/models/Patient.ts:238](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L238)
 
 ___
 
@@ -351,11 +351,11 @@ Soft delete (unix epoch in ms) timestamp of the patient
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[endOfLife](../interfaces/PotentiallyEncryptedPatient.md#endoflife)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[endOfLife](../interfaces/PotentiallyEncryptedPatient#endoflife)
 
 #### Defined in
 
-[src/models/Patient.ts:212](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L212)
+[src/models/Patient.ts:212](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L212)
 
 ___
 
@@ -367,11 +367,11 @@ The ethnicity of the patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[ethnicity](../interfaces/PotentiallyEncryptedPatient.md#ethnicity)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[ethnicity](../interfaces/PotentiallyEncryptedPatient#ethnicity)
 
 #### Defined in
 
-[src/models/Patient.ts:244](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L244)
+[src/models/Patient.ts:244](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L244)
 
 ___
 
@@ -383,11 +383,11 @@ An external (from another source) id with no guarantee or requirement for unicit
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[externalId](../interfaces/PotentiallyEncryptedPatient.md#externalid)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[externalId](../interfaces/PotentiallyEncryptedPatient#externalid)
 
 #### Defined in
 
-[src/models/Patient.ts:246](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L246)
+[src/models/Patient.ts:246](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L246)
 
 ___
 
@@ -399,27 +399,27 @@ the firstname (name) of the patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[firstName](../interfaces/PotentiallyEncryptedPatient.md#firstname)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[firstName](../interfaces/PotentiallyEncryptedPatient#firstname)
 
 #### Defined in
 
-[src/models/Patient.ts:214](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L214)
+[src/models/Patient.ts:214](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L214)
 
 ___
 
 ### gender
 
-• `Optional` **gender**: [`PatientGenderEnum`](../modules.md#patientgenderenum)
+• `Optional` **gender**: [`PatientGenderEnum`](../modules#patientgenderenum)
 
 the gender of the patient: male, female, indeterminate, changed, changedToMale, changedToFemale, unknown
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[gender](../interfaces/PotentiallyEncryptedPatient.md#gender)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[gender](../interfaces/PotentiallyEncryptedPatient#gender)
 
 #### Defined in
 
-[src/models/Patient.ts:221](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L221)
+[src/models/Patient.ts:221](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L221)
 
 ___
 
@@ -431,43 +431,43 @@ the Id of the patient. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[id](../interfaces/PotentiallyEncryptedPatient.md#id)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[id](../interfaces/PotentiallyEncryptedPatient#id)
 
 #### Defined in
 
-[src/models/Patient.ts:203](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L203)
+[src/models/Patient.ts:203](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L203)
 
 ___
 
 ### identifiers
 
-• **identifiers**: [`Identifier`](Identifier.md)[]
+• **identifiers**: [`Identifier`](Identifier)[]
 
 Typically used for business / client identifiers. An identifier should identify a patient uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[identifiers](../interfaces/PotentiallyEncryptedPatient.md#identifiers)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[identifiers](../interfaces/PotentiallyEncryptedPatient#identifiers)
 
 #### Defined in
 
-[src/models/Patient.ts:205](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L205)
+[src/models/Patient.ts:205](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L205)
 
 ___
 
 ### labels
 
-• **labels**: `Set`<[`CodingReference`](CodingReference.md)\>
+• **labels**: `Set`<[`CodingReference`](CodingReference)\>
 
 A label is an item from a codification system that qualifies a patient as being member of a certain class, whatever the value it might have taken. If the label qualifies the content of a field, it means that whatever the content of the field, the label will always apply. LOINC is a codification system typically used for labels.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[labels](../interfaces/PotentiallyEncryptedPatient.md#labels)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[labels](../interfaces/PotentiallyEncryptedPatient#labels)
 
 #### Defined in
 
-[src/models/Patient.ts:210](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L210)
+[src/models/Patient.ts:210](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L210)
 
 ___
 
@@ -479,11 +479,11 @@ the list of languages spoken by the patient ordered by fluency (alpha-2 code htt
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[languages](../interfaces/PotentiallyEncryptedPatient.md#languages)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[languages](../interfaces/PotentiallyEncryptedPatient#languages)
 
 #### Defined in
 
-[src/models/Patient.ts:218](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L218)
+[src/models/Patient.ts:218](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L218)
 
 ___
 
@@ -495,11 +495,11 @@ the lastname (surname) of the patient. This is the official lastname that should
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[lastName](../interfaces/PotentiallyEncryptedPatient.md#lastname)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[lastName](../interfaces/PotentiallyEncryptedPatient#lastname)
 
 #### Defined in
 
-[src/models/Patient.ts:215](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L215)
+[src/models/Patient.ts:215](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L215)
 
 ___
 
@@ -511,11 +511,11 @@ Lastname at birth (can be different of the current name), depending on the count
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[maidenName](../interfaces/PotentiallyEncryptedPatient.md#maidenname)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[maidenName](../interfaces/PotentiallyEncryptedPatient#maidenname)
 
 #### Defined in
 
-[src/models/Patient.ts:229](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L229)
+[src/models/Patient.ts:229](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L229)
 
 ___
 
@@ -527,11 +527,11 @@ The id of the patient this patient has been merged with.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[mergeToPatientId](../interfaces/PotentiallyEncryptedPatient.md#mergetopatientid)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[mergeToPatientId](../interfaces/PotentiallyEncryptedPatient#mergetopatientid)
 
 #### Defined in
 
-[src/models/Patient.ts:223](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L223)
+[src/models/Patient.ts:223](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L223)
 
 ___
 
@@ -543,11 +543,11 @@ The ids of the patients that have been merged inside this patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[mergedIds](../interfaces/PotentiallyEncryptedPatient.md#mergedids)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[mergedIds](../interfaces/PotentiallyEncryptedPatient#mergedids)
 
 #### Defined in
 
-[src/models/Patient.ts:224](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L224)
+[src/models/Patient.ts:224](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L224)
 
 ___
 
@@ -559,27 +559,27 @@ the last modification date of the patient (encoded as epoch).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[modified](../interfaces/PotentiallyEncryptedPatient.md#modified)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[modified](../interfaces/PotentiallyEncryptedPatient#modified)
 
 #### Defined in
 
-[src/models/Patient.ts:207](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L207)
+[src/models/Patient.ts:207](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L207)
 
 ___
 
 ### names
 
-• **names**: [`PersonName`](PersonName.md)[]
+• **names**: [`PersonName`](PersonName)[]
 
 the list of all names of the patient, also containing the official full name information. Ordered by preference of use. First element is therefore the official name used for the patient in the application
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[names](../interfaces/PotentiallyEncryptedPatient.md#names)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[names](../interfaces/PotentiallyEncryptedPatient#names)
 
 #### Defined in
 
-[src/models/Patient.ts:216](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L216)
+[src/models/Patient.ts:216](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L216)
 
 ___
 
@@ -591,11 +591,11 @@ The nationality of the patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[nationality](../interfaces/PotentiallyEncryptedPatient.md#nationality)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[nationality](../interfaces/PotentiallyEncryptedPatient#nationality)
 
 #### Defined in
 
-[src/models/Patient.ts:242](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L242)
+[src/models/Patient.ts:242](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L242)
 
 ___
 
@@ -607,11 +607,11 @@ A text note (can be confidential, encrypted by default).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[note](../interfaces/PotentiallyEncryptedPatient.md#note)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[note](../interfaces/PotentiallyEncryptedPatient#note)
 
 #### Defined in
 
-[src/models/Patient.ts:240](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L240)
+[src/models/Patient.ts:240](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L240)
 
 ___
 
@@ -627,11 +627,11 @@ Extra parameters
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[parameters](../interfaces/PotentiallyEncryptedPatient.md#parameters)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[parameters](../interfaces/PotentiallyEncryptedPatient#parameters)
 
 #### Defined in
 
-[src/models/Patient.ts:250](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L250)
+[src/models/Patient.ts:250](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L250)
 
 ___
 
@@ -643,75 +643,75 @@ Lastname of the partner, should not be used to design the patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[partnerName](../interfaces/PotentiallyEncryptedPatient.md#partnername)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[partnerName](../interfaces/PotentiallyEncryptedPatient#partnername)
 
 #### Defined in
 
-[src/models/Patient.ts:231](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L231)
+[src/models/Patient.ts:231](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L231)
 
 ___
 
 ### partnerships
 
-• **partnerships**: [`Partnership`](Partnership.md)[]
+• **partnerships**: [`Partnership`](Partnership)[]
 
 List of partners, or persons of contact (of class Partnership, see below).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[partnerships](../interfaces/PotentiallyEncryptedPatient.md#partnerships)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[partnerships](../interfaces/PotentiallyEncryptedPatient#partnerships)
 
 #### Defined in
 
-[src/models/Patient.ts:247](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L247)
+[src/models/Patient.ts:247](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L247)
 
 ___
 
 ### patientHealthCareParties
 
-• **patientHealthCareParties**: [`PatientHealthCareParty`](PatientHealthCareParty.md)[]
+• **patientHealthCareParties**: [`PatientHealthCareParty`](PatientHealthCareParty)[]
 
 Links (usually for therapeutic reasons) between this patient and healthcare parties (of class PatientHealthcareParty).
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[patientHealthCareParties](../interfaces/PotentiallyEncryptedPatient.md#patienthealthcareparties)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[patientHealthCareParties](../interfaces/PotentiallyEncryptedPatient#patienthealthcareparties)
 
 #### Defined in
 
-[src/models/Patient.ts:248](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L248)
+[src/models/Patient.ts:248](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L248)
 
 ___
 
 ### patientProfessions
 
-• **patientProfessions**: [`CodingReference`](CodingReference.md)[]
+• **patientProfessions**: [`CodingReference`](CodingReference)[]
 
 Codified list of professions exercised by this patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[patientProfessions](../interfaces/PotentiallyEncryptedPatient.md#patientprofessions)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[patientProfessions](../interfaces/PotentiallyEncryptedPatient#patientprofessions)
 
 #### Defined in
 
-[src/models/Patient.ts:249](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L249)
+[src/models/Patient.ts:249](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L249)
 
 ___
 
 ### personalStatus
 
-• `Optional` **personalStatus**: [`PatientPersonalStatusEnum`](../modules.md#patientpersonalstatusenum)
+• `Optional` **personalStatus**: [`PatientPersonalStatusEnum`](../modules#patientpersonalstatusenum)
 
 any of `single`, `in_couple`, `married`, `separated`, `divorced`, `divorcing`, `widowed`, `widower`, `complicated`, `unknown`, `contract`, `other`.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[personalStatus](../interfaces/PotentiallyEncryptedPatient.md#personalstatus)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[personalStatus](../interfaces/PotentiallyEncryptedPatient#personalstatus)
 
 #### Defined in
 
-[src/models/Patient.ts:232](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L232)
+[src/models/Patient.ts:232](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L232)
 
 ___
 
@@ -723,11 +723,11 @@ A picture usually saved in JPEG format.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[picture](../interfaces/PotentiallyEncryptedPatient.md#picture)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[picture](../interfaces/PotentiallyEncryptedPatient#picture)
 
 #### Defined in
 
-[src/models/Patient.ts:245](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L245)
+[src/models/Patient.ts:245](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L245)
 
 ___
 
@@ -739,11 +739,11 @@ The place of birth.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[placeOfBirth](../interfaces/PotentiallyEncryptedPatient.md#placeofbirth)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[placeOfBirth](../interfaces/PotentiallyEncryptedPatient#placeofbirth)
 
 #### Defined in
 
-[src/models/Patient.ts:235](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L235)
+[src/models/Patient.ts:235](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L235)
 
 ___
 
@@ -755,11 +755,11 @@ The place of death.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[placeOfDeath](../interfaces/PotentiallyEncryptedPatient.md#placeofdeath)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[placeOfDeath](../interfaces/PotentiallyEncryptedPatient#placeofdeath)
 
 #### Defined in
 
-[src/models/Patient.ts:236](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L236)
+[src/models/Patient.ts:236](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L236)
 
 ___
 
@@ -771,27 +771,27 @@ The current professional activity.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[profession](../interfaces/PotentiallyEncryptedPatient.md#profession)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[profession](../interfaces/PotentiallyEncryptedPatient#profession)
 
 #### Defined in
 
-[src/models/Patient.ts:239](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L239)
+[src/models/Patient.ts:239](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L239)
 
 ___
 
 ### properties
 
-• **properties**: `Set`<[`Property`](Property.md)\>
+• **properties**: `Set`<[`Property`](Property)\>
 
 Extra properties
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[properties](../interfaces/PotentiallyEncryptedPatient.md#properties)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[properties](../interfaces/PotentiallyEncryptedPatient#properties)
 
 #### Defined in
 
-[src/models/Patient.ts:251](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L251)
+[src/models/Patient.ts:251](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L251)
 
 ___
 
@@ -803,11 +803,11 @@ The race of the patient.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[race](../interfaces/PotentiallyEncryptedPatient.md#race)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[race](../interfaces/PotentiallyEncryptedPatient#race)
 
 #### Defined in
 
-[src/models/Patient.ts:243](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L243)
+[src/models/Patient.ts:243](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L243)
 
 ___
 
@@ -819,11 +819,11 @@ The id of the data owner that is responsible of this patient. When creating the 
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[responsible](../interfaces/PotentiallyEncryptedPatient.md#responsible)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[responsible](../interfaces/PotentiallyEncryptedPatient#responsible)
 
 #### Defined in
 
-[src/models/Patient.ts:209](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L209)
+[src/models/Patient.ts:209](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L209)
 
 ___
 
@@ -835,11 +835,11 @@ the revision of the patient in the database, used for conflict management / opti
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[rev](../interfaces/PotentiallyEncryptedPatient.md#rev)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[rev](../interfaces/PotentiallyEncryptedPatient#rev)
 
 #### Defined in
 
-[src/models/Patient.ts:204](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L204)
+[src/models/Patient.ts:204](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L204)
 
 ___
 
@@ -851,11 +851,11 @@ Lastname of the spouse for a married woman, depending on the country, can be use
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[spouseName](../interfaces/PotentiallyEncryptedPatient.md#spousename)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[spouseName](../interfaces/PotentiallyEncryptedPatient#spousename)
 
 #### Defined in
 
-[src/models/Patient.ts:230](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L230)
+[src/models/Patient.ts:230](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L230)
 
 ___
 
@@ -867,25 +867,25 @@ Social security inscription number.
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[ssin](../interfaces/PotentiallyEncryptedPatient.md#ssin)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[ssin](../interfaces/PotentiallyEncryptedPatient#ssin)
 
 #### Defined in
 
-[src/models/Patient.ts:228](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L228)
+[src/models/Patient.ts:228](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L228)
 
 ___
 
 ### systemMetaData
 
-• `Optional` **systemMetaData**: [`SystemMetaDataOwnerEncrypted`](SystemMetaDataOwnerEncrypted.md)
+• `Optional` **systemMetaData**: [`SystemMetaDataOwnerEncrypted`](SystemMetaDataOwnerEncrypted)
 
 #### Implementation of
 
-[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient.md).[systemMetaData](../interfaces/PotentiallyEncryptedPatient.md#systemmetadata)
+[PotentiallyEncryptedPatient](../interfaces/PotentiallyEncryptedPatient).[systemMetaData](../interfaces/PotentiallyEncryptedPatient#systemmetadata)
 
 #### Defined in
 
-[src/models/Patient.ts:252](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L252)
+[src/models/Patient.ts:252](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L252)
 
 ## Methods
 
@@ -899,4 +899,4 @@ ___
 
 #### Defined in
 
-[src/models/Patient.ts:254](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Patient.ts#L254)
+[src/models/Patient.ts:254](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Patient.ts#L254)

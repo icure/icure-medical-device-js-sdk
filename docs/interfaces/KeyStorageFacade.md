@@ -1,20 +1,20 @@
-[@icure/medical-device-sdk](../modules.md) / KeyStorageFacade
+[@icure/medical-device-sdk](../modules) / KeyStorageFacade
 
 # Interface: KeyStorageFacade
 
 ## Implemented by
 
-- [`KeyStorageImpl`](../classes/KeyStorageImpl.md)
+- [`KeyStorageImpl`](../classes/KeyStorageImpl)
 
 ## Table of contents
 
 ### Methods
 
-- [deleteKeypair](KeyStorageFacade.md#deletekeypair)
-- [getKeypair](KeyStorageFacade.md#getkeypair)
-- [getPrivateKey](KeyStorageFacade.md#getprivatekey)
-- [getPublicKey](KeyStorageFacade.md#getpublickey)
-- [storeKeyPair](KeyStorageFacade.md#storekeypair)
+- [deleteKeypair](KeyStorageFacade#deletekeypair)
+- [getKeypair](KeyStorageFacade#getkeypair)
+- [getPrivateKey](KeyStorageFacade#getprivatekey)
+- [getPublicKey](KeyStorageFacade#getpublickey)
+- [storeKeyPair](KeyStorageFacade#storekeypair)
 
 ## Methods
 

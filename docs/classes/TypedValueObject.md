@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / TypedValueObject
+[@icure/medical-device-sdk](../modules) / TypedValueObject
 
 # Class: TypedValueObject
 
@@ -15,20 +15,20 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](TypedValueObject.md#constructor)
+- [constructor](TypedValueObject#constructor)
 
 ### Properties
 
-- [booleanValue](TypedValueObject.md#booleanvalue)
-- [dateValue](TypedValueObject.md#datevalue)
-- [doubleValue](TypedValueObject.md#doublevalue)
-- [integerValue](TypedValueObject.md#integervalue)
-- [stringValue](TypedValueObject.md#stringvalue)
-- [type](TypedValueObject.md#type)
+- [booleanValue](TypedValueObject#booleanvalue)
+- [dateValue](TypedValueObject#datevalue)
+- [doubleValue](TypedValueObject#doublevalue)
+- [integerValue](TypedValueObject#integervalue)
+- [stringValue](TypedValueObject#stringvalue)
+- [type](TypedValueObject#type)
 
 ### Methods
 
-- [marshal](TypedValueObject.md#marshal)
+- [marshal](TypedValueObject#marshal)
 
 ## Constructors
 
@@ -44,7 +44,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L15)
+[src/models/TypedValueObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L15)
 
 ## Properties
 
@@ -54,7 +54,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L22)
+[src/models/TypedValueObject.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L22)
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L26)
+[src/models/TypedValueObject.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L26)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L24)
+[src/models/TypedValueObject.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L24)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L23)
+[src/models/TypedValueObject.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L23)
 
 ___
 
@@ -94,17 +94,17 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L25)
+[src/models/TypedValueObject.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L25)
 
 ___
 
 ### type
 
-• `Optional` **type**: [`TypedValueObjectTypeEnum`](../modules.md#typedvalueobjecttypeenum)
+• `Optional` **type**: [`TypedValueObjectTypeEnum`](../modules#typedvalueobjecttypeenum)
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L21)
+[src/models/TypedValueObject.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L21)
 
 ## Methods
 
@@ -118,4 +118,4 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L28)
+[src/models/TypedValueObject.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TypedValueObject.ts#L28)

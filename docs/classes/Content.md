@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Content
+[@icure/medical-device-sdk](../modules) / Content
 
 # Class: Content
 
@@ -8,26 +8,26 @@ Information contained in the data sample (Measure, number, ...). Content is loca
 
 ### Constructors
 
-- [constructor](Content.md#constructor)
+- [constructor](Content#constructor)
 
 ### Properties
 
-- [binaryValue](Content.md#binaryvalue)
-- [booleanValue](Content.md#booleanvalue)
-- [compoundValue](Content.md#compoundvalue)
-- [documentId](Content.md#documentid)
-- [fuzzyDateValue](Content.md#fuzzydatevalue)
-- [instantValue](Content.md#instantvalue)
-- [measureValue](Content.md#measurevalue)
-- [numberValue](Content.md#numbervalue)
-- [range](Content.md#range)
-- [ratio](Content.md#ratio)
-- [stringValue](Content.md#stringvalue)
-- [timeSeries](Content.md#timeseries)
+- [binaryValue](Content#binaryvalue)
+- [booleanValue](Content#booleanvalue)
+- [compoundValue](Content#compoundvalue)
+- [documentId](Content#documentid)
+- [fuzzyDateValue](Content#fuzzydatevalue)
+- [instantValue](Content#instantvalue)
+- [measureValue](Content#measurevalue)
+- [numberValue](Content#numbervalue)
+- [range](Content#range)
+- [ratio](Content#ratio)
+- [stringValue](Content#stringvalue)
+- [timeSeries](Content#timeseries)
 
 ### Methods
 
-- [marshal](Content.md#marshal)
+- [marshal](Content#marshal)
 
 ## Constructors
 
@@ -43,7 +43,7 @@ Information contained in the data sample (Measure, number, ...). Content is loca
 
 #### Defined in
 
-[src/models/Content.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L22)
+[src/models/Content.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L22)
 
 ## Properties
 
@@ -53,7 +53,7 @@ Information contained in the data sample (Measure, number, ...). Content is loca
 
 #### Defined in
 
-[src/models/Content.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L43)
+[src/models/Content.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L43)
 
 ___
 
@@ -63,17 +63,17 @@ ___
 
 #### Defined in
 
-[src/models/Content.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L37)
+[src/models/Content.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L37)
 
 ___
 
 ### compoundValue
 
-• `Optional` **compoundValue**: [`DataSample`](DataSample.md)[]
+• `Optional` **compoundValue**: [`DataSample`](DataSample)[]
 
 #### Defined in
 
-[src/models/Content.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L50)
+[src/models/Content.ts:50](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L50)
 
 ___
 
@@ -85,7 +85,7 @@ Linked document.
 
 #### Defined in
 
-[src/models/Content.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L47)
+[src/models/Content.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L47)
 
 ___
 
@@ -97,7 +97,7 @@ Value as date. The format could have a all three (day, month and year) or values
 
 #### Defined in
 
-[src/models/Content.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L42)
+[src/models/Content.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L42)
 
 ___
 
@@ -107,17 +107,17 @@ ___
 
 #### Defined in
 
-[src/models/Content.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L38)
+[src/models/Content.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L38)
 
 ___
 
 ### measureValue
 
-• `Optional` **measureValue**: [`Measure`](Measure.md)
+• `Optional` **measureValue**: [`Measure`](Measure)
 
 #### Defined in
 
-[src/models/Content.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L48)
+[src/models/Content.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L48)
 
 ___
 
@@ -127,27 +127,27 @@ ___
 
 #### Defined in
 
-[src/models/Content.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L36)
+[src/models/Content.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L36)
 
 ___
 
 ### range
 
-• `Optional` **range**: [`Measure`](Measure.md)[]
+• `Optional` **range**: [`Measure`](Measure)[]
 
 #### Defined in
 
-[src/models/Content.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L52)
+[src/models/Content.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L52)
 
 ___
 
 ### ratio
 
-• `Optional` **ratio**: [`Measure`](Measure.md)[]
+• `Optional` **ratio**: [`Measure`](Measure)[]
 
 #### Defined in
 
-[src/models/Content.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L51)
+[src/models/Content.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L51)
 
 ___
 
@@ -157,17 +157,17 @@ ___
 
 #### Defined in
 
-[src/models/Content.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L35)
+[src/models/Content.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L35)
 
 ___
 
 ### timeSeries
 
-• `Optional` **timeSeries**: [`TimeSeries`](TimeSeries.md)
+• `Optional` **timeSeries**: [`TimeSeries`](TimeSeries)
 
 #### Defined in
 
-[src/models/Content.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L49)
+[src/models/Content.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L49)
 
 ## Methods
 
@@ -181,4 +181,4 @@ ___
 
 #### Defined in
 
-[src/models/Content.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Content.ts#L54)
+[src/models/Content.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Content.ts#L54)

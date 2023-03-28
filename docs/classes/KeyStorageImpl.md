@@ -1,28 +1,28 @@
-[@icure/medical-device-sdk](../modules.md) / KeyStorageImpl
+[@icure/medical-device-sdk](../modules) / KeyStorageImpl
 
 # Class: KeyStorageImpl
 
 ## Implements
 
-- [`KeyStorageFacade`](../interfaces/KeyStorageFacade.md)
+- [`KeyStorageFacade`](../interfaces/KeyStorageFacade)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](KeyStorageImpl.md#constructor)
+- [constructor](KeyStorageImpl#constructor)
 
 ### Properties
 
-- [\_storage](KeyStorageImpl.md#_storage)
+- [\_storage](KeyStorageImpl#_storage)
 
 ### Methods
 
-- [deleteKeypair](KeyStorageImpl.md#deletekeypair)
-- [getKeypair](KeyStorageImpl.md#getkeypair)
-- [getPrivateKey](KeyStorageImpl.md#getprivatekey)
-- [getPublicKey](KeyStorageImpl.md#getpublickey)
-- [storeKeyPair](KeyStorageImpl.md#storekeypair)
+- [deleteKeypair](KeyStorageImpl#deletekeypair)
+- [getKeypair](KeyStorageImpl#getkeypair)
+- [getPrivateKey](KeyStorageImpl#getprivatekey)
+- [getPublicKey](KeyStorageImpl#getpublickey)
+- [storeKeyPair](KeyStorageImpl#storekeypair)
 
 ## Constructors
 
@@ -34,7 +34,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `storage` | [`StorageFacade`](../interfaces/StorageFacade.md)<`string`\> |
+| `storage` | [`StorageFacade`](../interfaces/StorageFacade)<`string`\> |
 
 #### Defined in
 
@@ -70,7 +70,7 @@ Delete the keyPair associated to the provided key
 
 #### Implementation of
 
-[KeyStorageFacade](../interfaces/KeyStorageFacade.md).[deleteKeypair](../interfaces/KeyStorageFacade.md#deletekeypair)
+[KeyStorageFacade](../interfaces/KeyStorageFacade).[deleteKeypair](../interfaces/KeyStorageFacade#deletekeypair)
 
 #### Defined in
 
@@ -98,7 +98,7 @@ The keyPair associated to the provided key or undefined if not found.
 
 #### Implementation of
 
-[KeyStorageFacade](../interfaces/KeyStorageFacade.md).[getKeypair](../interfaces/KeyStorageFacade.md#getkeypair)
+[KeyStorageFacade](../interfaces/KeyStorageFacade).[getKeypair](../interfaces/KeyStorageFacade#getkeypair)
 
 #### Defined in
 
@@ -126,7 +126,7 @@ The privateKey associated to the provided key or undefined if not found.
 
 #### Implementation of
 
-[KeyStorageFacade](../interfaces/KeyStorageFacade.md).[getPrivateKey](../interfaces/KeyStorageFacade.md#getprivatekey)
+[KeyStorageFacade](../interfaces/KeyStorageFacade).[getPrivateKey](../interfaces/KeyStorageFacade#getprivatekey)
 
 #### Defined in
 
@@ -154,7 +154,7 @@ The publicKey associated to the provided key or undefined if not found.
 
 #### Implementation of
 
-[KeyStorageFacade](../interfaces/KeyStorageFacade.md).[getPublicKey](../interfaces/KeyStorageFacade.md#getpublickey)
+[KeyStorageFacade](../interfaces/KeyStorageFacade).[getPublicKey](../interfaces/KeyStorageFacade#getpublickey)
 
 #### Defined in
 
@@ -183,7 +183,7 @@ Stores the given keyPair under the given key in the storage.
 
 #### Implementation of
 
-[KeyStorageFacade](../interfaces/KeyStorageFacade.md).[storeKeyPair](../interfaces/KeyStorageFacade.md#storekeypair)
+[KeyStorageFacade](../interfaces/KeyStorageFacade).[storeKeyPair](../interfaces/KeyStorageFacade#storekeypair)
 
 #### Defined in
 

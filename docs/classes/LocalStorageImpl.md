@@ -1,22 +1,22 @@
-[@icure/medical-device-sdk](../modules.md) / LocalStorageImpl
+[@icure/medical-device-sdk](../modules) / LocalStorageImpl
 
 # Class: LocalStorageImpl
 
 ## Implements
 
-- [`StorageFacade`](../interfaces/StorageFacade.md)<`string`\>
+- [`StorageFacade`](../interfaces/StorageFacade)<`string`\>
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](LocalStorageImpl.md#constructor)
+- [constructor](LocalStorageImpl#constructor)
 
 ### Methods
 
-- [getItem](LocalStorageImpl.md#getitem)
-- [removeItem](LocalStorageImpl.md#removeitem)
-- [setItem](LocalStorageImpl.md#setitem)
+- [getItem](LocalStorageImpl#getitem)
+- [removeItem](LocalStorageImpl#removeitem)
+- [setItem](LocalStorageImpl#setitem)
 
 ## Constructors
 
@@ -46,7 +46,7 @@ The value associated to the provided key or undefined if not found.
 
 #### Implementation of
 
-[StorageFacade](../interfaces/StorageFacade.md).[getItem](../interfaces/StorageFacade.md#getitem)
+[StorageFacade](../interfaces/StorageFacade).[getItem](../interfaces/StorageFacade#getitem)
 
 #### Defined in
 
@@ -72,7 +72,7 @@ Removes the item with the given key from the storage.
 
 #### Implementation of
 
-[StorageFacade](../interfaces/StorageFacade.md).[removeItem](../interfaces/StorageFacade.md#removeitem)
+[StorageFacade](../interfaces/StorageFacade).[removeItem](../interfaces/StorageFacade#removeitem)
 
 #### Defined in
 
@@ -99,7 +99,7 @@ Set an item in the storage for the given key
 
 #### Implementation of
 
-[StorageFacade](../interfaces/StorageFacade.md).[setItem](../interfaces/StorageFacade.md#setitem)
+[StorageFacade](../interfaces/StorageFacade).[setItem](../interfaces/StorageFacade#setitem)
 
 #### Defined in
 
