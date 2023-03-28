@@ -1,6 +1,6 @@
 [@icure/medical-device-sdk](../modules.md) / PatientApi
 
-# Interface: PatientApi
+# SDK API: PatientApi
 
 The PatientApi interface provides methods to manage patients.
 
@@ -12,9 +12,12 @@ The PatientApi interface provides methods to manage patients.
 - [deletePatient](PatientApi.md#deletepatient)
 - [filterPatients](PatientApi.md#filterpatients)
 - [getPatient](PatientApi.md#getpatient)
+- [getPatientAndTryDecrypt](PatientApi.md#getpatientandtrydecrypt)
 - [giveAccessTo](PatientApi.md#giveaccessto)
 - [giveAccessToAllDataOf](PatientApi.md#giveaccesstoalldataof)
+- [giveAccessToPotentiallyEncrypted](PatientApi.md#giveaccesstopotentiallyencrypted)
 - [matchPatients](PatientApi.md#matchpatients)
+- [modifyPotentiallyEncryptedPatient](PatientApi.md#modifypotentiallyencryptedpatient)
 - [subscribeToPatientEvents](PatientApi.md#subscribetopatientevents)
 
 ## Methods
@@ -38,7 +41,7 @@ Create or update a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L16)
+[src/apis/PatientApi.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L16)
 
 ___
 
@@ -61,7 +64,7 @@ Delete a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L22)
+[src/apis/PatientApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L22)
 
 ___
 
@@ -95,7 +98,7 @@ Load patients from the database by filtering them using the provided [filter].
 
 #### Defined in
 
-[src/apis/PatientApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L39)
+[src/apis/PatientApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L39)
 
 ___
 
@@ -118,7 +121,33 @@ Get a [Patient]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L45)
+[src/apis/PatientApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L45)
+
+___
+
+### getPatientAndTryDecrypt
+
+▸ **getPatientAndTryDecrypt**(`patientId`): `Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+Gets a patient and tries to decrypt its content. If it is not possible to decrypt the content only the unencrypted
+data will be available.
+This method is useful to allow new patient users to access some of their own data before their doctor actually
+gave them access to their own data: instead of giving an error if the data can't be decrypted (like what happens
+in getPatient) you will be able to get at least partial information.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `patientId` | `string` |
+
+#### Returns
+
+`Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+#### Defined in
+
+[src/apis/PatientApi.ts:105](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L105)
 
 ___
 
@@ -142,7 +171,7 @@ For this, the current user data owner should be able to access the patient provi
 
 #### Defined in
 
-[src/apis/PatientApi.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L60)
+[src/apis/PatientApi.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L59)
 
 ___
 
@@ -168,7 +197,31 @@ This means this service is sharing :
 
 #### Defined in
 
-[src/apis/PatientApi.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L71)
+[src/apis/PatientApi.ts:78](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L78)
+
+___
+
+### giveAccessToPotentiallyEncrypted
+
+▸ **giveAccessToPotentiallyEncrypted**(`patient`, `delegatedTo`): `Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+Same as [giveAccessTo](PatientApi.md#giveaccessto) but allowing also to share encrypted patients. This is useful if the delegator does
+not know the encryption key of the patient but has a secret id and wants to share it.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `patient` | [`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md) | Patient the current data owner would like to share with another data owner |
+| `delegatedTo` | `string` | ID of the data owner to which current user would like to give access |
+
+#### Returns
+
+`Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+#### Defined in
+
+[src/apis/PatientApi.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L67)
 
 ___
 
@@ -191,7 +244,32 @@ Load patient ids from the database by filtering them using the provided [filter]
 
 #### Defined in
 
-[src/apis/PatientApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L51)
+[src/apis/PatientApi.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L51)
+
+___
+
+### modifyPotentiallyEncryptedPatient
+
+▸ **modifyPotentiallyEncryptedPatient**(`modifiedPatient`): `Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+Modifies a potentially encrypted patient, ensuring that if originally the patient could not be decrypted then the
+modified patient does not change to data which should be encrypted according to the current api configuration.
+Similarly to getPatientAndTryDecrypt this method is useful when a patient needs to update his own data before
+an hcp gave him access to his own encrypted data.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `modifiedPatient` | [`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md) |
+
+#### Returns
+
+`Promise`<[`PotentiallyEncryptedPatient`](PotentiallyEncryptedPatient.md)\>
+
+#### Defined in
+
+[src/apis/PatientApi.ts:113](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L113)
 
 ___
 
@@ -208,11 +286,9 @@ Opens a WebSocket Connection in order to receive all the Patients corresponding 
 | `eventTypes` | (``"CREATE"`` \| ``"UPDATE"`` \| ``"DELETE"``)[] | Type of event you would like to listen. It can be CREATE, UPDATE or DELETE |
 | `filter` | `Filter`<[`Patient`](../classes/Patient.md)\> | Filter criteria to filter to the Patients you would like to receive |
 | `eventFired` | (`patient`: [`Patient`](../classes/Patient.md)) => `Promise`<`void`\> | Action applied each time you receive a Patient through the WebSocket |
-| `options?` | `Object` | Options to configure the WebSocket.    - keepAlive : How long to keep connection alive (ms);    - lifetime : How long to keep the WebSocket alive (ms);    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts) |
+| `options?` | `Object` | Options to configure the WebSocket. - keepAlive : How long to keep connection alive (ms); - lifetime : How long to keep the WebSocket alive (ms); - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket; - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts) |
 | `options.connectionMaxRetry?` | `number` | - |
 | `options.connectionRetryIntervalMs?` | `number` | - |
-| `options.keepAlive?` | `number` | - |
-| `options.lifetime?` | `number` | - |
 
 #### Returns
 
@@ -220,4 +296,4 @@ Opens a WebSocket Connection in order to receive all the Patients corresponding 
 
 #### Defined in
 
-[src/apis/PatientApi.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/PatientApi.ts#L84)
+[src/apis/PatientApi.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/PatientApi.ts#L91)

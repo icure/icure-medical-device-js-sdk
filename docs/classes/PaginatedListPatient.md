@@ -15,6 +15,10 @@
 - [rows](PaginatedListPatient.md#rows)
 - [totalSize](PaginatedListPatient.md#totalsize)
 
+### Methods
+
+- [marshal](PaginatedListPatient.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -29,7 +33,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListPatient.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListPatient.ts#L17)
+[src/models/PaginatedListPatient.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L17)
 
 ## Properties
 
@@ -39,7 +43,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListPatient.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListPatient.ts#L24)
+[src/models/PaginatedListPatient.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L29)
 
 ___
 
@@ -49,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListPatient.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListPatient.ts#L21)
+[src/models/PaginatedListPatient.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L26)
 
 ___
 
@@ -59,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListPatient.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListPatient.ts#L23)
+[src/models/PaginatedListPatient.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L28)
 
 ___
 
@@ -69,4 +73,18 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListPatient.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListPatient.ts#L22)
+[src/models/PaginatedListPatient.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L27)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPaginatedListPatient`
+
+#### Returns
+
+`IPaginatedListPatient`
+
+#### Defined in
+
+[src/models/PaginatedListPatient.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListPatient.ts#L31)

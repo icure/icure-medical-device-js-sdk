@@ -26,6 +26,10 @@ Do not edit the class manually.
 - [stringValue](TypedValueObject.md#stringvalue)
 - [type](TypedValueObject.md#type)
 
+### Methods
+
+- [marshal](TypedValueObject.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -40,7 +44,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L15)
+[src/models/TypedValueObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L15)
 
 ## Properties
 
@@ -50,7 +54,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L20)
+[src/models/TypedValueObject.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L22)
 
 ___
 
@@ -60,7 +64,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L24)
+[src/models/TypedValueObject.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L26)
 
 ___
 
@@ -70,7 +74,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L22)
+[src/models/TypedValueObject.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L24)
 
 ___
 
@@ -80,7 +84,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L21)
+[src/models/TypedValueObject.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L23)
 
 ___
 
@@ -90,7 +94,7 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L23)
+[src/models/TypedValueObject.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L25)
 
 ___
 
@@ -100,4 +104,18 @@ ___
 
 #### Defined in
 
-[src/models/TypedValueObject.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TypedValueObject.ts#L19)
+[src/models/TypedValueObject.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L21)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `ITypedValueObject`
+
+#### Returns
+
+`ITypedValueObject`
+
+#### Defined in
+
+[src/models/TypedValueObject.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/TypedValueObject.ts#L28)

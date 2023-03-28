@@ -17,6 +17,10 @@ Extra properties for the user. Those properties are typed (see class Property)
 - [type](Property.md#type)
 - [typedValue](Property.md#typedvalue)
 
+### Methods
+
+- [marshal](Property.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -31,7 +35,7 @@ Extra properties for the user. Those properties are typed (see class Property)
 
 #### Defined in
 
-[src/models/Property.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Property.ts#L20)
+[src/models/Property.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L20)
 
 ## Properties
 
@@ -41,7 +45,7 @@ Extra properties for the user. Those properties are typed (see class Property)
 
 #### Defined in
 
-[src/models/Property.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Property.ts#L27)
+[src/models/Property.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L30)
 
 ___
 
@@ -51,7 +55,7 @@ ___
 
 #### Defined in
 
-[src/models/Property.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Property.ts#L24)
+[src/models/Property.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L27)
 
 ___
 
@@ -61,7 +65,7 @@ ___
 
 #### Defined in
 
-[src/models/Property.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Property.ts#L25)
+[src/models/Property.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L28)
 
 ___
 
@@ -71,4 +75,18 @@ ___
 
 #### Defined in
 
-[src/models/Property.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Property.ts#L26)
+[src/models/Property.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L29)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IProperty`
+
+#### Returns
+
+`IProperty`
+
+#### Defined in
+
+[src/models/Property.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Property.ts#L32)

@@ -23,7 +23,7 @@ A Data Sample represents a medical information, provided by a Data Owner concern
 - [endOfLife](DataSample.md#endoflife)
 - [healthcareElementIds](DataSample.md#healthcareelementids)
 - [id](DataSample.md#id)
-- [identifier](DataSample.md#identifier)
+- [identifiers](DataSample.md#identifiers)
 - [index](DataSample.md#index)
 - [labels](DataSample.md#labels)
 - [modified](DataSample.md#modified)
@@ -33,6 +33,10 @@ A Data Sample represents a medical information, provided by a Data Owner concern
 - [systemMetaData](DataSample.md#systemmetadata)
 - [transactionId](DataSample.md#transactionid)
 - [valueDate](DataSample.md#valuedate)
+
+### Methods
+
+- [marshal](DataSample.md#marshal)
 
 ## Constructors
 
@@ -48,7 +52,7 @@ A Data Sample represents a medical information, provided by a Data Owner concern
 
 #### Defined in
 
-[src/models/DataSample.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L22)
+[src/models/DataSample.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L23)
 
 ## Properties
 
@@ -60,7 +64,7 @@ The id of the [User] that created this data sample. When creating the data sampl
 
 #### Defined in
 
-[src/models/DataSample.ts:85](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L85)
+[src/models/DataSample.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L96)
 
 ___
 
@@ -72,7 +76,7 @@ Id of the batch that embeds this data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L41)
+[src/models/DataSample.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L52)
 
 ___
 
@@ -84,7 +88,7 @@ List of Ids of all canvases linked to the Data sample. Only used when the Data s
 
 #### Defined in
 
-[src/models/DataSample.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L49)
+[src/models/DataSample.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L60)
 
 ___
 
@@ -96,7 +100,7 @@ The date (YYYYMMDDhhmmss) marking the end of the Data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:69](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L69)
+[src/models/DataSample.ts:80](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L80)
 
 ___
 
@@ -108,7 +112,7 @@ A code is an item from a codification system that qualifies the content of this 
 
 #### Defined in
 
-[src/models/DataSample.ts:101](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L101)
+[src/models/DataSample.ts:112](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L112)
 
 ___
 
@@ -120,7 +124,7 @@ Text, comments on the Data sample provided
 
 #### Defined in
 
-[src/models/DataSample.ts:93](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L93)
+[src/models/DataSample.ts:104](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L104)
 
 ___
 
@@ -136,7 +140,7 @@ Information contained in the data sample (Measure, number, ...). Content is loca
 
 #### Defined in
 
-[src/models/DataSample.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L57)
+[src/models/DataSample.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L68)
 
 ___
 
@@ -148,7 +152,7 @@ The timestamp (unix epoch in ms) of creation of this data sample in iCure system
 
 #### Defined in
 
-[src/models/DataSample.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L73)
+[src/models/DataSample.ts:84](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L84)
 
 ___
 
@@ -160,7 +164,7 @@ Soft delete (unix epoch in ms) timestamp of the data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L81)
+[src/models/DataSample.ts:92](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L92)
 
 ___
 
@@ -172,7 +176,7 @@ List of IDs of all healthcare elements for which the data sample is provided. On
 
 #### Defined in
 
-[src/models/DataSample.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L45)
+[src/models/DataSample.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L56)
 
 ___
 
@@ -184,19 +188,19 @@ The Id of the Data sample. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/DataSample.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L29)
+[src/models/DataSample.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L40)
 
 ___
 
-### identifier
+### identifiers
 
-• **identifier**: [`Identifier`](Identifier.md)[]
+• **identifiers**: [`Identifier`](Identifier.md)[]
 
 Typically used for business / client identifiers. An identifier should identify a data sample uniquely and unambiguously. However, iCure can't guarantee the uniqueness of those identifiers : This is something you need to take care of.
 
 #### Defined in
 
-[src/models/DataSample.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L37)
+[src/models/DataSample.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L48)
 
 ___
 
@@ -208,7 +212,7 @@ Used for sorting data samples inside an upper object (A batch, a transaction, a 
 
 #### Defined in
 
-[src/models/DataSample.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L53)
+[src/models/DataSample.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L64)
 
 ___
 
@@ -220,7 +224,7 @@ A label is an item from a codification system that qualifies a data sample as be
 
 #### Defined in
 
-[src/models/DataSample.ts:105](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L105)
+[src/models/DataSample.ts:116](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L116)
 
 ___
 
@@ -232,7 +236,7 @@ The timestamp (unix epoch in ms) of the latest modification of this data sample 
 
 #### Defined in
 
-[src/models/DataSample.ts:77](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L77)
+[src/models/DataSample.ts:88](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L88)
 
 ___
 
@@ -244,7 +248,7 @@ The date (YYYYMMDDhhmmss) of the start of the Data sample
 
 #### Defined in
 
-[src/models/DataSample.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L65)
+[src/models/DataSample.ts:76](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L76)
 
 ___
 
@@ -260,7 +264,7 @@ Links towards related data samples (possibly in other batches)
 
 #### Defined in
 
-[src/models/DataSample.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L97)
+[src/models/DataSample.ts:108](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L108)
 
 ___
 
@@ -272,7 +276,7 @@ The id of the data owner that is responsible of this data sample. When creating 
 
 #### Defined in
 
-[src/models/DataSample.ts:89](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L89)
+[src/models/DataSample.ts:100](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L100)
 
 ___
 
@@ -282,7 +286,7 @@ ___
 
 #### Defined in
 
-[src/models/DataSample.ts:106](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L106)
+[src/models/DataSample.ts:117](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L117)
 
 ___
 
@@ -294,7 +298,7 @@ The transactionId is used when a single data sample had to be split into parts f
 
 #### Defined in
 
-[src/models/DataSample.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L33)
+[src/models/DataSample.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L44)
 
 ___
 
@@ -306,4 +310,18 @@ The date (YYYYMMDDhhmmss) when the Data sample is noted to have started and also
 
 #### Defined in
 
-[src/models/DataSample.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/DataSample.ts#L61)
+[src/models/DataSample.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L72)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IDataSample`
+
+#### Returns
+
+`IDataSample`
+
+#### Defined in
+
+[src/models/DataSample.ts:119](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/DataSample.ts#L119)

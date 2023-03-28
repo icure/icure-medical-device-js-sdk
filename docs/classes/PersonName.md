@@ -21,6 +21,10 @@ the list of all names of the patient, also containing the official full name inf
 - [text](PersonName.md#text)
 - [use](PersonName.md#use)
 
+### Methods
+
+- [marshal](PersonName.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -35,7 +39,7 @@ the list of all names of the patient, also containing the official full name inf
 
 #### Defined in
 
-[src/models/PersonName.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L18)
+[src/models/PersonName.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L18)
 
 ## Properties
 
@@ -45,7 +49,7 @@ the list of all names of the patient, also containing the official full name inf
 
 #### Defined in
 
-[src/models/PersonName.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L25)
+[src/models/PersonName.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L27)
 
 ___
 
@@ -55,7 +59,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L23)
+[src/models/PersonName.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L25)
 
 ___
 
@@ -65,7 +69,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L22)
+[src/models/PersonName.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L24)
 
 ___
 
@@ -75,7 +79,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L26)
+[src/models/PersonName.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L28)
 
 ___
 
@@ -85,7 +89,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L24)
+[src/models/PersonName.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L26)
 
 ___
 
@@ -95,7 +99,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L27)
+[src/models/PersonName.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L29)
 
 ___
 
@@ -105,7 +109,7 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L28)
+[src/models/PersonName.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L30)
 
 ___
 
@@ -115,4 +119,18 @@ ___
 
 #### Defined in
 
-[src/models/PersonName.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PersonName.ts#L29)
+[src/models/PersonName.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L31)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPersonName`
+
+#### Returns
+
+`IPersonName`
+
+#### Defined in
+
+[src/models/PersonName.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PersonName.ts#L33)

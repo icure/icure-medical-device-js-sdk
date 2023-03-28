@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "tsc post-doc.ts && node post-doc.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2"
+  }
+}

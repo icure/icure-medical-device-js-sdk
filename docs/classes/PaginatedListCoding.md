@@ -15,6 +15,10 @@
 - [rows](PaginatedListCoding.md#rows)
 - [totalSize](PaginatedListCoding.md#totalsize)
 
+### Methods
+
+- [marshal](PaginatedListCoding.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -29,7 +33,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListCoding.ts#L17)
+[src/models/PaginatedListCoding.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L17)
 
 ## Properties
 
@@ -39,7 +43,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListCoding.ts#L24)
+[src/models/PaginatedListCoding.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L29)
 
 ___
 
@@ -49,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListCoding.ts#L21)
+[src/models/PaginatedListCoding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L26)
 
 ___
 
@@ -59,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListCoding.ts#L23)
+[src/models/PaginatedListCoding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L28)
 
 ___
 
@@ -69,4 +73,18 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListCoding.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListCoding.ts#L22)
+[src/models/PaginatedListCoding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L27)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPaginatedListCoding`
+
+#### Returns
+
+`IPaginatedListCoding`
+
+#### Defined in
+
+[src/models/PaginatedListCoding.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListCoding.ts#L31)

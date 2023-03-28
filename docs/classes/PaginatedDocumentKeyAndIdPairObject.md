@@ -22,6 +22,10 @@ Do not edit the class manually.
 - [startKey](PaginatedDocumentKeyAndIdPairObject.md#startkey)
 - [startKeyDocId](PaginatedDocumentKeyAndIdPairObject.md#startkeydocid)
 
+### Methods
+
+- [marshal](PaginatedDocumentKeyAndIdPairObject.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -36,7 +40,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/PaginatedDocumentKeyAndIdPairObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L15)
+[src/models/PaginatedDocumentKeyAndIdPairObject.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L15)
 
 ## Properties
 
@@ -46,7 +50,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/PaginatedDocumentKeyAndIdPairObject.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L19)
+[src/models/PaginatedDocumentKeyAndIdPairObject.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L19)
 
 ___
 
@@ -56,4 +60,18 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedDocumentKeyAndIdPairObject.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L20)
+[src/models/PaginatedDocumentKeyAndIdPairObject.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L20)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPaginatedDocumentKeyAndIdPairObject`
+
+#### Returns
+
+`IPaginatedDocumentKeyAndIdPairObject`
+
+#### Defined in
+
+[src/models/PaginatedDocumentKeyAndIdPairObject.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedDocumentKeyAndIdPairObject.ts#L22)

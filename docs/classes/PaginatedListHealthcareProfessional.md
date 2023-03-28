@@ -15,6 +15,10 @@
 - [rows](PaginatedListHealthcareProfessional.md#rows)
 - [totalSize](PaginatedListHealthcareProfessional.md#totalsize)
 
+### Methods
+
+- [marshal](PaginatedListHealthcareProfessional.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -29,7 +33,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListHealthcareProfessional.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListHealthcareProfessional.ts#L17)
+[src/models/PaginatedListHealthcareProfessional.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L17)
 
 ## Properties
 
@@ -39,7 +43,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListHealthcareProfessional.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListHealthcareProfessional.ts#L24)
+[src/models/PaginatedListHealthcareProfessional.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L29)
 
 ___
 
@@ -49,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListHealthcareProfessional.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListHealthcareProfessional.ts#L21)
+[src/models/PaginatedListHealthcareProfessional.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L26)
 
 ___
 
@@ -59,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListHealthcareProfessional.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListHealthcareProfessional.ts#L23)
+[src/models/PaginatedListHealthcareProfessional.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L28)
 
 ___
 
@@ -69,4 +73,18 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListHealthcareProfessional.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListHealthcareProfessional.ts#L22)
+[src/models/PaginatedListHealthcareProfessional.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L27)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPaginatedListHealthcareProfessional`
+
+#### Returns
+
+`IPaginatedListHealthcareProfessional`
+
+#### Defined in
+
+[src/models/PaginatedListHealthcareProfessional.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListHealthcareProfessional.ts#L31)

@@ -1,6 +1,6 @@
 [@icure/medical-device-sdk](../modules.md) / AuthenticationApi
 
-# Interface: AuthenticationApi
+# SDK API: AuthenticationApi
 
 The AuthenticationApi interface provides methods to authenticate and register users.
 
@@ -16,7 +16,7 @@ The AuthenticationApi interface provides methods to authenticate and register us
 
 ### authenticateAndAskAccessToItsExistingData
 
-▸ **authenticateAndAskAccessToItsExistingData**(`userLogin`, `shortLivedToken`, `userKeyPair`, `tokenAndKeyPairProvider`): `Promise`<``null`` \| `AuthenticationResult`\>
+▸ **authenticateAndAskAccessToItsExistingData**(`userLogin`, `shortLivedToken`): `Promise`<`AuthenticationResult`\>
 
 Completes the authentication process of a user created from a Patient.
 - It creates the private and public key for the user
@@ -29,25 +29,23 @@ Completes the authentication process of a user created from a Patient.
 | :------ | :------ | :------ |
 | `userLogin` | `string` | The login of the user |
 | `shortLivedToken` | `string` | The short-lived authentication token created by the HCP |
-| `userKeyPair` | `undefined` \| [`string`, `string`] | The key pair [private, public] that will be used by the user to encrypt/decrypt data; |
-| `tokenAndKeyPairProvider` | (`groupId`: `string`, `userId`: `string`) => `undefined` \| [`string`, [`string`, `string`]] | A custom function to generate an authentication token and a key pair for user |
 
 #### Returns
 
-`Promise`<``null`` \| `AuthenticationResult`\>
+`Promise`<`AuthenticationResult`\>
 
 The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
 user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L65)
+[src/apis/AuthenticationApi.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L72)
 
 ___
 
 ### completeAuthentication
 
-▸ **completeAuthentication**(`process`, `validationCode`, `userKeyPair`, `tokenAndKeyPairProvider`): `Promise`<``null`` \| `AuthenticationResult`\>
+▸ **completeAuthentication**(`process`, `validationCode`): `Promise`<`AuthenticationResult`\>
 
 Completes the authentication process of a user, by verifying the provided validation code and :
 - In the case of a sign-up, create the user data;
@@ -59,47 +57,49 @@ Completes the authentication process of a user, by verifying the provided valida
 | :------ | :------ | :------ |
 | `process` | `AuthenticationProcess` | The AuthenticationProcess previously provided in the startAuthentication service |
 | `validationCode` | `string` | The validation code the user received by email/mobile phone |
-| `userKeyPair` | `undefined` \| [`string`, `string`] | The key pair [private, public] that will be used by the user to encrypt/decrypt data; |
-| `tokenAndKeyPairProvider` | (`groupId`: `string`, `userId`: `string`) => `undefined` \| [`string`, [`string`, `string`]] | A custom function to generate an authentication token and a key pair for user |
 
 #### Returns
 
-`Promise`<``null`` \| `AuthenticationResult`\>
+`Promise`<`AuthenticationResult`\>
 
 The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
 user.
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L45)
+[src/apis/AuthenticationApi.ts:57](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L57)
 
 ___
 
 ### startAuthentication
 
-▸ **startAuthentication**(`healthcareProfessionalId`, `firstName`, `lastName`, `recaptcha`, `bypassTokenCheck?`, `email?`, `mobilePhone?`): `Promise`<``null`` \| `AuthenticationProcess`\>
+▸ **startAuthentication**(`recaptcha`, `email?`, `phoneNumber?`, `firstName?`, `lastName?`, `healthcareProfessionalId?`, `bypassTokenCheck?`, `validationCodeLength?`, `recaptchaType?`): `Promise`<`AuthenticationProcess`\>
 
-Starts the authentication of a user by sending him/her a validation code by email and/or mobile phone.
-Use this service if you would like to sign-up or login your user
+Starts the authentication of a user by sending him/her a validation code by email and/or by SMS.
+Use this service if you would like to register or login your user in the iCure system.
+
+Provide at least one authentication tool (email and/or phoneNumber) to start the process.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `healthcareProfessionalId` | `undefined` \| `string` | The id of the healthcare professional that wants to invite the user for its authentication. Use the id of the hcp in charge of the database where you want to add this new user |
-| `firstName` | `string` | The firstname of the user to authenticate |
-| `lastName` | `string` | The lastname of the user to authenticate |
-| `recaptcha` | `string` | The recaptcha key used during authentication process |
-| `bypassTokenCheck?` | `boolean` | Prevent the token check during the validation process |
-| `email?` | `string` | The email of the user to authenticate |
-| `mobilePhone?` | `string` | The mobile phone of the user to authenticate |
+| `recaptcha` | `string` | To authenticate through iCure, we ask you to implement the reCAPTCHA v3 (Check [https://developers.google.com/recaptcha/docs/v3](https://developers.google.com/recaptcha/docs/v3)). This argument corresponds to the resulting key of the recaptcha procedure. |
+| `email?` | `string` | The email to use to authenticate the user |
+| `phoneNumber?` | `string` | The phone number to use to authenticate the user |
+| `firstName?` | `string` | The firstname of the user to authenticate (Mandatory for registration only) |
+| `lastName?` | `string` | The lastname of the user to authenticate (Mandatory for registration only) |
+| `healthcareProfessionalId?` | `string` | The id of the healthcare professional inviting the user to register. Use the id of the hcp in charge of the database where you want to add this new user. (Mandatory for registration only) |
+| `bypassTokenCheck?` | `boolean` | Prevent the token check during the validation process. Activates this flag **ONLY** for dedicated use cases and users, like the submission on the Apple / Google Store. (false by default) |
+| `validationCodeLength?` | `number` | The length of the validation code to send to the user. (6 by default) |
+| `recaptchaType?` | [`RecaptchaType`](../modules.md#recaptchatype) | The type of ReCAPTCHA you used during your authentication flow. Can either be Google reCAPTCHA v3 [https://developers.google.com/recaptcha/docs/v3](https://developers.google.com/recaptcha/docs/v3) or the * friendly-captcha [https://friendlycaptcha.com/](https://friendlycaptcha.com/). Use the friendly-recaptcha if you would like to avoid tracking solution of Google reCAPTCHA. |
 
 #### Returns
 
-`Promise`<``null`` \| `AuthenticationProcess`\>
+`Promise`<`AuthenticationProcess`\>
 
 The AuthenticationProcess information needed to complete the authentication in the completeAuthentication service
 
 #### Defined in
 
-[src/apis/AuthenticationApi.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/AuthenticationApi.ts#L23)
+[src/apis/AuthenticationApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/AuthenticationApi.ts#L33)

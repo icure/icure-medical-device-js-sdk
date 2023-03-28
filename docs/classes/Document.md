@@ -37,6 +37,10 @@ Do not edit the class manually.
 - [size](Document.md#size)
 - [version](Document.md#version)
 
+### Methods
+
+- [marshal](Document.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -51,7 +55,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Document.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L15)
+[src/models/Document.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L15)
 
 ## Properties
 
@@ -63,7 +67,7 @@ Id of attachment to this document
 
 #### Defined in
 
-[src/models/Document.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L68)
+[src/models/Document.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L72)
 
 ___
 
@@ -73,7 +77,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L29)
+[src/models/Document.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L33)
 
 ___
 
@@ -83,7 +87,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L27)
+[src/models/Document.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L31)
 
 ___
 
@@ -93,7 +97,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L32)
+[src/models/Document.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L36)
 
 ___
 
@@ -105,7 +109,7 @@ A unique external id (from another external source).
 
 #### Defined in
 
-[src/models/Document.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L56)
+[src/models/Document.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L60)
 
 ___
 
@@ -117,7 +121,7 @@ Hashed version of the document
 
 #### Defined in
 
-[src/models/Document.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L64)
+[src/models/Document.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L68)
 
 ___
 
@@ -129,7 +133,7 @@ The Id of the document. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/Document.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L22)
+[src/models/Document.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L26)
 
 ___
 
@@ -141,7 +145,7 @@ The main Uniform Type Identifier of the document (https://developer.apple.com/li
 
 #### Defined in
 
-[src/models/Document.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L40)
+[src/models/Document.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L44)
 
 ___
 
@@ -151,7 +155,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L31)
+[src/models/Document.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L35)
 
 ___
 
@@ -161,7 +165,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L28)
+[src/models/Document.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L32)
 
 ___
 
@@ -173,7 +177,7 @@ Name of the document
 
 #### Defined in
 
-[src/models/Document.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L44)
+[src/models/Document.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L48)
 
 ___
 
@@ -185,7 +189,7 @@ Reference in object store
 
 #### Defined in
 
-[src/models/Document.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L36)
+[src/models/Document.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L40)
 
 ___
 
@@ -197,7 +201,7 @@ Extra Uniform Type Identifiers
 
 #### Defined in
 
-[src/models/Document.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L52)
+[src/models/Document.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L56)
 
 ___
 
@@ -207,7 +211,7 @@ ___
 
 #### Defined in
 
-[src/models/Document.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L30)
+[src/models/Document.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L34)
 
 ___
 
@@ -219,7 +223,7 @@ The revision of the document in the database, used for conflict management / opt
 
 #### Defined in
 
-[src/models/Document.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L26)
+[src/models/Document.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L30)
 
 ___
 
@@ -231,7 +235,7 @@ Size of the document file
 
 #### Defined in
 
-[src/models/Document.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L60)
+[src/models/Document.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L64)
 
 ___
 
@@ -243,4 +247,18 @@ The document version
 
 #### Defined in
 
-[src/models/Document.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Document.ts#L48)
+[src/models/Document.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L52)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IDocument`
+
+#### Returns
+
+`IDocument`
+
+#### Defined in
+
+[src/models/Document.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Document.ts#L74)

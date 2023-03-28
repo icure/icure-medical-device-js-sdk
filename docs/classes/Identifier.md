@@ -21,6 +21,10 @@ Typically used for business / client identifiers. An identifier should identify 
 - [use](Identifier.md#use)
 - [value](Identifier.md#value)
 
+### Methods
+
+- [marshal](Identifier.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -35,7 +39,7 @@ Typically used for business / client identifiers. An identifier should identify 
 
 #### Defined in
 
-[src/models/Identifier.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L19)
+[src/models/Identifier.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L19)
 
 ## Properties
 
@@ -45,7 +49,7 @@ Typically used for business / client identifiers. An identifier should identify 
 
 #### Defined in
 
-[src/models/Identifier.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L24)
+[src/models/Identifier.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L26)
 
 ___
 
@@ -55,7 +59,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L26)
+[src/models/Identifier.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L28)
 
 ___
 
@@ -65,7 +69,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L23)
+[src/models/Identifier.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L25)
 
 ___
 
@@ -75,7 +79,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L25)
+[src/models/Identifier.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L27)
 
 ___
 
@@ -85,7 +89,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L27)
+[src/models/Identifier.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L29)
 
 ___
 
@@ -95,7 +99,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L28)
+[src/models/Identifier.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L30)
 
 ___
 
@@ -105,7 +109,7 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L29)
+[src/models/Identifier.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L31)
 
 ___
 
@@ -115,4 +119,18 @@ ___
 
 #### Defined in
 
-[src/models/Identifier.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Identifier.ts#L30)
+[src/models/Identifier.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L32)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IIdentifier`
+
+#### Returns
+
+`IIdentifier`
+
+#### Defined in
+
+[src/models/Identifier.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Identifier.ts#L34)

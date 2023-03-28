@@ -16,7 +16,7 @@
 
 - [\_byIdentifiers](HealthcareElementFilter.md#_byidentifiers)
 - [\_byIds](HealthcareElementFilter.md#_byids)
-- [\_byTagCodeFilter](HealthcareElementFilter.md#_bytagcodefilter)
+- [\_byLabelCodeFilter](HealthcareElementFilter.md#_bylabelcodefilter)
 - [\_forDataOwner](HealthcareElementFilter.md#_fordataowner)
 - [\_forPatients](HealthcareElementFilter.md#_forpatients)
 - [\_intersection](HealthcareElementFilter.md#_intersection)
@@ -27,7 +27,7 @@
 - [build](HealthcareElementFilter.md#build)
 - [byIdentifiers](HealthcareElementFilter.md#byidentifiers)
 - [byIds](HealthcareElementFilter.md#byids)
-- [byTagCodeFilter](HealthcareElementFilter.md#bytagcodefilter)
+- [byLabelCodeFilter](HealthcareElementFilter.md#bylabelcodefilter)
 - [forDataOwner](HealthcareElementFilter.md#fordataowner)
 - [forPatients](HealthcareElementFilter.md#forpatients)
 - [getDataOwner](HealthcareElementFilter.md#getdataowner)
@@ -48,7 +48,7 @@
 
 #### Defined in
 
-[src/filter/filterDsl.ts:302](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L302)
+[src/filter/filterDsl.ts:347](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L347)
 
 ___
 
@@ -58,17 +58,17 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:301](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L301)
+[src/filter/filterDsl.ts:346](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L346)
 
 ___
 
-### \_byTagCodeFilter
+### \_byLabelCodeFilter
 
-• `Optional` **\_byTagCodeFilter**: `HealthcareElementByHealthcarePartyLabelCodeFilter`
+• `Optional` **\_byLabelCodeFilter**: `HealthcareElementByHealthcarePartyLabelCodeFilter`
 
 #### Defined in
 
-[src/filter/filterDsl.ts:303](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L303)
+[src/filter/filterDsl.ts:348](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L348)
 
 ___
 
@@ -78,17 +78,17 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:298](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L298)
+[src/filter/filterDsl.ts:341](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L341)
 
 ___
 
 ### \_forPatients
 
-• `Optional` **\_forPatients**: [`IccCryptoXApi`, [`Patient`](Patient.md)[]]
+• `Optional` **\_forPatients**: [`IccCryptoXApi`, [`PotentiallyEncryptedPatient`](../interfaces/PotentiallyEncryptedPatient.md)[]]
 
 #### Defined in
 
-[src/filter/filterDsl.ts:304](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L304)
+[src/filter/filterDsl.ts:349](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L349)
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:306](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L306)
+[src/filter/filterDsl.ts:351](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L351)
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:305](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L305)
+[src/filter/filterDsl.ts:350](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L350)
 
 ## Methods
 
@@ -126,7 +126,7 @@ FilterBuilder.build
 
 #### Defined in
 
-[src/filter/filterDsl.ts:343](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L343)
+[src/filter/filterDsl.ts:394](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L394)
 
 ___
 
@@ -146,7 +146,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:318](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L318)
+[src/filter/filterDsl.ts:363](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L363)
 
 ___
 
@@ -166,13 +166,13 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:313](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L313)
+[src/filter/filterDsl.ts:358](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L358)
 
 ___
 
-### byTagCodeFilter
+### byLabelCodeFilter
 
-▸ **byTagCodeFilter**(`tagType?`, `tagCode?`, `codeType?`, `codeCode?`): [`HealthcareElementFilter`](HealthcareElementFilter.md)
+▸ **byLabelCodeFilter**(`tagType?`, `tagCode?`, `codeType?`, `codeCode?`): [`HealthcareElementFilter`](HealthcareElementFilter.md)
 
 #### Parameters
 
@@ -189,7 +189,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:323](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L323)
+[src/filter/filterDsl.ts:368](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L368)
 
 ___
 
@@ -209,7 +209,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:308](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L308)
+[src/filter/filterDsl.ts:353](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L353)
 
 ___
 
@@ -222,7 +222,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `crypto` | `IccCryptoXApi` |
-| `patients` | [`Patient`](Patient.md)[] |
+| `patients` | [`PotentiallyEncryptedPatient`](../interfaces/PotentiallyEncryptedPatient.md)[] |
 
 #### Returns
 
@@ -230,7 +230,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:328](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L328)
+[src/filter/filterDsl.ts:379](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L379)
 
 ___
 
@@ -244,7 +244,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:299](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L299)
+[src/filter/filterDsl.ts:342](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L342)
 
 ___
 
@@ -264,7 +264,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:338](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L338)
+[src/filter/filterDsl.ts:389](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L389)
 
 ___
 
@@ -284,4 +284,4 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:333](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L333)
+[src/filter/filterDsl.ts:384](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L384)

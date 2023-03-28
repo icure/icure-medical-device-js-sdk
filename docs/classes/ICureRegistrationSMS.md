@@ -33,20 +33,20 @@
 
 | Name | Type |
 | :------ | :------ |
-| `dataOwner` | [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md) |
+| `dataOwner` | [`HealthcareProfessional`](HealthcareProfessional.md) \| [`Patient`](Patient.md) |
 | `link` | `string` |
 | `solutionName` | `string` |
 | `patient` | [`Patient`](Patient.md) |
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L68)
+[src/utils/msgGtwMessageFactory.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L63)
 
 ## Properties
 
 ### dataOwner
 
-• **dataOwner**: [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md)
+• **dataOwner**: [`HealthcareProfessional`](HealthcareProfessional.md) \| [`Patient`](Patient.md)
 
 #### Implementation of
 
@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L63)
+[src/utils/msgGtwMessageFactory.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L58)
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L64)
+[src/utils/msgGtwMessageFactory.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L59)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L66)
+[src/utils/msgGtwMessageFactory.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L61)
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L65)
+[src/utils/msgGtwMessageFactory.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L60)
 
 ## Methods
 
@@ -117,4 +117,4 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:80](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L80)
+[src/utils/msgGtwMessageFactory.ts:70](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/utils/msgGtwMessageFactory.ts#L70)

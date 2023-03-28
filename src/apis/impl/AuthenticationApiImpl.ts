@@ -204,14 +204,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .build()
 
     const user = await api.userApi.getLoggedUser()
-    if (user == null) {
+    if (!user) {
       throw this.errorHandler.createErrorWithMessage(
         `Your validation code ${validationCode} expired. Start a new authentication process for your user`
       )
     }
 
     const token = await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10)
-    if (token == null) {
+    if (!token) {
       throw this.errorHandler.createErrorWithMessage(
         `Your validation code ${validationCode} expired. Start a new authentication process for your user`
       )

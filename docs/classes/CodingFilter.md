@@ -23,7 +23,7 @@
 
 - [build](CodingFilter.md#build)
 - [byIds](CodingFilter.md#byids)
-- [byRegionTypeLabelLanguage](CodingFilter.md#byregiontypelabellanguage)
+- [byRegionLanguageTypeLabel](CodingFilter.md#byregionlanguagetypelabel)
 - [intersection](CodingFilter.md#intersection)
 - [union](CodingFilter.md#union)
 
@@ -41,7 +41,7 @@
 
 #### Defined in
 
-[src/filter/filterDsl.ts:383](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L383)
+[src/filter/filterDsl.ts:452](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L452)
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:384](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L384)
+[src/filter/filterDsl.ts:453](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L453)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:386](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L386)
+[src/filter/filterDsl.ts:455](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L455)
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:385](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L385)
+[src/filter/filterDsl.ts:454](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L454)
 
 ## Methods
 
@@ -89,7 +89,7 @@ FilterBuilder.build
 
 #### Defined in
 
-[src/filter/filterDsl.ts:413](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L413)
+[src/filter/filterDsl.ts:477](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L477)
 
 ___
 
@@ -109,21 +109,21 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:388](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L388)
+[src/filter/filterDsl.ts:457](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L457)
 
 ___
 
-### byRegionTypeLabelLanguage
+### byRegionLanguageTypeLabel
 
-▸ **byRegionTypeLabelLanguage**(`region?`, `type?`, `language?`, `label?`): [`CodingFilter`](CodingFilter.md)
+▸ **byRegionLanguageTypeLabel**(`region?`, `language?`, `type?`, `label?`): [`CodingFilter`](CodingFilter.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `region?` | `string` |
-| `type?` | `string` |
 | `language?` | `string` |
+| `type?` | `string` |
 | `label?` | `string` |
 
 #### Returns
@@ -132,7 +132,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:393](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L393)
+[src/filter/filterDsl.ts:462](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L462)
 
 ___
 
@@ -152,7 +152,7 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:407](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L407)
+[src/filter/filterDsl.ts:472](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L472)
 
 ___
 
@@ -172,4 +172,4 @@ ___
 
 #### Defined in
 
-[src/filter/filterDsl.ts:402](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/filter/filterDsl.ts#L402)
+[src/filter/filterDsl.ts:467](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/filter/filterDsl.ts#L467)

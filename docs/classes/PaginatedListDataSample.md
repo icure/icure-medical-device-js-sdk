@@ -15,6 +15,10 @@
 - [rows](PaginatedListDataSample.md#rows)
 - [totalSize](PaginatedListDataSample.md#totalsize)
 
+### Methods
+
+- [marshal](PaginatedListDataSample.md#marshal)
+
 ## Constructors
 
 ### constructor
@@ -29,7 +33,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListDataSample.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListDataSample.ts#L17)
+[src/models/PaginatedListDataSample.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L18)
 
 ## Properties
 
@@ -39,7 +43,7 @@
 
 #### Defined in
 
-[src/models/PaginatedListDataSample.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListDataSample.ts#L24)
+[src/models/PaginatedListDataSample.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L30)
 
 ___
 
@@ -49,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListDataSample.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListDataSample.ts#L21)
+[src/models/PaginatedListDataSample.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L27)
 
 ___
 
@@ -59,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListDataSample.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListDataSample.ts#L23)
+[src/models/PaginatedListDataSample.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L29)
 
 ___
 
@@ -69,4 +73,18 @@ ___
 
 #### Defined in
 
-[src/models/PaginatedListDataSample.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PaginatedListDataSample.ts#L22)
+[src/models/PaginatedListDataSample.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L28)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPaginatedListDataSample`
+
+#### Returns
+
+`IPaginatedListDataSample`
+
+#### Defined in
+
+[src/models/PaginatedListDataSample.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/PaginatedListDataSample.ts#L32)

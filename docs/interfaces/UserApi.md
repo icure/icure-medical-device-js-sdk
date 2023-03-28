@@ -1,6 +1,6 @@
 [@icure/medical-device-sdk](../modules.md) / UserApi
 
-# Interface: UserApi
+# SDK API: UserApi
 
 The UserApi interface provides methods to manage users.
 
@@ -44,7 +44,7 @@ Check token validity for a user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L18)
+[src/apis/UserApi.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L18)
 
 ___
 
@@ -69,7 +69,7 @@ credentials and the link to complete the signup.
 
 #### Defined in
 
-[src/apis/UserApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L26)
+[src/apis/UserApi.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L26)
 
 ___
 
@@ -92,7 +92,7 @@ Create a new user or modify an existing one.
 
 #### Defined in
 
-[src/apis/UserApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L33)
+[src/apis/UserApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L33)
 
 ___
 
@@ -116,7 +116,7 @@ Create a token for a user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L40)
+[src/apis/UserApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L40)
 
 ___
 
@@ -139,7 +139,7 @@ Delete an existing user.
 
 #### Defined in
 
-[src/apis/UserApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L46)
+[src/apis/UserApi.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L46)
 
 ___
 
@@ -164,7 +164,7 @@ Load users from the database by filtering them using the provided Filter.
 
 #### Defined in
 
-[src/apis/UserApi.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L54)
+[src/apis/UserApi.ts:54](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L54)
 
 ___
 
@@ -181,7 +181,7 @@ Get the details of the logged User.
 
 #### Defined in
 
-[src/apis/UserApi.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L59)
+[src/apis/UserApi.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L59)
 
 ___
 
@@ -204,7 +204,7 @@ Get a User by id.
 
 #### Defined in
 
-[src/apis/UserApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L65)
+[src/apis/UserApi.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L65)
 
 ___
 
@@ -228,7 +228,7 @@ Each user is uniquely identified by an email
 
 #### Defined in
 
-[src/apis/UserApi.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L74)
+[src/apis/UserApi.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L74)
 
 ___
 
@@ -251,13 +251,13 @@ Load user ids from the database by filtering them using the provided Filter.
 
 #### Defined in
 
-[src/apis/UserApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L81)
+[src/apis/UserApi.ts:81](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L81)
 
 ___
 
 ### shareAllFutureDataWith
 
-▸ **shareAllFutureDataWith**(`type`, `dataOwnerIds`): `Promise`<[`User`](../classes/User.md)\>
+▸ **shareAllFutureDataWith**(`dataOwnerIds`, `type?`): `Promise`<[`User`](../classes/User.md)\>
 
 Add autoDelegations values to the user.
 
@@ -265,8 +265,8 @@ Add autoDelegations values to the user.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `type` | [`SharedDataType`](../modules.md#shareddatatype) | Type of AutoDelegation to add |
 | `dataOwnerIds` | `string`[] | Array of DataOwnerId to add |
+| `type?` | [`SharedDataType`](../modules.md#shareddatatype) | Type of AutoDelegation to add. Shares all data by default. |
 
 #### Returns
 
@@ -276,13 +276,13 @@ Updated user
 
 #### Defined in
 
-[src/apis/UserApi.ts:107](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L107)
+[src/apis/UserApi.ts:107](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L107)
 
 ___
 
 ### stopSharingDataWith
 
-▸ **stopSharingDataWith**(`type`, `dataOwnerIds`): `Promise`<[`User`](../classes/User.md)\>
+▸ **stopSharingDataWith**(`dataOwnerIds`, `type?`): `Promise`<[`User`](../classes/User.md)\>
 
 Removes autoDelegations values to the user.
 
@@ -290,8 +290,8 @@ Removes autoDelegations values to the user.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `type` | [`SharedDataType`](../modules.md#shareddatatype) | Type of AutoDelegation to removes |
 | `dataOwnerIds` | `string`[] | Array of DataOwnerId to add |
+| `type?` | [`SharedDataType`](../modules.md#shareddatatype) | Type of AutoDelegation to removes. Shares all data by default. |
 
 #### Returns
 
@@ -301,7 +301,7 @@ Updated user
 
 #### Defined in
 
-[src/apis/UserApi.ts:115](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L115)
+[src/apis/UserApi.ts:115](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L115)
 
 ___
 
@@ -318,11 +318,9 @@ Opens a WebSocket Connection in order to receive all the Users corresponding to 
 | `eventTypes` | (``"CREATE"`` \| ``"UPDATE"`` \| ``"DELETE"``)[] | Type of event you would like to listen. It can be CREATE, UPDATE or DELETE |
 | `filter` | `Filter`<[`User`](../classes/User.md)\> | Filter criteria to filter to the users you would like to receive |
 | `eventFired` | (`user`: [`User`](../classes/User.md)) => `Promise`<`void`\> | Action applied each time you receive a user through the WebSocket |
-| `options?` | `Object` | Options to configure the WebSocket.    - keepAlive : How long to keep connection alive (ms);    - lifetime : How long to keep the WebSocket alive (ms);    - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket;    - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts) |
+| `options?` | `Object` | Options to configure the WebSocket. - keepAlive : How long to keep connection alive (ms); - lifetime : How long to keep the WebSocket alive (ms); - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket; - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts) |
 | `options.connectionMaxRetry?` | `number` | - |
 | `options.connectionRetryIntervalMs?` | `number` | - |
-| `options.keepAlive?` | `number` | - |
-| `options.lifetime?` | `number` | - |
 
 #### Returns
 
@@ -330,4 +328,4 @@ Opens a WebSocket Connection in order to receive all the Users corresponding to 
 
 #### Defined in
 
-[src/apis/UserApi.ts:94](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/UserApi.ts#L94)
+[src/apis/UserApi.ts:94](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/apis/UserApi.ts#L94)

@@ -15,16 +15,14 @@
 ### Properties
 
 - [connectionStatus](ConnectionImpl.md#connectionstatus)
-- [rs](ConnectionImpl.md#rs)
+- [wsw](ConnectionImpl.md#wsw)
 
 ### Methods
 
 - [close](ConnectionImpl.md#close)
 - [onClosed](ConnectionImpl.md#onclosed)
 - [onConnected](ConnectionImpl.md#onconnected)
-- [onConnecting](ConnectionImpl.md#onconnecting)
 - [onError](ConnectionImpl.md#onerror)
-- [onNotConnected](ConnectionImpl.md#onnotconnected)
 
 ## Constructors
 
@@ -36,31 +34,31 @@
 
 | Name | Type |
 | :------ | :------ |
-| `rs` | `ICureRSocket`<`any`, `any`\> |
+| `rs` | `WebSocketWrapper` |
 
 #### Defined in
 
-[src/models/Connection.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L17)
+[src/models/Connection.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L14)
 
 ## Properties
 
 ### connectionStatus
 
-• **connectionStatus**: `string`
+• **connectionStatus**: `ConnectionStatus`
 
 #### Defined in
 
-[src/models/Connection.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L15)
+[src/models/Connection.ts:12](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L12)
 
 ___
 
-### rs
+### wsw
 
-• **rs**: `ICureRSocket`<`any`, `any`\>
+• **wsw**: `WebSocketWrapper`
 
 #### Defined in
 
-[src/models/Connection.ts:14](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L14)
+[src/models/Connection.ts:11](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L11)
 
 ## Methods
 
@@ -78,7 +76,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L22)
+[src/models/Connection.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L19)
 
 ___
 
@@ -102,7 +100,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L56)
+[src/models/Connection.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L31)
 
 ___
 
@@ -126,31 +124,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L46)
-
-___
-
-### onConnecting
-
-▸ **onConnecting**(`callback`): [`Connection`](../interfaces/Connection.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `callback` | () => `void` |
-
-#### Returns
-
-[`Connection`](../interfaces/Connection.md)
-
-#### Implementation of
-
-[Connection](../interfaces/Connection.md).[onConnecting](../interfaces/Connection.md#onconnecting)
-
-#### Defined in
-
-[src/models/Connection.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L26)
+[src/models/Connection.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L23)
 
 ___
 
@@ -162,7 +136,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | (`e`: `Error`) => `void` |
+| `callback` | (`e?`: `Error`) => `void` |
 
 #### Returns
 
@@ -174,28 +148,4 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L66)
-
-___
-
-### onNotConnected
-
-▸ **onNotConnected**(`callback`): [`Connection`](../interfaces/Connection.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `callback` | () => `void` |
-
-#### Returns
-
-[`Connection`](../interfaces/Connection.md)
-
-#### Implementation of
-
-[Connection](../interfaces/Connection.md).[onNotConnected](../interfaces/Connection.md#onnotconnected)
-
-#### Defined in
-
-[src/models/Connection.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L36)
+[src/models/Connection.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L39)

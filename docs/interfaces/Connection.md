@@ -13,9 +13,7 @@
 - [close](Connection.md#close)
 - [onClosed](Connection.md#onclosed)
 - [onConnected](Connection.md#onconnected)
-- [onConnecting](Connection.md#onconnecting)
 - [onError](Connection.md#onerror)
-- [onNotConnected](Connection.md#onnotconnected)
 
 ## Methods
 
@@ -29,7 +27,7 @@
 
 #### Defined in
 
-[src/models/Connection.ts:5](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L5)
+[src/models/Connection.ts:4](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L4)
 
 ___
 
@@ -49,7 +47,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:9](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L9)
+[src/models/Connection.ts:6](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L6)
 
 ___
 
@@ -69,27 +67,7 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:8](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L8)
-
-___
-
-### onConnecting
-
-▸ **onConnecting**(`callback`): [`Connection`](Connection.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `callback` | () => `void` |
-
-#### Returns
-
-[`Connection`](Connection.md)
-
-#### Defined in
-
-[src/models/Connection.ts:6](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L6)
+[src/models/Connection.ts:5](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L5)
 
 ___
 
@@ -101,7 +79,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `callback` | (`e`: `Error`) => `void` |
+| `callback` | (`e?`: `Error`) => `void` |
 
 #### Returns
 
@@ -109,24 +87,4 @@ ___
 
 #### Defined in
 
-[src/models/Connection.ts:10](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L10)
-
-___
-
-### onNotConnected
-
-▸ **onNotConnected**(`callback`): [`Connection`](Connection.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `callback` | () => `void` |
-
-#### Returns
-
-[`Connection`](Connection.md)
-
-#### Defined in
-
-[src/models/Connection.ts:7](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Connection.ts#L7)
+[src/models/Connection.ts:7](https://github.com/icure/icure-medical-device-js-sdk/blob/6492840/src/models/Connection.ts#L7)
