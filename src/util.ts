@@ -6,8 +6,6 @@
  * @param codeRange string with length 3 consisting of digits and "X" (the letter X)
  * @param code the http status code to be checked against the code range
  */
-import { ICURE_CLOUD_URL, ICURE_FREE_URL } from '../index'
-
 export function isCodeInRange(codeRange: string, code: number): boolean {
   // This is how the default value is encoded in OAG
   if (codeRange === '0') {
