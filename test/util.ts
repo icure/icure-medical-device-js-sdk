@@ -27,7 +27,7 @@ describe('Util', () => {
     expect(formatICureApiUrl('http://localhost:16044/rest/v1')).to.eq('http://localhost:16044/rest/v1')
     expect(formatICureApiUrl('http://localhost:16044/rest/v1/')).to.eq('http://localhost:16044/rest/v1')
 
-    expect(formatICureApiUrl('https://kraken.icure.dev')).to.eq('https://kraken.icure.dev/rest/v2')
+    expect(formatICureApiUrl('https://kraken.icure.dev')).to.eq('https://kraken.icure.dev/rest/v1')
     expect(formatICureApiUrl('https://kraken.icure.dev/rest/v1')).to.eq('https://kraken.icure.dev/rest/v1')
 
     expect(formatICureApiUrl('http://kraken-1/rest/v2')).to.eq('http://kraken-1/rest/v2')
