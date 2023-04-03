@@ -40,7 +40,7 @@ export function formatICureApiUrl(iCureUrl: string): string {
   let formattedEndUrl = removeSlashEndOfApiUrl(iCureUrl)
 
   if (formattedEndUrl.match('^https?://[a-zA-Z0-9.-]+(:[0-9]+)?$') != null) {
-    return formattedEndUrl + '/rest/v2'
+    return formattedEndUrl + '/rest/v1'
   }
 
   if (formattedEndUrl.match('^https?://[a-zA-Z0-9.-]+(:[0-9]+)?/rest/v[1-2]$') != null) {
