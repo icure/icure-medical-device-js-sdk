@@ -59,6 +59,7 @@ import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
 import { DataOwnerApi } from './DataOwnerApi'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
+import { formatICureApiUrl } from '../util'
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi
@@ -288,7 +289,7 @@ export class MedTechApiBuilder {
   private _keyStorage?: KeyStorageFacade
 
   withICureBaseUrl(newICureBaseUrl: string): MedTechApiBuilder {
-    this.iCureBaseUrl = newICureBaseUrl
+    this.iCureBaseUrl = formatICureApiUrl(newICureBaseUrl)
     return this
   }
 
