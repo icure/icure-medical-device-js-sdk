@@ -7,6 +7,7 @@ import { ErrorHandler } from '../services/ErrorHandler'
 import { Sanitizer } from '../services/Sanitizer'
 import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
+import { formatICureApiUrl } from '../util'
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string
@@ -77,7 +78,7 @@ export class AnonymousMedTechApiBuilder {
   private keyStorage?: KeyStorageFacade
 
   withICureBaseUrl(newICureBaseUrl: string): AnonymousMedTechApiBuilder {
-    this.iCureBaseUrl = newICureBaseUrl.search('/rest/v[1-2]') == -1 ? newICureBaseUrl + '/rest/v2' : newICureBaseUrl
+    this.iCureBaseUrl = formatICureApiUrl(newICureBaseUrl)
     return this
   }
 
