@@ -70,7 +70,13 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       )
     }
 
-    const processId = email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId
+    if((!!email && !this.authProcessByEmailId) || (!!phoneNumber && !this.authProcessBySmsId)) {
+      throw this.errorHandler.createErrorWithMessage(
+        `In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId`
+      )
+    }
+
+    const processId = (!!email && !!this.authProcessByEmailId) ? this.authProcessByEmailId : this.authProcessBySmsId
 
     const requestId = await this.messageGatewayApi.startProcess(
       processId,
