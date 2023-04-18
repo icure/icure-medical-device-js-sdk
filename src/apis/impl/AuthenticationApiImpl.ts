@@ -70,15 +70,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       )
     }
 
-    if(!!email && !this.authProcessByEmailId && (!phoneNumber || (!!phoneNumber && !this.authProcessBySmsId))) {
+    if(!!email && !this.authProcessByEmailId || (!!phoneNumber && !this.authProcessBySmsId))) {
       throw this.errorHandler.createErrorWithMessage(
-        `In order to start authentication of a user with an email, you need to instantiate the API with a authProcessByEmailId`
-      )
-    }
-
-    if(!!phoneNumber && !this.authProcessBySmsId && (!email || (!!email && !this.authProcessByEmailId))) {
-      throw this.errorHandler.createErrorWithMessage(
-        `In order to start authentication of a user with a phone number, you need to instantiate the API with a authProcessBySmsId`
+        `In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authenticcation with a  phone number, then you need to instantiate the API with a authProcessBySmsId`
       )
     }
 
