@@ -123,11 +123,8 @@ export class AnonymousMedTechApiBuilder {
   }
 
   async build(): Promise<AnonymousMedTechApi> {
-    if (!this.authProcessByEmailId) {
-      throw new Error('authProcessIdByEmail is required')
-    }
-    if (!this.authProcessBySmsId) {
-      throw new Error('authProcessIdBySms is required')
+    if (!this.authProcessByEmailId && !this.authProcessBySmsId) {
+      throw new Error('At least one between authProcessIdBySms and authProcessByEmailId is required')
     }
     if (!this.msgGwSpecId) {
       throw new Error('msgGtwSpecId is required')

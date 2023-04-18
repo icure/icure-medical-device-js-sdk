@@ -232,7 +232,7 @@ export class MedTechApi {
   get authenticationApi(): AuthenticationApi {
     if (!this._authenticationApi) {
       throw Error(
-        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, authProcessByEmailId and authProcessBySMSId"
+        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, and at least one of authProcessByEmailId and authProcessBySMSId"
       )
     }
 

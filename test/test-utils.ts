@@ -221,6 +221,16 @@ export class TestUtils {
     return response
   }
 
+  static async getSMS(phoneNumber: string): Promise<any> {
+    const { msgGtwUrl, specId } = getEnvVariables()
+    const smsOptions = {
+      method: 'GET' as Method,
+      url: `${msgGtwUrl}/${specId}/lastSMS/${phoneNumber}`,
+    }
+    const { data: response } = await axios.request(smsOptions)
+    return response
+  }
+
   static async signUpUserUsingEmail(
     iCureUrl: string,
     msgGtwUrl: string,
@@ -249,7 +259,6 @@ export class TestUtils {
       .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
-      .withAuthProcessBySmsId(authProcessId)
 
     if (storage) {
       builder.withStorage(storage)
@@ -260,7 +269,6 @@ export class TestUtils {
     }
 
     const anonymousMedTechApi = await builder.build()
-    const env = getEnvVariables()
 
     const email = getTempEmail()
     const process = await anonymousMedTechApi.authenticationApi.startAuthentication(
