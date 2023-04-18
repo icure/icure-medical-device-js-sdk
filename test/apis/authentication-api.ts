@@ -167,7 +167,7 @@ describe('Authentication API', () => {
       )
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user with an email, you need to instantiate the API with a authProcessByEmailId')
+      expect((e as Error).message).to.eq('In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId')
     }
   })
 
@@ -194,7 +194,7 @@ describe('Authentication API', () => {
       )
       expect(true, 'promise should fail').eq(false)
     } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user with a phone number, you need to instantiate the API with a authProcessBySmsId')
+      expect((e as Error).message).to.eq('In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId')
     }
   })
 

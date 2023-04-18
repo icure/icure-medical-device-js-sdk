@@ -48,7 +48,6 @@ export interface AuthenticationApi {
    * - In the case of a login, re-generate keys if needed (new keys different from previous ones);
    * @param process The AuthenticationProcess previously provided in the startAuthentication service
    * @param validationCode The validation code the user received by email/mobile phone
-   * @param getUserKeypair Lambda providing the user RSA Keypair. Get it from where you stored it previously or
    * generate a new one if user lost it (See AnonymousMedTechApi.generateRSAKeypair()).
    *
    * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
@@ -63,7 +62,6 @@ export interface AuthenticationApi {
    * - Send a Notification to all the delegated HCP to ask for access to the data of the Patient
    * @param userLogin The login of the user
    * @param shortLivedToken The short-lived authentication token created by the HCP
-   * @param getUserKeypair Lambda providing the user RSA Keypair. Get it from where you stored it previously or
    * generate a new one if user lost it (See AnonymousMedTechApi.generateRSAKeypair()).
    *
    * @return The result of the authentication and the related MedTechApi object corresponding to the newly authenticated
