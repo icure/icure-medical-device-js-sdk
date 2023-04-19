@@ -222,10 +222,10 @@
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
 
-"@icure/api@^6.3.0":
-  version "6.3.0"
-  resolved "https://registry.npmjs.org/@icure/api/-/api-6.3.0.tgz#ef341b58eb9ebd84896be24e843a04267b385a9c"
-  integrity sha512-HIlKSF4D6714O6d+jvNI893cGdvLuXajuBdSwV5oQuW+Wh3s3yq5/8NU2/rJQPexuIXn8cSPAUsGpgiMF2b/mA==
+"@icure/api@^6.4.0":
+  version "6.4.0"
+  resolved "https://registry.npmjs.org/@icure/api/-/api-6.4.0.tgz#9462583669ebfeb177c494b79f137bca09e8d039"
+  integrity sha512-ZalZ9z2uRkFi1n23z/2QJn2TobvskM0PYefhybSSU09yK74YR9Xhc6F3NQ/UA/F2Uz96tBVWVdI+hZswCNnS/Q==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
@@ -422,39 +422,6 @@
     "@types/prop-types" "*"
     "@types/scheduler" "*"
     csstype "^3.0.2"
-
-"@types/rsocket-core@*":
-  version "0.0.7"
-  resolved "https://registry.npmjs.org/@types/rsocket-core/-/rsocket-core-0.0.7.tgz#e9ed6d9ec918ec7a9aab0c48fefbb74b33712235"
-  integrity sha512-y4WRagbMA+7DZOtVbCow0Qkk7B8jJAH834Cu+ntmPqiAmHHn9RaVfwmlADQJk17Yuh+e6D5dS18oJNrpUXNEKQ==
-  dependencies:
-    "@types/node" "*"
-    "@types/rsocket-flowable" "*"
-    "@types/rsocket-types" "*"
-
-"@types/rsocket-flowable@*":
-  version "0.0.5"
-  resolved "https://registry.npmjs.org/@types/rsocket-flowable/-/rsocket-flowable-0.0.5.tgz#abc144da8f9d5fb44b3fe4d9e3d764d5f3e35431"
-  integrity sha512-Xf9C8VCPqSPGXaFvnE31ifjQJACiNpxo8ujfeZ0vMHPOANxkbmiL8Crrxa3nUe1EVcFGDgmODUhLqnCcjPWjDQ==
-  dependencies:
-    "@types/rsocket-types" "*"
-
-"@types/rsocket-types@*":
-  version "0.0.3"
-  resolved "https://registry.npmjs.org/@types/rsocket-types/-/rsocket-types-0.0.3.tgz#657e05a296fe0c22772faa6f469bbdc2a4a03af9"
-  integrity sha512-q6eHLNb65AOK6h06bqpVs7TN6bA/qukNdvNf+QLjDLKOTta2oRkrxa2aVB7S6/c7lrihPGZUwiO4ps6IKSjocA==
-  dependencies:
-    "@types/node" "*"
-    "@types/rsocket-flowable" "*"
-
-"@types/rsocket-websocket-client@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.npmjs.org/@types/rsocket-websocket-client/-/rsocket-websocket-client-0.0.4.tgz#a3b1fced26f272e02c8020282dee01481e1c43c2"
-  integrity sha512-FAhbXRXq7ikkJZPDj1bHlgPLrDDIVGLCnAl5Dsl5PK7lpAxGZxe0WSJtFMBXLkQSGbTQgMS+GYj/oV/D65HSmg==
-  dependencies:
-    "@types/rsocket-core" "*"
-    "@types/rsocket-flowable" "*"
-    "@types/rsocket-types" "*"
 
 "@types/scheduler@*":
   version "0.16.2"
