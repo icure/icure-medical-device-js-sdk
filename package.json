@@ -50,7 +50,7 @@
     "homepage": "https://github.com/icure/icure-medical-device-js-sdk"
   },
   "dependencies": {
-    "@icure/api": "^6.3.0",
+    "@icure/api": "^6.4.0",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
     "loglevel": "^1.8.1",
