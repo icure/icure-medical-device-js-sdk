@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Coding
+[@icure/medical-device-sdk](../modules) / Coding
 
 # Class: Coding
 
@@ -15,18 +15,23 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](Coding.md#constructor)
+- [constructor](Coding#constructor)
 
 ### Properties
 
-- [code](Coding.md#code)
-- [description](Coding.md#description)
-- [id](Coding.md#id)
-- [qualifiedLinks](Coding.md#qualifiedlinks)
-- [rev](Coding.md#rev)
-- [searchTerms](Coding.md#searchterms)
-- [type](Coding.md#type)
-- [version](Coding.md#version)
+- [code](Coding#code)
+- [description](Coding#description)
+- [id](Coding#id)
+- [qualifiedLinks](Coding#qualifiedlinks)
+- [regions](Coding#regions)
+- [rev](Coding#rev)
+- [searchTerms](Coding#searchterms)
+- [type](Coding#type)
+- [version](Coding#version)
+
+### Methods
+
+- [marshal](Coding#marshal)
 
 ## Constructors
 
@@ -42,7 +47,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Coding.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L15)
+[src/models/Coding.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L15)
 
 ## Properties
 
@@ -52,7 +57,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Coding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L28)
+[src/models/Coding.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L30)
 
 ___
 
@@ -68,7 +73,7 @@ Description (ex: {en: Rheumatic Aortic Stenosis, fr: Sténose rhumatoïde de l'A
 
 #### Defined in
 
-[src/models/Coding.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L36)
+[src/models/Coding.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L39)
 
 ___
 
@@ -80,7 +85,7 @@ the Id of the coding. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/Coding.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L22)
+[src/models/Coding.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L24)
 
 ___
 
@@ -96,7 +101,17 @@ Links towards related codes
 
 #### Defined in
 
-[src/models/Coding.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L40)
+[src/models/Coding.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L43)
+
+___
+
+### regions
+
+• `Optional` **regions**: `string`[]
+
+#### Defined in
+
+[src/models/Coding.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L35)
 
 ___
 
@@ -108,7 +123,7 @@ the revision of the coding in the database, used for conflict management / optim
 
 #### Defined in
 
-[src/models/Coding.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L26)
+[src/models/Coding.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L28)
 
 ___
 
@@ -124,7 +139,7 @@ Extra search terms/ language
 
 #### Defined in
 
-[src/models/Coding.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L44)
+[src/models/Coding.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L47)
 
 ___
 
@@ -134,7 +149,7 @@ ___
 
 #### Defined in
 
-[src/models/Coding.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L27)
+[src/models/Coding.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L29)
 
 ___
 
@@ -146,4 +161,18 @@ Must be lexicographically searchable
 
 #### Defined in
 
-[src/models/Coding.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Coding.ts#L32)
+[src/models/Coding.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L34)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `ICoding`
+
+#### Returns
+
+`ICoding`
+
+#### Defined in
+
+[src/models/Coding.ts:49](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Coding.ts#L49)

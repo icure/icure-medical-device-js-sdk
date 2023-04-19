@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / MsgGtwMessageFactory
+[@icure/medical-device-sdk](../modules) / MsgGtwMessageFactory
 
 # Interface: MsgGtwMessageFactory<T\>
 
@@ -6,37 +6,37 @@
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends [`SMSMessage`](../modules.md#smsmessage) \| [`EmailMessage`](../modules.md#emailmessage) |
+| `T` | extends [`SMSMessage`](../modules#smsmessage) \| [`EmailMessage`](../modules#emailmessage) |
 
 ## Hierarchy
 
 - **`MsgGtwMessageFactory`**
 
-  ↳ [`EmailMessageFactory`](EmailMessageFactory.md)
+  ↳ [`EmailMessageFactory`](EmailMessageFactory)
 
-  ↳ [`SMSMessageFactory`](SMSMessageFactory.md)
+  ↳ [`SMSMessageFactory`](SMSMessageFactory)
 
 ## Table of contents
 
 ### Properties
 
-- [dataOwner](MsgGtwMessageFactory.md#dataowner)
-- [link](MsgGtwMessageFactory.md#link)
-- [patient](MsgGtwMessageFactory.md#patient)
+- [dataOwner](MsgGtwMessageFactory#dataowner)
+- [link](MsgGtwMessageFactory#link)
+- [patient](MsgGtwMessageFactory#patient)
 
 ### Methods
 
-- [get](MsgGtwMessageFactory.md#get)
+- [get](MsgGtwMessageFactory#get)
 
 ## Properties
 
 ### dataOwner
 
-• **dataOwner**: [`Patient`](../classes/Patient.md) \| [`HealthcareProfessional`](../classes/HealthcareProfessional.md)
+• **dataOwner**: [`HealthcareProfessional`](../classes/HealthcareProfessional) \| [`Patient`](../classes/Patient)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L19)
+[src/utils/msgGtwMessageFactory.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L20)
 
 ___
 
@@ -46,17 +46,17 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L20)
+[src/utils/msgGtwMessageFactory.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L21)
 
 ___
 
 ### patient
 
-• **patient**: [`Patient`](../classes/Patient.md)
+• **patient**: [`Patient`](../classes/Patient)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L21)
+[src/utils/msgGtwMessageFactory.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L22)
 
 ## Methods
 
@@ -68,7 +68,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `recipient` | [`User`](../classes/User.md) |
+| `recipient` | [`User`](../classes/User) |
 | `recipientPassword` | `string` |
 
 #### Returns
@@ -77,4 +77,4 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L23)
+[src/utils/msgGtwMessageFactory.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L24)

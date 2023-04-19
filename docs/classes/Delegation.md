@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Delegation
+[@icure/medical-device-sdk](../modules) / Delegation
 
 # Class: Delegation
 
@@ -15,14 +15,18 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](Delegation.md#constructor)
+- [constructor](Delegation#constructor)
 
 ### Properties
 
-- [delegatedTo](Delegation.md#delegatedto)
-- [key](Delegation.md#key)
-- [owner](Delegation.md#owner)
-- [tags](Delegation.md#tags)
+- [delegatedTo](Delegation#delegatedto)
+- [key](Delegation#key)
+- [owner](Delegation#owner)
+- [tags](Delegation#tags)
+
+### Methods
+
+- [marshal](Delegation#marshal)
 
 ## Constructors
 
@@ -38,7 +42,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Delegation.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Delegation.ts#L15)
+[src/models/Delegation.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L15)
 
 ## Properties
 
@@ -48,7 +52,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Delegation.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Delegation.ts#L21)
+[src/models/Delegation.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L21)
 
 ___
 
@@ -58,7 +62,7 @@ ___
 
 #### Defined in
 
-[src/models/Delegation.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Delegation.ts#L22)
+[src/models/Delegation.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L22)
 
 ___
 
@@ -68,7 +72,7 @@ ___
 
 #### Defined in
 
-[src/models/Delegation.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Delegation.ts#L20)
+[src/models/Delegation.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L20)
 
 ___
 
@@ -78,4 +82,18 @@ ___
 
 #### Defined in
 
-[src/models/Delegation.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Delegation.ts#L19)
+[src/models/Delegation.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L19)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IDelegation`
+
+#### Returns
+
+`IDelegation`
+
+#### Defined in
+
+[src/models/Delegation.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Delegation.ts#L24)

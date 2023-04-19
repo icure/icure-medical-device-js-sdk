@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / HealthcareElement
+[@icure/medical-device-sdk](../modules) / HealthcareElement
 
 # Class: HealthcareElement
 
@@ -6,29 +6,33 @@
 
 ### Constructors
 
-- [constructor](HealthcareElement.md#constructor)
+- [constructor](HealthcareElement#constructor)
 
 ### Properties
 
-- [author](HealthcareElement.md#author)
-- [closingDate](HealthcareElement.md#closingdate)
-- [codes](HealthcareElement.md#codes)
-- [created](HealthcareElement.md#created)
-- [deletionDate](HealthcareElement.md#deletiondate)
-- [description](HealthcareElement.md#description)
-- [endOfLife](HealthcareElement.md#endoflife)
-- [healthElementId](HealthcareElement.md#healthelementid)
-- [id](HealthcareElement.md#id)
-- [identifiers](HealthcareElement.md#identifiers)
-- [medicalLocationId](HealthcareElement.md#medicallocationid)
-- [modified](HealthcareElement.md#modified)
-- [note](HealthcareElement.md#note)
-- [openingDate](HealthcareElement.md#openingdate)
-- [responsible](HealthcareElement.md#responsible)
-- [rev](HealthcareElement.md#rev)
-- [systemMetaData](HealthcareElement.md#systemmetadata)
-- [tags](HealthcareElement.md#tags)
-- [valueDate](HealthcareElement.md#valuedate)
+- [author](HealthcareElement#author)
+- [closingDate](HealthcareElement#closingdate)
+- [codes](HealthcareElement#codes)
+- [created](HealthcareElement#created)
+- [deletionDate](HealthcareElement#deletiondate)
+- [description](HealthcareElement#description)
+- [endOfLife](HealthcareElement#endoflife)
+- [healthcareElementId](HealthcareElement#healthcareelementid)
+- [id](HealthcareElement#id)
+- [identifiers](HealthcareElement#identifiers)
+- [labels](HealthcareElement#labels)
+- [medicalLocationId](HealthcareElement#medicallocationid)
+- [modified](HealthcareElement#modified)
+- [note](HealthcareElement#note)
+- [openingDate](HealthcareElement#openingdate)
+- [responsible](HealthcareElement#responsible)
+- [rev](HealthcareElement#rev)
+- [systemMetaData](HealthcareElement#systemmetadata)
+- [valueDate](HealthcareElement#valuedate)
+
+### Methods
+
+- [marshal](HealthcareElement#marshal)
 
 ## Constructors
 
@@ -44,7 +48,7 @@
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L18)
+[src/models/HealthcareElement.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L19)
 
 ## Properties
 
@@ -54,7 +58,7 @@
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L33)
+[src/models/HealthcareElement.ts:42](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L42)
 
 ___
 
@@ -66,17 +70,17 @@ The date (unix epoch in ms) marking the end of the healthcare element.
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:55](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L55)
+[src/models/HealthcareElement.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L64)
 
 ___
 
 ### codes
 
-• **codes**: `Set`<[`CodingReference`](CodingReference.md)\>
+• **codes**: `Set`<[`CodingReference`](CodingReference)\>
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L37)
+[src/models/HealthcareElement.ts:46](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L46)
 
 ___
 
@@ -86,7 +90,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L31)
+[src/models/HealthcareElement.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L40)
 
 ___
 
@@ -96,7 +100,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L39)
+[src/models/HealthcareElement.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L48)
 
 ___
 
@@ -108,7 +112,7 @@ Description of the healthcare element.
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L59)
+[src/models/HealthcareElement.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L68)
 
 ___
 
@@ -118,19 +122,19 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L38)
+[src/models/HealthcareElement.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L47)
 
 ___
 
-### healthElementId
+### healthcareElementId
 
-• `Optional` **healthElementId**: `string`
+• `Optional` **healthcareElementId**: `string`
 
 The logical id of the healthcare element, used to link together different versions of the same healthcare element. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L43)
+[src/models/HealthcareElement.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L52)
 
 ___
 
@@ -142,17 +146,27 @@ The Id of the healthcare element. We encourage using either a v4 UUID or a HL7 I
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L25)
+[src/models/HealthcareElement.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L34)
 
 ___
 
 ### identifiers
 
-• **identifiers**: [`Identifier`](Identifier.md)[]
+• **identifiers**: [`Identifier`](Identifier)[]
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L26)
+[src/models/HealthcareElement.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L35)
+
+___
+
+### labels
+
+• **labels**: `Set`<[`CodingReference`](CodingReference)\>
+
+#### Defined in
+
+[src/models/HealthcareElement.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L45)
 
 ___
 
@@ -162,7 +176,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L35)
+[src/models/HealthcareElement.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L44)
 
 ___
 
@@ -172,7 +186,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L32)
+[src/models/HealthcareElement.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L41)
 
 ___
 
@@ -184,7 +198,7 @@ A text note (can be confidential, encrypted by default).
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L63)
+[src/models/HealthcareElement.ts:72](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L72)
 
 ___
 
@@ -196,7 +210,7 @@ The date (unix epoch in ms) of the start of the healthcare element.
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L51)
+[src/models/HealthcareElement.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L60)
 
 ___
 
@@ -206,7 +220,7 @@ ___
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L34)
+[src/models/HealthcareElement.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L43)
 
 ___
 
@@ -218,27 +232,17 @@ The revision of the healthcare element in the database, used for conflict manage
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L30)
+[src/models/HealthcareElement.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L39)
 
 ___
 
 ### systemMetaData
 
-• `Optional` **systemMetaData**: [`SystemMetaDataEncrypted`](SystemMetaDataEncrypted.md)
+• `Optional` **systemMetaData**: [`SystemMetaDataEncrypted`](SystemMetaDataEncrypted)
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L64)
-
-___
-
-### tags
-
-• **tags**: `Set`<[`CodingReference`](CodingReference.md)\>
-
-#### Defined in
-
-[src/models/HealthcareElement.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L36)
+[src/models/HealthcareElement.ts:73](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L73)
 
 ___
 
@@ -250,4 +254,18 @@ The date (unix epoch in ms) when the healthcare element is noted to have started
 
 #### Defined in
 
-[src/models/HealthcareElement.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareElement.ts#L47)
+[src/models/HealthcareElement.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L56)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IHealthcareElement`
+
+#### Returns
+
+`IHealthcareElement`
+
+#### Defined in
+
+[src/models/HealthcareElement.ts:75](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareElement.ts#L75)

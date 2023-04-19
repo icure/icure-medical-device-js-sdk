@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / TimeSeries
+[@icure/medical-device-sdk](../modules) / TimeSeries
 
 # Class: TimeSeries
 
@@ -8,17 +8,21 @@ A high frequency time-series containing the ts in ms from the start (double) and
 
 ### Constructors
 
-- [constructor](TimeSeries.md#constructor)
+- [constructor](TimeSeries#constructor)
 
 ### Properties
 
-- [fields](TimeSeries.md#fields)
-- [max](TimeSeries.md#max)
-- [mean](TimeSeries.md#mean)
-- [median](TimeSeries.md#median)
-- [min](TimeSeries.md#min)
-- [samples](TimeSeries.md#samples)
-- [variance](TimeSeries.md#variance)
+- [fields](TimeSeries#fields)
+- [max](TimeSeries#max)
+- [mean](TimeSeries#mean)
+- [median](TimeSeries#median)
+- [min](TimeSeries#min)
+- [samples](TimeSeries#samples)
+- [variance](TimeSeries#variance)
+
+### Methods
+
+- [marshal](TimeSeries#marshal)
 
 ## Constructors
 
@@ -34,7 +38,7 @@ A high frequency time-series containing the ts in ms from the start (double) and
 
 #### Defined in
 
-[src/models/TimeSeries.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L18)
+[src/models/TimeSeries.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L18)
 
 ## Properties
 
@@ -44,7 +48,7 @@ A high frequency time-series containing the ts in ms from the start (double) and
 
 #### Defined in
 
-[src/models/TimeSeries.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L22)
+[src/models/TimeSeries.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L22)
 
 ___
 
@@ -54,7 +58,7 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L25)
+[src/models/TimeSeries.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L25)
 
 ___
 
@@ -64,7 +68,7 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L26)
+[src/models/TimeSeries.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L26)
 
 ___
 
@@ -74,7 +78,7 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L27)
+[src/models/TimeSeries.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L27)
 
 ___
 
@@ -84,7 +88,7 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L24)
+[src/models/TimeSeries.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L24)
 
 ___
 
@@ -94,7 +98,7 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L23)
+[src/models/TimeSeries.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L23)
 
 ___
 
@@ -104,4 +108,18 @@ ___
 
 #### Defined in
 
-[src/models/TimeSeries.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/TimeSeries.ts#L28)
+[src/models/TimeSeries.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L28)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `ITimeSeries`
+
+#### Returns
+
+`ITimeSeries`
+
+#### Defined in
+
+[src/models/TimeSeries.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/TimeSeries.ts#L30)

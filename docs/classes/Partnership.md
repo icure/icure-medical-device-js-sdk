@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Partnership
+[@icure/medical-device-sdk](../modules) / Partnership
 
 # Class: Partnership
 
@@ -8,13 +8,17 @@ List of partners, or persons of contact (of class Partnership, see below).
 
 ### Constructors
 
-- [constructor](Partnership.md#constructor)
+- [constructor](Partnership#constructor)
 
 ### Properties
 
-- [partnerId](Partnership.md#partnerid)
-- [status](Partnership.md#status)
-- [type](Partnership.md#type)
+- [partnerId](Partnership#partnerid)
+- [status](Partnership#status)
+- [type](Partnership#type)
+
+### Methods
+
+- [marshal](Partnership#marshal)
 
 ## Constructors
 
@@ -30,7 +34,7 @@ List of partners, or persons of contact (of class Partnership, see below).
 
 #### Defined in
 
-[src/models/Partnership.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L18)
+[src/models/Partnership.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Partnership.ts#L18)
 
 ## Properties
 
@@ -40,24 +44,38 @@ List of partners, or persons of contact (of class Partnership, see below).
 
 #### Defined in
 
-[src/models/Partnership.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L24)
+[src/models/Partnership.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Partnership.ts#L27)
 
 ___
 
 ### status
 
-• `Optional` **status**: [`PartnershipStatusEnum`](../modules.md#partnershipstatusenum)
+• `Optional` **status**: [`PartnershipStatusEnum`](../modules#partnershipstatusenum)
 
 #### Defined in
 
-[src/models/Partnership.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L23)
+[src/models/Partnership.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Partnership.ts#L26)
 
 ___
 
 ### type
 
-• `Optional` **type**: [`PartnershipTypeEnum`](../modules.md#partnershiptypeenum)
+• `Optional` **type**: [`PartnershipTypeEnum`](../modules#partnershiptypeenum)
 
 #### Defined in
 
-[src/models/Partnership.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Partnership.ts#L22)
+[src/models/Partnership.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Partnership.ts#L25)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPartnership`
+
+#### Returns
+
+`IPartnership`
+
+#### Defined in
+
+[src/models/Partnership.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Partnership.ts#L29)

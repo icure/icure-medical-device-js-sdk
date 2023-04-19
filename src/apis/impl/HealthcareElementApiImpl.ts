@@ -3,7 +3,8 @@ import { Filter } from '../../filter/Filter'
 import { PaginatedListHealthcareElement } from '../../models/PaginatedListHealthcareElement'
 import { HealthcareElementApi } from '../HealthcareElementApi'
 import {
-  FilterChainPatient,
+  DocIdentifier,
+  FilterChainHealthElement,
   HealthElement,
   IccAuthApi,
   IccContactXApi,
@@ -13,7 +14,9 @@ import {
   IccHelementXApi,
   IccPatientXApi,
   IccUserXApi,
+  PaginatedListHealthElement,
   Patient as PatientDto,
+  User,
   User as UserDto,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
@@ -72,9 +75,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async createOrModifyHealthcareElement(healthcareElement: HealthcareElement, patientId?: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+    const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
-    })
+    })) as User
     const patient = patientId
       ? await this.patientApi.getPatientWithUser(currentUser, patientId).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
@@ -91,9 +94,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     } else if (patient) {
       createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(
         currentUser,
-        await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true).catch((e) => {
+        (await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
-        })
+        })) as HealthElement
       )
     }
 
@@ -107,9 +110,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   async createOrModifyHealthcareElements(healthcareElements: Array<HealthcareElement>, patientId?: string): Promise<Array<HealthcareElement>> {
     const heToCreate = healthcareElements.filter((he) => !he.rev)
     const heToUpdate = healthcareElements.filter((he) => !!he.rev)
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+    const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
-    })
+    })) as User
     const patient = patientId
       ? await this.patientApi.getPatientWithUser(currentUser, patientId).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
@@ -145,9 +148,9 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
   async deleteHealthcareElement(id: string): Promise<string> {
     const deletedHeRev = firstOrNull(
-      await this.heApi.deleteHealthElements(id).catch((e) => {
+      (await this.heApi.deleteHealthElements(id).catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)
-      })
+      })) as Array<DocIdentifier>
     )?.rev
     if (deletedHeRev) {
       return deletedHeRev
@@ -160,29 +163,34 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     nextHealthElementId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareElement> {
+    const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })) as User
+
     return PaginatedListMapper.toPaginatedListHealthcareElement(
-      await this.heApi
-        .filterHealthElementsBy(
+      (await this.heApi
+        .filterByWithUser(
+          currentUser,
           nextHealthElementId,
           limit,
-          new FilterChainPatient({
+          new FilterChainHealthElement({
             filter: FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement'),
           })
         )
         .catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
-        })
+        })) as PaginatedListHealthElement | undefined
     )!
   }
 
   async getHealthcareElement(id: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+    const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
-    })
+    })) as User
     return HealthcareElementMapper.toHealthcareElement(
-      await this.heApi.getHealthElementWithUser(currentUser, id).catch((e) => {
+      (await this.heApi.getHealthElementWithUser(currentUser, id).catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)
-      })
+      })) as HealthElement
     )
   }
 
@@ -216,7 +224,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(<User>currentUser)
     const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
 
     if (!(healthElementToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
@@ -255,7 +263,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       return healthcareElement
     }
 
-    const healthcareElementPatient = await this._getPatientOfHealthElement(currentUser, healthElementToModify)
+    const healthcareElementPatient = await this._getPatientOfHealthElement(<User>currentUser, healthElementToModify)
     if (healthcareElementPatient == undefined) {
       throw this.errorHandler.createErrorWithMessage(
         `User ${currentUser.id} may not access healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`
@@ -271,7 +279,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
       newSecretIds,
       newEncryptionKey
     )
-    const updatedHe = await this.heApi.modifyHealthElementWithUser(currentUser, heWithDelegations)
+    const updatedHe = await this.heApi.modifyHealthElementWithUser(<User>currentUser, heWithDelegations)
 
     if (!updatedHe) {
       throw this.errorHandler.createErrorWithMessage(

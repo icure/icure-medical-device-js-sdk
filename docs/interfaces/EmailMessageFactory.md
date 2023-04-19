@@ -1,42 +1,42 @@
-[@icure/medical-device-sdk](../modules.md) / EmailMessageFactory
+[@icure/medical-device-sdk](../modules) / EmailMessageFactory
 
 # Interface: EmailMessageFactory
 
 ## Hierarchy
 
-- [`MsgGtwMessageFactory`](MsgGtwMessageFactory.md)<[`EmailMessage`](../modules.md#emailmessage)\>
+- [`MsgGtwMessageFactory`](MsgGtwMessageFactory)<[`EmailMessage`](../modules#emailmessage)\>
 
   ↳ **`EmailMessageFactory`**
 
 ## Implemented by
 
-- [`ICureRegistrationEmail`](../classes/ICureRegistrationEmail.md)
+- [`ICureRegistrationEmail`](../classes/ICureRegistrationEmail)
 
 ## Table of contents
 
 ### Properties
 
-- [dataOwner](EmailMessageFactory.md#dataowner)
-- [link](EmailMessageFactory.md#link)
-- [patient](EmailMessageFactory.md#patient)
+- [dataOwner](EmailMessageFactory#dataowner)
+- [link](EmailMessageFactory#link)
+- [patient](EmailMessageFactory#patient)
 
 ### Methods
 
-- [get](EmailMessageFactory.md#get)
+- [get](EmailMessageFactory#get)
 
 ## Properties
 
 ### dataOwner
 
-• **dataOwner**: [`Patient`](../classes/Patient.md) \| [`HealthcareProfessional`](../classes/HealthcareProfessional.md)
+• **dataOwner**: [`HealthcareProfessional`](../classes/HealthcareProfessional) \| [`Patient`](../classes/Patient)
 
 #### Inherited from
 
-[MsgGtwMessageFactory](MsgGtwMessageFactory.md).[dataOwner](MsgGtwMessageFactory.md#dataowner)
+[MsgGtwMessageFactory](MsgGtwMessageFactory).[dataOwner](MsgGtwMessageFactory#dataowner)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L19)
+[src/utils/msgGtwMessageFactory.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L20)
 
 ___
 
@@ -46,47 +46,47 @@ ___
 
 #### Inherited from
 
-[MsgGtwMessageFactory](MsgGtwMessageFactory.md).[link](MsgGtwMessageFactory.md#link)
+[MsgGtwMessageFactory](MsgGtwMessageFactory).[link](MsgGtwMessageFactory#link)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L20)
+[src/utils/msgGtwMessageFactory.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L21)
 
 ___
 
 ### patient
 
-• **patient**: [`Patient`](../classes/Patient.md)
+• **patient**: [`Patient`](../classes/Patient)
 
 #### Inherited from
 
-[MsgGtwMessageFactory](MsgGtwMessageFactory.md).[patient](MsgGtwMessageFactory.md#patient)
+[MsgGtwMessageFactory](MsgGtwMessageFactory).[patient](MsgGtwMessageFactory#patient)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L21)
+[src/utils/msgGtwMessageFactory.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L22)
 
 ## Methods
 
 ### get
 
-▸ **get**(`recipient`, `recipientPassword`): [`EmailMessage`](../modules.md#emailmessage)
+▸ **get**(`recipient`, `recipientPassword`): [`EmailMessage`](../modules#emailmessage)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `recipient` | [`User`](../classes/User.md) |
+| `recipient` | [`User`](../classes/User) |
 | `recipientPassword` | `string` |
 
 #### Returns
 
-[`EmailMessage`](../modules.md#emailmessage)
+[`EmailMessage`](../modules#emailmessage)
 
 #### Inherited from
 
-[MsgGtwMessageFactory](MsgGtwMessageFactory.md).[get](MsgGtwMessageFactory.md#get)
+[MsgGtwMessageFactory](MsgGtwMessageFactory).[get](MsgGtwMessageFactory#get)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L23)
+[src/utils/msgGtwMessageFactory.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L24)

@@ -1,27 +1,27 @@
-[@icure/medical-device-sdk](../modules.md) / ICureRegistrationSMS
+[@icure/medical-device-sdk](../modules) / ICureRegistrationSMS
 
 # Class: ICureRegistrationSMS
 
 ## Implements
 
-- [`SMSMessageFactory`](../interfaces/SMSMessageFactory.md)
+- [`SMSMessageFactory`](../interfaces/SMSMessageFactory)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](ICureRegistrationSMS.md#constructor)
+- [constructor](ICureRegistrationSMS#constructor)
 
 ### Properties
 
-- [dataOwner](ICureRegistrationSMS.md#dataowner)
-- [link](ICureRegistrationSMS.md#link)
-- [patient](ICureRegistrationSMS.md#patient)
-- [solutionName](ICureRegistrationSMS.md#solutionname)
+- [dataOwner](ICureRegistrationSMS#dataowner)
+- [link](ICureRegistrationSMS#link)
+- [patient](ICureRegistrationSMS#patient)
+- [solutionName](ICureRegistrationSMS#solutionname)
 
 ### Methods
 
-- [get](ICureRegistrationSMS.md#get)
+- [get](ICureRegistrationSMS#get)
 
 ## Constructors
 
@@ -33,28 +33,28 @@
 
 | Name | Type |
 | :------ | :------ |
-| `dataOwner` | [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md) |
+| `dataOwner` | [`HealthcareProfessional`](HealthcareProfessional) \| [`Patient`](Patient) |
 | `link` | `string` |
 | `solutionName` | `string` |
-| `patient` | [`Patient`](Patient.md) |
+| `patient` | [`Patient`](Patient) |
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:68](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L68)
+[src/utils/msgGtwMessageFactory.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L63)
 
 ## Properties
 
 ### dataOwner
 
-• **dataOwner**: [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md)
+• **dataOwner**: [`HealthcareProfessional`](HealthcareProfessional) \| [`Patient`](Patient)
 
 #### Implementation of
 
-[SMSMessageFactory](../interfaces/SMSMessageFactory.md).[dataOwner](../interfaces/SMSMessageFactory.md#dataowner)
+[SMSMessageFactory](../interfaces/SMSMessageFactory).[dataOwner](../interfaces/SMSMessageFactory#dataowner)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L63)
+[src/utils/msgGtwMessageFactory.ts:58](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L58)
 
 ___
 
@@ -64,25 +64,25 @@ ___
 
 #### Implementation of
 
-[SMSMessageFactory](../interfaces/SMSMessageFactory.md).[link](../interfaces/SMSMessageFactory.md#link)
+[SMSMessageFactory](../interfaces/SMSMessageFactory).[link](../interfaces/SMSMessageFactory#link)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:64](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L64)
+[src/utils/msgGtwMessageFactory.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L59)
 
 ___
 
 ### patient
 
-• **patient**: [`Patient`](Patient.md)
+• **patient**: [`Patient`](Patient)
 
 #### Implementation of
 
-[SMSMessageFactory](../interfaces/SMSMessageFactory.md).[patient](../interfaces/SMSMessageFactory.md#patient)
+[SMSMessageFactory](../interfaces/SMSMessageFactory).[patient](../interfaces/SMSMessageFactory#patient)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L66)
+[src/utils/msgGtwMessageFactory.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L61)
 
 ___
 
@@ -92,29 +92,29 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:65](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L65)
+[src/utils/msgGtwMessageFactory.ts:60](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L60)
 
 ## Methods
 
 ### get
 
-▸ **get**(`recipient`, `recipientPassword`): [`SMSMessage`](../modules.md#smsmessage)
+▸ **get**(`recipient`, `recipientPassword`): [`SMSMessage`](../modules#smsmessage)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `recipient` | [`User`](User.md) |
+| `recipient` | [`User`](User) |
 | `recipientPassword` | `string` |
 
 #### Returns
 
-[`SMSMessage`](../modules.md#smsmessage)
+[`SMSMessage`](../modules#smsmessage)
 
 #### Implementation of
 
-[SMSMessageFactory](../interfaces/SMSMessageFactory.md).[get](../interfaces/SMSMessageFactory.md#get)
+[SMSMessageFactory](../interfaces/SMSMessageFactory).[get](../interfaces/SMSMessageFactory#get)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:80](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L80)
+[src/utils/msgGtwMessageFactory.ts:70](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L70)

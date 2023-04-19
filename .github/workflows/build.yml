@@ -23,6 +23,7 @@ jobs:
           ICURE_TS_TEST_MSG_GTW_URL: 'https://mock.icure.dev/msggtw'
           TEST_ENVIRONMENT: 'acceptance'
           BACKEND_TYPE: 'kraken'
+          CI: 'true'
           ICURE_TEST_GROUP_ID: ic-e2e-${{ github.run_id }}-${{ github.run_attempt }}
           ICURE_TEST_ADMIN_LOGIN: ${{ secrets.ICURE_TEST_ADMIN_LOGIN }}
           ICURE_TEST_ADMIN_PWD: ${{ secrets.ICURE_TEST_ADMIN_PWD }}

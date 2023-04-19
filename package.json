@@ -17,8 +17,8 @@
     "prepare": "rimraf dist && npm run build && jq '{name:.name, version:.version, description:.description, main:\"index.js\", types:\"index.d.ts\", dependencies:.dependencies, author:.author, license:.license, bugs:.bugs, homepage:.homepage}' < package.json > dist/package.json",
     "publish": "yarn version && yarn run prepare && cd dist && yarn publish --no-git-tag-version --new-version `git describe --abbrev=0 --tags` && cd ..",
     "precommit": "pretty-quick --staged",
-    "make-doc": "yarn run typedoc --excludeInternal --out docs index.ts && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(../README.md\\) / \\[Exports\\]\\(../modules.md\\)#[\\@icure/medical-device-sdk](../modules.md)#' `find ./docs -name '*.md'` && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(README.md\\) / Exports##' ./docs/modules.md && rm ./docs/README.md",
-    "sync-doc": "rsync --exclude README.md --exclude .nojekyll -va docs/ ../medtech-docs/sdks/references/",
+    "make-doc": "yarn run typedoc --excludeInternal --out docs index.ts && perl -pi -e 's#\\[\\@icure/medical-device-sdk]\\(../README.md\\) / \\[Exports\\]\\(../modules.md\\)#[\\@icure/medical-device-sdk](../modules.md)#' `find ./docs -name '*.md'` && perl -pi -e 's#\\[\\@icure/medical-device-sdk\\]\\(README.md\\) / Exports##' docs/modules.md && rm docs/README.md && cd make-docs && yarn install && yarn run start",
+    "sync-doc": "rsync --delete --exclude 'yarn.*' --exclude '*.ts' --exclude '*.json' --exclude README.md --exclude .nojekyll -va docs/ ../medtech-docs/sdks/references/",
     "test": "nyc mocha \"test/**/*.ts\" --require ts-node/register --require source-map-support/register --timeout=60000 --recursive || [[ $CLEANUP == 1 ]] && yarn clean",
     "test-arm": "export COMPOSE_FILE_URL=https://raw.githubusercontent.com/icure/icure-e2e-test-setup/arm64/docker-compose-cloud.yaml && nyc mocha \"test/**/*.ts\" --require ts-node/register --require source-map-support/register --timeout=60000 --recursive",
     "test-oss": "export COMPOSE_FILE_URL=https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose.yaml && export BACKEND_TYPE=oss && nyc mocha test/**/*.ts --require ts-node/register --require source-map-support/register --timeout=60000 --recursive || [[ $CLEANUP == 1 ]] && yarn clean",
@@ -50,7 +50,7 @@
     "homepage": "https://github.com/icure/icure-medical-device-js-sdk"
   },
   "dependencies": {
-    "@icure/api": "^6.3.0",
+    "@icure/api": "^6.4.0",
     "date-fns": "^2.28.0",
     "es6-promise": "^4.2.4",
     "loglevel": "^1.8.1",

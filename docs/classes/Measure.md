@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Measure
+[@icure/medical-device-sdk](../modules) / Measure
 
 # Class: Measure
 
@@ -6,21 +6,25 @@
 
 ### Constructors
 
-- [constructor](Measure.md#constructor)
+- [constructor](Measure#constructor)
 
 ### Properties
 
-- [comment](Measure.md#comment)
-- [comparator](Measure.md#comparator)
-- [evolution](Measure.md#evolution)
-- [max](Measure.md#max)
-- [min](Measure.md#min)
-- [ref](Measure.md#ref)
-- [severity](Measure.md#severity)
-- [severityCode](Measure.md#severitycode)
-- [unit](Measure.md#unit)
-- [unitCodes](Measure.md#unitcodes)
-- [value](Measure.md#value)
+- [comment](Measure#comment)
+- [comparator](Measure#comparator)
+- [evolution](Measure#evolution)
+- [max](Measure#max)
+- [min](Measure#min)
+- [ref](Measure#ref)
+- [severity](Measure#severity)
+- [severityCode](Measure#severitycode)
+- [unit](Measure#unit)
+- [unitCodes](Measure#unitcodes)
+- [value](Measure#value)
+
+### Methods
+
+- [marshal](Measure#marshal)
 
 ## Constructors
 
@@ -36,7 +40,7 @@
 
 #### Defined in
 
-[src/models/Measure.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L16)
+[src/models/Measure.ts:17](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L17)
 
 ## Properties
 
@@ -46,7 +50,7 @@
 
 #### Defined in
 
-[src/models/Measure.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L29)
+[src/models/Measure.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L32)
 
 ___
 
@@ -56,7 +60,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L30)
+[src/models/Measure.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L33)
 
 ___
 
@@ -66,7 +70,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L26)
+[src/models/Measure.ts:29](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L29)
 
 ___
 
@@ -76,7 +80,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L22)
+[src/models/Measure.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L25)
 
 ___
 
@@ -86,7 +90,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L21)
+[src/models/Measure.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L24)
 
 ___
 
@@ -96,7 +100,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L23)
+[src/models/Measure.ts:26](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L26)
 
 ___
 
@@ -106,7 +110,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L24)
+[src/models/Measure.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L27)
 
 ___
 
@@ -116,7 +120,7 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L25)
+[src/models/Measure.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L28)
 
 ___
 
@@ -126,17 +130,17 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L27)
+[src/models/Measure.ts:30](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L30)
 
 ___
 
 ### unitCodes
 
-• `Optional` **unitCodes**: `Set`<[`CodingReference`](CodingReference.md)\>
+• `Optional` **unitCodes**: `Set`<[`CodingReference`](CodingReference)\>
 
 #### Defined in
 
-[src/models/Measure.ts:28](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L28)
+[src/models/Measure.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L31)
 
 ___
 
@@ -146,4 +150,18 @@ ___
 
 #### Defined in
 
-[src/models/Measure.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Measure.ts#L20)
+[src/models/Measure.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L23)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IMeasure`
+
+#### Returns
+
+`IMeasure`
+
+#### Defined in
+
+[src/models/Measure.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Measure.ts#L35)

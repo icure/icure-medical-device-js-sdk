@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / Telecom
+[@icure/medical-device-sdk](../modules) / Telecom
 
 # Class: Telecom
 
@@ -15,13 +15,17 @@ Do not edit the class manually.
 
 ### Constructors
 
-- [constructor](Telecom.md#constructor)
+- [constructor](Telecom#constructor)
 
 ### Properties
 
-- [telecomDescription](Telecom.md#telecomdescription)
-- [telecomNumber](Telecom.md#telecomnumber)
-- [telecomType](Telecom.md#telecomtype)
+- [telecomDescription](Telecom#telecomdescription)
+- [telecomNumber](Telecom#telecomnumber)
+- [telecomType](Telecom#telecomtype)
+
+### Methods
+
+- [marshal](Telecom#marshal)
 
 ## Constructors
 
@@ -37,7 +41,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Telecom.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L15)
+[src/models/Telecom.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Telecom.ts#L15)
 
 ## Properties
 
@@ -47,7 +51,7 @@ Do not edit the class manually.
 
 #### Defined in
 
-[src/models/Telecom.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L21)
+[src/models/Telecom.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Telecom.ts#L23)
 
 ___
 
@@ -57,14 +61,28 @@ ___
 
 #### Defined in
 
-[src/models/Telecom.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L20)
+[src/models/Telecom.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Telecom.ts#L22)
 
 ___
 
 ### telecomType
 
-• `Optional` **telecomType**: [`TelecomTelecomTypeEnum`](../modules.md#telecomtelecomtypeenum)
+• `Optional` **telecomType**: [`TelecomTelecomTypeEnum`](../modules#telecomtelecomtypeenum)
 
 #### Defined in
 
-[src/models/Telecom.ts:19](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/Telecom.ts#L19)
+[src/models/Telecom.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Telecom.ts#L21)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `ITelecom`
+
+#### Returns
+
+`ITelecom`
+
+#### Defined in
+
+[src/models/Telecom.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/Telecom.ts#L25)

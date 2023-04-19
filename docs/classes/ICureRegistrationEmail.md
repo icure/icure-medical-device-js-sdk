@@ -1,28 +1,28 @@
-[@icure/medical-device-sdk](../modules.md) / ICureRegistrationEmail
+[@icure/medical-device-sdk](../modules) / ICureRegistrationEmail
 
 # Class: ICureRegistrationEmail
 
 ## Implements
 
-- [`EmailMessageFactory`](../interfaces/EmailMessageFactory.md)
+- [`EmailMessageFactory`](../interfaces/EmailMessageFactory)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](ICureRegistrationEmail.md#constructor)
+- [constructor](ICureRegistrationEmail#constructor)
 
 ### Properties
 
-- [dataOwner](ICureRegistrationEmail.md#dataowner)
-- [hcpEmail](ICureRegistrationEmail.md#hcpemail)
-- [link](ICureRegistrationEmail.md#link)
-- [patient](ICureRegistrationEmail.md#patient)
-- [solutionName](ICureRegistrationEmail.md#solutionname)
+- [dataOwner](ICureRegistrationEmail#dataowner)
+- [hcpEmail](ICureRegistrationEmail#hcpemail)
+- [link](ICureRegistrationEmail#link)
+- [patient](ICureRegistrationEmail#patient)
+- [solutionName](ICureRegistrationEmail#solutionname)
 
 ### Methods
 
-- [get](ICureRegistrationEmail.md#get)
+- [get](ICureRegistrationEmail#get)
 
 ## Constructors
 
@@ -34,28 +34,28 @@
 
 | Name | Type |
 | :------ | :------ |
-| `dataOwner` | [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md) |
+| `dataOwner` | [`HealthcareProfessional`](HealthcareProfessional) \| [`Patient`](Patient) |
 | `link` | `string` |
 | `solutionName` | `string` |
-| `patient` | [`Patient`](Patient.md) |
+| `patient` | [`Patient`](Patient) |
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:37](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L37)
+[src/utils/msgGtwMessageFactory.ts:38](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L38)
 
 ## Properties
 
 ### dataOwner
 
-• **dataOwner**: [`Patient`](Patient.md) \| [`HealthcareProfessional`](HealthcareProfessional.md)
+• **dataOwner**: [`HealthcareProfessional`](HealthcareProfessional) \| [`Patient`](Patient)
 
 #### Implementation of
 
-[EmailMessageFactory](../interfaces/EmailMessageFactory.md).[dataOwner](../interfaces/EmailMessageFactory.md#dataowner)
+[EmailMessageFactory](../interfaces/EmailMessageFactory).[dataOwner](../interfaces/EmailMessageFactory#dataowner)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L31)
+[src/utils/msgGtwMessageFactory.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L32)
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L32)
+[src/utils/msgGtwMessageFactory.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L33)
 
 ___
 
@@ -75,25 +75,25 @@ ___
 
 #### Implementation of
 
-[EmailMessageFactory](../interfaces/EmailMessageFactory.md).[link](../interfaces/EmailMessageFactory.md#link)
+[EmailMessageFactory](../interfaces/EmailMessageFactory).[link](../interfaces/EmailMessageFactory#link)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L33)
+[src/utils/msgGtwMessageFactory.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L34)
 
 ___
 
 ### patient
 
-• **patient**: [`Patient`](Patient.md)
+• **patient**: [`Patient`](Patient)
 
 #### Implementation of
 
-[EmailMessageFactory](../interfaces/EmailMessageFactory.md).[patient](../interfaces/EmailMessageFactory.md#patient)
+[EmailMessageFactory](../interfaces/EmailMessageFactory).[patient](../interfaces/EmailMessageFactory#patient)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L35)
+[src/utils/msgGtwMessageFactory.ts:36](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L36)
 
 ___
 
@@ -103,29 +103,29 @@ ___
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:34](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L34)
+[src/utils/msgGtwMessageFactory.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L35)
 
 ## Methods
 
 ### get
 
-▸ **get**(`recipient`, `recipientPassword`): [`EmailMessage`](../modules.md#emailmessage)
+▸ **get**(`recipient`, `recipientPassword`): [`EmailMessage`](../modules#emailmessage)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `recipient` | [`User`](User.md) |
+| `recipient` | [`User`](User) |
 | `recipientPassword` | `string` |
 
 #### Returns
 
-[`EmailMessage`](../modules.md#emailmessage)
+[`EmailMessage`](../modules#emailmessage)
 
 #### Implementation of
 
-[EmailMessageFactory](../interfaces/EmailMessageFactory.md).[get](../interfaces/EmailMessageFactory.md#get)
+[EmailMessageFactory](../interfaces/EmailMessageFactory).[get](../interfaces/EmailMessageFactory#get)
 
 #### Defined in
 
-[src/utils/msgGtwMessageFactory.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/utils/msgGtwMessageFactory.ts#L53)
+[src/utils/msgGtwMessageFactory.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/utils/msgGtwMessageFactory.ts#L48)

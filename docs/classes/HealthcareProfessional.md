@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / HealthcareProfessional
+[@icure/medical-device-sdk](../modules) / HealthcareProfessional
 
 # Class: HealthcareProfessional
 
@@ -6,30 +6,36 @@
 
 ### Constructors
 
-- [constructor](HealthcareProfessional.md#constructor)
+- [constructor](HealthcareProfessional#constructor)
 
 ### Properties
 
-- [addresses](HealthcareProfessional.md#addresses)
-- [civility](HealthcareProfessional.md#civility)
-- [created](HealthcareProfessional.md#created)
-- [deletionDate](HealthcareProfessional.md#deletiondate)
-- [firstName](HealthcareProfessional.md#firstname)
-- [gender](HealthcareProfessional.md#gender)
-- [id](HealthcareProfessional.md#id)
-- [languages](HealthcareProfessional.md#languages)
-- [lastName](HealthcareProfessional.md#lastname)
-- [modified](HealthcareProfessional.md#modified)
-- [name](HealthcareProfessional.md#name)
-- [names](HealthcareProfessional.md#names)
-- [notes](HealthcareProfessional.md#notes)
-- [parentId](HealthcareProfessional.md#parentid)
-- [picture](HealthcareProfessional.md#picture)
-- [properties](HealthcareProfessional.md#properties)
-- [rev](HealthcareProfessional.md#rev)
-- [speciality](HealthcareProfessional.md#speciality)
-- [specialityCodes](HealthcareProfessional.md#specialitycodes)
-- [systemMetaData](HealthcareProfessional.md#systemmetadata)
+- [addresses](HealthcareProfessional#addresses)
+- [civility](HealthcareProfessional#civility)
+- [codes](HealthcareProfessional#codes)
+- [created](HealthcareProfessional#created)
+- [deletionDate](HealthcareProfessional#deletiondate)
+- [firstName](HealthcareProfessional#firstname)
+- [gender](HealthcareProfessional#gender)
+- [id](HealthcareProfessional#id)
+- [labels](HealthcareProfessional#labels)
+- [languages](HealthcareProfessional#languages)
+- [lastName](HealthcareProfessional#lastname)
+- [modified](HealthcareProfessional#modified)
+- [name](HealthcareProfessional#name)
+- [names](HealthcareProfessional#names)
+- [notes](HealthcareProfessional#notes)
+- [parentId](HealthcareProfessional#parentid)
+- [picture](HealthcareProfessional#picture)
+- [properties](HealthcareProfessional#properties)
+- [rev](HealthcareProfessional#rev)
+- [speciality](HealthcareProfessional#speciality)
+- [specialityCodes](HealthcareProfessional#specialitycodes)
+- [systemMetaData](HealthcareProfessional#systemmetadata)
+
+### Methods
+
+- [marshal](HealthcareProfessional#marshal)
 
 ## Constructors
 
@@ -45,19 +51,19 @@
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:20](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L20)
+[src/models/HealthcareProfessional.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L22)
 
 ## Properties
 
 ### addresses
 
-• **addresses**: [`Address`](Address.md)[]
+• **addresses**: [`Address`](Address)[]
 
 The list of addresses (with address type).
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:79](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L79)
+[src/models/HealthcareProfessional.ts:106](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L106)
 
 ___
 
@@ -69,7 +75,20 @@ Mr., Ms., Pr., Dr. ...
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:67](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L67)
+[src/models/HealthcareProfessional.ts:94](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L94)
+
+___
+
+### codes
+
+• **codes**: `Set`<[`CodingReference`](CodingReference)\>
+
+A code is an item from a codification system that qualifies the content of this doctor.
+Example: doctor's specialty
+
+#### Defined in
+
+[src/models/HealthcareProfessional.ts:66](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L66)
 
 ___
 
@@ -81,7 +100,7 @@ creation timestamp of the object.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:35](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L35)
+[src/models/HealthcareProfessional.ts:52](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L52)
 
 ___
 
@@ -93,7 +112,7 @@ the soft delete timestamp. When a user is ”deleted“, this is set to a non nu
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:43](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L43)
+[src/models/HealthcareProfessional.ts:70](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L70)
 
 ___
 
@@ -105,19 +124,19 @@ the firstname (name) of the healthcare party.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:55](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L55)
+[src/models/HealthcareProfessional.ts:82](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L82)
 
 ___
 
 ### gender
 
-• `Optional` **gender**: [`HealthcareProfessionalGenderEnum`](../modules.md#healthcareprofessionalgenderenum)
+• `Optional` **gender**: [`HealthcareProfessionalGenderEnum`](../modules#healthcareprofessionalgenderenum)
 
 the gender of the healthcare party: male, female, indeterminate, changed, changedToMale, changedToFemale, unknown
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:63](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L63)
+[src/models/HealthcareProfessional.ts:90](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L90)
 
 ___
 
@@ -129,7 +148,20 @@ the Id of the healthcare party. We encourage using either a v4 UUID or a HL7 Id.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L27)
+[src/models/HealthcareProfessional.ts:44](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L44)
+
+___
+
+### labels
+
+• **labels**: `Set`<[`CodingReference`](CodingReference)\>
+
+A label is an item from a codification system that qualifies a doctor as being member of a certain class, whatever the value it might have taken. If the label qualifies the content of a field, it means that whatever the content of the field, the label will always apply. LOINC is a codification system typically used for labels.
+Example: HealthcareProfessional is an organisation
+
+#### Defined in
+
+[src/models/HealthcareProfessional.ts:61](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L61)
 
 ___
 
@@ -141,7 +173,7 @@ The list of languages spoken by the patient ordered by fluency (alpha-2 code htt
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:83](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L83)
+[src/models/HealthcareProfessional.ts:110](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L110)
 
 ___
 
@@ -153,7 +185,7 @@ the lastname (surname) of the healthcare party. This is the official lastname th
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:51](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L51)
+[src/models/HealthcareProfessional.ts:78](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L78)
 
 ___
 
@@ -165,7 +197,7 @@ last modification timestamp of the object.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L39)
+[src/models/HealthcareProfessional.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L56)
 
 ___
 
@@ -177,19 +209,19 @@ The full name of the healthcare party, used mainly when the healthcare party is 
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L47)
+[src/models/HealthcareProfessional.ts:74](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L74)
 
 ___
 
 ### names
 
-• **names**: [`PersonName`](PersonName.md)[]
+• **names**: [`PersonName`](PersonName)[]
 
 the list of all names of the healthcare party, also containing the official full name information. Ordered by preference of use. First element is therefore the official name used for the healthcare party in the application
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:59](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L59)
+[src/models/HealthcareProfessional.ts:86](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L86)
 
 ___
 
@@ -201,7 +233,7 @@ Text notes.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:95](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L95)
+[src/models/HealthcareProfessional.ts:122](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L122)
 
 ___
 
@@ -213,7 +245,7 @@ Id of parent of the user representing the healthcare party.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:75](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L75)
+[src/models/HealthcareProfessional.ts:102](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L102)
 
 ___
 
@@ -225,17 +257,17 @@ A picture usually saved in JPEG format.
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:87](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L87)
+[src/models/HealthcareProfessional.ts:114](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L114)
 
 ___
 
 ### properties
 
-• **properties**: `Set`<[`Property`](Property.md)\>
+• **properties**: `Set`<[`Property`](Property)\>
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:96](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L96)
+[src/models/HealthcareProfessional.ts:123](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L123)
 
 ___
 
@@ -247,7 +279,7 @@ the revision of the healthcare party in the database, used for conflict manageme
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:31](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L31)
+[src/models/HealthcareProfessional.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L48)
 
 ___
 
@@ -259,26 +291,40 @@ Medical specialty of the healthcare party
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:71](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L71)
+[src/models/HealthcareProfessional.ts:98](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L98)
 
 ___
 
 ### specialityCodes
 
-• **specialityCodes**: `Set`<[`CodingReference`](CodingReference.md)\>
+• `Optional` **specialityCodes**: `Set`<[`CodingReference`](CodingReference)\>
 
 Medical specialty of the healthcare party codified using FHIR or Kmehr codificaiton scheme
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:91](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L91)
+[src/models/HealthcareProfessional.ts:118](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L118)
 
 ___
 
 ### systemMetaData
 
-• `Optional` **systemMetaData**: [`SystemMetaDataOwner`](SystemMetaDataOwner.md)
+• `Optional` **systemMetaData**: [`SystemMetaDataOwner`](SystemMetaDataOwner)
 
 #### Defined in
 
-[src/models/HealthcareProfessional.ts:97](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/HealthcareProfessional.ts#L97)
+[src/models/HealthcareProfessional.ts:124](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L124)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IHealthcareProfessional`
+
+#### Returns
+
+`IHealthcareProfessional`
+
+#### Defined in
+
+[src/models/HealthcareProfessional.ts:126](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/HealthcareProfessional.ts#L126)

@@ -1,4 +1,4 @@
-[@icure/medical-device-sdk](../modules.md) / PatientHealthCareParty
+[@icure/medical-device-sdk](../modules) / PatientHealthCareParty
 
 # Class: PatientHealthCareParty
 
@@ -8,12 +8,16 @@ Links (usually for therapeutic reasons) between this patient and healthcare part
 
 ### Constructors
 
-- [constructor](PatientHealthCareParty.md#constructor)
+- [constructor](PatientHealthCareParty#constructor)
 
 ### Properties
 
-- [healthcarePartyId](PatientHealthCareParty.md#healthcarepartyid)
-- [type](PatientHealthCareParty.md#type)
+- [healthcarePartyId](PatientHealthCareParty#healthcarepartyid)
+- [type](PatientHealthCareParty#type)
+
+### Methods
+
+- [marshal](PatientHealthCareParty#marshal)
 
 ## Constructors
 
@@ -29,7 +33,7 @@ Links (usually for therapeutic reasons) between this patient and healthcare part
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L18)
+[src/models/PatientHealthCareParty.ts:18](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PatientHealthCareParty.ts#L18)
 
 ## Properties
 
@@ -39,14 +43,28 @@ Links (usually for therapeutic reasons) between this patient and healthcare part
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L23)
+[src/models/PatientHealthCareParty.ts:25](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PatientHealthCareParty.ts#L25)
 
 ___
 
 ### type
 
-• **type**: [`PatientHealthCarePartyTypeEnum`](../modules.md#patienthealthcarepartytypeenum)
+• **type**: [`PatientHealthCarePartyTypeEnum`](../modules#patienthealthcarepartytypeenum)
 
 #### Defined in
 
-[src/models/PatientHealthCareParty.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/models/PatientHealthCareParty.ts#L22)
+[src/models/PatientHealthCareParty.ts:24](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PatientHealthCareParty.ts#L24)
+
+## Methods
+
+### marshal
+
+▸ **marshal**(): `IPatientHealthCareParty`
+
+#### Returns
+
+`IPatientHealthCareParty`
+
+#### Defined in
+
+[src/models/PatientHealthCareParty.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/models/PatientHealthCareParty.ts#L27)

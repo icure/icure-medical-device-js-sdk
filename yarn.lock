@@ -222,10 +222,10 @@
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
 
-"@icure/api@^6.3.0":
-  version "6.3.0"
-  resolved "https://registry.npmjs.org/@icure/api/-/api-6.3.0.tgz#ef341b58eb9ebd84896be24e843a04267b385a9c"
-  integrity sha512-HIlKSF4D6714O6d+jvNI893cGdvLuXajuBdSwV5oQuW+Wh3s3yq5/8NU2/rJQPexuIXn8cSPAUsGpgiMF2b/mA==
+"@icure/api@^6.4.0":
+  version "6.4.0"
+  resolved "https://registry.npmjs.org/@icure/api/-/api-6.4.0.tgz#9462583669ebfeb177c494b79f137bca09e8d039"
+  integrity sha512-ZalZ9z2uRkFi1n23z/2QJn2TobvskM0PYefhybSSU09yK74YR9Xhc6F3NQ/UA/F2Uz96tBVWVdI+hZswCNnS/Q==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"

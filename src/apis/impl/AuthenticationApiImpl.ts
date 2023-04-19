@@ -70,7 +70,13 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       )
     }
 
-    const processId = email != undefined ? this.authProcessByEmailId : this.authProcessBySmsId
+    if((!!email && !this.authProcessByEmailId) || (!!phoneNumber && !this.authProcessBySmsId)) {
+      throw this.errorHandler.createErrorWithMessage(
+        `In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId`
+      )
+    }
+
+    const processId = (!!email && !!this.authProcessByEmailId) ? this.authProcessByEmailId : this.authProcessBySmsId
 
     const requestId = await this.messageGatewayApi.startProcess(
       processId,
@@ -204,14 +210,14 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .build()
 
     const user = await api.userApi.getLoggedUser()
-    if (user == null) {
+    if (!user) {
       throw this.errorHandler.createErrorWithMessage(
         `Your validation code ${validationCode} expired. Start a new authentication process for your user`
       )
     }
 
     const token = await api.userApi.createToken(user.id!, 3600 * 24 * 365 * 10)
-    if (token == null) {
+    if (!token) {
       throw this.errorHandler.createErrorWithMessage(
         `Your validation code ${validationCode} expired. Start a new authentication process for your user`
       )

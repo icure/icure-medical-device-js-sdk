@@ -1,6 +1,6 @@
-[@icure/medical-device-sdk](../modules.md) / NotificationApi
+[@icure/medical-device-sdk](../modules) / NotificationApi
 
-# Interface: NotificationApi
+# SDK API: NotificationApi
 
 The NotificationApi interface provides methods to subscribe to notifications.
 
@@ -8,12 +8,13 @@ The NotificationApi interface provides methods to subscribe to notifications.
 
 ### Methods
 
-- [createOrModifyNotification](NotificationApi.md#createormodifynotification)
-- [deleteNotification](NotificationApi.md#deletenotification)
-- [filterNotifications](NotificationApi.md#filternotifications)
-- [getNotification](NotificationApi.md#getnotification)
-- [getPendingNotifications](NotificationApi.md#getpendingnotifications)
-- [updateNotificationStatus](NotificationApi.md#updatenotificationstatus)
+- [createOrModifyNotification](NotificationApi#createormodifynotification)
+- [deleteNotification](NotificationApi#deletenotification)
+- [filterNotifications](NotificationApi#filternotifications)
+- [getNotification](NotificationApi#getnotification)
+- [getPendingNotificationsAfter](NotificationApi#getpendingnotificationsafter)
+- [subscribeToNotificationEvents](NotificationApi#subscribetonotificationevents)
+- [updateNotificationStatus](NotificationApi#updatenotificationstatus)
 
 ## Methods
 
@@ -38,7 +39,7 @@ a Promise containing the Notification or undefined if something goes wrong.
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L15)
+[src/apis/NotificationApi.ts:16](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L16)
 
 ___
 
@@ -62,7 +63,7 @@ a Promise containing the id of the Notification or undefined if something goes w
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:22](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L22)
+[src/apis/NotificationApi.ts:23](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L23)
 
 ___
 
@@ -89,7 +90,7 @@ a Promise containing the PaginatedList of Notification objects
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:32](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L32)
+[src/apis/NotificationApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L33)
 
 ___
 
@@ -113,15 +114,21 @@ a Promise containing the Notification or undefined if something goes wrong.
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:39](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L39)
+[src/apis/NotificationApi.ts:40](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L40)
 
 ___
 
-### getPendingNotifications
+### getPendingNotificationsAfter
 
-▸ **getPendingNotifications**(): `Promise`<`Notification`[]\>
+▸ **getPendingNotificationsAfter**(`fromDate?`): `Promise`<`Notification`[]\>
 
 Gets all the Notifications with status "pending" that the current dataOwner can access
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `fromDate?` | `number` | : Default value is now less 30 days |
 
 #### Returns
 
@@ -131,7 +138,34 @@ an Array of the Notifications matching those criteria
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:45](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L45)
+[src/apis/NotificationApi.ts:48](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L48)
+
+___
+
+### subscribeToNotificationEvents
+
+▸ **subscribeToNotificationEvents**(`eventTypes`, `filter`, `eventFired`, `options?`): `Promise`<[`Connection`](Connection)\>
+
+Opens a WebSocket Connection in order to receive all the Notification corresponding to specific filter criteria.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventTypes` | (``"CREATE"`` \| ``"UPDATE"`` \| ``"DELETE"``)[] | Type of event you would like to listen. It can be CREATE, UPDATE or DELETE |
+| `filter` | `Filter`<`Notification`\> | Filter criteria to filter to the notification you would like to receive |
+| `eventFired` | (`dataSample`: `Notification`) => `Promise`<`void`\> | Action applied each time you receive a notification through the WebSocket |
+| `options?` | `Object` | Options to configure the WebSocket. - keepAlive : How long to keep connection alive (ms); - lifetime : How long to keep the WebSocket alive (ms); - connectionMaxRetry : how many time retrying to reconnect to the iCure WebSocket; - connectionRetryIntervalInMs : How long base interval will be between two retry. The retry attempt is exponential and using a random value (connectionRetryIntervalMs * (random between 1 and 2))^nbAttempts) |
+| `options.connectionMaxRetry?` | `number` | - |
+| `options.connectionRetryIntervalMs?` | `number` | - |
+
+#### Returns
+
+`Promise`<[`Connection`](Connection)\>
+
+#### Defined in
+
+[src/apis/NotificationApi.ts:69](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L69)
 
 ___
 
@@ -156,4 +190,4 @@ the updated Notification
 
 #### Defined in
 
-[src/apis/NotificationApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/NotificationApi.ts#L53)
+[src/apis/NotificationApi.ts:56](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/NotificationApi.ts#L56)

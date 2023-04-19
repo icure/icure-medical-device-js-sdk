@@ -1,6 +1,6 @@
-[@icure/medical-device-sdk](../modules.md) / MedicalDeviceApi
+[@icure/medical-device-sdk](../modules) / MedicalDeviceApi
 
-# Interface: MedicalDeviceApi
+# SDK API: MedicalDeviceApi
 
 The MedicalDeviceApi interface provides methods to manage medical devices.
 
@@ -8,19 +8,19 @@ The MedicalDeviceApi interface provides methods to manage medical devices.
 
 ### Methods
 
-- [createOrModifyMedicalDevice](MedicalDeviceApi.md#createormodifymedicaldevice)
-- [createOrModifyMedicalDevices](MedicalDeviceApi.md#createormodifymedicaldevices)
-- [deleteMedicalDevice](MedicalDeviceApi.md#deletemedicaldevice)
-- [deleteMedicalDevices](MedicalDeviceApi.md#deletemedicaldevices)
-- [filterMedicalDevices](MedicalDeviceApi.md#filtermedicaldevices)
-- [getMedicalDevice](MedicalDeviceApi.md#getmedicaldevice)
-- [matchMedicalDevices](MedicalDeviceApi.md#matchmedicaldevices)
+- [createOrModifyMedicalDevice](MedicalDeviceApi#createormodifymedicaldevice)
+- [createOrModifyMedicalDevices](MedicalDeviceApi#createormodifymedicaldevices)
+- [deleteMedicalDevice](MedicalDeviceApi#deletemedicaldevice)
+- [deleteMedicalDevices](MedicalDeviceApi#deletemedicaldevices)
+- [filterMedicalDevices](MedicalDeviceApi#filtermedicaldevices)
+- [getMedicalDevice](MedicalDeviceApi#getmedicaldevice)
+- [matchMedicalDevices](MedicalDeviceApi#matchmedicaldevices)
 
 ## Methods
 
 ### createOrModifyMedicalDevice
 
-▸ **createOrModifyMedicalDevice**(`medicalDevice`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)\>
+▸ **createOrModifyMedicalDevice**(`medicalDevice`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice)\>
 
 When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
 Create or update a [MedicalDevice]
@@ -29,21 +29,21 @@ Create or update a [MedicalDevice]
 
 | Name | Type |
 | :------ | :------ |
-| `medicalDevice` | [`MedicalDevice`](../classes/MedicalDevice.md) |
+| `medicalDevice` | [`MedicalDevice`](../classes/MedicalDevice) |
 
 #### Returns
 
-`Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)\>
+`Promise`<[`MedicalDevice`](../classes/MedicalDevice)\>
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L15)
+[src/apis/MedicalDeviceApi.ts:15](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L15)
 
 ___
 
 ### createOrModifyMedicalDevices
 
-▸ **createOrModifyMedicalDevices**(`medicalDevice`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)[]\>
+▸ **createOrModifyMedicalDevices**(`medicalDevice`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice)[]\>
 
 When modifying a device, you must ensure that the rev obtained when getting or creating the device is present as the rev is used to guarantee that the device has not been modified by a third party.
 Create or update a batch of [MedicalDevice]
@@ -52,15 +52,15 @@ Create or update a batch of [MedicalDevice]
 
 | Name | Type |
 | :------ | :------ |
-| `medicalDevice` | [`MedicalDevice`](../classes/MedicalDevice.md)[] |
+| `medicalDevice` | [`MedicalDevice`](../classes/MedicalDevice)[] |
 
 #### Returns
 
-`Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)[]\>
+`Promise`<[`MedicalDevice`](../classes/MedicalDevice)[]\>
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L21)
+[src/apis/MedicalDeviceApi.ts:21](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L21)
 
 ___
 
@@ -83,7 +83,7 @@ Delete a [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L27)
+[src/apis/MedicalDeviceApi.ts:27](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L27)
 
 ___
 
@@ -106,13 +106,13 @@ Delete a batch of [MedicalDevice]
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L33)
+[src/apis/MedicalDeviceApi.ts:33](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L33)
 
 ___
 
 ### filterMedicalDevices
 
-▸ **filterMedicalDevices**(`filter`, `nextDeviceId?`, `limit?`): `Promise`<[`PaginatedListMedicalDevice`](../classes/PaginatedListMedicalDevice.md)\>
+▸ **filterMedicalDevices**(`filter`, `nextDeviceId?`, `limit?`): `Promise`<[`PaginatedListMedicalDevice`](../classes/PaginatedListMedicalDevice)\>
 
 Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for [MedicalDevice] are AllDevicesFilter and DevicesByIdsFilter. This method returns a paginated list of medical devices (with a cursor that lets you query the following items).
 Load devices from the database by filtering them using the provided [filter].
@@ -121,23 +121,23 @@ Load devices from the database by filtering them using the provided [filter].
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter`<[`MedicalDevice`](../classes/MedicalDevice.md)\> | The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill |
+| `filter` | `Filter`<[`MedicalDevice`](../classes/MedicalDevice)\> | The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill |
 | `nextDeviceId?` | `string` | The id of the first device in the next page |
 | `limit?` | `number` | The number of devices to return in the queried page |
 
 #### Returns
 
-`Promise`<[`PaginatedListMedicalDevice`](../classes/PaginatedListMedicalDevice.md)\>
+`Promise`<[`PaginatedListMedicalDevice`](../classes/PaginatedListMedicalDevice)\>
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L41)
+[src/apis/MedicalDeviceApi.ts:41](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L41)
 
 ___
 
 ### getMedicalDevice
 
-▸ **getMedicalDevice**(`medicalDeviceId`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)\>
+▸ **getMedicalDevice**(`medicalDeviceId`): `Promise`<[`MedicalDevice`](../classes/MedicalDevice)\>
 
 Each medical device is uniquely identified by a device id. The device id is a UUID. This [medicalDeviceId] is the preferred method to retrieve one specific device.
 Get a Medical Device
@@ -150,11 +150,11 @@ Get a Medical Device
 
 #### Returns
 
-`Promise`<[`MedicalDevice`](../classes/MedicalDevice.md)\>
+`Promise`<[`MedicalDevice`](../classes/MedicalDevice)\>
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L47)
+[src/apis/MedicalDeviceApi.ts:47](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L47)
 
 ___
 
@@ -169,7 +169,7 @@ Load medical device ids from the database by filtering them using the provided F
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `filter` | `Filter`<[`MedicalDevice`](../classes/MedicalDevice.md)\> | The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill |
+| `filter` | `Filter`<[`MedicalDevice`](../classes/MedicalDevice)\> | The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill |
 
 #### Returns
 
@@ -177,4 +177,4 @@ Load medical device ids from the database by filtering them using the provided F
 
 #### Defined in
 
-[src/apis/MedicalDeviceApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/3aae8f0/src/apis/MedicalDeviceApi.ts#L53)
+[src/apis/MedicalDeviceApi.ts:53](https://github.com/icure/icure-medical-device-js-sdk/blob/a61f48e/src/apis/MedicalDeviceApi.ts#L53)
