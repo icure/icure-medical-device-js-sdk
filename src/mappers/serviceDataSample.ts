@@ -9,6 +9,7 @@ import { IdentifierDtoMapper } from './identifier'
 import { SystemMetaDataEncrypted } from '../models/SystemMetaDataEncrypted'
 import { DelegationMapper } from './delegation'
 import { filterUndefined } from '../utils/filterUndefined'
+import { SystemMetaDataMapper } from './metadata'
 
 export namespace DataSampleMapper {
   import toTimeSeries = TimeSeriesMapper.toTimeSeries
@@ -18,6 +19,7 @@ export namespace DataSampleMapper {
   import toIdentifier = IdentifierDtoMapper.toIdentifier
   import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto
   import toDelegation = DelegationMapper.toDelegation
+  import toSystemMetaDataEncrypted = SystemMetaDataMapper.toSystemMetaDataEncrypted
 
   export const toDataSample = (obj?: Service, batchId?: string, subContacts?: SubContact[]) =>
     obj
@@ -53,14 +55,7 @@ export namespace DataSampleMapper {
             author: obj.author,
             responsible: obj.responsible,
             comment: obj.comment,
-            systemMetaData: new SystemMetaDataEncrypted(
-              filterUndefined({
-                secretForeignKeys: obj.secretForeignKeys,
-                cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
-                delegations: toMapSetTransform(obj.delegations, toDelegation),
-                encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
-              })
-            ),
+            systemMetaData: toSystemMetaDataEncrypted(obj),
           })
         )
       : undefined
@@ -128,6 +123,13 @@ export namespace DataSampleMapper {
             author: obj.author,
             responsible: obj.responsible,
             comment: obj.comment,
+            /*
+             * A user without encryption key may update the non-encrypted data of a service. In this case we need to
+             * make sure we don't delete the encrypted data. Other metadata is ignored, we keep that of the original
+             * contact
+             * TODO TEST THIS
+             */
+            encryptedSelf: obj.systemMetaData?.encryptedSelf,
           })
         )
       : undefined

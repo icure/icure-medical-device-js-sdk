@@ -10,29 +10,35 @@
  * Do not edit the class manually.
  */
 
-
 export class SystemMetaDataOwner {
-constructor(json: ISystemMetaDataOwner) {
-  Object.assign(this as SystemMetaDataOwner, json)
-}
+  constructor(json: ISystemMetaDataOwner) {
+    const { publicKeysForOaepWithSha256, ...simpleProperties } = json
 
-    'publicKey': string;
-    'hcPartyKeys': { [key: string]: Array<string>; };
-    'privateKeyShamirPartitions': { [key: string]: string; };
-    'aesExchangeKeys' : { [key: string]: { [key: string]: { [key: string]: string }; }; };
-    'transferKeys' : { [key: string]: { [key: string]: string; }; };
+    Object.assign(this as SystemMetaDataOwner, simpleProperties)
 
-    marshal(): ISystemMetaDataOwner {
-      return {
-        ...this,
-      }
+    this.publicKeysForOaepWithSha256 = new Set(json.publicKeysForOaepWithSha256 ?? [])
+  }
+
+  'publicKey': string
+  'hcPartyKeys': { [key: string]: Array<string> }
+  'privateKeyShamirPartitions': { [key: string]: string }
+  'aesExchangeKeys': { [key: string]: { [key: string]: { [key: string]: string } } }
+  'transferKeys': { [key: string]: { [key: string]: string } }
+  'publicKeysForOaepWithSha256': Set<string>
+
+  marshal(): ISystemMetaDataOwner {
+    return {
+      ...this,
+      publicKeysForOaepWithSha256: [...this.publicKeysForOaepWithSha256],
     }
+  }
 }
 
 interface ISystemMetaDataOwner {
-  'publicKey'?: string;
-  'hcPartyKeys'?: { [key: string]: Array<string>; };
-  'privateKeyShamirPartitions'?: { [key: string]: string; };
-  'aesExchangeKeys'?: { [key: string]: { [key: string]: { [key: string]: string }; }; };
-  'transferKeys'?: { [key: string]: { [key: string]: string; }; };
+  publicKey?: string
+  hcPartyKeys?: { [key: string]: Array<string> }
+  privateKeyShamirPartitions?: { [key: string]: string }
+  aesExchangeKeys?: { [key: string]: { [key: string]: { [key: string]: string } } }
+  transferKeys?: { [key: string]: { [key: string]: string } }
+  publicKeysForOaepWithSha256?: Set<string>
 }
