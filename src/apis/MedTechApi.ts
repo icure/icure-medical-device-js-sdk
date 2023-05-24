@@ -1,6 +1,5 @@
 import {
   Api,
-  hex2ua,
   IccAccesslogXApi,
   IccAgendaApi,
   IccAuthApi,
@@ -26,8 +25,6 @@ import {
   KeyStorageFacade,
   KeyStorageImpl,
   LocalStorageImpl,
-  pkcs8ToJwk,
-  spkiToJwk,
   StorageFacade,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
@@ -60,6 +57,9 @@ import { DataOwnerApiImpl } from './impl/DataOwnerApiImpl'
 import { DataOwnerApi } from './DataOwnerApi'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
 import { formatICureApiUrl } from '../util'
+import { IccIcureMaintenanceXApi } from '@icure/api/icc-x-api/icc-icure-maintenance-x-api'
+import { MedTechCryptoStrategies } from '../services/MedTechCryptoStrategies'
+import { MedTechCryptoStrategiesBridge } from './impl/MedTechCryptoStrategiesBridge'
 
 export class MedTechApi {
   private readonly _codingApi: CodingApi
@@ -83,6 +83,7 @@ export class MedTechApi {
   private readonly _sanitizer: Sanitizer
   private readonly _storage: StorageFacade<string>
   private readonly _keyStorage: KeyStorageFacade
+  private readonly _cryptoStrategies: MedTechCryptoStrategies
   private readonly _baseApi: {
     cryptoApi: IccCryptoXApi
     authApi: IccAuthApi
@@ -134,11 +135,13 @@ export class MedTechApi {
       timetableApi: IccTimeTableXApi
       groupApi: IccGroupApi
       maintenanceTaskApi: IccMaintenanceTaskXApi
+      icureMaintenanceTaskApi: IccIcureMaintenanceXApi
       dataOwnerApi: IccDataOwnerXApi
     },
     basePath: string,
     username: string,
     password: string,
+    cryptoStrategies: MedTechCryptoStrategies,
     msgGtwUrl: string | undefined = undefined,
     msgGtwSpecId: string | undefined = undefined,
     authProcessByEmailId: string | undefined = undefined,
@@ -169,9 +172,10 @@ export class MedTechApi {
             authProcessBySmsId,
             this._errorHandler,
             this._sanitizer,
-            api.cryptoApi.crypto,
+            api.cryptoApi.primitives.crypto,
             this._storage,
-            this._keyStorage
+            this._keyStorage,
+            this.cryptoStrategies
           )
         : undefined
     this._dataSampleApi = new DataSampleApiImpl(api, this._errorHandler, basePath, username, password)
@@ -187,6 +191,7 @@ export class MedTechApi {
 
     this._baseApi = api
     this._cryptoApi = api.cryptoApi
+    this._cryptoStrategies = cryptoStrategies
   }
 
   get codingApi(): CodingApi {
@@ -259,18 +264,11 @@ export class MedTechApi {
     return this._keyStorage
   }
 
-  async addKeyPair(dataOwnerId: string, keyPair: { publicKey: string; privateKey: string }): Promise<void> {
-    const jwk = {
-      publicKey: spkiToJwk(hex2ua(keyPair.publicKey)),
-      privateKey: pkcs8ToJwk(hex2ua(keyPair.privateKey)),
-    }
-    await this.cryptoApi.cacheKeyPair(jwk)
-    await this._keyStorage.storeKeyPair(`${dataOwnerId}.${keyPair.publicKey.slice(-32)}`, jwk)
-  }
-
-  async initUserCrypto(keyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]> {
-    const currentUser = await this.userApi.getLoggedUser()
-    return await this._dataOwnerApi.initCryptoFor(currentUser, keyPair)
+  /**
+   * @internal this property is for internal use only and may be changed without notice
+   */
+  get cryptoStrategies(): MedTechCryptoStrategies {
+    return this._cryptoStrategies
   }
 }
 
@@ -284,9 +282,9 @@ export class MedTechApiBuilder {
   private msgGwSpecId?: string
   private authProcessByEmailId?: string
   private authProcessBySmsId?: string
-  private _preventCookieUsage: boolean = false
-  private _storage?: StorageFacade<string>
-  private _keyStorage?: KeyStorageFacade
+  private cryptoStrategies?: MedTechCryptoStrategies
+  private storage?: StorageFacade<string>
+  private keyStorage?: KeyStorageFacade
 
   withICureBaseUrl(newICureBaseUrl: string): MedTechApiBuilder {
     this.iCureBaseUrl = formatICureApiUrl(newICureBaseUrl)
@@ -328,55 +326,73 @@ export class MedTechApiBuilder {
     return this
   }
 
-  preventCookieUsage(): MedTechApiBuilder {
-    this._preventCookieUsage = true
-    return this
-  }
-
   withStorage(storage: StorageFacade<string>): MedTechApiBuilder {
-    this._storage = storage
+    this.storage = storage
     return this
   }
 
   withKeyStorage(keyStorage: KeyStorageFacade): MedTechApiBuilder {
-    this._keyStorage = keyStorage
+    this.keyStorage = keyStorage
+    return this
+  }
+
+  withCryptoStrategies(strategies: MedTechCryptoStrategies): MedTechApiBuilder {
+    this.cryptoStrategies = strategies
     return this
   }
 
   async build(): Promise<MedTechApi> {
-    if (this.iCureBaseUrl == undefined) {
+    const baseUrl = this.iCureBaseUrl
+    const userName = this.userName
+    const password = this.password
+    const cryptoStrategies = this.cryptoStrategies
+    const crypto = this.crypto
+    const msgGwUrl = this.msgGwUrl
+    const msgGwSpecId = this.msgGwSpecId
+    const authProcessByEmailId = this.authProcessByEmailId
+    const authProcessBySmsId = this.authProcessBySmsId
+    const storage = this.storage
+    const keyStorage = this.keyStorage
+    if (baseUrl == undefined) {
       throw new Error('iCureBaseUrl is required')
     }
-    if (this.userName == undefined) {
+    if (userName == undefined) {
       throw new Error('userName is required')
     }
-    if (this.password == undefined) {
+    if (password == undefined) {
       throw new Error('password is required')
+    }
+    if (cryptoStrategies == undefined) {
+      throw new Error('cryptoStrategies is required')
     }
 
     return Api(
-      this.iCureBaseUrl,
-      this.userName,
-      this.password,
-      this.crypto,
+      baseUrl,
+      {
+        username: userName,
+        password: password,
+      },
+      new MedTechCryptoStrategiesBridge(cryptoStrategies),
+      crypto,
       fetch,
-      this._preventCookieUsage,
-      undefined,
-      this._storage,
-      this._keyStorage
+      {
+        storage: storage,
+        keyStorage: keyStorage,
+      }
     ).then(
       (api) =>
         new MedTechApi(
           api,
-          this.iCureBaseUrl!,
-          this.userName!,
-          this.password!,
-          this.msgGwUrl,
-          this.msgGwSpecId,
-          this.authProcessByEmailId,
-          this.authProcessBySmsId,
-          this._storage,
-          this._keyStorage
+          baseUrl,
+          userName,
+          password,
+          cryptoStrategies,
+          msgGwUrl,
+          msgGwSpecId,
+          authProcessByEmailId,
+          authProcessBySmsId,
+          storage,
+          keyStorage
         )
     )
   }
@@ -387,11 +403,12 @@ export const medTechApi = (api?: MedTechApi) => {
   if (api) {
     return apiBuilder
       .withICureBaseUrl(api.iCureBaseUrl)
-      .withCrypto(api.cryptoApi.crypto)
+      .withCrypto(api.cryptoApi.primitives.crypto)
       .withUserName(api.username)
       .withPassword(api.password)
       .withStorage(api.storage)
       .withKeyStorage(api.keyStorage)
+      .withCryptoStrategies(api.cryptoStrategies)
   }
 
   return apiBuilder
