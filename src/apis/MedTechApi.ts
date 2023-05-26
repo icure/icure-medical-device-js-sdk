@@ -270,6 +270,14 @@ export class MedTechApi {
   get cryptoStrategies(): MedTechCryptoStrategies {
     return this._cryptoStrategies
   }
+
+  /**
+   * Forces a reload/refresh of the api clearing any cached data. You may need this if the current user can't find or
+   * access some data which got recently shared with him.
+   */
+  forceReload(): Promise<void> {
+    return this._cryptoApi.forceReload()
+  }
 }
 
 export class MedTechApiBuilder {

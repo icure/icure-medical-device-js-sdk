@@ -13,6 +13,7 @@ import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { deepEquality } from '../../utils/equality'
+import { AccessLevelEnum } from '../../models/SecureDelegation'
 
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
@@ -136,14 +137,14 @@ export class NotificationApiImpl implements NotificationApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+    if (!this.dataOwnerApi.getDataOwnerIdOf(user)) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
     const filter = await new NotificationFilter()
       .afterDate(this._findAfterDateFilterValue(fromDate))
-      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
+      .forDataOwner(this.dataOwnerApi.getDataOwnerIdOf(user))
       .build()
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }
@@ -228,7 +229,7 @@ export class NotificationApiImpl implements NotificationApi {
       )
     const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification)
     return this.maintenanceTaskApi
-      .newInstance(user, inputMaintenanceTask, [delegate])
+      .newInstance(user, inputMaintenanceTask, { additionalDelegates: { [delegate]: AccessLevelEnum.WRITE } })
       .then((task) => {
         return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task)
       })

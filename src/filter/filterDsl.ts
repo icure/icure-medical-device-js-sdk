@@ -46,6 +46,7 @@ import { UsersByPatientIdFilter } from './user/UsersByPatientIdFilter'
 import { PatientByHealthcarePartySsinsFilter } from './patient/PatientByHealthcarePartySsinsFilter'
 import { HealthcareProfessionalByLabelCodeFilter } from './hcp/HealthcareProfessionalByLabelCodeFilter'
 import { HealthcareProfessionalByNameFilter } from './hcp/HealthcareProfessionalByNameFilter'
+import { PatientMapper } from '../mappers/patient'
 
 interface FilterBuilder<T> {
   build(): Promise<Filter<T>>
@@ -410,19 +411,8 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
           healthcarePartyId: dataOwnerId,
           patientSecretForeignKeys: (
             await Promise.all(
-              this._forPatients[1].map(async (p) =>
-                (
-                  await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(
-                    dataOwnerId,
-                    p.id!,
-                    Object.entries(p.systemMetaData!.delegations!)
-                      .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]])
-                      .reduce((m, [k, v]) => {
-                        m[k] = v
-                        return m
-                      }, {} as { [key: string]: Delegation[] })
-                  )
-                ).map((x) => x.extractedKeys)
+              this._forPatients[1].map(
+                async (p) => await this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
               )
             )
           ).reduce((t, v) => t.concat(v[0]), [] as string[]),
@@ -668,19 +658,8 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
           healthcarePartyId: doId,
           patientSecretForeignKeys: (
             await Promise.all(
-              this._forPatients[1].map(async (p) =>
-                (
-                  await this._forPatients![0].extractKeysHierarchyFromDelegationLikes(
-                    doId,
-                    p.id!,
-                    Object.entries(p.systemMetaData!.delegations!)
-                      .map(([hcpId, delegations]) => [hcpId, Array.from(delegations)] as [string, Delegation[]])
-                      .reduce((delegationsToDecrypt, [hcpId, delegations]) => {
-                        delegationsToDecrypt[hcpId] = delegations
-                        return delegationsToDecrypt
-                      }, {} as { [key: string]: Delegation[] })
-                  )
-                ).map((decryptedDelegations) => decryptedDelegations.extractedKeys)
+              this._forPatients[1].map(
+                async (p) => await this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
               )
             )
           ).reduce((patientSecretForeignKeys, extractedKeys) => patientSecretForeignKeys.concat(extractedKeys.flat()), [] as string[]),

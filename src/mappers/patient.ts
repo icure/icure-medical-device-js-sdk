@@ -83,18 +83,7 @@ export namespace PatientMapper {
           ethnicity: obj.ethnicity,
           picture: obj.picture,
           externalId: obj.externalId,
-          systemMetaData: new SystemMetaDataOwnerEncrypted({
-            publicKey: obj.publicKey,
-            hcPartyKeys: obj.hcPartyKeys,
-            privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
-            secretForeignKeys: obj.secretForeignKeys,
-            cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
-            delegations: toMapSetTransform(obj.delegations, toDelegation),
-            encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
-            aesExchangeKeys: obj.aesExchangeKeys,
-            transferKeys: obj.transferKeys,
-            encryptedSelf: obj.encryptedSelf,
-          }),
+          systemMetaData: toSystemMetaDataOwnerEncrypted(obj),
         })
       : undefined
 
