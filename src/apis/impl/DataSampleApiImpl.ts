@@ -5,6 +5,7 @@ import { PaginatedListDataSample } from '../../models/PaginatedListDataSample'
 import { Document } from '../../models/Document'
 import { DataSampleApi } from '../DataSampleApi'
 import {
+  Contact,
   Contact as ContactDto,
   ContactByServiceIdsFilter,
   Document as DocumentDto,
@@ -20,6 +21,7 @@ import {
   ListOfIds,
   PaginatedListContact,
   Patient as PatientDto,
+  Service,
   Service as ServiceDto,
   ServiceLink,
   SubContact,
@@ -177,13 +179,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact.services!.map(
         (service) =>
           DataSampleMapper.toDataSample(
-            {
-              ...service,
-              secretForeignKeys: createdOrModifiedContact.secretForeignKeys,
-              cryptedForeignKeys: createdOrModifiedContact.cryptedForeignKeys,
-              delegations: createdOrModifiedContact.delegations,
-              encryptionKeys: createdOrModifiedContact.encryptionKeys,
-            },
+            this.enrichWithContactMetadata(service, createdOrModifiedContact),
             createdOrModifiedContact.id,
             createdOrModifiedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == service.id))
           )!
@@ -514,7 +510,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
 
     return DataSampleMapper.toDataSample(
-      updatedContact.services.find((service) => service.id == dataSample.id),
+      this.enrichWithContactMetadata(updatedContact.services.find((service) => service.id == dataSample.id)!, updatedContact),
       updatedContact.id,
       updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined)
     )!
@@ -552,7 +548,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   async extractPatientId(dataSample: DataSample): Promise<string | undefined> {
-    return (await this.crypto.xapi.owningEntityIdsOf({ entity: dataSample, type: 'Contact' }, undefined))[0]
+    return (await this.crypto.xapi.owningEntityIdsOf({ entity: DataSampleMapper.toServiceDto(dataSample)!, type: 'Contact' }, undefined))[0]
   }
 
   private async _getContactOfDataSample(currentUser: UserDto, dataSample: DataSample): Promise<[boolean, ContactDto?]> {
@@ -694,5 +690,16 @@ export class DataSampleApiImpl implements DataSampleApi {
 
       return foundIds
     })
+  }
+
+  private enrichWithContactMetadata(service: Service, contact: Contact) {
+    return {
+      ...service,
+      secretForeignKeys: contact.secretForeignKeys,
+      cryptedForeignKeys: contact.cryptedForeignKeys,
+      delegations: contact.delegations,
+      encryptionKeys: contact.encryptionKeys,
+      securityMetadata: contact.securityMetadata,
+    }
   }
 }

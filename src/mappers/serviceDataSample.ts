@@ -129,7 +129,7 @@ export namespace DataSampleMapper {
              * contact
              * TODO TEST THIS
              */
-            encryptedSelf: obj.systemMetaData?.encryptedSelf,
+            ...(obj.systemMetaData ? SystemMetaDataMapper.toSystemMetaDataEncryptedDto(obj.systemMetaData) : {}),
           })
         )
       : undefined
