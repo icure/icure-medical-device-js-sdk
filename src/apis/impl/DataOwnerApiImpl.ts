@@ -3,16 +3,10 @@ import { DataOwnerApi } from '../DataOwnerApi'
 import { User } from '../../models/User'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { IccMaintenanceTaskXApi } from '@icure/api/icc-x-api/icc-maintenance-task-x-api'
 import { DataOwnerTypeEnum, DataOwnerWithType } from '../../models/DataOwner'
-import { DataOwnerTypeEnum as DataOwnerTypeEnumDto } from '@icure/api/icc-api/model/DataOwnerTypeEnum'
-import { MedicalDeviceMapper } from '../../mappers/medicalDevice'
-import { HealthcareProfessional } from '../../models/HealthcareProfessional'
-import { HealthcareProfessionalMapper } from '../../mappers/healthcareProfessional'
-import { PatientMapper } from '../../mappers/patient'
 import { IccIcureMaintenanceXApi } from '@icure/api/icc-x-api/icc-icure-maintenance-x-api'
-import { KeyPairUpdateRequest } from '@icure/api/icc-x-api/maintenance/KeyPairUpdateRequest'
 import { DataOwnerMapper } from '../../mappers/dataOwner'
+import { hexPublicKeysWithSha1Of, hexPublicKeysWithSha256Of } from '@icure/api/icc-x-api/crypto/utils'
 
 export class DataOwnerApiImpl implements DataOwnerApi {
   private readonly cryptoApi: IccCryptoXApi
@@ -76,5 +70,10 @@ export class DataOwnerApiImpl implements DataOwnerApi {
   async getDataOwner(ownerId: string): Promise<DataOwnerWithType> {
     const retrieved = await this.dataOwnerApi.getDataOwner(ownerId)
     return DataOwnerMapper.toDataOwnerWithTypeDecryptingPatient(retrieved, async (p) => (await this.patientApi.tryDecryptOrReturnOriginal([p]))[0])
+  }
+
+  getPublicKeysOf(dataOwner: DataOwnerWithType): string[] {
+    const dataOwnerDto = DataOwnerMapper.toDataOwnerWithTypeDto(dataOwner).dataOwner
+    return [...hexPublicKeysWithSha1Of(dataOwnerDto), ...hexPublicKeysWithSha256Of(dataOwnerDto)]
   }
 }

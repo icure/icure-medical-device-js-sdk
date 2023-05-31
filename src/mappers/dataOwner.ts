@@ -40,6 +40,25 @@ export namespace DataOwnerMapper {
     } else return toDataOwnerWithType(dto)
   }
 
+  export function toDataOwnerWithTypeDto(obj: DataOwnerWithType): DataOwnerWithTypeDto {
+    if (obj.type == DataOwnerTypeEnum.Patient) {
+      return {
+        type: DataOwnerTypeEnumDto.Patient,
+        dataOwner: PatientMapper.toPatientDto(obj.dataOwner)!,
+      }
+    } else if (obj.type == DataOwnerTypeEnum.MedicalDevice) {
+      return {
+        type: DataOwnerTypeEnumDto.Device,
+        dataOwner: MedicalDeviceMapper.toDeviceDto(obj.dataOwner),
+      }
+    } else if (obj.type == DataOwnerTypeEnum.HealthcareProfessional) {
+      return {
+        type: DataOwnerTypeEnumDto.Hcp,
+        dataOwner: HealthcareProfessionalMapper.toHealthcarePartyDto(obj.dataOwner),
+      }
+    } else throw new Error(`Unexpected data owner ${JSON.stringify(obj)}`)
+  }
+
   export function toDataOwnerType(dto: DataOwnerTypeEnumDto): DataOwnerTypeEnum {
     if (dto == DataOwnerTypeEnumDto.Patient) {
       return DataOwnerTypeEnum.Patient

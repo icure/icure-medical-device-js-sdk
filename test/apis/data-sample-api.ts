@@ -7,22 +7,13 @@ import { assert, expect, use as chaiUse } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { Content } from '../../src/models/Content'
 import { CodingReference } from '../../src/models/CodingReference'
-import {
-  getEnvironmentInitializer,
-  getEnvVariables,
-  hcp1Username,
-  hcp2Username,
-  hcp3Username,
-  patUsername,
-  setLocalStorage,
-  TestUtils,
-  TestVars,
-} from '../test-utils'
+import { getEnvironmentInitializer, hcp1Username, hcp2Username, hcp3Username, patUsername, setLocalStorage, TestUtils } from '../test-utils'
 import { it } from 'mocha'
 import { Patient } from '../../index'
 chaiUse(require('chai-as-promised'))
 import { deepEquality } from '../../src/utils/equality'
-import {DataSampleApiImpl} from "../../src/apis/impl/DataSampleApiImpl";
+import { DataSampleApiImpl } from '../../src/apis/impl/DataSampleApiImpl'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 
 setLocalStorage(fetch)
 
@@ -83,7 +74,6 @@ describe('Data Samples API', () => {
     expect(deletedDataSamples).to.have.members(createdDataSamples.map((ds) => ds.id!))
   })
 
-
   it('Delete Data Samples - without data in cache - Success', async () => {
     // Given
     const apiAndUser = await TestUtils.getOrCreateHcpApiAndLoggedUser(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
@@ -101,7 +91,6 @@ describe('Data Samples API', () => {
     assert(createdDataSamples[1].id != undefined)
     expect(deletedDataSamples).to.have.members(createdDataSamples.map((ds) => ds.id!))
   })
-
 
   it('Create Data Sample linked to HealthElement - Success', async () => {
     // Given
@@ -135,10 +124,13 @@ describe('Data Samples API', () => {
     const healthElement = await TestUtils.getOrCreateHealthElement(medtechApi, patient)
 
     // When
-    const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
-      ...createdDataSample,
-      healthcareElementIds: new Set([healthElement!.id!]),
-    }))
+    const modifiedDataSample = await medtechApi.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        ...createdDataSample,
+        healthcareElementIds: new Set([healthElement!.id!]),
+      })
+    )
 
     // Then
     assert(modifiedDataSample != undefined)
@@ -239,16 +231,15 @@ describe('Data Samples API', () => {
     const hcpApi = hcpApiAndUser.api
     const hcpUser = hcpApiAndUser.user
     const currentHcp = await hcpApi.healthcareProfessionalApi.getHealthcareProfessional(hcpUser.healthcarePartyId!)
-
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApi, currentPatient)
-
-    // When
+    // Initially hcp can't get data sample
+    await expect(hcpApi.dataSampleApi.getDataSample(createdDataSample.id!)).to.be.rejected
+    // Patient shares data sample and gets it updated and decrypted
     const sharedDataSample = await patApi.dataSampleApi.giveAccessTo(createdDataSample, currentHcp.id!)
-
-    // Then
+    expect(Object.keys(sharedDataSample.content!)).to.have.length.greaterThan(0)
+    // Hcp can now get data sample and decrypt it
     const hcpDataSample = await hcpApi.dataSampleApi.getDataSample(sharedDataSample.id!)
-    assert(hcpDataSample != null)
-    assert(hcpDataSample.id == sharedDataSample.id)
+    expect(hcpDataSample).to.deep.equal(sharedDataSample)
   })
 
   it('HCP sharing data sample with patient', async () => {
@@ -260,16 +251,18 @@ describe('Data Samples API', () => {
     const patApi = patApiAndUser.api
     const patUser = patApiAndUser.user
     const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
+    const updatedPatient = await patApi.patientApi.giveAccessTo(currentPatient, hcpApiAndUser.user.healthcarePartyId!)
 
-    const createdDataSample = await TestUtils.createDataSampleForPatient(hcpApi, currentPatient)
-
-    // When
-    const sharedDataSample = await hcpApi.dataSampleApi.giveAccessTo(createdDataSample, currentPatient.id!)
-
-    // Then
+    const createdDataSample = await TestUtils.createDataSampleForPatient(hcpApi, updatedPatient)
+    // Initially patient can't get data sample
+    await expect(patApi.dataSampleApi.getDataSample(createdDataSample.id!)).to.be.rejected
+    // Hcp shares data sample and gets it updated and decrypted
+    const sharedDataSample = await hcpApi.dataSampleApi.giveAccessTo(createdDataSample, updatedPatient.id!)
+    expect(Object.keys(sharedDataSample.content!)).to.have.length.greaterThan(0)
+    // Patient can now get data sample and decrypt it
+    await patApi.forceReload()
     const patDataSample = await patApi.dataSampleApi.getDataSample(sharedDataSample.id!)
-    assert(patDataSample != null)
-    assert(patDataSample.id == sharedDataSample.id)
+    expect(patDataSample).to.deep.equal(sharedDataSample)
   }).timeout(60000)
 
   it('HCP sharing data sample with another HCP', async () => {
@@ -285,14 +278,14 @@ describe('Data Samples API', () => {
     const patient = await TestUtils.getOrCreatePatient(hcp1Api)
 
     const createdDataSample = await TestUtils.createDataSampleForPatient(hcp1Api, patient)
-
-    // When
+    // Initially hcp2 can't get data sample
+    await expect(hcp2Api.dataSampleApi.getDataSample(createdDataSample.id!)).to.be.rejected
+    // Patient shares data sample and gets it updated and decrypted
     const sharedDataSample = await hcp1Api.dataSampleApi.giveAccessTo(createdDataSample, currentHcp2.id!)
-
-    // Then
+    expect(Object.keys(sharedDataSample.content!)).to.have.length.greaterThan(0)
+    // Hcp can now get data sample and decrypt it
     const hcpDataSample = await hcp2Api.dataSampleApi.getDataSample(sharedDataSample.id!)
-    assert(hcpDataSample != null)
-    assert(hcpDataSample.id == sharedDataSample.id)
+    expect(hcpDataSample).to.deep.equal(sharedDataSample)
   })
 
   it('Optimization - No delegation sharing if delegated already has access to data sample', async () => {
@@ -305,7 +298,7 @@ describe('Data Samples API', () => {
     const sharedDataSample = await h1api.dataSampleApi.giveAccessTo(createdDataSample, h1user.healthcarePartyId!)
 
     // Then
-    assert(deepEquality(createdDataSample, sharedDataSample))
+    expect(sharedDataSample).to.deep.equal(createdDataSample)
   })
 
   it('Delegator may not share info of Data Sample', async () => {
@@ -358,40 +351,44 @@ describe('Data Samples API', () => {
     expect(filteredSamples.length).to.eq(0)
   })
 
-  it('Give access to will fail if the data sample version does not match the latest', async () => {
+  it('Using an older version of the entity in give access to should not change the content or revoke existing accesses from newer versions', async () => {
     const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
     const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
     const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow' }))
     const content = { en: new Content({ stringValue: 'Hello world' }) }
-    const contentString = JSON.stringify(content)
     const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({ content }))
-
+    const updatedContent = { en: new Content({ stringValue: 'Hello world 2' }) }
+    const updatedDataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({ ...dataSample, content: updatedContent })
+    )
+    const updatedContentString = JSON.stringify(updatedContent)
     await h1api.dataSampleApi.giveAccessTo(dataSample, pApi.dataOwnerApi.getDataOwnerIdOf(p))
-
-    // Won't work because need to have the latest revision
-    expect(h1api.dataSampleApi.giveAccessTo(dataSample, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
-
-    expect(JSON.stringify((await h1api.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
-    expect(JSON.stringify((await pApi.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(contentString)
-    expect(h2api.dataSampleApi.getDataSample(dataSample.id!)).to.be.rejected
+    await h1api.dataSampleApi.giveAccessTo(dataSample, h2api.dataOwnerApi.getDataOwnerIdOf(h2))
+    await pApi.forceReload()
+    expect(JSON.stringify((await h1api.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(updatedContentString)
+    expect(JSON.stringify((await h2api.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(updatedContentString)
+    expect(JSON.stringify((await pApi.dataSampleApi.getDataSample(dataSample.id!)).content)).to.equal(updatedContentString)
   })
 
-  it("Should be able to create a DataSample and retrieve the associated patientId", async () => {
+  it('Should be able to create a DataSample and retrieve the associated patientId', async () => {
     const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
     const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow' }))
 
     expect(patient.id).not.to.be.undefined
 
-    const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({
-      content: {
-        en: new Content({ stringValue: 'I am a beautiful string'})
-      }
-    }))
+    const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        content: {
+          en: new Content({ stringValue: 'I am a beautiful string' }),
+        },
+      })
+    )
 
     const patientId = await h1api.dataSampleApi.extractPatientId(dataSample)
 
     expect(patientId).to.be.eq(patient.id!)
-
   })
 })

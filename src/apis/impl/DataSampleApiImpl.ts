@@ -612,13 +612,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
-    const serviceToFind = await this.contactApi.listServicesWithUser(currentUser, new ListOfIds({ ids: [dataSampleId] })).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    if (serviceToFind == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Couldn't find data sample ${dataSampleId}`)
-    }
-    return Promise.resolve(firstOrNull(serviceToFind)!)
+    return this.contactApi.getServiceWithUser(currentUser, dataSampleId)
   }
 
   // private async _getDocumentEncryptionKeys(currentUser: UserDto, documentDto: DocumentDto): Promise<Array<string>> {

@@ -1,5 +1,5 @@
 import { User } from '../models/User'
-import { DataOwnerWithType } from '../models/DataOwner'
+import { DataOwner, DataOwnerWithType } from '../models/DataOwner'
 
 export interface DataOwnerApi {
   /**
@@ -15,6 +15,12 @@ export interface DataOwnerApi {
    * @return information on the data owner
    */
   getDataOwner(ownerId: string): Promise<DataOwnerWithType>
+
+  /**
+   * Get the public keys of a data owner.
+   * @param dataOwner
+   */
+  getPublicKeysOf(dataOwner: DataOwnerWithType): string[]
 
   giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<void>
 }

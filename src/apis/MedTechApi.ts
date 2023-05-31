@@ -386,6 +386,7 @@ export class MedTechApiBuilder {
       {
         storage: storage,
         keyStorage: keyStorage,
+        createMaintenanceTasksOnNewKey: true,
       }
     ).then(
       (api) =>

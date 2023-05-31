@@ -30,7 +30,6 @@ import { Sanitizer } from '../../services/Sanitizer'
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
   private readonly authApi: IccAuthApi
-  private readonly hcpApi: IccHcpartyXApi
   private readonly username: string | undefined
   private readonly basePath: string
   private readonly password: string | undefined
@@ -40,13 +39,8 @@ export class UserApiImpl implements UserApi {
 
   constructor(
     api: {
-      healthcarePartyApi: IccHcpartyXApi
-      cryptoApi: IccCryptoXApi
       authApi: IccAuthApi
-      userApi: IccUserXApi
-      patientApi: IccPatientXApi
-      contactApi: IccContactXApi
-      documentApi: IccDocumentXApi
+      userApi: IccUserApi
     },
     messageGatewayApi: MessageGatewayApi | undefined,
     errorHandler: ErrorHandler,
@@ -62,7 +56,6 @@ export class UserApiImpl implements UserApi {
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer
     this.userApi = api.userApi
-    this.hcpApi = api.healthcarePartyApi
     this.messageGatewayApi = messageGatewayApi
   }
 
