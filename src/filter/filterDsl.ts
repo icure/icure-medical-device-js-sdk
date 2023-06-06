@@ -409,13 +409,11 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
       this._forPatients &&
         ({
           healthcarePartyId: dataOwnerId,
-          patientSecretForeignKeys: (
-            await Promise.all(
-              this._forPatients[1].map(
-                async (p) => await this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
-              )
+          patientSecretForeignKeys: await Promise.all(
+            this._forPatients[1].map((p) =>
+              this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
             )
-          ).reduce((t, v) => t.concat(v[0]), [] as string[]),
+          ).then((sfksForPatients) => sfksForPatients.flat()),
           $type: 'HealthcareElementByHealthcarePartyPatientFilter',
         } as HealthcareElementByHealthcarePartyPatientFilter),
     ].filter((x) => !!x) as Filter<HealthcareElement>[]
@@ -656,13 +654,11 @@ export class DataSampleFilter implements FilterBuilder<DataSample> {
       this._forPatients &&
         ({
           healthcarePartyId: doId,
-          patientSecretForeignKeys: (
-            await Promise.all(
-              this._forPatients[1].map(
-                async (p) => await this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
-              )
+          patientSecretForeignKeys: await Promise.all(
+            this._forPatients[1].map((p) =>
+              this._forPatients![0].xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined)
             )
-          ).reduce((patientSecretForeignKeys, extractedKeys) => patientSecretForeignKeys.concat(extractedKeys.flat()), [] as string[]),
+          ).then((sfksForPatients) => sfksForPatients.flat()),
           $type: 'DataSampleByHealthcarePartyPatientFilter',
         } as DataSampleByHealthcarePartyPatientFilter),
     ].filter((x) => !!x) as Filter<DataSample>[]

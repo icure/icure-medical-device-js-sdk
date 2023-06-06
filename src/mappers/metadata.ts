@@ -94,7 +94,6 @@ export namespace SystemMetaDataMapper {
         owningEntityIds: new Set(dto.owningEntityIds ?? []),
         parentDelegations: new Set(dto.parentDelegations ?? []),
         exchangeDataId: dto.exchangeDataId,
-        encryptedExchangeDataId: dto.encryptedExchangeDataId,
         permissions: toAccessLevel(dto.permissions),
       })
     )
@@ -108,7 +107,6 @@ export namespace SystemMetaDataMapper {
       owningEntityIds: [...obj.owningEntityIds],
       parentDelegations: [...obj.parentDelegations],
       exchangeDataId: obj.exchangeDataId,
-      encryptedExchangeDataId: obj.encryptedExchangeDataId,
       permissions: toAccessLevelDto(obj.permissions),
     })
 

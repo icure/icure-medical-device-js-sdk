@@ -6,7 +6,6 @@ export class SecureDelegation {
     this.encryptionKeys = new Set(json.encryptionKeys ?? [])
     this.owningEntityIds = new Set(json.owningEntityIds ?? [])
     this.parentDelegations = new Set(json.parentDelegations ?? [])
-    this.encryptedExchangeDataId = json.encryptedExchangeDataId ?? {}
   }
 
   'delegator'?: string
@@ -16,7 +15,6 @@ export class SecureDelegation {
   'owningEntityIds': Set<string>
   'parentDelegations': Set<string>
   'exchangeDataId'?: string
-  'encryptedExchangeDataId': { [fp: string]: string }
   'permissions': AccessLevelEnum
 
   marshal(): ISecureDelegation {
@@ -38,7 +36,6 @@ interface ISecureDelegation {
   owningEntityIds?: Set<string>
   parentDelegations?: Set<string>
   exchangeDataId?: string
-  encryptedExchangeDataId?: { [pubKeyFp: string]: string }
   permissions: AccessLevelEnum
 }
 

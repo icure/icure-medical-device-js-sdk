@@ -3,10 +3,9 @@ import { medTechApi, MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { EncryptedPatient, Patient } from '../../src/models/Patient'
 import { webcrypto } from 'crypto'
-import { hex2ua, sleep } from '@icure/api'
+import { sleep } from '@icure/api'
 import {
   getEnvironmentInitializer,
-  getEnvVariables,
   getTempEmail,
   hcp1Username,
   hcp3Username,
@@ -14,7 +13,6 @@ import {
   patUsername,
   setLocalStorage,
   TestUtils,
-  TestVars,
 } from '../test-utils'
 import { Address } from '../../src/models/Address'
 import { Telecom } from '../../src/models/Telecom'
@@ -23,12 +21,16 @@ import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { NotificationTypeEnum } from '../../src/models/Notification'
 import { ICureRegistrationEmail } from '../../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
-import { DataSampleFilter, HealthcareElementFilter } from '../../src/filter'
+import { HealthcareElementFilter } from '../../src/filter'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
+import { DataOwnerTypeEnum } from '../../src/models/DataOwner'
+
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined
+let env: TestVars
 let hcp1Api: MedTechApi
 let hcp1User: User
 let hcp1: HealthcareProfessional
@@ -45,20 +47,11 @@ describe('A Healthcare Party', () => {
 
     if (env.backendType === 'oss') this.skip()
 
-    hcp1Api = await medTechApi()
-      .withICureBaseUrl(env.iCureUrl)
-      .withUserName(env.dataOwnerDetails[hcp1Username].user)
-      .withPassword(env.dataOwnerDetails[hcp1Username].password)
-      .withMsgGwUrl(env!.msgGtwUrl)
-      .withMsgGwSpecId(env!.specId)
-      .withCrypto(webcrypto as any)
-      .build()
-
-    hcp1User = await hcp1Api.userApi.getLoggedUser()
-    await hcp1Api.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      hcp1User.healthcarePartyId ?? hcp1User.patientId ?? hcp1User.deviceId!,
-      hex2ua(env.dataOwnerDetails[hcp1Username].privateKey)
+    const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username], (b) =>
+      b.withMsgGwUrl(env!.msgGtwUrl).withMsgGwSpecId(env!.specId)
     )
+    hcp1Api = hcpApi1AndUser.api
+    hcp1User = hcpApi1AndUser.user
     hcp1 = await hcp1Api.healthcareProfessionalApi.getHealthcareProfessional(hcp1User.healthcarePartyId!)
 
     const hcpApi3AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])
@@ -131,6 +124,7 @@ describe('A Healthcare Party', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
       .build()
 
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
@@ -152,7 +146,7 @@ describe('A Healthcare Party', () => {
     await TestUtils.retrieveDataSampleAndExpectError(newPatientApi, newDS2.id!)
     await TestUtils.retrieveHealthcareElementAndExpectError(newPatientApi, newHE1.id!)
     await TestUtils.retrieveHealthcareElementAndExpectError(newPatientApi, newHE2.id!)
-    expect(newPatientApi.patientApi.getPatient(newPatient.id!)).to.be.rejected
+    await expect(newPatientApi.patientApi.getPatient(newPatient.id!)).to.be.rejected
     const encryptedPatient = await newPatientApi.patientApi.getPatientAndTryDecrypt(newPatient.id!)
     expect(encryptedPatient).is.instanceof(EncryptedPatient)
     expect(encryptedPatient.note).to.be.undefined
@@ -189,7 +183,6 @@ describe('A Healthcare Party', () => {
     // Be careful : We need to empty the cache of the hcPartyKeys otherwise, the previous API will use the key of the
     // patient -> patient stocked in cache instead of the one created by the doctor when he gives access back to patient data
     const updatedApi = await medTechApi(newPatientApi).build()
-    await updatedApi.addKeyPair(newPatient.id!, authResult.keyPairs[0])
 
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE1.id!)
     await TestUtils.retrieveHealthcareElementAndExpectSuccess(updatedApi, newHE2.id!)
@@ -276,6 +269,7 @@ describe('A patient user', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
       .build()
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
     const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(
@@ -284,7 +278,6 @@ describe('A patient user', () => {
     )
     await sleep(3000)
     const patientApi = authResult!.medTechApi
-    patientApi.cryptoApi.emptyHcpCache(patient.id!)
 
     // When the patient has not been given access to his data he...
 
@@ -292,7 +285,7 @@ describe('A patient user', () => {
     const encryptedPatient = await patientApi.patientApi.getPatientAndTryDecrypt(patient.id!)
     expect(encryptedPatient).is.instanceof(EncryptedPatient)
     encryptedPatient.note = 'This is not allowed'
-    expect(patientApi.patientApi.modifyPotentiallyEncryptedPatient(encryptedPatient)).to.be.rejected
+    await expect(patientApi.patientApi.modifyPotentiallyEncryptedPatient(encryptedPatient)).to.be.rejected
     encryptedPatient.note = undefined
     encryptedPatient.lastName = 'Ghost'
     const modifiedPatient = await patientApi.patientApi.modifyPotentiallyEncryptedPatient(encryptedPatient)
@@ -301,15 +294,17 @@ describe('A patient user', () => {
     // ...can create medical data
     const heByPatient = await TestUtils.createHealthElementForPatient(patientApi, modifiedPatient)
     // Originally medical data can't be accessed by others...
-    expect((await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).note).to.be.undefined
-    expect(patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).to.be.rejected
+    await expect(hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).to.be.rejected
+    await expect(patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).to.be.rejected
     // ...but it can be shared
-    await patientApi.healthcareElementApi.giveAccessTo(heByPatient, hcp1.id!)
-    await hcp1Api.healthcareElementApi.giveAccessTo(heByHcp, patient.id!)
-    hcp1Api.cryptoApi.emptyHcpCache(patient.id!)
-    hcp1Api.cryptoApi.emptyHcpCache(hcp1.id!)
-    expect((await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).note).to.not.be.undefined
-    expect((await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).note).to.not.be.undefined
+    const heByPatientWithUpdatedAccess = await patientApi.healthcareElementApi.giveAccessTo(heByPatient, hcp1.id!)
+    expect(heByPatientWithUpdatedAccess.note).to.not.be.undefined
+    const heByHcpWithUpdatedAccess = await hcp1Api.healthcareElementApi.giveAccessTo(heByHcp, patient.id!)
+    expect(heByHcpWithUpdatedAccess.note).to.not.be.undefined
+    await patientApi.forceReload()
+    await hcp1Api.forceReload()
+    expect(await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).to.deep.equal(heByPatientWithUpdatedAccess)
+    expect(await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).to.deep.equal(heByHcpWithUpdatedAccess)
     // Originally medical data even if accessible can't be found by the other...
     const filterPatient1 = await new HealthcareElementFilter().forDataOwner(patient.id!).forPatients(patientApi.cryptoApi, [modifiedPatient]).build()
     const patientFound1 = await patientApi.healthcareElementApi.matchHealthcareElement(filterPatient1)
@@ -326,6 +321,8 @@ describe('A patient user', () => {
     //. ..but by sharing the patient with each other it can be found
     await patientApi.patientApi.giveAccessToPotentiallyEncrypted(await patientApi.patientApi.getPatientAndTryDecrypt(patient.id!), hcp1.id!)
     const fullySharedPatient = await hcp1Api.patientApi.giveAccessTo(await hcp1Api.patientApi.getPatient(patient.id!), patient.id!)
+    await patientApi.forceReload()
+    await hcp1Api.forceReload()
     expect((await patientApi.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     expect((await hcp1Api.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     const filterPatient2 = await new HealthcareElementFilter()
@@ -338,11 +335,11 @@ describe('A patient user', () => {
       .forPatients(hcp1Api.cryptoApi, [fullySharedPatient])
       .build()
     const hcpFound2 = await hcp1Api.healthcareElementApi.matchHealthcareElement(filterHcp2)
-    expect(patientFound2).to.have.length(2)
-    expect(patientFound2).to.contain(heByPatient.id)
-    expect(patientFound2).to.contain(heByHcp.id)
     expect(hcpFound2).to.have.length(2)
     expect(hcpFound2).to.contain(heByPatient.id)
     expect(hcpFound2).to.contain(heByHcp.id)
+    expect(patientFound2).to.have.length(2)
+    expect(patientFound2).to.contain(heByPatient.id)
+    expect(patientFound2).to.contain(heByHcp.id)
   })
 })

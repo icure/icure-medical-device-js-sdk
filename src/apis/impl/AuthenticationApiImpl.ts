@@ -13,6 +13,7 @@ import { RecaptchaType } from '../../models/RecaptchaType'
 import * as Crypto from 'crypto'
 import { KeyPair } from '@icure/api/icc-x-api/crypto/RSA'
 import { MedTechCryptoStrategies } from '../../services/MedTechCryptoStrategies'
+import { PatientMapper } from '../../mappers/patient'
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
@@ -139,12 +140,11 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           `Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`
         )
 
-      const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
-        .map((keyValue) => Array.from(keyValue[1]))
-        .flat()
-        .filter((delegation) => !!delegation.delegatedTo)
-        .filter((delegation) => delegation.delegatedTo != patientDataOwner.id!)
-        .map((delegation) => delegation.delegatedTo!)
+      const delegatesInfo = await authenticationResult.medTechApi.cryptoApi.xapi.getDataOwnersWithAccessTo({
+        entity: PatientMapper.toPatientDto(patientDataOwner)!,
+        type: 'Patient',
+      })
+      const delegates = Object.keys(delegatesInfo.permissionsByDataOwnerId)
 
       for (const delegate of delegates) {
         const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
