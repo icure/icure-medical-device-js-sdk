@@ -9,8 +9,9 @@ import {
   TestUtils,
   TestVars
 } from "../test-utils";
-import {UserFilter} from "../../src/filter";
 import {expect} from "chai";
+import {UserFilter} from "../../src/filter/dsl/UserFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -24,7 +25,7 @@ let newUser: User
 describe("User Filters Test", function () {
 
   before(async function () {
-    this.timeout(60000)
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer();
     env = await initializer.execute(getEnvVariables());
 
@@ -46,12 +47,12 @@ describe("User Filters Test", function () {
         login: getTempEmail()
       })
     )
-
   });
 
   it("UsersByPatientIdFilter test - Success", async function () {
+
     const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
+      await new UserFilter(hcp1Api)
         .byPatientId(patUser.patientId!)
         .build()
     )
@@ -65,7 +66,7 @@ describe("User Filters Test", function () {
 
   it("UsersByPatientIdFilter test - Failure", async function () {
     const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
+      await new UserFilter(hcp1Api)
         .byPatientId("THIS IS DOOMED TO FAIL")
         .build()
     )
@@ -74,7 +75,7 @@ describe("User Filters Test", function () {
   })
 
   it("If no parameter is specified, all users are returned", async function () {
-    const filter = await new UserFilter().build()
+    const filter = await new UserFilter(hcp1Api).build()
     const users = await hcp1Api.userApi.filterUsers(filter)
 
     expect(users.rows.length).to.be.greaterThan(0)
@@ -82,7 +83,7 @@ describe("User Filters Test", function () {
 
   it("Can filter User by Id", async function () {
     const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
+      await new UserFilter(hcp1Api)
         .byIds([patUser.id!, newUser.id!])
         .build()
     )
@@ -93,13 +94,11 @@ describe("User Filters Test", function () {
   }).timeout(60000)
 
   it("Can filter User by union filter", async function () {
-    const idFilter = new UserFilter().byIds([newUser.id!])
-    const filterByIdOrPatient = await new UserFilter()
-      .byPatientId(patUser.patientId!)
-      .union([idFilter])
-      .build()
+    const filterById = await new UserFilter(hcp1Api).byIds([newUser.id!]).build()
+    const filterByPatient = await new UserFilter(hcp1Api).byPatientId(patUser.patientId!).build()
+    const unionFilter = FilterComposition.union(filterById, filterByPatient)
 
-    const users = await hcp1Api.userApi.filterUsers(filterByIdOrPatient)
+    const users = await hcp1Api.userApi.filterUsers(unionFilter)
 
     expect(users.rows.length).to.be.greaterThan(0)
     expect(users.rows.map( (it) => it.id)).to.contain(patUser.id!)
@@ -107,40 +106,35 @@ describe("User Filters Test", function () {
   }).timeout(60000)
 
   it("Can filter user by implicit intersection filter", async function () {
-    const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
-        .byPatientId(patUser.patientId!)
-        .byIds([patUser.id!, newUser.id!])
-        .build()
-    )
+    const filter = await new UserFilter(hcp1Api)
+      .byPatientId(patUser.patientId!)
+      .byIds([patUser.id!, newUser.id!])
+      .build()
+    const users = await hcp1Api.userApi.filterUsers(filter)
 
     expect(users.rows.length).to.be.equal(1)
     expect(users.rows.map( (it) => it.id)).to.contain(patUser.id!)
   }).timeout(60000)
 
   it("Can filter user by explicit intersection filter", async function () {
-    const patientIdFilter = new UserFilter().byPatientId(patUser.patientId!)
+    const filterByPatientId = await new UserFilter(hcp1Api).byPatientId(patUser.patientId!).build()
+    const filterByIds = await new UserFilter(hcp1Api).byIds([patUser.id!, newUser.id!]).build()
 
-    const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
-        .intersection([patientIdFilter])
-        .byIds([patUser.id!, newUser.id!])
-        .build()
-    )
+    const intersectionFilter = FilterComposition.intersection(filterByIds, filterByPatientId)
+
+    const users = await hcp1Api.userApi.filterUsers(intersectionFilter)
 
     expect(users.rows.length).to.be.equal(1)
     expect(users.rows.map( (it) => it.id)).to.contain(patUser.id!)
   }).timeout(60000)
 
   it("Intersection between disjoint sets return empty result", async function () {
-    const patientIdFilter = new UserFilter().byPatientId(patUser.patientId!)
+    const filterByPatientId = await new UserFilter(hcp1Api).byPatientId(patUser.patientId!).build()
+    const filterByIds = await new UserFilter(hcp1Api).byIds([newUser.id!]).build()
 
-    const users = await hcp1Api.userApi.filterUsers(
-      await new UserFilter()
-        .intersection([patientIdFilter])
-        .byIds([newUser.id!])
-        .build()
-    )
+    const intersectionFilter = FilterComposition.intersection(filterByIds, filterByPatientId)
+
+    const users = await hcp1Api.userApi.filterUsers(intersectionFilter)
 
     expect(users.rows.length).to.be.equal(0)
   }).timeout(60000)

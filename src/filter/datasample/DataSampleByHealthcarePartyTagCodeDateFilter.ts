@@ -12,5 +12,6 @@ export interface DataSampleByHealthcarePartyTagCodeDateFilter extends Filter<Dat
   codeType?: string
   startValueDate?: number
   endValueDate?: number
+  descending: boolean
   '$type': 'DataSampleByHealthcarePartyTagCodeDateFilter'
 }

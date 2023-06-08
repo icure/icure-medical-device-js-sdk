@@ -127,7 +127,6 @@ import {NotificationsAfterDateFilter} from "../filter/notification/Notifications
 import toIdentifierDto = IdentifierDtoMapper.toIdentifierDto;
 import {HealthcareProfessionalByLabelCodeFilter} from "../filter/hcp/HealthcareProfessionalByLabelCodeFilter";
 
-
 export namespace FilterMapper {
   export function toAbstractFilterDto<DataSample>(filter: Filter<DataSample>, input: "DataSample"): AbstractFilterService
   export function toAbstractFilterDto<Coding>(filter: Filter<Coding>, input: "Coding"): AbstractFilterCode
@@ -274,7 +273,8 @@ export namespace FilterMapper {
       codeType: filter.codeType,
       codeCode: filter.codeCode,
       startValueDate: filter.startValueDate,
-      endValueDate: filter.endValueDate
+      endValueDate: filter.endValueDate,
+      descending: filter.descending
     })
 
 

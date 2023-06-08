@@ -9,9 +9,10 @@ import {
 } from "../test-utils";
 import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
-import {MedicalDeviceFilter} from "../../src/filter";
 import {expect} from "chai";
 import {MedicalDevice} from "../../src/models/MedicalDevice";
+import {MedicalDeviceFilter} from "../../src/filter/dsl/MedicalDeviceFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -59,7 +60,7 @@ describe("Medical Device Filters Test", function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
       await new MedicalDeviceFilter()
         .byIds([md1.id!, md2.id!])
-        .build()
+        .build(hcp1Api)
     )
 
     expect(!!devices).to.eq(true)
@@ -72,7 +73,7 @@ describe("Medical Device Filters Test", function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
       await new MedicalDeviceFilter()
         .byIds(["DEFINITELY_NON_EXISTING"])
-        .build()
+        .build(hcp1Api)
     )
 
     expect(devices.rows.length).to.be.equal(0)
@@ -80,21 +81,21 @@ describe("Medical Device Filters Test", function () {
 
   it("If no parameter is specified, all medical devices are returned", async function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter()
-        .build()
+      await new MedicalDeviceFilter().build(hcp1Api)
     )
 
     expect(devices.rows.length).to.be.greaterThan(0)
   })
 
   it("Can filter medical devices by union filter", async function () {
-    const firstDeviceFilter = new MedicalDeviceFilter().byIds([md1.id!])
-    const otherDevicesFilter = await new MedicalDeviceFilter()
+    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!]).build(hcp1Api)
+    const secondDeviceFilter = await new MedicalDeviceFilter()
       .byIds([md3.id!, md2.id!])
-      .union([firstDeviceFilter])
-      .build()
+      .build(hcp1Api)
 
-    const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(otherDevicesFilter)
+    const unionFilter = FilterComposition.union(firstDeviceFilter, secondDeviceFilter)
+
+    const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(unionFilter)
 
     expect(devices.rows.length).to.be.equal(3)
     expect(devices.rows.map( (it) => it.id)).to.contain(md1.id!)
@@ -103,13 +104,13 @@ describe("Medical Device Filters Test", function () {
   })
 
   it("Can filter medical devices by explicit intersection filter", async function () {
-    const partialIdFilter = new MedicalDeviceFilter().byIds([md3.id!, md2.id!])
+    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md3.id!, md2.id!]).build(hcp1Api)
+    const secondDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!, md2.id!]).build(hcp1Api)
+
+    const intersectionFilter = FilterComposition.intersection(firstDeviceFilter, secondDeviceFilter)
 
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter()
-        .byIds([md1.id!, md2.id!])
-        .intersection([partialIdFilter])
-        .build()
+      intersectionFilter
     )
 
     expect(devices.rows.length).to.be.equal(1)
@@ -117,13 +118,13 @@ describe("Medical Device Filters Test", function () {
   })
 
   it("Intersection between disjoint sets return empty result", async function () {
-    const partialIdFilter = new MedicalDeviceFilter().byIds([md3.id!, md2.id!])
+    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md3.id!, md2.id!]).build(hcp1Api)
+    const secondDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!]).build(hcp1Api)
+
+    const intersectionFilter = FilterComposition.intersection(firstDeviceFilter, secondDeviceFilter)
 
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter()
-        .byIds([md1.id!])
-        .intersection([partialIdFilter])
-        .build()
+      intersectionFilter
     )
 
     expect(devices.rows.length).to.be.equal(0)

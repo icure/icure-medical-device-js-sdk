@@ -20,12 +20,12 @@ import { Filter } from '../../filter/Filter'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { Patient } from '../../models/Patient'
-import { UserFilter } from '../../filter'
 import { filteredContactsFromAddresses } from '../../utils/addressUtils'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { EmailMessageFactory, SMSMessageFactory } from '../../utils/msgGtwMessageFactory'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Sanitizer } from '../../services/Sanitizer'
+import {UsersByPatientIdFilter} from "../../filter/user/UsersByPatientIdFilter";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
@@ -83,7 +83,9 @@ export class UserApiImpl implements UserApi {
     if (!patient.id) throw this.errorHandler.createErrorWithMessage('Patient does not have a valid id')
 
     // Checks that no Users already exist for the Patient
-    const existingUsers = await this.filterUsers(await new UserFilter().byPatientId(patient.id).build())
+    const existingUsers = await this.filterUsers({
+      patientId: patient.id,
+      $type: 'UsersByPatientIdFilter' } as UsersByPatientIdFilter)
     if (!!existingUsers && existingUsers.rows.length > 0) throw this.errorHandler.createErrorWithMessage('A User already exists for this Patient')
 
     // Gets the preferred contact information

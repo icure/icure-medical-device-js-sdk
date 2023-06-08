@@ -9,11 +9,12 @@ import {
   TestUtils,
   TestVars
 } from "../test-utils";
-import {HealthcareElementFilter} from "../../src/filter";
 import {expect} from "chai";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
+import {HealthcareElementFilter} from "../../src/filter/dsl/HealthcareElementFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -86,7 +87,7 @@ describe("Healthcare Element Filters Test", function () {
   });
 
   it("If no parameter is specified, all healthcare Elements for the HCP are returned", async function () {
-    const filter = await new HealthcareElementFilter().forDataOwner(hcp1User.healthcarePartyId!).build()
+    const filter = await new HealthcareElementFilter().forDataOwner(hcp1User.healthcarePartyId!).build(hcp1Api)
     const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(filter)
 
     expect(elements.rows.length).to.be.greaterThan(0)
@@ -99,8 +100,8 @@ describe("Healthcare Element Filters Test", function () {
     const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(
       await new HealthcareElementFilter()
         .forDataOwner(hcp1User.healthcarePartyId!)
-        .forPatients(hcp1Api.cryptoApi, [patient])
-        .build()
+        .forPatients([patient])
+        .build(hcp1Api)
     )
 
     expect(!!elements).to.eq(true)
@@ -115,7 +116,7 @@ describe("Healthcare Element Filters Test", function () {
           'SNOMEDCT',
           '617'
         )
-        .build()
+        .build(hcp1Api)
     )
 
     expect(!!elements).to.eq(true)
@@ -136,7 +137,7 @@ describe("Healthcare Element Filters Test", function () {
           'SNOMEDCT',
           '617'
         )
-        .build()
+        .build(hcp1Api)
     )
 
     expect(!!elements).to.eq(true)
@@ -148,24 +149,26 @@ describe("Healthcare Element Filters Test", function () {
   })
 
   it("Can filter Healthcare Elements by union filter", async function () {
-    const tagFilter = new HealthcareElementFilter()
+    const tagFilter = await new HealthcareElementFilter()
       .forDataOwner(hcp1User.healthcarePartyId!)
-      .byLabelCodeFilter(
+      .sort.byLabelCodeFilter(
         'SNOMEDCT',
         '617'
       )
-    const filterByTagOrCode = await new HealthcareElementFilter()
+      .by
+      .build(hcp1Api)
+    const codeFilter = await new HealthcareElementFilter()
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byLabelCodeFilter(
         undefined,
         undefined,
         'SNOMEDCT',
         '617'
-      )
-      .union([tagFilter])
-      .build()
+      ).build(hcp1Api)
 
-    const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(filterByTagOrCode)
+    const unionFilter = FilterComposition.union(tagFilter, codeFilter)
+
+    const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(unionFilter)
 
     expect(elements.rows.length).to.be.greaterThan(0)
     elements.rows.forEach( (he) => {
@@ -185,7 +188,7 @@ describe("Healthcare Element Filters Test", function () {
           'SNOMEDCT',
           '617'
         )
-        .build()
+        .build(hcp1Api)
     )
     expect(elements.rows.length).to.be.equal(1)
     elements.rows.forEach( (he) => {
@@ -195,19 +198,21 @@ describe("Healthcare Element Filters Test", function () {
   })
 
   it("Can filter Healthcare Elements by explicit intersection filter", async function () {
-    const tagFilter = new HealthcareElementFilter()
+    const tagFilter = await new HealthcareElementFilter()
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byLabelCodeFilter(
         'SNOMEDCT',
         '617'
-      )
+      ).build(hcp1Api)
+    const idsFilter = await new HealthcareElementFilter()
+      .forDataOwner(hcp1User.healthcarePartyId!)
+      .byIds([he1.id!, he2.id!, he3.id!])
+      .build(hcp1Api)
+
+    const intersectionFilter = FilterComposition.intersection(tagFilter, idsFilter)
 
     const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(
-      await new HealthcareElementFilter()
-        .forDataOwner(hcp1User.healthcarePartyId!)
-        .byIds([he1.id!, he2.id!, he3.id!])
-        .intersection([tagFilter])
-        .build()
+      intersectionFilter
     )
     expect(elements.rows.length).to.be.equal(1)
     elements.rows.forEach( (he) => {
@@ -217,24 +222,25 @@ describe("Healthcare Element Filters Test", function () {
   })
 
   it("Intersection between disjoint sets return empty result", async function () {
-    const tagFilter = new HealthcareElementFilter()
+    const tagFilter = await new HealthcareElementFilter()
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byLabelCodeFilter(
         'SNOMEDCT',
         '617'
-      )
+      ).build(hcp1Api)
+    const labelCodeFilter = await new HealthcareElementFilter()
+      .forDataOwner(hcp1User.healthcarePartyId!)
+      .byLabelCodeFilter(
+        undefined,
+        undefined,
+        'SNOMEDCT',
+        '617'
+      ).build(hcp1Api)
+
+    const intersectionFilter = FilterComposition.intersection(tagFilter, labelCodeFilter)
 
     const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(
-      await new HealthcareElementFilter()
-        .forDataOwner(hcp1User.healthcarePartyId!)
-        .byLabelCodeFilter(
-          undefined,
-          undefined,
-          'SNOMEDCT',
-          '617'
-        )
-        .intersection([tagFilter])
-        .build()
+      intersectionFilter
     )
 
     expect(elements.rows.length).to.be.equal(0)

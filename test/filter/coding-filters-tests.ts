@@ -9,10 +9,10 @@ import {
   TestUtils,
   TestVars
 } from "../test-utils";
-import {CodingFilter} from "../../src/filter";
 import {expect} from "chai";
 import {Coding} from "../../src/models/Coding";
 import { v4 as uuid } from 'uuid'
+import {CodingFilter} from "../../src/filter/dsl/CodingFilterDsl";
 
 setLocalStorage(fetch);
 
@@ -70,7 +70,7 @@ describe("Coding Filters Test", function () {
   });
 
   it("If no parameter is specified, all the Codings are returned", async function () {
-    const codes = await hcp1Api.codingApi.filterCoding(await new CodingFilter().build())
+    const codes = await hcp1Api.codingApi.filterCoding(await new CodingFilter().build(hcp1Api))
 
     expect(codes.rows.length).to.be.greaterThan(0)
   })
@@ -79,7 +79,7 @@ describe("Coding Filters Test", function () {
     const codes = await hcp1Api.codingApi.filterCoding(
       await new CodingFilter()
         .byIds([code1.id!, code2.id!])
-        .build()
+        .build(hcp1Api)
     )
 
     expect(codes.rows.length).to.be.equal(2)
@@ -91,7 +91,7 @@ describe("Coding Filters Test", function () {
     const codes = await hcp1Api.codingApi.filterCoding(
       await new CodingFilter()
         .byRegionLanguageTypeLabel('be')
-        .build()
+        .build(hcp1Api)
     )
 
     expect(codes.rows.length).to.be.greaterThan(0)
@@ -101,8 +101,10 @@ describe("Coding Filters Test", function () {
   }).timeout(60000)
 
   it("Can filter Codings by union filter", async function () {
-    const codeByIdFilter = new CodingFilter()
+    const codeByIdFilter = await new CodingFilter()
       .byIds([code1.id!])
+      .build()
+    const codeByRegionLanguageTypeFilter =
 
     const filterByIdOrType = await new CodingFilter()
       .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
