@@ -207,15 +207,7 @@ export class UserApiImpl implements UserApi {
     eventFired: (user: User) => Promise<void>,
     options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    return subscribeToEntityEvents(
-      this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
-      'User',
-      eventTypes,
-      filter,
-      eventFired,
-      options
-    )
+    return subscribeToEntityEvents(this.basePath, this.authApi, 'User', eventTypes, filter, eventFired, options)
       .then((rs) => new ConnectionImpl(rs))
       .catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)

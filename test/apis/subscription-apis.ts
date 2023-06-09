@@ -1,9 +1,8 @@
 import 'mocha'
-import { medTechApi, MedTechApi } from '../../src/apis/MedTechApi'
+import { MedTechApi } from '../../src/apis/MedTechApi'
 import 'isomorphic-fetch'
-import { webcrypto } from 'crypto'
 
-import { hex2ua, sleep } from '@icure/api'
+import { sleep } from '@icure/api'
 import { DataSampleFilter, HealthcareElementFilter, NotificationFilter, PatientFilter, UserFilter } from '../../src/filter'
 
 import { assert } from 'chai'
@@ -50,7 +49,9 @@ describe('Subscription API', () => {
     options: {},
     connectionPromise: Promise<Connection>,
     x: () => Promise<Y>,
-    statusListener: (status: string) => void
+    statusListener: (status: string) => void,
+    eventReceivedPromiseReject: (reason?: any) => void,
+    eventReceivedPromise: Promise<void>
   ) {
     const connection = (await connectionPromise)
       .onClosed(async () => {
@@ -59,10 +60,12 @@ describe('Subscription API', () => {
       })
       .onConnected(async () => {
         statusListener('CONNECTED')
+        await sleep(2_000)
         await x()
       })
 
-    await sleep(20_000)
+    const timeout = setTimeout(eventReceivedPromiseReject, 20_000)
+    await eventReceivedPromise.then(() => clearTimeout(timeout)).catch(() => {})
 
     connection.close()
 
@@ -93,16 +96,26 @@ describe('Subscription API', () => {
       const events: DataSample[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         creationApi!!,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (ds) => {
           events.push(ds)
+          eventReceivedPromiseResolve()
         }),
         supplier,
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -215,11 +228,18 @@ describe('Subscription API', () => {
       const events: Notification[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
       await doXOnYAndSubscribe(
         medtechApi!!,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (notification) => {
           events.push(notification)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const notificationId = uuid()
@@ -234,7 +254,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -273,11 +295,19 @@ describe('Subscription API', () => {
       const events: HealthcareElement[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (healthcareElement) => {
           events.push(healthcareElement)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const patient = await medtechApi!!.patientApi.createOrModifyPatient(
@@ -291,13 +321,16 @@ describe('Subscription API', () => {
           await medtechApi!!.healthcareElementApi.createOrModifyHealthcareElement(
             new HealthcareElement({
               note: 'Hero Syndrome',
+              labels: new Set([new CodingReference({ id: 'id', code: testCode, type: testType })]),
             }),
             patient.id
           )
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -339,11 +372,19 @@ describe('Subscription API', () => {
       const events: Patient[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (patient) => {
           events.push(patient)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           await medtechApi!!.patientApi.createOrModifyPatient(
@@ -356,7 +397,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -395,11 +438,19 @@ describe('Subscription API', () => {
       const events: User[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const patApiAndUser = await TestUtils.signUpUserUsingEmail(
@@ -417,7 +468,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -448,7 +501,10 @@ describe('Subscription API', () => {
 
       const ws = await WebSocketWrapper.create(
         env!.iCureUrl.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
-        async () => 'fake-token',
+        {
+          getBearerToken: () => Promise.resolve(undefined),
+          getIcureOtt: () => Promise.resolve('fake-token'),
+        },
         10,
         500,
         {

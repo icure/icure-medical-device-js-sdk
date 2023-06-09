@@ -265,7 +265,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'HealthcareElement',
       eventTypes,
       filter,

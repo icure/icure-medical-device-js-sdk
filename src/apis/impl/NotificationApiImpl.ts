@@ -189,7 +189,7 @@ export class NotificationApiImpl implements NotificationApi {
 
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'Notification',
       eventTypes,
       filter,

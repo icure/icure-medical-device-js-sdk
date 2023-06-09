@@ -224,7 +224,7 @@ export class PatientApiImpl implements PatientApi {
     })
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'Patient',
       eventTypes,
       filter,
