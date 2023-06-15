@@ -1,10 +1,6 @@
 import {Filter} from "../Filter";
 import {NoOpFilter} from "./filterDsl";
 
-interface FilterByIds<T> extends Filter<T> {
-  ids: string[]
-}
-
 enum FilterStrategy { ByIds, Singleton, ByIdsObjects, Simple}
 
 type FutureFilter<T> = {
@@ -159,7 +155,6 @@ export class SortableFilterBuilderAccumulator<T> {
   private combineByIdsFilters(filters: AwaitedFilter<T>[]) {
     const sortKey = filters.find( f => f.sortKey) ?? filters[0]
     const aggregation = filters.reduce( (aggregated, current) => {
-      const k = aggregated.idKey!
       const newFilter = {
         ...aggregated.filter,
         [aggregated.idKey!]: this.extractIdsFromFilter(aggregated.filter, aggregated.idKey!).filter( x =>
