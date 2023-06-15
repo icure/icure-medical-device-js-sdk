@@ -1,4 +1,3 @@
-import {MedTechApi} from "../../apis/MedTechApi";
 import {Filter} from "../Filter";
 import {SortableFilterBuilderAccumulator} from "./SortableFilterBuilderAccumulator";
 import {UnionFilter} from "../UnionFilter";
@@ -91,9 +90,19 @@ export abstract class FilterComposition {
   }
 }
 
+/**
+ * This class represent a filter for which it is sure that it will yield no result already at build time. All the
+ * methods that rely on filters should return an empty result on receiving this filter without contacting the iCure
+ * service.
+ */
 export class NoOpFilter implements Filter<any> {
   $type: string = "NoOpFilter"
 
+  /**
+   * Checks if the filter passed a parameter is a NoOp filter.
+   * @param filter a filter to check
+   * @return true if is a NoOp filter, false otherwise.
+   */
   static isNoOp(filter: Filter<any>): boolean {
     return filter instanceof NoOpFilter
   }
