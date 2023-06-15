@@ -12,7 +12,9 @@ import {User} from "../../src/models/User";
 import {expect} from "chai";
 import {MedicalDevice} from "../../src/models/MedicalDevice";
 import {MedicalDeviceFilter} from "../../src/filter/dsl/MedicalDeviceFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch);
 
@@ -127,6 +129,18 @@ describe("Medical Device Filters Test", function () {
       intersectionFilter
     )
 
+    expect(devices.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new MedicalDeviceFilter(hcp1Api)
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(noOpFilter)
     expect(devices.rows.length).to.be.equal(0)
   })
 

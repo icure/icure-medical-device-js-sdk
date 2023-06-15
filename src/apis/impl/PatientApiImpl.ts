@@ -21,6 +21,7 @@ import { subscribeToEntityEvents } from '../../utils/websocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import {NoOpFilter} from "../../filter/dsl/filterDsl";
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -141,29 +142,37 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
-    return PaginatedListMapper.toPaginatedListPatient(
-      await this.patientApi
-        .filterPatientsBy(
-          undefined,
-          nextPatientId,
-          limit,
-          undefined,
-          undefined,
-          undefined,
-          new FilterChainPatient({
-            filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
+    if(NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListPatient({totalSize: 0, pageSize: 0, rows: []})
+    } else {
+      return PaginatedListMapper.toPaginatedListPatient(
+        await this.patientApi
+          .filterPatientsBy(
+            undefined,
+            nextPatientId,
+            limit,
+            undefined,
+            undefined,
+            undefined,
+            new FilterChainPatient({
+              filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
-    return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if(NoOpFilter.isNoOp(filter)) {
+      return Promise.resolve([])
+    } else {
+      return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {

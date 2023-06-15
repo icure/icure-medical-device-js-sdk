@@ -6,7 +6,6 @@ import {IntersectionFilter} from "../IntersectionFilter";
 import {AllUsersFilter} from "../user/AllUsersFilter";
 import {FilterBuilder, NoOpFilter, SortableFilterBuilder} from "./filterDsl";
 import {MedTechApi} from "../../apis/MedTechApi";
-import {SortableFilterBuilderAccumulator} from "./SortableFilterBuilderAccumulator";
 
 interface BaseUserFilterBuilder<F> {
   /**
@@ -27,7 +26,7 @@ export class UserFilter
   implements BaseUserFilterBuilder<UserFilter>, FilterBuilder<User>
 {
 
-  constructor(private api: MedTechApi) {
+  constructor(_: MedTechApi) {
     super();
   }
 
@@ -48,7 +47,7 @@ export class UserFilter
   async build(): Promise<Filter<User>> {
     const filters = await this._builderAccumulator.getAndSortFilters()
 
-    if(filters.some(f => f instanceof NoOpFilter)) {
+    if(filters.some(f => NoOpFilter.isNoOp(f))) {
       console.warn("Warning: the filter you built cannot be resolved and will return no entity")
       return new NoOpFilter()
     } else if (filters.length > 1) {

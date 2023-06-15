@@ -31,7 +31,7 @@ export class CodingFilter
   implements BaseCodingFilterBuilder<CodingFilter>, FilterBuilder<Coding>
 {
 
-  constructor(private api: MedTechApi) {
+  constructor(_: MedTechApi) {
     super();
   }
 
@@ -55,7 +55,7 @@ export class CodingFilter
   async build(): Promise<Filter<Coding>> {
     const filters = await this._builderAccumulator.getAndSortFilters()
 
-    if(filters.some(f => f instanceof NoOpFilter)) {
+    if(filters.some(f => NoOpFilter.isNoOp(f))) {
       console.warn("Warning: the filter you built cannot be resolved and will return no entity")
       return new NoOpFilter()
     } else if (filters.length > 1) {

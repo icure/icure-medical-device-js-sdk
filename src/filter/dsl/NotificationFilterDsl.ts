@@ -91,7 +91,7 @@ class NotificationFilterWithDataOwner
   async build(): Promise<Filter<Notification>> {
     const filters = await this._builderAccumulator.getAndSortFilters()
 
-    if(filters.some(f => f instanceof NoOpFilter)) {
+    if(filters.some(f => NoOpFilter.isNoOp(f))) {
       console.warn("Warning: the filter you built cannot be resolved and will return no entity")
       return new NoOpFilter()
     } else if (filters.length > 1) {

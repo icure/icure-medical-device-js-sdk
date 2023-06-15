@@ -11,7 +11,9 @@ import {
 } from "../test-utils";
 import {expect} from "chai";
 import {UserFilter} from "../../src/filter/dsl/UserFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch);
 
@@ -138,5 +140,17 @@ describe("User Filters Test", function () {
 
     expect(users.rows.length).to.be.equal(0)
   }).timeout(60000)
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new UserFilter(hcp1Api)
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const users = await hcp1Api.userApi.filterUsers(noOpFilter)
+    expect(users.rows.length).to.be.equal(0)
+  })
 
 });

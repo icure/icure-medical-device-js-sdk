@@ -19,7 +19,7 @@ export class MedicalDeviceFilter
   implements BaseMedicalDeviceFilterBuilder<MedicalDeviceFilter>, FilterBuilder<MedicalDevice>
 {
 
-  constructor(private api: MedTechApi) {
+  constructor(_: MedTechApi) {
     super();
   }
 
@@ -38,7 +38,7 @@ export class MedicalDeviceFilter
   async build(): Promise<Filter<MedicalDevice>> {
     const filters = await this._builderAccumulator.getAndSortFilters()
 
-    if(filters.some(f => f instanceof NoOpFilter)) {
+    if(filters.some(f => NoOpFilter.isNoOp(f))) {
       console.warn("Warning: the filter you built cannot be resolved and will return no entity")
       return new NoOpFilter()
     } else if (filters.length > 1) {

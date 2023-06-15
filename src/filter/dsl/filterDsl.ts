@@ -93,4 +93,8 @@ export abstract class FilterComposition {
 
 export class NoOpFilter implements Filter<any> {
   $type: string = "NoOpFilter"
+
+  static isNoOp(filter: Filter<any>): boolean {
+    return filter instanceof NoOpFilter
+  }
 }

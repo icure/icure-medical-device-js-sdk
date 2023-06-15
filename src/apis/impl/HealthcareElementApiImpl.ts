@@ -31,6 +31,7 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 import {Delegation} from "../../models/Delegation";
+import {NoOpFilter} from "../../filter/dsl/filterDsl";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -163,6 +164,11 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     nextHealthElementId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareElement> {
+
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListHealthcareElement({totalSize: 0, pageSize: 0, rows: []})
+    }
+
     const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })) as User
@@ -195,9 +201,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if(NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async _getPatientOfHealthElement(currentUser: UserDto, healthElementDto: HealthElement): Promise<PatientDto | undefined> {

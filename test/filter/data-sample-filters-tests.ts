@@ -16,7 +16,9 @@ import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {Content} from "../../src/models/Content";
 import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {CodingFilter} from "../../src/filter/dsl/CodingFilterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch);
 
@@ -268,6 +270,19 @@ describe("Data Sample Filters Tests", function () {
         .build()
     )
 
+    expect(samples.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new DataSampleFilter(hcp1Api)
+      .forSelf()
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(noOpFilter)
     expect(samples.rows.length).to.be.equal(0)
   })
 

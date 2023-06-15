@@ -18,10 +18,10 @@ import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Connection } from '../../src/models/Connection'
 import { WebSocketWrapper } from '../../src/utils/websocket'
 import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {UserFilter} from "../../src/filter/dsl/UserFilterDsl";
 import {NotificationFilter} from "../../src/filter/dsl/NotificationFilterDsl";
 import {HealthcareElementFilter} from "../../src/filter/dsl/HealthcareElementFilterDsl";
 import {PatientFilter} from "../../src/filter/dsl/PatientFilterDsl";
-import {UserFilter} from "../../src/filter/dsl/UserFilterDsl";
 
 setLocalStorage(fetch)
 

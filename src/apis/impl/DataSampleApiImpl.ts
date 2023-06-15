@@ -41,6 +41,7 @@ import { ErrorHandler } from '../../services/ErrorHandler'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import toDelegationDto = DelegationMapper.toDelegationDto
+import {NoOpFilter} from "../../filter/dsl/filterDsl";
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -387,6 +388,9 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
+    if(NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListDataSample({ pageSize: 0, totalSize: 0, rows: []})
+    }
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -432,9 +436,13 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   matchDataSample(filter: Filter<DataSample>): Promise<Array<string>> {
-    return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if(NoOpFilter.isNoOp(filter)) {
+      return Promise.resolve([])
+    } else {
+      return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async setDataSampleAttachment(

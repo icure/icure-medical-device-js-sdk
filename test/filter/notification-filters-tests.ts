@@ -12,7 +12,9 @@ import {
 import {expect} from "chai";
 import {Notification, NotificationTypeEnum} from "../../src/models/Notification";
 import {NotificationFilter} from "../../src/filter/dsl/NotificationFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch);
 
@@ -193,6 +195,19 @@ describe("Notification Filters Tests", function () {
     )
 
     expect(notes.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new NotificationFilter(hcp1Api)
+      .forSelf()
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const notifications = await hcp1Api.notificationApi.filterNotifications(noOpFilter)
+    expect(notifications.rows.length).to.be.equal(0)
   })
 
 });

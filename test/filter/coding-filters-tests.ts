@@ -13,7 +13,7 @@ import {expect} from "chai";
 import {Coding} from "../../src/models/Coding";
 import { v4 as uuid } from 'uuid'
 import {CodingFilter} from "../../src/filter/dsl/CodingFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -172,6 +172,18 @@ describe("Coding Filters Test", function () {
     const intersectionFilter = FilterComposition.intersection(codesByIdFilter, codesByLanguageFilter)
 
     const codes = await hcp1Api.codingApi.filterCoding(intersectionFilter)
+    expect(codes.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new CodingFilter(hcp1Api)
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const codes = await hcp1Api.codingApi.filterCoding(noOpFilter)
     expect(codes.rows.length).to.be.equal(0)
   })
 

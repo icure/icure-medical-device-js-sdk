@@ -14,7 +14,7 @@ import {HealthcareProfessional} from "../../src/models/HealthcareProfessional";
 import {v4 as uuid} from "uuid";
 import {CodingReference} from "../../src/models/CodingReference";
 import {HealthcareProfessionalFilter} from "../../src/filter/dsl/HealthcareProfessionalDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch)
 
@@ -225,6 +225,18 @@ describe("HealthcareProfessional Filters Test", function () {
     );
 
     expect(!!hcps).to.equal(true);
+    expect(hcps.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new HealthcareProfessionalFilter(hcp1Api)
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(noOpFilter)
     expect(hcps.rows.length).to.be.equal(0)
   })
 

@@ -14,7 +14,8 @@ import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElementFilter} from "../../src/filter/dsl/HealthcareElementFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch);
 
@@ -242,6 +243,19 @@ describe("Healthcare Element Filters Test", function () {
       intersectionFilter
     )
 
+    expect(elements.rows.length).to.be.equal(0)
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new HealthcareElementFilter(hcp1Api)
+      .forSelf()
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const elements = await hcp1Api.healthcareElementApi.filterHealthcareElement(noOpFilter)
     expect(elements.rows.length).to.be.equal(0)
   })
 

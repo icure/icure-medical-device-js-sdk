@@ -26,6 +26,7 @@ import { EmailMessageFactory, SMSMessageFactory } from '../../utils/msgGtwMessag
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Sanitizer } from '../../services/Sanitizer'
 import {UsersByPatientIdFilter} from "../../filter/user/UsersByPatientIdFilter";
+import {NoOpFilter} from "../../filter/dsl/filterDsl";
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
@@ -165,19 +166,23 @@ export class UserApiImpl implements UserApi {
   }
 
   async filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-    return PaginatedListMapper.toPaginatedListUser(
-      await this.userApi
-        .filterUsersBy(
-          nextUserId,
-          limit,
-          new FilterChainUser({
-            filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+    if(NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListUser({totalSize: 0, pageSize: 0, rows: []})
+    } else {
+      return PaginatedListMapper.toPaginatedListUser(
+        await this.userApi
+          .filterUsersBy(
+            nextUserId,
+            limit,
+            new FilterChainUser({
+              filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getLoggedUser(): Promise<User> {
@@ -205,9 +210,13 @@ export class UserApiImpl implements UserApi {
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
-    return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if(NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   subscribeToUserEvents(

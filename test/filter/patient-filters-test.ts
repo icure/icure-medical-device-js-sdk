@@ -12,7 +12,9 @@ import {User} from "../../src/models/User";
 import {Patient} from "../../src/models/Patient";
 import {expect} from "chai";
 import {PatientFilter} from "../../src/filter/dsl/PatientFilterDsl";
-import {FilterComposition} from "../../src/filter/dsl/filterDsl";
+import {FilterComposition, NoOpFilter} from "../../src/filter/dsl/filterDsl";
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {v4 as uuid} from "uuid";
 
 setLocalStorage(fetch)
 
@@ -167,6 +169,19 @@ describe("Patient Filters Test", function () {
     patients.rows.forEach( (p) => {
       expect(p.gender).to.be.oneOf(["female", "indeterminate"])
     })
+  })
+
+  it("If a NoOpFilter is generated as result, an empty result is returned", async function () {
+    const noOpFilter = await new PatientFilter(api)
+      .forSelf()
+      .byIds([uuid()])
+      .byIds([uuid()])
+      .build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const patients = await api.patientApi.filterPatients(noOpFilter)
+    expect(patients.rows.length).to.be.equal(0)
   })
 
 })

@@ -9,6 +9,7 @@ import { FilterMapper } from '../../mappers/filter'
 import { Filter } from '../../filter/Filter'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import {NoOpFilter} from "../../filter/dsl/filterDsl";
 
 export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   private readonly deviceApi: IccDeviceApi
@@ -73,19 +74,23 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async filterMedicalDevices(filter: Filter<MedicalDevice>, nextDeviceId?: string, limit?: number): Promise<PaginatedListMedicalDevice> {
-    return PaginatedListMapper.toPaginatedListMedicalDevice(
-      await this.deviceApi
-        .filterDevicesBy(
-          nextDeviceId,
-          limit,
-          new FilterChainDevice({
-            filter: FilterMapper.toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice'),
+    if(NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListMedicalDevice({totalSize: 0, pageSize: 0, rows: []})
+    } else {
+      return PaginatedListMapper.toPaginatedListMedicalDevice(
+        await this.deviceApi
+          .filterDevicesBy(
+            nextDeviceId,
+            limit,
+            new FilterChainDevice({
+              filter: FilterMapper.toAbstractFilterDto<DeviceDto>(filter, 'MedicalDevice'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getMedicalDevice(medicalDeviceId: string): Promise<MedicalDevice> {
@@ -97,8 +102,12 @@ export class MedicalDeviceApiImpl implements MedicalDeviceApi {
   }
 
   async matchMedicalDevices(filter: Filter<MedicalDevice>): Promise<Array<string>> {
-    return this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if(NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.deviceApi.matchDevicesBy(FilterMapper.toAbstractFilterDto<MedicalDevice>(filter, 'User')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 }
