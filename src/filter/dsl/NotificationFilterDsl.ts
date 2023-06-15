@@ -26,12 +26,15 @@ interface BaseNotificationFilterBuilder<F> {
 }
 
 export class NotificationFilter implements DataOwnerFilterBuilder<Notification, NotificationFilterWithDataOwner> {
-  forDataOwner(api: MedTechApi, dataOwnerId: string): NotificationFilterWithDataOwner {
-    return new NotificationFilterWithDataOwner(api, dataOwnerId)
+
+  constructor(private api: MedTechApi) {}
+
+  forDataOwner(dataOwnerId: string): NotificationFilterWithDataOwner {
+    return new NotificationFilterWithDataOwner(this.api, dataOwnerId)
   }
 
-  forSelf(api: MedTechApi): NotificationFilterWithDataOwner {
-    return new NotificationFilterWithDataOwner(api)
+  forSelf(): NotificationFilterWithDataOwner {
+    return new NotificationFilterWithDataOwner(this.api)
   }
 }
 
@@ -77,7 +80,7 @@ class NotificationFilterWithDataOwner
       return {
         healthcarePartyId: id,
         date: fromDate,
-        $type: 'NotificationsByHcPartyAndTypeFilter',
+        $type: 'NotificationsAfterDateFilter',
       }
     })
     this._builderAccumulator.addSingletonFilter(filter)

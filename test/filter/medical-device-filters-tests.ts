@@ -58,9 +58,9 @@ describe("Medical Device Filters Test", function () {
 
   it("MedicalDeviceByIds test - Success", async function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter()
+      await new MedicalDeviceFilter(hcp1Api)
         .byIds([md1.id!, md2.id!])
-        .build(hcp1Api)
+        .build()
     )
 
     expect(!!devices).to.eq(true)
@@ -71,9 +71,9 @@ describe("Medical Device Filters Test", function () {
 
   it("MedicalDeviceByIds test - Failure", async function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter()
+      await new MedicalDeviceFilter(hcp1Api)
         .byIds(["DEFINITELY_NON_EXISTING"])
-        .build(hcp1Api)
+        .build()
     )
 
     expect(devices.rows.length).to.be.equal(0)
@@ -81,17 +81,17 @@ describe("Medical Device Filters Test", function () {
 
   it("If no parameter is specified, all medical devices are returned", async function () {
     const devices = await hcp1Api.medicalDeviceApi.filterMedicalDevices(
-      await new MedicalDeviceFilter().build(hcp1Api)
+      await new MedicalDeviceFilter(hcp1Api).build()
     )
 
     expect(devices.rows.length).to.be.greaterThan(0)
   })
 
   it("Can filter medical devices by union filter", async function () {
-    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!]).build(hcp1Api)
-    const secondDeviceFilter = await new MedicalDeviceFilter()
+    const firstDeviceFilter = await new MedicalDeviceFilter(hcp1Api).byIds([md1.id!]).build()
+    const secondDeviceFilter = await new MedicalDeviceFilter(hcp1Api)
       .byIds([md3.id!, md2.id!])
-      .build(hcp1Api)
+      .build()
 
     const unionFilter = FilterComposition.union(firstDeviceFilter, secondDeviceFilter)
 
@@ -104,8 +104,8 @@ describe("Medical Device Filters Test", function () {
   })
 
   it("Can filter medical devices by explicit intersection filter", async function () {
-    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md3.id!, md2.id!]).build(hcp1Api)
-    const secondDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!, md2.id!]).build(hcp1Api)
+    const firstDeviceFilter = await new MedicalDeviceFilter(hcp1Api).byIds([md3.id!, md2.id!]).build()
+    const secondDeviceFilter = await new MedicalDeviceFilter(hcp1Api).byIds([md1.id!, md2.id!]).build()
 
     const intersectionFilter = FilterComposition.intersection(firstDeviceFilter, secondDeviceFilter)
 
@@ -118,8 +118,8 @@ describe("Medical Device Filters Test", function () {
   })
 
   it("Intersection between disjoint sets return empty result", async function () {
-    const firstDeviceFilter = await new MedicalDeviceFilter().byIds([md3.id!, md2.id!]).build(hcp1Api)
-    const secondDeviceFilter = await new MedicalDeviceFilter().byIds([md1.id!]).build(hcp1Api)
+    const firstDeviceFilter = await new MedicalDeviceFilter(hcp1Api).byIds([md3.id!, md2.id!]).build()
+    const secondDeviceFilter = await new MedicalDeviceFilter(hcp1Api).byIds([md1.id!]).build()
 
     const intersectionFilter = FilterComposition.intersection(firstDeviceFilter, secondDeviceFilter)
 

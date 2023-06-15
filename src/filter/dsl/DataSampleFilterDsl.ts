@@ -61,12 +61,15 @@ interface BaseDataSampleFilterBuilder<F> {
 }
 
 export class DataSampleFilter implements DataOwnerFilterBuilder<DataSample, DataSampleFilterWithDataOwner> {
-  forDataOwner(api: MedTechApi, dataOwnerId: string): DataSampleFilterWithDataOwner {
-    return new DataSampleFilterWithDataOwner(api, dataOwnerId)
+
+  constructor(private api: MedTechApi) {}
+
+  forDataOwner(dataOwnerId: string): DataSampleFilterWithDataOwner {
+    return new DataSampleFilterWithDataOwner(this.api, dataOwnerId)
   }
 
-  forSelf(api: MedTechApi): DataSampleFilterWithDataOwner {
-    return new DataSampleFilterWithDataOwner(api)
+  forSelf(): DataSampleFilterWithDataOwner {
+    return new DataSampleFilterWithDataOwner(this.api)
   }
 }
 
@@ -157,7 +160,7 @@ class DataSampleFilterWithDataOwner
           ).map((decryptedDelegations) => decryptedDelegations.extractedKeys)
         )
       ).then( sfks => {
-        return       {
+        return {
           healthcarePartyId: id,
           patientSecretForeignKeys: sfks.reduce((patientSecretForeignKeys, extractedKeys) =>
             patientSecretForeignKeys.concat(extractedKeys.flat()), [] as string[]

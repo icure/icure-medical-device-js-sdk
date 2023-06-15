@@ -125,7 +125,7 @@ export class SortableFilterBuilderAccumulator<T> {
     }, sortKey)
     return {
       ...aggregation,
-    filter: (aggregation.filter as FilterByIds<T>).ids.length > 0 ? aggregation.filter : new NoOpFilter()
+    filter: this.extractIdsFromFilter(aggregation.filter, aggregation.idKey!).length > 0 ? aggregation.filter : new NoOpFilter()
     }
   }
 

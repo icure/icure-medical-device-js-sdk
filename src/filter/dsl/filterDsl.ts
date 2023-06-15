@@ -48,17 +48,15 @@ export abstract class DataOwnerFilterBuilder<T, F extends FilterBuilder<T>> {
 
   /**
    * @param dataOwnerId the data owner id to use for the filtering.
-   * @param api an instance of the MedTech Api for the current user.
    * @return a Filter Builder for the same entity.
    */
-  abstract forDataOwner(api: MedTechApi, dataOwnerId: string): F
+  abstract forDataOwner(dataOwnerId: string): F
 
   /**
-   * @param api an instance of the MedTech Api for the current user.
    * @return a Filter Builder for the same entity that will use as data owner id for the filtering the current data owner.
    * It's the responsibility of the returned filter to guarantee this behaviour.
    */
-  abstract forSelf(api: MedTechApi): F
+  abstract forSelf(): F
 }
 
 /**

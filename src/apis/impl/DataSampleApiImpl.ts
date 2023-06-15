@@ -6,7 +6,7 @@ import { Document } from '../../models/Document'
 import { DataSampleApi } from '../DataSampleApi'
 import {
   Contact as ContactDto,
-  ContactByServiceIdsFilter,
+  ContactByServiceIdsFilter, Delegation,
   Document as DocumentDto,
   FilterChainContact,
   FilterChainService,
@@ -36,7 +36,6 @@ import { UtiDetector } from '../../utils/utiDetector'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { toMap, toMapArrayTransform } from '../../mappers/utils'
 import { DelegationMapper } from '../../mappers/delegation'
-import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
@@ -213,7 +212,22 @@ export class DataSampleApiImpl implements DataSampleApi {
         'The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new DataSampleFilter().forDataOwner(dataOwnerId).forPatients(this.crypto, [patient]).build()
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: (await this.crypto.extractKeysHierarchyFromDelegationLikes(
+          dataOwnerId,
+          patient.id!,
+          Object.entries(patient.systemMetaData!.delegations!)
+            .map(([hcpId, delegations]) => [hcpId, Array.from(delegations)] as [string, Delegation[]])
+            .reduce((delegationsToDecrypt, [hcpId, delegations]) => {
+              delegationsToDecrypt[hcpId] = delegations
+              return delegationsToDecrypt
+            }, {} as { [key: string]: Delegation[] }))
+      ).map((decryptedDelegations) => decryptedDelegations.extractedKeys).reduce((patientSecretForeignKeys, extractedKeys) =>
+        patientSecretForeignKeys.concat(extractedKeys.flat()), [] as string[]
+      ),
+      $type: 'DataSampleByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 

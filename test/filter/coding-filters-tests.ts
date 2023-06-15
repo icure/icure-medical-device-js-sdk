@@ -13,6 +13,7 @@ import {expect} from "chai";
 import {Coding} from "../../src/models/Coding";
 import { v4 as uuid } from 'uuid'
 import {CodingFilter} from "../../src/filter/dsl/CodingFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -70,16 +71,16 @@ describe("Coding Filters Test", function () {
   });
 
   it("If no parameter is specified, all the Codings are returned", async function () {
-    const codes = await hcp1Api.codingApi.filterCoding(await new CodingFilter().build(hcp1Api))
+    const codes = await hcp1Api.codingApi.filterCoding(await new CodingFilter(hcp1Api).build())
 
     expect(codes.rows.length).to.be.greaterThan(0)
   })
 
   it("Can filter Codings by ids", async function () {
     const codes = await hcp1Api.codingApi.filterCoding(
-      await new CodingFilter()
+      await new CodingFilter(hcp1Api)
         .byIds([code1.id!, code2.id!])
-        .build(hcp1Api)
+        .build()
     )
 
     expect(codes.rows.length).to.be.equal(2)
@@ -89,9 +90,9 @@ describe("Coding Filters Test", function () {
 
   it("Can filter Codings by language", async function () {
     const codes = await hcp1Api.codingApi.filterCoding(
-      await new CodingFilter()
+      await new CodingFilter(hcp1Api)
         .byRegionLanguageTypeLabel('be')
-        .build(hcp1Api)
+        .build()
     )
 
     expect(codes.rows.length).to.be.greaterThan(0)
@@ -101,17 +102,16 @@ describe("Coding Filters Test", function () {
   }).timeout(60000)
 
   it("Can filter Codings by union filter", async function () {
-    const codeByIdFilter = await new CodingFilter()
+    const codeByIdFilter = await new CodingFilter(hcp1Api)
       .byIds([code1.id!])
       .build()
-    const codeByRegionLanguageTypeFilter =
-
-    const filterByIdOrType = await new CodingFilter()
+    const codeByRegionLanguageTypeFilter = await new CodingFilter(hcp1Api)
       .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
-      .union([codeByIdFilter])
       .build()
 
-    const codes = await hcp1Api.codingApi.filterCoding(filterByIdOrType)
+    const unionFilter = FilterComposition.union(codeByIdFilter, codeByRegionLanguageTypeFilter)
+
+    const codes = await hcp1Api.codingApi.filterCoding(unionFilter)
 
     expect(codes.rows.length).to.be.greaterThan(0)
     codes.rows.forEach( (code) => {
@@ -127,7 +127,7 @@ describe("Coding Filters Test", function () {
 
   it("Can filter Codings by implicit intersection filter", async function () {
     const codes = await hcp1Api.codingApi.filterCoding(
-      await new CodingFilter()
+      await new CodingFilter(hcp1Api)
         .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
         .byIds([code1.id!, code2.id!, code3.id!])
         .build()
@@ -144,14 +144,14 @@ describe("Coding Filters Test", function () {
   })
 
   it("Can filter Codings by explicit intersection filter", async function () {
-    const codesByIdFilter = new CodingFilter().byIds([code1.id!, code2.id!, code3.id!])
+    const codesByIdFilter = await new CodingFilter(hcp1Api).byIds([code1.id!, code2.id!, code3.id!]).build()
+    const codesByLanguageFilter = await new CodingFilter(hcp1Api)
+      .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
+      .build()
 
-    const codes = await hcp1Api.codingApi.filterCoding(
-      await new CodingFilter()
-        .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
-        .intersection([codesByIdFilter])
-        .build()
-    )
+    const intersectionFilter = FilterComposition.intersection(codesByIdFilter, codesByLanguageFilter)
+
+    const codes = await hcp1Api.codingApi.filterCoding(intersectionFilter)
     expect(codes.rows.length).to.be.equal(1)
     codes.rows.forEach( (code) => {
       expect(code.id).to.be.oneOf([code1.id!, code2.id!, code3.id!])
@@ -164,14 +164,14 @@ describe("Coding Filters Test", function () {
   })
 
   it("Intersection between disjoint sets return empty result", async function () {
-    const codesByIdFilter = new CodingFilter().byIds([code1.id!])
+    const codesByIdFilter = await new CodingFilter(hcp1Api).byIds([code1.id!]).build()
+    const codesByLanguageFilter = await new CodingFilter(hcp1Api)
+      .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
+      .build()
 
-    const codes = await hcp1Api.codingApi.filterCoding(
-      await new CodingFilter()
-        .byRegionLanguageTypeLabel('gb', 'en', 'SNOMED')
-        .intersection([codesByIdFilter])
-        .build()
-    )
+    const intersectionFilter = FilterComposition.intersection(codesByIdFilter, codesByLanguageFilter)
+
+    const codes = await hcp1Api.codingApi.filterCoding(intersectionFilter)
     expect(codes.rows.length).to.be.equal(0)
   })
 

@@ -20,12 +20,15 @@ import {
 import {MedTechApi} from "../../apis/MedTechApi";
 
 export class PatientFilter implements DataOwnerFilterBuilder<Patient, PatientFilterWithDataOwner> {
-  forDataOwner(api: MedTechApi, dataOwnerId: string): PatientFilterWithDataOwner {
-    return new PatientFilterWithDataOwner(api, dataOwnerId)
+
+  constructor(private api: MedTechApi) {}
+
+  forDataOwner(dataOwnerId: string): PatientFilterWithDataOwner {
+    return new PatientFilterWithDataOwner(this.api, dataOwnerId)
   }
 
-  forSelf(api: MedTechApi): PatientFilterWithDataOwner {
-    return new PatientFilterWithDataOwner(api)
+  forSelf(): PatientFilterWithDataOwner {
+    return new PatientFilterWithDataOwner(this.api)
   }
 }
 

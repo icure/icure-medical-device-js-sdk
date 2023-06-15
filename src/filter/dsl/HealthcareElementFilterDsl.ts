@@ -19,12 +19,15 @@ import {
 import {HealthcareElementByHealthcarePartyFilter} from "../healthcareelement/HealthcareElementByHealthcarePartyFilter";
 
 export class HealthcareElementFilter implements DataOwnerFilterBuilder<HealthcareElement, HealthcareElementFilterWithDataOwner> {
-  forDataOwner(api: MedTechApi, dataOwnerId: string): HealthcareElementFilterWithDataOwner {
-    return new HealthcareElementFilterWithDataOwner(api, dataOwnerId)
+
+  constructor(private api: MedTechApi) {}
+
+  forDataOwner(dataOwnerId: string): HealthcareElementFilterWithDataOwner {
+    return new HealthcareElementFilterWithDataOwner(this.api, dataOwnerId)
   }
 
-  forSelf(api: MedTechApi): HealthcareElementFilterWithDataOwner {
-    return new HealthcareElementFilterWithDataOwner(api)
+  forSelf(): HealthcareElementFilterWithDataOwner {
+    return new HealthcareElementFilterWithDataOwner(this.api)
   }
 }
 
@@ -122,8 +125,7 @@ export class HealthcareElementFilterWithDataOwner
     const filter = this._dataOwnerId.then( id => {
       return Promise.all(
         patients.map(async (p) =>
-          (
-            await this.api.cryptoApi.extractKeysHierarchyFromDelegationLikes(
+          (await this.api.cryptoApi.extractKeysHierarchyFromDelegationLikes(
               id,
               p.id!,
               Object.entries(p.systemMetaData!.delegations!)

@@ -7,7 +7,6 @@ import { PaginatedListNotification } from '../../models/PaginatedListNotificatio
 import { Filter } from '../../filter/Filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { FilterMapper } from '../../mappers/filter'
-import { NotificationFilter } from '../../filter'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
@@ -141,10 +140,11 @@ export class NotificationApiImpl implements NotificationApi {
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new NotificationFilter()
-      .afterDate(this._findAfterDateFilterValue(fromDate))
-      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
-      .build()
+    const filter = {
+      healthcarePartyId: this.dataOwnerApi.getDataOwnerOf(user),
+      date: fromDate,
+      $type: 'NotificationsAfterDateFilter',
+    }
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }
 

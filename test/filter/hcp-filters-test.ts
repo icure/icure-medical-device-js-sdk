@@ -71,9 +71,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByPatientIdFilter test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -85,9 +85,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByNameFilter test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byMatches('eat')
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -99,9 +99,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByNameFilter on firstname as well test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byMatches('eatsjo')
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -114,9 +114,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByPatientIdFilter by type test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter('hcp-type', `physician-${id}`)
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -128,9 +128,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByPatientIdFilter by combination test - Success", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -143,9 +143,9 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("HcpsByPatientIdFilter test - Failure", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', 'acrobat')
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.be.true
@@ -154,8 +154,7 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("If no criteria is specified, all the HCPs are returned", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
-        .build(hcp1Api)
+      await new HealthcareProfessionalFilter(hcp1Api).build()
     );
 
     expect(!!hcps).to.be.true
@@ -163,10 +162,10 @@ describe("HealthcareProfessional Filters Test", function () {
   })
 
   it("Can filter HCPs by union filter", async function () {
-    const hcpFilterById = await new HealthcareProfessionalFilter().byIds([hcp2.id!]).build(hcp1Api)
-    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter()
+    const hcpFilterById = await new HealthcareProfessionalFilter(hcp1Api).byIds([hcp2.id!]).build()
+    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter(hcp1Api)
       .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
-      .build(hcp1Api)
+      .build()
 
     const unionFilter = FilterComposition.union(hcpFilterById, hcpFilterByLabelCode)
 
@@ -183,10 +182,10 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("Can filter HCPs by implicit intersection filter", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
         .byIds([hcp2.id!])
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);
@@ -198,10 +197,10 @@ describe("HealthcareProfessional Filters Test", function () {
   })
 
   it("Can filter HCPs by explicit intersection filter", async function () {
-    const hcpFilterById = await new HealthcareProfessionalFilter().byIds([hcp3.id!]).build(hcp1Api)
-    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter()
+    const hcpFilterById = await new HealthcareProfessionalFilter(hcp1Api).byIds([hcp3.id!]).build()
+    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter(hcp1Api)
       .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
-      .build(hcp1Api)
+      .build()
 
     const intersectionFilter = FilterComposition.intersection(hcpFilterById, hcpFilterByLabelCode)
 
@@ -219,10 +218,10 @@ describe("HealthcareProfessional Filters Test", function () {
 
   it("Can filter HCPs using disjoint sets with intersection filter returns empty result", async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
         .byIds([hcp1.id!])
-        .build(hcp1Api)
+        .build()
     );
 
     expect(!!hcps).to.equal(true);

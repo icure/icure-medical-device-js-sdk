@@ -11,8 +11,8 @@ import {MedTechApi} from "../../src/apis/MedTechApi";
 import {User} from "../../src/models/User";
 import {Patient} from "../../src/models/Patient";
 import {expect} from "chai";
-import {PatientFilter} from "../../src/filter/patient/PatientFilterDsl";
-import {FilterComposition} from "../../src/filter";
+import {PatientFilter} from "../../src/filter/dsl/PatientFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch)
 
@@ -69,10 +69,10 @@ describe("Patient Filters Test", function () {
   });
 
   it("Can filter Patients", async () => {
-    const filter = await new PatientFilter()
+    const filter = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .ofAge(42)
-      .build(api)
+      .build()
     const patients = await api.patientApi.filterPatients(filter)
     expect(patients.rows.length).to.be.greaterThan(0)
     patients.rows.forEach( (p) => {
@@ -83,9 +83,9 @@ describe("Patient Filters Test", function () {
   })
 
   it("Can filter Specifying only data owner", async () => {
-    const filter = await new PatientFilter()
+    const filter = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
-      .build(api)
+      .build()
     const patients = await api.patientApi.filterPatients(filter)
     expect(patients.rows.length).to.be.greaterThan(0)
     patients.rows.forEach( (p) => {
@@ -94,11 +94,11 @@ describe("Patient Filters Test", function () {
   })
 
   it("Can filter Patients with implicit intersection filter", async () => {
-    const intersectionFilter = await new PatientFilter()
+    const intersectionFilter = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .ofAge(42)
       .byGenderEducationProfession("female")
-      .build(api)
+      .build()
 
     const patients = await api.patientApi.filterPatients(intersectionFilter)
     expect(patients.rows.length).to.be.greaterThan(0)
@@ -111,15 +111,15 @@ describe("Patient Filters Test", function () {
 
 
   it("Can filter Patients with explicit intersection filter", async () => {
-    const filterByAge = await new PatientFilter()
+    const filterByAge = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .ofAge(42)
-      .build(api)
+      .build()
 
-    const filterByGender = await new PatientFilter()
+    const filterByGender = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .byGenderEducationProfession("female")
-      .build(api)
+      .build()
 
     const intersectionFilter = FilterComposition.intersection(filterByGender, filterByAge)
 
@@ -133,15 +133,15 @@ describe("Patient Filters Test", function () {
   })
 
   it("If the set are disjoint, the intersection result is empty", async () => {
-    const filterByMale = await new PatientFilter()
+    const filterByMale = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .byGenderEducationProfession("male")
-      .build(api)
+      .build()
 
-    const filterByFemale = await new PatientFilter()
+    const filterByFemale = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .byGenderEducationProfession("female")
-      .build(api)
+      .build()
 
     const intersectionFilter = FilterComposition.intersection(filterByFemale, filterByMale)
 
@@ -150,15 +150,15 @@ describe("Patient Filters Test", function () {
   })
 
   it("Can filter Patients with union filter", async () => {
-    const filterFemales = await new PatientFilter()
+    const filterFemales = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .byGenderEducationProfession("female")
-      .build(api)
+      .build()
 
-    const filterIndeterminate = await new PatientFilter()
+    const filterIndeterminate = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .byGenderEducationProfession("indeterminate")
-      .build(api)
+      .build()
 
     const unionFilter = FilterComposition.union(filterIndeterminate, filterFemales)
 

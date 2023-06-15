@@ -4,7 +4,6 @@ import 'isomorphic-fetch'
 import { webcrypto } from 'crypto'
 
 import { hex2ua, sleep } from '@icure/api'
-import { DataSampleFilter, HealthcareElementFilter, NotificationFilter, PatientFilter, UserFilter } from '../../src/filter'
 
 import { assert } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
@@ -18,6 +17,11 @@ import { v4 as uuid } from 'uuid'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Connection } from '../../src/models/Connection'
 import { WebSocketWrapper } from '../../src/utils/websocket'
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {NotificationFilter} from "../../src/filter/dsl/NotificationFilterDsl";
+import {HealthcareElementFilter} from "../../src/filter/dsl/HealthcareElementFilterDsl";
+import {PatientFilter} from "../../src/filter/dsl/PatientFilterDsl";
+import {UserFilter} from "../../src/filter/dsl/UserFilterDsl";
 
 setLocalStorage(fetch)
 
@@ -101,7 +105,7 @@ describe('Subscription API', () => {
       ) =>
         subscriptionApi!.dataSampleApi.subscribeToDataSampleEvents(
           eventTypes,
-          await new DataSampleFilter().forDataOwner(dataOwnerId).build(),
+          await new DataSampleFilter(subscriptionApi).forDataOwner(dataOwnerId).build(),
           eventListener,
           options
         )
@@ -228,7 +232,7 @@ describe('Subscription API', () => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (notification: Notification) => Promise<void>) =>
         medtechApi!.notificationApi.subscribeToNotificationEvents(
           eventTypes,
-          await new NotificationFilter().forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
+          await new NotificationFilter(medtechApi!).forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
           eventListener,
           options
         )
@@ -292,7 +296,7 @@ describe('Subscription API', () => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (healthcareElement: HealthcareElement) => Promise<void>) =>
         medtechApi!.healthcareElementApi.subscribeToHealthcareElementEvents(
           eventTypes,
-          await new HealthcareElementFilter().forDataOwner(dataOwnerId).byLabelCodeFilter(testType, testCode).build(),
+          await new HealthcareElementFilter(medtechApi!).forDataOwner(dataOwnerId).byLabelCodeFilter(testType, testCode).build(),
           eventListener,
           options
         )
@@ -362,7 +366,7 @@ describe('Subscription API', () => {
         await sleep(2000)
         return medtechApi!.patientApi.subscribeToPatientEvents(
           eventTypes,
-          await new PatientFilter().forDataOwner(loggedUser.healthcarePartyId!).containsFuzzy('John').build(),
+          await new PatientFilter(medtechApi!).forDataOwner(loggedUser.healthcarePartyId!).containsFuzzy('John').build(),
           eventListener,
           options
         )
@@ -424,7 +428,7 @@ describe('Subscription API', () => {
     const subscribeAndCreateUser = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => {
         await sleep(2000)
-        return medtechApi!.userApi.subscribeToUserEvents(eventTypes, await new UserFilter().build(), eventListener, options)
+        return medtechApi!.userApi.subscribeToUserEvents(eventTypes, await new UserFilter(medtechApi!).build(), eventListener, options)
       }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()

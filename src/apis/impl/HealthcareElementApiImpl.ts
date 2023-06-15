@@ -26,11 +26,11 @@ import { FilterMapper } from '../../mappers/filter'
 import { HealthcareElementMapper } from '../../mappers/healthcareElement'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { Patient } from '../../models/Patient'
-import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import {Delegation} from "../../models/Delegation";
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -322,7 +322,21 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new HealthcareElementFilter().forDataOwner(dataOwnerId).forPatients(this.cryptoApi, [patient]).build()
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: (await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
+          dataOwnerId,
+          patient.id!,
+          Object.entries(patient.systemMetaData!.delegations!)
+            .map(([k, v]) => [k, Array.from(v)] as [string, Delegation[]])
+            .reduce((m, [k, v]) => {
+              m[k] = v
+              return m
+            }, {} as { [key: string]: Delegation[] })
+        )
+      ).map((x) => x.extractedKeys).reduce((t, v) => t.concat(v[0]), [] as string[]),
+      $type: 'HealthcareElementByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 

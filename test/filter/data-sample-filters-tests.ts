@@ -9,13 +9,14 @@ import {
   TestUtils,
   TestVars
 } from "../test-utils";
-import {DataSampleFilter} from "../../src/filter";
 import {expect} from "chai";
 import {DataSample} from "../../src/models/DataSample";
 import {CodingReference} from "../../src/models/CodingReference";
 import {Patient} from "../../src/models/Patient";
 import {HealthcareElement} from "../../src/models/HealthcareElement";
 import {Content} from "../../src/models/Content";
+import {DataSampleFilter} from "../../src/filter/dsl/DataSampleFilterDsl";
+import {FilterComposition} from "../../src/filter/dsl/filterDsl";
 
 setLocalStorage(fetch);
 
@@ -115,7 +116,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("If no parameter is specified, all the Data Samples for a HCP are returned", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .build()
     )
@@ -125,7 +126,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("Can filter Data Samples by ids", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .byIds([ds1.id!, ds2.id!])
         .build()
@@ -138,9 +139,9 @@ describe("Data Sample Filters Tests", function () {
 
   it("Can filter Data Samples by patient", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
-        .forPatients(hcp1Api.cryptoApi, [patient])
+        .forPatients([patient])
         .build()
     )
 
@@ -149,7 +150,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("Can filter Data Samples by Healthcare Element id", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .byHealthElementIds([he1.id!])
         .build()
@@ -163,7 +164,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("Can filter Data Samples by labels", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .byLabelCodeDateFilter(
           'SNOMEDCT',
@@ -181,7 +182,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("Can filter Data Samples by codes", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .byLabelCodeDateFilter(
           undefined,
@@ -200,17 +201,19 @@ describe("Data Sample Filters Tests", function () {
   }).timeout(60000)
 
   it("Can filter Data Samples by union filter", async function () {
-    const byHEFilter = new DataSampleFilter()
+    const byHEFilter = await new DataSampleFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byHealthElementIds([he1.id!])
-
-    const filterByHeOrId = await new DataSampleFilter()
-      .forDataOwner(hcp1User.healthcarePartyId!)
-      .byIds([ds1.id!])
-      .union([byHEFilter])
       .build()
 
-    const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByHeOrId)
+    const filterById = await new DataSampleFilter(hcp1Api)
+      .forDataOwner(hcp1User.healthcarePartyId!)
+      .byIds([ds1.id!])
+      .build()
+
+    const unionFilter = FilterComposition.union(byHEFilter, filterById)
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(unionFilter)
 
     expect(samples.rows.length).to.be.greaterThan(0)
     samples.rows.forEach( (sample) => {
@@ -221,17 +224,19 @@ describe("Data Sample Filters Tests", function () {
   })
 
   it("Can filter Data Samples by explicit intersection filter", async function () {
-    const filterByPatient = new DataSampleFilter()
+    const filterByPatient = await new DataSampleFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
-      .forPatients(hcp1Api.cryptoApi, [patient])
-
-    const filterByPatientAndByHe = await new DataSampleFilter()
-      .forDataOwner(hcp1User.healthcarePartyId!)
-      .byHealthElementIds([he1.id!])
-      .intersection([filterByPatient])
+      .forPatients([patient])
       .build()
 
-    const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByPatientAndByHe)
+    const filterByHe = await new DataSampleFilter(hcp1Api)
+      .forDataOwner(hcp1User.healthcarePartyId!)
+      .byHealthElementIds([he1.id!])
+      .build()
+
+    const intersectionFilter = FilterComposition.intersection(filterByPatient, filterByHe)
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(intersectionFilter)
 
     expect(samples.rows.length).to.be.greaterThan(0)
     samples.rows.forEach( (sample) => {
@@ -240,10 +245,10 @@ describe("Data Sample Filters Tests", function () {
   })
 
   it("Can filter Data Samples by implicit intersection filter", async function () {
-    const filterByPatientAndByHe = await new DataSampleFilter()
+    const filterByPatientAndByHe = await new DataSampleFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byHealthElementIds([he1.id!])
-      .forPatients(hcp1Api.cryptoApi, [patient])
+      .forPatients([patient])
       .build()
 
     const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByPatientAndByHe)
@@ -256,7 +261,7 @@ describe("Data Sample Filters Tests", function () {
 
   it("Intersection between disjoint sets return empty result", async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter()
+      await new DataSampleFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .byHealthElementIds([he1.id!])
         .byIds([ds1.id!])
