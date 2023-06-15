@@ -116,7 +116,7 @@ export class SortableFilterBuilderAccumulator<T> {
       })
     }
 
-    // Groups the filters by type and strategy. A filter can be present in more than one strategy (eg. byAge / dateOfBirthBetween in PatientFilter).
+    // Groups the filters by type and strategy. A filter can be present in more than one strategy (e.g. byAge / dateOfBirthBetween in PatientFilter).
     const filtersByTypeAndStrategy = awaitedFilters.reduce( (filters, current) => {
       const key = `${current.filter.$type}-${current.strategy}`
       return {
