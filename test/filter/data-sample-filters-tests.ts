@@ -2,7 +2,7 @@ import 'isomorphic-fetch'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
-import { DataSampleFilter } from '../../src/filter'
+import { DataSampleFilter } from '../../src/filter/dsl/DataSampleFilterDsl'
 import { expect } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { CodingReference } from '../../src/models/CodingReference'
@@ -10,6 +10,8 @@ import { Patient } from '../../src/models/Patient'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Content } from '../../src/models/Content'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { FilterComposition, NoOpFilter } from '../../src/filter/dsl/filterDsl'
+import { v4 as uuid } from 'uuid'
 
 setLocalStorage(fetch)
 
@@ -104,14 +106,16 @@ describe('Data Sample Filters Tests', function () {
   })
 
   it('If no parameter is specified, all the Data Samples for a HCP are returned', async function () {
-    const samples = await hcp1Api.dataSampleApi.filterDataSample(await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).build())
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).build()
+    )
 
     expect(samples.rows.length).to.be.greaterThan(0)
   })
 
   it('Can filter Data Samples by ids', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byIds([ds1.id!, ds2.id!]).build()
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byIds([ds1.id!, ds2.id!]).build()
     )
 
     expect(samples.rows.length).to.be.equal(2)
@@ -121,7 +125,7 @@ describe('Data Sample Filters Tests', function () {
 
   it('Can filter Data Samples by patient', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).forPatients(hcp1Api.cryptoApi, [patient]).build()
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).forPatients([patient]).build()
     )
 
     expect(samples.rows.length).to.be.greaterThan(0)
@@ -129,7 +133,7 @@ describe('Data Sample Filters Tests', function () {
 
   it('Can filter Data Samples by Healthcare Element id', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).build()
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).build()
     )
 
     expect(samples.rows.length).to.be.equal(1)
@@ -140,7 +144,7 @@ describe('Data Sample Filters Tests', function () {
 
   it('Can filter Data Samples by labels', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byLabelCodeDateFilter('SNOMEDCT', '617').build()
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byLabelCodeDateFilter('SNOMEDCT', '617').build()
     )
 
     expect(samples.rows.length).to.be.greaterThan(0)
@@ -152,7 +156,10 @@ describe('Data Sample Filters Tests', function () {
 
   it('Can filter Data Samples by codes', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byLabelCodeDateFilter(undefined, undefined, 'SNOMEDCT', '617').build()
+      await new DataSampleFilter(hcp1Api)
+        .forDataOwner(hcp1User.healthcarePartyId!)
+        .byLabelCodeDateFilter(undefined, undefined, 'SNOMEDCT', '617')
+        .build()
     )
 
     expect(samples.rows.length).to.be.greaterThan(0)
@@ -163,11 +170,13 @@ describe('Data Sample Filters Tests', function () {
   }).timeout(60000)
 
   it('Can filter Data Samples by union filter', async function () {
-    const byHEFilter = new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!])
+    const byHEFilter = await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).build()
 
-    const filterByHeOrId = await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byIds([ds1.id!]).union([byHEFilter]).build()
+    const filterById = await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byIds([ds1.id!]).build()
 
-    const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByHeOrId)
+    const unionFilter = FilterComposition.union(byHEFilter, filterById)
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(unionFilter)
 
     expect(samples.rows.length).to.be.greaterThan(0)
     samples.rows.forEach((sample) => {
@@ -178,15 +187,13 @@ describe('Data Sample Filters Tests', function () {
   })
 
   it('Can filter Data Samples by explicit intersection filter', async function () {
-    const filterByPatient = new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).forPatients(hcp1Api.cryptoApi, [patient])
+    const filterByPatient = await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).forPatients([patient]).build()
 
-    const filterByPatientAndByHe = await new DataSampleFilter()
-      .forDataOwner(hcp1User.healthcarePartyId!)
-      .byHealthElementIds([he1.id!])
-      .intersection([filterByPatient])
-      .build()
+    const filterByHe = await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).build()
 
-    const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByPatientAndByHe)
+    const intersectionFilter = FilterComposition.intersection(filterByPatient, filterByHe)
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(intersectionFilter)
 
     expect(samples.rows.length).to.be.greaterThan(0)
     samples.rows.forEach((sample) => {
@@ -195,10 +202,10 @@ describe('Data Sample Filters Tests', function () {
   })
 
   it('Can filter Data Samples by implicit intersection filter', async function () {
-    const filterByPatientAndByHe = await new DataSampleFilter()
+    const filterByPatientAndByHe = await new DataSampleFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .byHealthElementIds([he1.id!])
-      .forPatients(hcp1Api.cryptoApi, [patient])
+      .forPatients([patient])
       .build()
 
     const samples = await hcp1Api.dataSampleApi.filterDataSample(filterByPatientAndByHe)
@@ -211,9 +218,18 @@ describe('Data Sample Filters Tests', function () {
 
   it('Intersection between disjoint sets return empty result', async function () {
     const samples = await hcp1Api.dataSampleApi.filterDataSample(
-      await new DataSampleFilter().forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).byIds([ds1.id!]).build()
+      await new DataSampleFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byHealthElementIds([he1.id!]).byIds([ds1.id!]).build()
     )
 
+    expect(samples.rows.length).to.be.equal(0)
+  })
+
+  it('If a NoOpFilter is generated as result, an empty result is returned', async function () {
+    const noOpFilter = await new DataSampleFilter(hcp1Api).forSelf().byIds([uuid()]).byIds([uuid()]).build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const samples = await hcp1Api.dataSampleApi.filterDataSample(noOpFilter)
     expect(samples.rows.length).to.be.equal(0)
   })
 })

@@ -6,11 +6,11 @@ import { MedTechApi } from '../../src/apis/MedTechApi'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
 import { getEnvironmentInitializer, hcp1Username, hcp2Username, hcp3Username, patUsername, setLocalStorage, TestUtils } from '../test-utils'
 import { User } from '../../src/models/User'
-import { NotificationFilter } from '../../src/filter'
 import { PaginatedListNotification } from '../../src/models/PaginatedListNotification'
 import { SystemMetaDataEncrypted } from '../../src/models/SystemMetaDataEncrypted'
 import { NotificationApiImpl } from '../../src/apis/impl/NotificationApiImpl'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { NotificationFilter } from '../../src/filter/dsl/NotificationFilterDsl'
 
 setLocalStorage(fetch)
 
@@ -44,15 +44,6 @@ function checkThatPaginatedListHasId(paginatedList: PaginatedListNotification, e
   excludedIds.forEach((id) => {
     assert(!paginatedList.rows.map((el) => el.id).includes(id))
   })
-}
-
-async function modifyNotificationAndExpectFailure(api: MedTechApi, notification: Notification) {
-  api.notificationApi.createOrModifyNotification(notification).then(
-    () => {
-      throw new Error('Illegal state')
-    },
-    (e) => assert(e != undefined)
-  )
 }
 
 describe('Notification API', async function () {
@@ -302,7 +293,7 @@ describe('Notification API', async function () {
 
   it('should be able to filter Notifications by id as the creator', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter()
+      await new NotificationFilter(hcp1Api!)
         .forDataOwner(hcp1User?.healthcarePartyId!)
         .byIds([idFilterNotification1!.id!, idFilterNotification2!.id!])
         .build()
@@ -312,7 +303,7 @@ describe('Notification API', async function () {
 
   it('should be able to filter Notifications by id as the delegate', async () => {
     const result = await hcp2Api!.notificationApi.filterNotifications(
-      await new NotificationFilter()
+      await new NotificationFilter(hcp2Api!)
         .forDataOwner(hcp2User?.healthcarePartyId!)
         .byIds([idFilterNotification1!.id!, idFilterNotification2!.id!])
         .build()
@@ -322,7 +313,10 @@ describe('Notification API', async function () {
 
   it('should be able to filter Notifications by HcParty id and type as the creator', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS).build()
+      await new NotificationFilter(hcp1Api!)
+        .forDataOwner(hcp1User!.healthcarePartyId!)
+        .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .build()
     )
     expect(result.rows.length).to.be.greaterThan(0)
     for (const notification of result.rows) {
@@ -334,7 +328,10 @@ describe('Notification API', async function () {
 
   it('should be able to filter Notifications by HcParty id and type as the delegate', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp2User!.healthcarePartyId!).withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS).build()
+      await new NotificationFilter(hcp1Api!)
+        .forDataOwner(hcp2User!.healthcarePartyId!)
+        .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
+        .build()
     )
     expect(result.rows.length).to.be.greaterThan(0)
     for (const notification of result.rows) {
@@ -347,7 +344,7 @@ describe('Notification API', async function () {
   it('should be able to filter Notifications after date', async () => {
     const startTimestamp = new Date().getTime() - 100000
     const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User?.healthcarePartyId!).afterDate(startTimestamp).build()
+      await new NotificationFilter(hcp1Api!).forDataOwner(hcp1User?.healthcarePartyId!).afterDate(startTimestamp).build()
     )
     expect(result.rows.length).to.be.greaterThan(0)
     result.rows.forEach((notification) => {
@@ -357,13 +354,13 @@ describe('Notification API', async function () {
 
   it('should be able to get all the Notifications as the creator', async () => {
     const result = await hcp1Api!.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User?.healthcarePartyId!).build()
+      await new NotificationFilter(hcp1Api!).forDataOwner(hcp1User?.healthcarePartyId!).build()
     )
     assert(result.rows.length > 0)
   })
 
   it('should be able to get all the Notifications from multiple paginated lists', async () => {
-    const filter = await new NotificationFilter()
+    const filter = await new NotificationFilter(hcp1Api!)
       .forDataOwner(hcp1User!.healthcarePartyId!)
       .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
       .build()

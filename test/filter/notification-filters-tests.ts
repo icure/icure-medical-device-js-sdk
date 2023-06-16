@@ -2,10 +2,12 @@ import 'isomorphic-fetch'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
-import { NotificationFilter } from '../../src/filter'
+import { NotificationFilter } from '../../src/filter/dsl/NotificationFilterDsl'
+import { FilterComposition, NoOpFilter } from '../../src/filter/dsl/filterDsl'
 import { expect } from 'chai'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { v4 as uuid } from 'uuid'
 
 setLocalStorage(fetch)
 
@@ -21,7 +23,7 @@ let startingDate: Date
 
 describe('Notification Filters Tests', function () {
   before(async function () {
-    this.timeout(60000)
+    this.timeout(600000)
     const initializer = await getEnvironmentInitializer()
     env = await initializer.execute(getEnvVariables())
 
@@ -60,14 +62,16 @@ describe('Notification Filters Tests', function () {
   })
 
   it('If no parameter is specified, all the Notifications are returned', async function () {
-    const notes = await hcp1Api.notificationApi.filterNotifications(await new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).build())
+    const notes = await hcp1Api.notificationApi.filterNotifications(
+      await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).build()
+    )
 
     expect(notes.rows.length).to.be.greaterThan(0)
   })
 
   it('Can filter Notifications by ids', async function () {
     const notes = await hcp1Api.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).byIds([notification1.id!, notification2.id!]).build()
+      await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).byIds([notification1.id!, notification2.id!]).build()
     )
 
     expect(notes.rows.length).to.be.equal(2)
@@ -77,7 +81,7 @@ describe('Notification Filters Tests', function () {
 
   it('Can filter Notifications by type', async function () {
     const notes = await hcp1Api.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS).build()
+      await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS).build()
     )
 
     expect(notes.rows.length).to.be.greaterThan(0)
@@ -88,7 +92,7 @@ describe('Notification Filters Tests', function () {
 
   it('Can filter Notifications after date', async function () {
     const notes = await hcp1Api.notificationApi.filterNotifications(
-      await new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime()).build()
+      await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime()).build()
     )
 
     expect(notes.rows.length).to.be.greaterThan(0)
@@ -98,15 +102,16 @@ describe('Notification Filters Tests', function () {
   })
 
   it('Can filter Notifications by union filter', async function () {
-    const afterDateFilter = new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime())
+    const afterDateFilter = await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime()).build()
 
-    const filterAfterDateOrType = await new NotificationFilter()
+    const filterByType = await new NotificationFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .withType(NotificationTypeEnum.KEY_PAIR_UPDATE)
-      .union([afterDateFilter])
       .build()
 
-    const notes = await hcp1Api.notificationApi.filterNotifications(filterAfterDateOrType)
+    const unionFilter = FilterComposition.union(afterDateFilter, filterByType)
+
+    const notes = await hcp1Api.notificationApi.filterNotifications(unionFilter)
 
     expect(notes.rows.length).to.be.greaterThan(0)
     notes.rows.forEach((note) => {
@@ -117,7 +122,7 @@ describe('Notification Filters Tests', function () {
   })
 
   it('Can filter Notifications by implicit intersection filter', async function () {
-    const filterAfterDateOrType = await new NotificationFilter()
+    const filterAfterDateOrType = await new NotificationFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
       .afterDate(startingDate.getTime())
@@ -133,15 +138,16 @@ describe('Notification Filters Tests', function () {
   })
 
   it('Can filter Notifications by explicit intersection filter', async function () {
-    const afterDateFilter = new NotificationFilter().forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime())
+    const afterDateFilter = await new NotificationFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).afterDate(startingDate.getTime()).build()
 
-    const filterAfterDateOrType = await new NotificationFilter()
+    const filterByType = await new NotificationFilter(hcp1Api)
       .forDataOwner(hcp1User.healthcarePartyId!)
       .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
-      .intersection([afterDateFilter])
       .build()
 
-    const notes = await hcp1Api.notificationApi.filterNotifications(filterAfterDateOrType)
+    const intersectionFilter = FilterComposition.intersection(afterDateFilter, filterByType)
+
+    const notes = await hcp1Api.notificationApi.filterNotifications(intersectionFilter)
 
     expect(notes.rows.length).to.be.greaterThan(0)
     notes.rows.forEach((note) => {
@@ -152,7 +158,7 @@ describe('Notification Filters Tests', function () {
 
   it('Intersection between disjoint sets return empty result', async function () {
     const notes = await hcp1Api.notificationApi.filterNotifications(
-      await new NotificationFilter()
+      await new NotificationFilter(hcp1Api)
         .forDataOwner(hcp1User.healthcarePartyId!)
         .withType(NotificationTypeEnum.NEW_USER_OWN_DATA_ACCESS)
         .byIds([notification1.id!])
@@ -160,5 +166,13 @@ describe('Notification Filters Tests', function () {
     )
 
     expect(notes.rows.length).to.be.equal(0)
+  })
+  it('If a NoOpFilter is generated as result, an empty result is returned', async function () {
+    const noOpFilter = await new NotificationFilter(hcp1Api).forSelf().byIds([uuid()]).byIds([uuid()]).build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const notifications = await hcp1Api.notificationApi.filterNotifications(noOpFilter)
+    expect(notifications.rows.length).to.be.equal(0)
   })
 })

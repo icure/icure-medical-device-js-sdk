@@ -17,6 +17,7 @@ import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { FilterMapper } from '../../mappers/filter'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi {
   private readonly userApi: IccUserXApi
@@ -73,19 +74,23 @@ export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi 
     nextHcpId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareProfessional> {
-    return PaginatedListMapper.toPaginatedListHealthcareProfessional(
-      await this.hcpApi
-        .filterHealthPartiesBy(
-          nextHcpId,
-          limit,
-          new FilterChainHealthcareParty({
-            filter: FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListHealthcareProfessional({ pageSize: 0, totalSize: 0, rows: [] })
+    } else {
+      return PaginatedListMapper.toPaginatedListHealthcareProfessional(
+        await this.hcpApi
+          .filterHealthPartiesBy(
+            nextHcpId,
+            limit,
+            new FilterChainHealthcareParty({
+              filter: FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getHealthcareProfessional(hcpId: string): Promise<HealthcareProfessional> {
@@ -97,10 +102,14 @@ export class HealthcareProfessionalApiImpl implements HealthcareProfessionalApi 
   }
 
   async matchHealthcareProfessionalBy(filter: Filter<HealthcareProfessional>): Promise<Array<string>> {
-    return await this.hcpApi
-      .matchHealthcarePartiesBy(FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'))
-      .catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return await this.hcpApi
+        .matchHealthcarePartiesBy(FilterMapper.toAbstractFilterDto<HealthcareProfessional>(filter, 'HealthcareProfessional'))
+        .catch((e) => {
+          throw this.errorHandler.createErrorFromAny(e)
+        })
+    }
   }
 }

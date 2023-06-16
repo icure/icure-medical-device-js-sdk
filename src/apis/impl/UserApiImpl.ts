@@ -20,12 +20,13 @@ import { Filter } from '../../filter/Filter'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { Patient } from '../../models/Patient'
-import { UserFilter } from '../../filter'
 import { filteredContactsFromAddresses } from '../../utils/addressUtils'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { EmailMessageFactory, SMSMessageFactory } from '../../utils/msgGtwMessageFactory'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Sanitizer } from '../../services/Sanitizer'
+import { UsersByPatientIdFilter } from '../../filter/user/UsersByPatientIdFilter'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
@@ -76,7 +77,10 @@ export class UserApiImpl implements UserApi {
     if (!patient.id) throw this.errorHandler.createErrorWithMessage('Patient does not have a valid id')
 
     // Checks that no Users already exist for the Patient
-    const existingUsers = await this.filterUsers(await new UserFilter().byPatientId(patient.id).build())
+    const existingUsers = await this.filterUsers({
+      patientId: patient.id,
+      $type: 'UsersByPatientIdFilter',
+    } as UsersByPatientIdFilter)
     if (!!existingUsers && existingUsers.rows.length > 0) throw this.errorHandler.createErrorWithMessage('A User already exists for this Patient')
 
     // Gets the preferred contact information
@@ -156,19 +160,23 @@ export class UserApiImpl implements UserApi {
   }
 
   async filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-    return PaginatedListMapper.toPaginatedListUser(
-      await this.userApi
-        .filterUsersBy(
-          nextUserId,
-          limit,
-          new FilterChainUser({
-            filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListUser({ totalSize: 0, pageSize: 0, rows: [] })
+    } else {
+      return PaginatedListMapper.toPaginatedListUser(
+        await this.userApi
+          .filterUsersBy(
+            nextUserId,
+            limit,
+            new FilterChainUser({
+              filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getLoggedUser(): Promise<User> {
@@ -196,9 +204,13 @@ export class UserApiImpl implements UserApi {
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
-    return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   subscribeToUserEvents(

@@ -1,8 +1,6 @@
 import 'mocha'
 import 'isomorphic-fetch'
 
-import { DataSampleFilter } from '../../src/filter'
-
 import { assert, expect, use as chaiUse } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { Content } from '../../src/models/Content'
@@ -14,6 +12,7 @@ chaiUse(require('chai-as-promised'))
 import { deepEquality } from '../../src/utils/equality'
 import { DataSampleApiImpl } from '../../src/apis/impl/DataSampleApiImpl'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { DataSampleFilter } from '../../src/filter/dsl/DataSampleFilterDsl'
 
 setLocalStorage(fetch)
 
@@ -52,7 +51,6 @@ describe('Data Samples API', () => {
     const createdDataSample = await TestUtils.createDataSampleForPatient(medtechApi, patient)
     const deletedDataSample = await medtechApi.dataSampleApi.deleteDataSample(createdDataSample.id!)
     // Then
-    assert(createdDataSample != undefined)
     assert(createdDataSample.id != undefined)
     assert(deletedDataSample === createdDataSample.id)
   })
@@ -178,10 +176,10 @@ describe('Data Samples API', () => {
       })
     )
 
-    const filter = await new DataSampleFilter()
+    const filter = await new DataSampleFilter(medtechApi)
       .forDataOwner(hcp.id!)
       .byLabelCodeDateFilter('FILTER-IC-TEST', 'TEST')
-      .forPatients(medtechApi.cryptoApi, [patient])
+      .forPatients([patient])
       .build()
 
     const filteredDataSamples = await medtechApi.dataSampleApi.filterDataSample(filter)
@@ -206,7 +204,7 @@ describe('Data Samples API', () => {
       })
     )
 
-    const filter = await new DataSampleFilter()
+    const filter = await new DataSampleFilter(medtechApi)
       .forDataOwner(loggedUser.healthcarePartyId!)
       .byLabelCodeDateFilter('FILTER-HE-IC-TEST', 'TEST')
       .byHealthElementIds([healthElement!.id!])

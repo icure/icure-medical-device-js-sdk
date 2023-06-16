@@ -191,7 +191,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   }
 
   private async _initUserAuthTokenAndCrypto(login: string, token: string): Promise<AuthenticationResult> {
-    const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
+    const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token), 5, 3000)
 
     const userKeyPairs: KeyPair<string>[] = []
     for (const keyPair of Object.values(authenticatedApi.cryptoApi.userKeysManager.getDecryptionKeys())) {

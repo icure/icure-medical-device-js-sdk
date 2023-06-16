@@ -1,5 +1,5 @@
-import {Filter} from "../Filter";
-import {DataSample} from "../../models/DataSample";
+import { Filter } from '../Filter'
+import { DataSample } from '../../models/DataSample'
 
 export interface DataSampleByHealthcarePartyTagCodeDateFilter extends Filter<DataSample> {
   description?: string
@@ -12,5 +12,6 @@ export interface DataSampleByHealthcarePartyTagCodeDateFilter extends Filter<Dat
   codeType?: string
   startValueDate?: number
   endValueDate?: number
-  '$type': 'DataSampleByHealthcarePartyTagCodeDateFilter'
+  descending: boolean
+  $type: 'DataSampleByHealthcarePartyTagCodeDateFilter'
 }

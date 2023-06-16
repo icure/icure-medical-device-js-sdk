@@ -2,7 +2,8 @@ import 'isomorphic-fetch'
 import { MedTechApi } from '../../src/apis/MedTechApi'
 import { User } from '../../src/models/User'
 import { getEnvironmentInitializer, hcp1Username, patUsername, setLocalStorage, TestUtils } from '../test-utils'
-import { HealthcareProfessionalFilter } from '../../src/filter'
+import { HealthcareProfessionalFilter } from '../../src/filter/dsl/HealthcareProfessionalDsl'
+import { FilterComposition, NoOpFilter } from '../../src/filter/dsl/filterDsl'
 import { expect } from 'chai'
 import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
@@ -64,8 +65,8 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('HcpsByPatientIdFilter test - Success', async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter().byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`).build()
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter(hcp1Api).byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`).build()
     )
 
     expect(!!hcps).to.equal(true)
@@ -76,8 +77,8 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('HcpsByNameFilter test - Success', async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter().byMatches('eat').build()
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter(hcp1Api).byMatches('eat').build()
     )
 
     expect(!!hcps).to.equal(true)
@@ -88,8 +89,8 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('HcpsByNameFilter on firstname as well test - Success', async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter().byMatches('eatsjo').build()
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter(hcp1Api).byMatches('eatsjo').build()
     )
 
     expect(!!hcps).to.equal(true)
@@ -101,7 +102,7 @@ describe('HealthcareProfessional Filters Test', function () {
 
   it('HcpsByPatientIdFilter by type test - Success', async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter().byLabelCodeFilter('hcp-type', `physician-${id}`).build()
+      await new HealthcareProfessionalFilter(hcp1Api).byLabelCodeFilter('hcp-type', `physician-${id}`).build()
     )
 
     expect(!!hcps).to.equal(true)
@@ -113,7 +114,7 @@ describe('HealthcareProfessional Filters Test', function () {
 
   it('HcpsByPatientIdFilter by combination test - Success', async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
         .build()
     )
@@ -127,7 +128,7 @@ describe('HealthcareProfessional Filters Test', function () {
 
   it('HcpsByPatientIdFilter test - Failure', async function () {
     const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter().byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', 'acrobat').build()
+      await new HealthcareProfessionalFilter(hcp1Api).byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', 'acrobat').build()
     )
 
     expect(!!hcps).to.be.true
@@ -135,21 +136,21 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('If no criteria is specified, all the HCPs are returned', async function () {
-    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(await new HealthcareProfessionalFilter().build())
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(await new HealthcareProfessionalFilter(hcp1Api).build())
 
     expect(!!hcps).to.be.true
     expect(hcps.rows.length).to.be.greaterThan(0)
   })
 
   it('Can filter HCPs by union filter', async function () {
-    const hcpIdFilter = new HealthcareProfessionalFilter().byIds([hcp2.id!])
+    const hcpFilterById = await new HealthcareProfessionalFilter(hcp1Api).byIds([hcp2.id!]).build()
+    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter(hcp1Api)
+      .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
+      .build()
 
-    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
-        .byLabelCodeFilter('hcp-type', `physician-${id}`, 'practitioner-specialty', `gastroenterologist-${id}`)
-        .union([hcpIdFilter])
-        .build()
-    )
+    const unionFilter = FilterComposition.union(hcpFilterById, hcpFilterByLabelCode)
+
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(unionFilter)
 
     expect(!!hcps).to.equal(true)
     expect(hcps.rows.length).to.be.greaterThanOrEqual(2)
@@ -161,8 +162,8 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('Can filter HCPs by implicit intersection filter', async function () {
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
         .byIds([hcp2.id!])
         .build()
@@ -177,14 +178,14 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('Can filter HCPs by explicit intersection filter', async function () {
-    const hcpByIdFilter = new HealthcareProfessionalFilter().byIds([hcp3.id!])
+    const hcpFilterById = await new HealthcareProfessionalFilter(hcp1Api).byIds([hcp3.id!]).build()
+    const hcpFilterByLabelCode = await new HealthcareProfessionalFilter(hcp1Api)
+      .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
+      .build()
 
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
-        .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
-        .intersection([hcpByIdFilter])
-        .build()
-    )
+    const intersectionFilter = FilterComposition.intersection(hcpFilterById, hcpFilterByLabelCode)
+
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(intersectionFilter)
 
     expect(!!hcps).to.equal(true)
     expect(hcps.rows.length).to.be.equal(1)
@@ -195,16 +196,22 @@ describe('HealthcareProfessional Filters Test', function () {
   })
 
   it('Can filter HCPs using disjoint sets with intersection filter returns empty result', async function () {
-    const hcpByIdFilter = new HealthcareProfessionalFilter().byIds([hcp1.id!])
-
-    const hcps = await hcp1Api!.healthcareProfessionalApi.filterHealthcareProfessionalBy(
-      await new HealthcareProfessionalFilter()
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(
+      await new HealthcareProfessionalFilter(hcp1Api)
         .byLabelCodeFilter(undefined, undefined, 'practitioner-specialty', `cardiologist-${id}`)
-        .intersection([hcpByIdFilter])
+        .byIds([hcp1.id!])
         .build()
     )
 
     expect(!!hcps).to.equal(true)
+    expect(hcps.rows.length).to.be.equal(0)
+  })
+  it('If a NoOpFilter is generated as result, an empty result is returned', async function () {
+    const noOpFilter = await new HealthcareProfessionalFilter(hcp1Api).byIds([uuid()]).byIds([uuid()]).build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const hcps = await hcp1Api.healthcareProfessionalApi.filterHealthcareProfessionalBy(noOpFilter)
     expect(hcps.rows.length).to.be.equal(0)
   })
 })

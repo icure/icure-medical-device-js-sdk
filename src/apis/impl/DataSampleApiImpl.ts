@@ -8,6 +8,7 @@ import {
   Contact,
   Contact as ContactDto,
   ContactByServiceIdsFilter,
+  Delegation,
   Document as DocumentDto,
   FilterChainContact,
   FilterChainService,
@@ -38,11 +39,13 @@ import { UtiDetector } from '../../utils/utiDetector'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { toMap, toMapArrayTransform } from '../../mappers/utils'
 import { DelegationMapper } from '../../mappers/delegation'
-import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import toDelegationDto = DelegationMapper.toDelegationDto
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
+import { DataSampleFilter } from '../../filter/dsl/DataSampleFilterDsl'
+import { PatientMapper } from '../../mappers/patient'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -214,7 +217,12 @@ export class DataSampleApiImpl implements DataSampleApi {
         'The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new DataSampleFilter().forDataOwner(dataOwnerId).forPatients(this.crypto, [patient]).build()
+    const patientDto = PatientMapper.toPatientDto(patient)!
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: await this.crypto.xapi.secretIdsOf({ entity: patientDto, type: 'Patient' }, undefined),
+      $type: 'DataSampleByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 
@@ -377,6 +385,9 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListDataSample({ pageSize: 0, totalSize: 0, rows: [] })
+    }
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -422,9 +433,13 @@ export class DataSampleApiImpl implements DataSampleApi {
   // }
   //
   matchDataSample(filter: Filter<DataSample>): Promise<Array<string>> {
-    return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return Promise.resolve([])
+    } else {
+      return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
   //
   // async setDataSampleAttachment(

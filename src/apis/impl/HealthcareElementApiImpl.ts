@@ -26,10 +26,12 @@ import { FilterMapper } from '../../mappers/filter'
 import { HealthcareElementMapper } from '../../mappers/healthcareElement'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { Patient } from '../../models/Patient'
-import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
+import { Delegation } from '../../models/Delegation'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
+import { PatientMapper } from '../../mappers/patient'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -162,6 +164,10 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     nextHealthElementId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareElement> {
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListHealthcareElement({ totalSize: 0, pageSize: 0, rows: [] })
+    }
+
     const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })) as User
@@ -194,9 +200,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async _getPatientOfHealthElement(currentUser: UserDto, healthElementDto: HealthElement): Promise<PatientDto | undefined> {
@@ -251,7 +261,12 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new HealthcareElementFilter().forDataOwner(dataOwnerId).forPatients(this.cryptoApi, [patient]).build()
+    const patientDto = PatientMapper.toPatientDto(patient)!
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: await this.cryptoApi.xapi.secretIdsOf({ entity: patientDto, type: 'Patient' }, undefined),
+      $type: 'HealthcareElementByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 

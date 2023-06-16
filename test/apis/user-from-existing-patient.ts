@@ -21,7 +21,7 @@ import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { NotificationTypeEnum } from '../../src/models/Notification'
 import { ICureRegistrationEmail } from '../../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
-import { HealthcareElementFilter } from '../../src/filter'
+import { HealthcareElementFilter } from '../../src/filter/dsl/HealthcareElementFilterDsl'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
 import { DataOwnerTypeEnum } from '../../src/models/DataOwner'
@@ -116,6 +116,8 @@ describe('A Healthcare Party', () => {
     const messageFactory = new ICureTestEmail(newPatient)
     await hcp1Api.userApi.createAndInviteUser(newPatient, messageFactory, 3600)
 
+    await sleep(10_000)
+
     // And PAT_1 accepts this invitation and changes his credentials
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
@@ -126,9 +128,7 @@ describe('A Healthcare Party', () => {
       .withAuthProcessBySmsId(env!.patAuthProcessId)
       .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
       .build()
-
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
-
     // When PAT_1 generates a key pair for himself
     // Then maintenance task is created for HCP_1 in order to give back access to PAT_1 to his data
     // Then PAT_1 is able to log as a user
@@ -136,8 +136,6 @@ describe('A Healthcare Party', () => {
       loginAndPassword.split('|')[0],
       loginAndPassword.split('|')[1]
     )
-
-    await sleep(3000)
 
     const newPatientApi = authResult!.medTechApi
 
@@ -262,6 +260,9 @@ describe('A patient user', () => {
     // Create patient api
     const messageFactory = new ICureTestEmail(patient)
     await hcp1Api.userApi.createAndInviteUser(patient, messageFactory, 3600)
+
+    await sleep(10_000)
+
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
@@ -276,7 +277,6 @@ describe('A patient user', () => {
       loginAndPassword.split('|')[0],
       loginAndPassword.split('|')[1]
     )
-    await sleep(3000)
     const patientApi = authResult!.medTechApi
 
     // When the patient has not been given access to his data he...
@@ -306,12 +306,9 @@ describe('A patient user', () => {
     expect(await hcp1Api.healthcareElementApi.getHealthcareElement(heByPatient.id!)).to.deep.equal(heByPatientWithUpdatedAccess)
     expect(await patientApi.healthcareElementApi.getHealthcareElement(heByHcp.id!)).to.deep.equal(heByHcpWithUpdatedAccess)
     // Originally medical data even if accessible can't be found by the other...
-    const filterPatient1 = await new HealthcareElementFilter().forDataOwner(patient.id!).forPatients(patientApi.cryptoApi, [modifiedPatient]).build()
+    const filterPatient1 = await new HealthcareElementFilter(patientApi).forDataOwner(patient.id!).forPatients([modifiedPatient]).build()
     const patientFound1 = await patientApi.healthcareElementApi.matchHealthcareElement(filterPatient1)
-    const filterHcp1 = await new HealthcareElementFilter()
-      .forPatients(hcp1Api.cryptoApi, [modifiedPatient])
-      .forDataOwner(hcp1User.healthcarePartyId!)
-      .build()
+    const filterHcp1 = await new HealthcareElementFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).forPatients([modifiedPatient]).build()
     const hcpFound1 = await hcp1Api.healthcareElementApi.matchHealthcareElement(filterHcp1)
     expect(patientFound1).to.have.length(1)
     expect(patientFound1).to.contain(heByPatient.id)
@@ -325,15 +322,9 @@ describe('A patient user', () => {
     await hcp1Api.forceReload()
     expect((await patientApi.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
     expect((await hcp1Api.patientApi.getPatient(patient.id!)).note).to.equal(patientNote)
-    const filterPatient2 = await new HealthcareElementFilter()
-      .forDataOwner(patient.id!)
-      .forPatients(patientApi.cryptoApi, [fullySharedPatient])
-      .build()
+    const filterPatient2 = await new HealthcareElementFilter(patientApi).forDataOwner(patient.id!).forPatients([fullySharedPatient]).build()
     const patientFound2 = await patientApi.healthcareElementApi.matchHealthcareElement(filterPatient2)
-    const filterHcp2 = await new HealthcareElementFilter()
-      .forDataOwner(hcp1User.healthcarePartyId!)
-      .forPatients(hcp1Api.cryptoApi, [fullySharedPatient])
-      .build()
+    const filterHcp2 = await new HealthcareElementFilter(hcp1Api).forDataOwner(hcp1User.healthcarePartyId!).forPatients([fullySharedPatient]).build()
     const hcpFound2 = await hcp1Api.healthcareElementApi.matchHealthcareElement(filterHcp2)
     expect(hcpFound2).to.have.length(2)
     expect(hcpFound2).to.contain(heByPatient.id)

@@ -9,6 +9,7 @@ import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { FilterMapper } from '../../mappers/filter'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { ErrorHandler } from '../../services/ErrorHandler'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class CodingApiImpl implements CodingApi {
   private readonly codeApi: IccCodeApi
@@ -61,23 +62,31 @@ export class CodingApiImpl implements CodingApi {
   }
 
   async filterCoding(filter: Filter<Coding>, nextCodingId?: string, limit?: number): Promise<PaginatedListCoding> {
-    return PaginatedListMapper.toPaginatedListCoding(
-      await this.codeApi
-        .filterCodesBy(
-          undefined,
-          nextCodingId,
-          limit,
-          undefined,
-          undefined,
-          undefined,
-          new FilterChainCode({
-            filter: FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListCoding({
+        pageSize: 0,
+        totalSize: 0,
+        rows: [],
+      })
+    } else {
+      return PaginatedListMapper.toPaginatedListCoding(
+        await this.codeApi
+          .filterCodesBy(
+            undefined,
+            nextCodingId,
+            limit,
+            undefined,
+            undefined,
+            undefined,
+            new FilterChainCode({
+              filter: FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getCoding(codingId: string): Promise<Coding> {
@@ -94,8 +103,12 @@ export class CodingApiImpl implements CodingApi {
   }
 
   async matchCoding(filter: Filter<Coding>): Promise<Array<string>> {
-    return this.codeApi.matchCodesBy(FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.codeApi.matchCodesBy(FilterMapper.toAbstractFilterDto<Coding>(filter, 'Coding')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 }
