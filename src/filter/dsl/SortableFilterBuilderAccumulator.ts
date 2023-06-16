@@ -33,7 +33,7 @@ export class SortableFilterBuilderAccumulator<T> {
   /**
    * Sets the last filter added as the sort key for final filter.
    */
-  lastElementIsSortKey() {
+  setLastElementAsSortKey() {
     this._filters = [
       ...this._filters.splice(0, this._filters.length - 1),
       {

@@ -76,13 +76,13 @@ class CodingFilterSortStepDecorator implements BaseCodingFilterBuilder<NonSortab
 
   byIds(byIds: string[]): NonSortableCodingFilter {
     this.codingFilter.byIds(byIds)
-    this.codingFilter._builderAccumulator.lastElementIsSortKey()
+    this.codingFilter._builderAccumulator.setLastElementAsSortKey()
     return this.codingFilter
   }
 
   byRegionLanguageTypeLabel(region?: string, language?: string, type?: string, label?: string): NonSortableCodingFilter {
     this.codingFilter.byRegionLanguageTypeLabel(region, language, type, label)
-    this.codingFilter._builderAccumulator.lastElementIsSortKey()
+    this.codingFilter._builderAccumulator.setLastElementAsSortKey()
     return this.codingFilter
   }
 }

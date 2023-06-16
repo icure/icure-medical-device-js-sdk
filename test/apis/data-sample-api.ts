@@ -389,4 +389,40 @@ describe('Data Samples API', () => {
 
     expect(patientId).to.be.eq(patient.id!)
   })
+
+  it('Should be able to filter and sort data samples by descending value date', async () => {
+    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'JohnJohn', lastName: 'John' }))
+    const labelType = `type-${h1api.cryptoApi.primitives.randomUuid()}`
+    const labelCode = `code-${h1api.cryptoApi.primitives.randomUuid()}`
+    const codeRef = new CodingReference({
+      code: labelCode,
+      type: labelType,
+      version: '1',
+      id: 'Some id',
+    })
+    const createDataSample = (valueDate: number) =>
+      h1api.dataSampleApi.createOrModifyDataSampleFor(
+        patient.id!,
+        new DataSample({
+          content: {
+            en: new Content({ stringValue: `Some sample at ${valueDate}` }),
+          },
+          labels: new Set([codeRef]),
+          valueDate,
+        })
+      )
+    const createdSamples = []
+    for (let i = 0; i < 50; i++) {
+      createdSamples.push(await createDataSample(Math.floor(Math.random() * 10000)))
+    }
+    const filter = await new DataSampleFilter(h1api)
+      .forSelf()
+      .sort.byLabelCodeDateFilter(labelType, labelCode, undefined, undefined, undefined, undefined, true)
+      .build()
+    const filteredSamples = await h1api.dataSampleApi.filterDataSample(filter)
+    expect(filteredSamples.rows.map((x) => x.id)).to.have.members(createdSamples.map((x) => x.id))
+    const sortedIds = [...filteredSamples.rows].sort((a, b) => b.valueDate! - a.valueDate!).map((x) => x.id)
+    expect(filteredSamples.rows.map((x) => x.id)).to.have.ordered.members(sortedIds)
+  })
 })

@@ -97,19 +97,19 @@ class HealthcareProfessionalFilterSortStepDecorator implements BaseHealthcarePro
 
   byIds(byIds: string[]): NonSortableHealthcareProfessionalFilter {
     this.healthcareProfessionalFilter.byIds(byIds)
-    this.healthcareProfessionalFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareProfessionalFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareProfessionalFilter
   }
 
   byLabelCodeFilter(labelType?: string, labelCode?: string, codeType?: string, codeCode?: string): NonSortableHealthcareProfessionalFilter {
     this.healthcareProfessionalFilter.byLabelCodeFilter(labelType, labelCode, codeType, codeCode)
-    this.healthcareProfessionalFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareProfessionalFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareProfessionalFilter
   }
 
   byMatches(searchString: string): NonSortableHealthcareProfessionalFilter {
     this.healthcareProfessionalFilter.byMatches(searchString)
-    this.healthcareProfessionalFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareProfessionalFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareProfessionalFilter
   }
 }

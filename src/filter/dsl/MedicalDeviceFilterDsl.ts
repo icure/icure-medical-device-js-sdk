@@ -57,7 +57,7 @@ class MedicalDeviceFilterSortStepDecorator implements BaseMedicalDeviceFilterBui
 
   byIds(byIds: string[]): NonSortableMedicalDeviceFilter {
     this.medicalDeviceFilter.byIds(byIds)
-    this.medicalDeviceFilter._builderAccumulator.lastElementIsSortKey()
+    this.medicalDeviceFilter._builderAccumulator.setLastElementAsSortKey()
     return this.medicalDeviceFilter
   }
 }

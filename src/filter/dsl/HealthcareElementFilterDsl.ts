@@ -8,7 +8,6 @@ import { MedTechApi } from '../../apis/MedTechApi'
 import { DataOwnerFilterBuilder, FilterBuilder, NoOpFilter, SortableFilterBuilder } from './filterDsl'
 import { HealthcareElementByIdsFilter } from '../healthcareelement/HealthcareElementByIdsFilter'
 import { HealthcareElementByHealthcarePartyIdentifiersFilter } from '../healthcareelement/HealthcareElementByHealthcarePartyIdentifiersFilter'
-import { Delegation } from '../../models/Delegation'
 import { HealthcareElementByHealthcarePartyPatientFilter } from '../healthcareelement/HealthcareElementByHealthcarePartyPatientFilter'
 import { HealthcareElementByHealthcarePartyFilter } from '../healthcareelement/HealthcareElementByHealthcarePartyFilter'
 import { PatientMapper } from '../../mappers/patient'
@@ -26,11 +25,6 @@ export class HealthcareElementFilter implements DataOwnerFilterBuilder<Healthcar
 }
 
 interface BaseHealthcareElementFilterBuilder<F> {
-  /**
-   * @return the current Data Owner id or throws an exception if not yet specified.
-   */
-  getDataOwner(): Promise<string>
-
   /**
    * Includes all the healthcare elements with the specified ids.
    * @param byIds the ids of the healthcare elements.
@@ -154,30 +148,30 @@ export class HealthcareElementFilterWithDataOwner
 
 type NonSortableHealthcareElementFilter = BaseHealthcareElementFilterBuilder<HealthcareElementFilterWithDataOwner> & FilterBuilder<HealthcareElement>
 
-class MedicalDeviceFilterSortStepDecorator implements Omit<BaseHealthcareElementFilterBuilder<NonSortableHealthcareElementFilter>, 'getDataOwner'> {
+class MedicalDeviceFilterSortStepDecorator implements BaseHealthcareElementFilterBuilder<NonSortableHealthcareElementFilter> {
   constructor(private healthcareElementFilter: HealthcareElementFilterWithDataOwner) {}
 
   byIds(byIds: string[]): NonSortableHealthcareElementFilter {
     this.healthcareElementFilter.byIds(byIds)
-    this.healthcareElementFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareElementFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareElementFilter
   }
 
   byIdentifiers(identifiers: Identifier[]): NonSortableHealthcareElementFilter {
     this.healthcareElementFilter.byIdentifiers(identifiers)
-    this.healthcareElementFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareElementFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareElementFilter
   }
 
   byLabelCodeFilter(labelType?: string, labelCode?: string, codeType?: string, codeCode?: string): NonSortableHealthcareElementFilter {
     this.healthcareElementFilter.byLabelCodeFilter(labelType, labelCode, codeType, codeCode)
-    this.healthcareElementFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareElementFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareElementFilter
   }
 
   forPatients(patients: PotentiallyEncryptedPatient[]): NonSortableHealthcareElementFilter {
     this.healthcareElementFilter.forPatients(patients)
-    this.healthcareElementFilter._builderAccumulator.lastElementIsSortKey()
+    this.healthcareElementFilter._builderAccumulator.setLastElementAsSortKey()
     return this.healthcareElementFilter
   }
 }

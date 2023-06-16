@@ -1,4 +1,3 @@
-import { Delegation } from '@icure/api'
 import { Filter } from '../Filter'
 import { DataOwnerFilterBuilder, FilterBuilder, NoOpFilter, SortableFilterBuilder } from './filterDsl'
 import { Identifier } from '../../models/Identifier'
@@ -10,11 +9,6 @@ import { DataSampleByHealthcarePartyFilter } from '../datasample/DataSampleByHea
 import { PatientMapper } from '../../mappers/patient'
 
 interface BaseDataSampleFilterBuilder<F> {
-  /**
-   * @return the current Data Owner id or throws an exception if not yet specified.
-   */
-  getDataOwner(): Promise<string>
-
   /**
    * Includes all the data samples with the specified ids.
    * @param byIds the ids of the data samples.
@@ -188,18 +182,18 @@ class DataSampleFilterWithDataOwner
 
 type NonSortableDataOwnerFilter = BaseDataSampleFilterBuilder<DataSampleFilterWithDataOwner> & FilterBuilder<DataSample>
 
-class DataSampleFilterSortStepDecorator implements Omit<BaseDataSampleFilterBuilder<NonSortableDataOwnerFilter>, 'getDataOwner'> {
+class DataSampleFilterSortStepDecorator implements BaseDataSampleFilterBuilder<NonSortableDataOwnerFilter> {
   constructor(private dataSampleFilter: DataSampleFilterWithDataOwner) {}
 
   byIds(byIds: string[]): NonSortableDataOwnerFilter {
     this.dataSampleFilter.byIds(byIds)
-    this.dataSampleFilter._builderAccumulator.lastElementIsSortKey()
+    this.dataSampleFilter._builderAccumulator.setLastElementAsSortKey()
     return this.dataSampleFilter
   }
 
   byIdentifiers(identifiers: Identifier[]): NonSortableDataOwnerFilter {
     this.dataSampleFilter.byIdentifiers(identifiers)
-    this.dataSampleFilter._builderAccumulator.lastElementIsSortKey()
+    this.dataSampleFilter._builderAccumulator.setLastElementAsSortKey()
     return this.dataSampleFilter
   }
 
@@ -213,19 +207,19 @@ class DataSampleFilterSortStepDecorator implements Omit<BaseDataSampleFilterBuil
     descending?: boolean
   ): NonSortableDataOwnerFilter {
     this.dataSampleFilter.byLabelCodeDateFilter(tagType, tagCode, codeType, codeCode, startValueDate, endValueDate, descending)
-    this.dataSampleFilter._builderAccumulator.lastElementIsSortKey()
+    this.dataSampleFilter._builderAccumulator.setLastElementAsSortKey()
     return this.dataSampleFilter
   }
 
   forPatients(patients: PotentiallyEncryptedPatient[]): NonSortableDataOwnerFilter {
     this.dataSampleFilter.forPatients(patients)
-    this.dataSampleFilter._builderAccumulator.lastElementIsSortKey()
+    this.dataSampleFilter._builderAccumulator.setLastElementAsSortKey()
     return this.dataSampleFilter
   }
 
   byHealthElementIds(byHealthElementIds: string[]): NonSortableDataOwnerFilter {
     this.dataSampleFilter.byHealthElementIds(byHealthElementIds)
-    this.dataSampleFilter._builderAccumulator.lastElementIsSortKey()
+    this.dataSampleFilter._builderAccumulator.setLastElementAsSortKey()
     return this.dataSampleFilter
   }
 }

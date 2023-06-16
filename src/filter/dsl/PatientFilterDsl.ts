@@ -27,11 +27,6 @@ export class PatientFilter implements DataOwnerFilterBuilder<Patient, PatientFil
 
 interface BasePatientFilterBuilder<F> {
   /**
-   * @return the current Data Owner id or throws an exception if not yet specified.
-   */
-  getDataOwner(): Promise<string>
-
-  /**
    * Includes all the patients with the specified ids.
    * @param byIds the ids of the patients.
    */
@@ -200,48 +195,48 @@ class PatientFilterWithDataOwner
 
 type NonSortablePatientFilter = BasePatientFilterBuilder<PatientFilterWithDataOwner> & FilterBuilder<Patient>
 
-class PatientFilterSortStepDecorator implements Omit<BasePatientFilterBuilder<NonSortablePatientFilter>, 'getDataOwner'> {
+class PatientFilterSortStepDecorator implements BasePatientFilterBuilder<NonSortablePatientFilter> {
   constructor(private patientFilter: PatientFilterWithDataOwner) {}
 
   byIds(byIds: string[]): NonSortablePatientFilter {
     this.patientFilter.byIds(byIds)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   byIdentifiers(identifiers: Identifier[]): NonSortablePatientFilter {
     this.patientFilter.byIdentifiers(identifiers)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   byGenderEducationProfession(gender: PatientGenderEnum, education?: string, profession?: string): NonSortablePatientFilter {
     this.patientFilter.byGenderEducationProfession(gender, education, profession)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   withSsins(withSsins: string[]): NonSortablePatientFilter {
     this.patientFilter.withSsins(withSsins)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   ofAge(age: number): NonSortablePatientFilter {
     this.patientFilter.ofAge(age)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   dateOfBirthBetween(from: number, to: number): NonSortablePatientFilter {
     this.patientFilter.dateOfBirthBetween(from, to)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 
   containsFuzzy(searchString: string): NonSortablePatientFilter {
     this.patientFilter.containsFuzzy(searchString)
-    this.patientFilter._builderAccumulator.lastElementIsSortKey()
+    this.patientFilter._builderAccumulator.setLastElementAsSortKey()
     return this.patientFilter
   }
 }

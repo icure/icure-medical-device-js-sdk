@@ -69,13 +69,13 @@ class UserFilterSortStepDecorator implements BaseUserFilterBuilder<NonSortableUs
 
   byIds(byIds: string[]): NonSortableUserFilter {
     this.userFilter.byIds(byIds)
-    this.userFilter._builderAccumulator.lastElementIsSortKey()
+    this.userFilter._builderAccumulator.setLastElementAsSortKey()
     return this.userFilter
   }
 
   byPatientId(patientId: string): NonSortableUserFilter {
     this.userFilter.byPatientId(patientId)
-    this.userFilter._builderAccumulator.lastElementIsSortKey()
+    this.userFilter._builderAccumulator.setLastElementAsSortKey()
     return this.userFilter
   }
 }

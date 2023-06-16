@@ -107,19 +107,19 @@ class NotificationFilterSortStepDecorator implements Omit<BaseNotificationFilter
 
   byIds(ids: string[]): NonSortableNotificationFilter {
     this.notificationFilter.byIds(ids)
-    this.notificationFilter._builderAccumulator.lastElementIsSortKey()
+    this.notificationFilter._builderAccumulator.setLastElementAsSortKey()
     return this.notificationFilter
   }
 
   withType(type: NotificationTypeEnum): NonSortableNotificationFilter {
     this.notificationFilter.withType(type)
-    this.notificationFilter._builderAccumulator.lastElementIsSortKey()
+    this.notificationFilter._builderAccumulator.setLastElementAsSortKey()
     return this.notificationFilter
   }
 
   afterDate(fromDate: number): NonSortableNotificationFilter {
     this.notificationFilter.afterDate(fromDate)
-    this.notificationFilter._builderAccumulator.lastElementIsSortKey()
+    this.notificationFilter._builderAccumulator.setLastElementAsSortKey()
     return this.notificationFilter
   }
 }
