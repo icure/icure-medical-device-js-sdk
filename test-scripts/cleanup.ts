@@ -3,6 +3,7 @@ import 'isomorphic-fetch'
 import { hardDeleteGroup } from '@icure/test-setup/groups'
 import { cleanup } from '@icure/test-setup'
 import { webcrypto } from 'crypto'
+import { LegacyCryptoStrategies } from '@icure/test-setup-api/icc-x-api/crypto/LegacyCryptoStrategies'
 
 export {}
 
@@ -18,7 +19,7 @@ if (testEnvironment === 'docker') {
     console.log('OK')
   })
 } else if (testEnvironment === 'acceptance') {
-  Api(iCureUrl, adminLogin, adminPassword, webcrypto as any, fetch).then((api) => {
+  Api(iCureUrl, { username: adminLogin, password: adminPassword }, new LegacyCryptoStrategies(), webcrypto as any, fetch).then((api) => {
     hardDeleteGroup(api, groupId).then(() => {
       console.log('OK')
     })

@@ -366,10 +366,10 @@ export class HealthcareElementFilter implements FilterBuilder<HealthcareElement>
     return this
   }
 
-  byLabelCodeFilter(tagType?: string, tagCode?: string, codeType?: string, codeCode?: string): HealthcareElementFilter {
+  byLabelCodeFilter(labelType?: string, labelCode?: string, codeType?: string, codeCode?: string): HealthcareElementFilter {
     this._byLabelCodeFilter = {
-      tagType,
-      tagCode,
+      tagType: labelType,
+      tagCode: labelCode,
       codeType,
       codeCode,
       $type: 'HealthcareElementByHealthcarePartyLabelCodeFilter',
