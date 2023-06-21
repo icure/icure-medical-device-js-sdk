@@ -129,7 +129,7 @@ export class TestUtils {
       .withCrypto(webcrypto as any)
       .withStorage(storage.storage)
       .withKeyStorage(storage.keyStorage)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
     const medtechApi = await additionalBuilderSteps(builderApi).build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
@@ -185,7 +185,7 @@ export class TestUtils {
       .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
 
     if (storage) {
       builder.withStorage(storage)

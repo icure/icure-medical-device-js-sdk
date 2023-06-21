@@ -25,9 +25,8 @@ export class SimpleMedTechCryptoStrategies implements MedTechCryptoStrategies {
    * Builds a new instance of simple med-tech crypto strategies:
    * @param availableKeys pre-loaded available keys which may not be contained yet in the key storage. Will be also
    * considered as verified.
-   * @param anonymousDataOwnerTypes data owner types which require anonymous delegations
    */
-  constructor(private readonly availableKeys: KeyPair<string>[], private readonly anonymousDataOwnerTypes: Set<DataOwnerTypeEnum>) {}
+  constructor(private readonly availableKeys: KeyPair<string>[]) {}
 
   allowNewKeyPairGeneration(self: DataOwnerWithType): Promise<boolean> {
     return Promise.resolve(true)

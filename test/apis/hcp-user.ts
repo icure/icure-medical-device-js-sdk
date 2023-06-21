@@ -96,7 +96,7 @@ describe('Healthcare professional', () => {
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     const initialisedHcp = await hcpApi.dataOwnerApi.getDataOwner(user.healthcarePartyId!)

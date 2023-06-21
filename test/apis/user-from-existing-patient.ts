@@ -127,7 +127,7 @@ describe('A Healthcare Party', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
     // When PAT_1 generates a key pair for himself
@@ -273,7 +273,7 @@ describe('A patient user', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
     const loginAndPassword = (await TestUtils.getEmail(email)).subject!
     const authResult = await anonymousMedTechApi.authenticationApi.authenticateAndAskAccessToItsExistingData(

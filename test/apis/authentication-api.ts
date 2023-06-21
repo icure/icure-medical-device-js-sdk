@@ -40,7 +40,7 @@ describe('Authentication API', () => {
         .withMsgGwUrl(env!.msgGtwUrl)
         .withAuthProcessByEmailId(env!.hcpAuthProcessId)
         .withAuthProcessBySmsId(env!.hcpAuthProcessId)
-        .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+        .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
         .build()
     ).to.be.rejected
 
@@ -51,7 +51,7 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").to.not.be.null
@@ -71,7 +71,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     expect(() => api.authenticationApi).to.throw(Error)
@@ -97,7 +97,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     await expect(
@@ -114,7 +114,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     await expect(anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, '', '', 'Tom', 'Gideon', env!.patAuthProcessId, false)).to
@@ -129,7 +129,7 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     await expect(
@@ -153,7 +153,7 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     await expect(
@@ -177,7 +177,7 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     // When
@@ -387,7 +387,7 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
-      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient])))
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     const keysFromNewApi = newApi.dataOwnerApi.getPublicKeysOf(await newApi.dataOwnerApi.getDataOwner(user.patientId!))
@@ -445,7 +445,7 @@ describe('Authentication API', () => {
     )
 
     // User logs on another device
-    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient]))
+    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([])
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
@@ -513,7 +513,7 @@ describe('Authentication API', () => {
     await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcpApiAndUser.user.healthcarePartyId!)
 
     // User lost his key and logs back
-    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([], new Set([DataOwnerTypeEnum.Patient]))
+    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([])
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
