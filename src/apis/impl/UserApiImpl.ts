@@ -11,6 +11,7 @@ import {
   IccPatientXApi,
   IccUserApi,
   IccUserXApi,
+  retry,
 } from '@icure/api'
 import { UserMapper } from '../../mappers/user'
 import { forceUuid } from '../../mappers/utils'
@@ -109,7 +110,9 @@ export class UserApiImpl implements UserApi {
       throw this.errorHandler.createErrorWithMessage('Something went wrong during User creation')
 
     // Gets a short-lived authentication token
-    const shortLivedToken = await this.createToken(createdUser.id, tokenDuration)
+    const shortLivedToken = await retry(() => this.createToken(createdUser.id!, tokenDuration), 5, 2_000).catch(() => {
+      throw this.errorHandler.createErrorWithMessage('Something went wrong while creating a token for the User')
+    })
     if (!shortLivedToken) throw this.errorHandler.createErrorWithMessage('Something went wrong while creating a token for the User')
 
     const messagePromise = !!createdUser.email
