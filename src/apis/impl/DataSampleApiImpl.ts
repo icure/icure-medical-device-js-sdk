@@ -652,10 +652,7 @@ export class DataSampleApiImpl implements DataSampleApi {
           content: newDSContent,
         })
       )
-      const existingDocumentId = existingDataSample.content[contentIso]?.documentId
-      if (!!existingDocumentId) {
-        await this.documentApi.deleteDocument(existingDocumentId)
-      }
+      // Do not delete existing `Document` entity, even if existing: services are versioned
 
       // Add attachment to document
       const docWithAttachment = await this.documentApi.encryptAndSetDocumentAttachment(createdDocument, body)
@@ -705,7 +702,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     ).catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    await this.documentApi.deleteDocument(documentId)
+    // Do not actually delete existing `Document` entity: services are versioned
 
     return documentId
   }
