@@ -26,6 +26,7 @@ import {
   Service as ServiceDto,
   ServiceLink,
   SubContact,
+  ua2hex,
   User as UserDto,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
@@ -272,47 +273,6 @@ export class DataSampleApiImpl implements DataSampleApi {
     }
   }
 
-  // async deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
-  //   const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-  //     throw this.errorHandler.createErrorFromAny(e)
-  //   })
-  //
-  //   const existingContact = (await this._findContactsForDataSampleIds(currentUser, [dataSampleId]))[0]
-  //   if (existingContact == undefined) {
-  //     throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
-  //   }
-  //
-  //   const existingService = existingContact!.services!.find((s) => s.id == dataSampleId)
-  //   if (existingService == undefined || existingService.content == undefined) {
-  //     throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
-  //   }
-  //
-  //   const contactPatientId = await this._getPatientIdOfContact(currentUser, existingContact!)
-  //   if (contactPatientId == undefined) {
-  //     throw this.errorHandler.createErrorWithMessage(`Cannot set an attachment to a data sample not linked to a patient`)
-  //   }
-  //
-  //   const contentToDelete = Object.entries(existingService.content!).find(([_, content]) => content.documentId == documentId)?.[0]
-  //
-  //   if (contentToDelete == undefined) {
-  //     throw this.errorHandler.createErrorWithMessage(`Could not find attachment ${documentId} in the data sample ${dataSampleId}`)
-  //   }
-  //
-  //   const updatedContent = toMap(Object.entries(existingService.content!).filter(([key, _]) => key != contentToDelete!))
-  //
-  //   await this.createOrModifyDataSampleFor(
-  //     contactPatientId,
-  //     DataSampleMapper.toDataSample({
-  //       ...existingService,
-  //       content: updatedContent,
-  //     })!
-  //   ).catch((e) => {
-  //     throw this.errorHandler.createErrorFromAny(e)
-  //   })
-  //
-  //   return documentId
-  // }
-
   async deleteDataSample(dataSampleId: string): Promise<string> {
     const deletedDataSampleId = (await this.deleteDataSamples([dataSampleId])).pop()
     if (deletedDataSampleId) {
@@ -416,22 +376,6 @@ export class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve(DataSampleMapper.toDataSample(await this._getServiceFromICure(dataSampleId))!)
   }
 
-  // async getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
-  //   const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-  //     throw this.errorHandler.createErrorFromAny(e)
-  //   })
-  //   const documentOfAttachment = await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId)
-  //   const docEncKeys = await this._getDocumentEncryptionKeys(currentUser, documentOfAttachment).then((keys) => keys.join(','))
-  //
-  //   return this.documentApi.getDocumentAttachment(documentId, attachmentId, docEncKeys).catch((e) => {
-  //     throw this.errorHandler.createErrorFromAny(e)
-  //   })
-  // }
-  //
-  // async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
-  //   return DocumentMapper.toDocument(await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId))
-  // }
-  //
   matchDataSample(filter: Filter<DataSample>): Promise<Array<string>> {
     if (NoOpFilter.isNoOp(filter)) {
       return Promise.resolve([])
@@ -441,70 +385,6 @@ export class DataSampleApiImpl implements DataSampleApi {
       })
     }
   }
-  //
-  // async setDataSampleAttachment(
-  //   dataSampleId: string,
-  //   body: ArrayBuffer,
-  //   documentName?: string,
-  //   documentVersion?: string,
-  //   documentExternalUuid?: string,
-  //   documentLanguage?: string
-  // ): Promise<Document> {
-  //   try {
-  //     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-  //       throw this.errorHandler.createErrorFromAny(e)
-  //     })
-  //     const existingDataSample = await this.getDataSample(dataSampleId)
-  //
-  //     const [, batchOfDataSample] = await this._getContactOfDataSample(currentUser, existingDataSample)
-  //     if (batchOfDataSample == undefined) {
-  //       throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSampleId}`)
-  //     }
-  //
-  //     const patientIdOfBatch = await this._getPatientIdOfContact(currentUser, batchOfDataSample)
-  //     if (patientIdOfBatch == undefined) {
-  //       throw this.errorHandler.createErrorWithMessage(`Can not set an attachment to a data sample not linked to a patient`)
-  //     }
-  //
-  //     const documentToCreate = new DocumentDto({
-  //       id: this.crypto.randomUuid(),
-  //       name: documentName,
-  //       version: documentVersion,
-  //       externalUuid: documentExternalUuid,
-  //       hash: this.crypto.sha256(body),
-  //       mainUti: UtiDetector.getUtiFor(documentName),
-  //     })
-  //
-  //     const createdDocument = await this.documentApi.createDocument(documentToCreate).catch((e) => {
-  //       throw this.errorHandler.createErrorFromAny(e)
-  //     })
-  //
-  //     // Update data sample with documentId
-  //     const contentIso = documentLanguage ?? 'en'
-  //     const newDSContent = {
-  //       ...existingDataSample.content,
-  //       [contentIso]: new Content({ documentId: createdDocument.id }),
-  //     }
-  //     await this.createOrModifyDataSampleFor(
-  //       patientIdOfBatch!,
-  //       new DataSample({
-  //         ...existingDataSample,
-  //         content: newDSContent,
-  //       })
-  //     )
-  //
-  //     // Add attachment to document
-  //     const docEncKey = firstOrNull(await this._getDocumentEncryptionKeys(currentUser, createdDocument))
-  //     const docWithAttachment = await this.documentApi.setDocumentAttachment(createdDocument.id!, docEncKey, body)
-  //
-  //     return Promise.resolve(DocumentMapper.toDocument(docWithAttachment))
-  //   } catch (e) {
-  //     if (e instanceof Error) {
-  //       throw this.errorHandler.createError(e)
-  //     }
-  //     throw e
-  //   }
-  // }
 
   async giveAccessTo(dataSample: DataSample, delegatedTo: string): Promise<DataSample> {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
@@ -524,8 +404,21 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to data sample ${dataSample.id} information`)
     }
 
+    const updatedService = updatedContact.services.find((service) => service.id == dataSample.id)!
+    const documentIds = Object.entries(updatedService.content ?? {}).flatMap(([_, value]) => (value.documentId ? [value.documentId!] : []))
+    if (documentIds.length) {
+      const documents = Object.fromEntries((await this.documentApi.getDocuments({ ids: documentIds })).map((x) => [x.id!, x]))
+      for (const docId of documentIds) {
+        try {
+          await this.documentApi.shareWith(delegatedTo, documents[docId])
+        } catch (e) {
+          console.error(`Failed to give access to attachment with document id ${docId}`, e)
+        }
+      }
+    }
+
     return DataSampleMapper.toDataSample(
-      this.enrichWithContactMetadata(updatedContact.services.find((service) => service.id == dataSample.id)!, updatedContact),
+      this.enrichWithContactMetadata(updatedService, updatedContact),
       updatedContact.id,
       updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined)
     )!
@@ -630,27 +523,6 @@ export class DataSampleApiImpl implements DataSampleApi {
     return this.contactApi.getServiceWithUser(currentUser, dataSampleId)
   }
 
-  // private async _getDocumentEncryptionKeys(currentUser: UserDto, documentDto: DocumentDto): Promise<Array<string>> {
-  //   const keysFromDeleg = await this.crypto.extractKeysHierarchyFromDelegationLikes(
-  //     currentUser.healthcarePartyId!,
-  //     documentDto.id!,
-  //     documentDto.encryptionKeys!
-  //   )
-  //   return keysFromDeleg
-  //     .map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined))
-  //     .filter((key) => key != undefined)
-  //     .map((key) => key!)
-  // }
-  //
-  // private async _getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string): Promise<DocumentDto> {
-  //   const existingDataSample = await this.getDataSample(dataSampleId)
-  //   if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
-  //     throw this.errorHandler.createErrorWithMessage(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`)
-  //   }
-  //
-  //   return this.documentApi.getDocument(documentId)
-  // }
-
   private _createPotentialSubContactsForHealthElements(services: Array<ServiceDto>, currentUser: UserDto): Promise<SubContact[]> {
     return Promise.all(services.filter((service) => service.healthElementsIds != undefined && service.healthElementsIds.length > 0)).then(
       (servicesWithHe) => {
@@ -710,5 +582,150 @@ export class DataSampleApiImpl implements DataSampleApi {
       encryptionKeys: contact.encryptionKeys,
       securityMetadata: contact.securityMetadata,
     }
+  }
+
+  async setDataSampleAttachment(
+    dataSampleId: string,
+    body: ArrayBuffer,
+    documentName?: string,
+    documentVersion?: string,
+    documentExternalUuid?: string,
+    documentLanguage?: string
+  ): Promise<Document> {
+    try {
+      const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      const existingDataSample = await this.getDataSample(dataSampleId)
+
+      const [, batchOfDataSample] = await this._getContactOfDataSample(currentUser, existingDataSample)
+      if (batchOfDataSample == undefined) {
+        throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSampleId}`)
+      }
+
+      const patientIdOfBatch = (await this.contactApi.decryptPatientIdOf(batchOfDataSample))[0]
+      if (patientIdOfBatch == undefined) {
+        throw this.errorHandler.createErrorWithMessage(`Can not set an attachment to a data sample not linked to a patient`)
+      }
+
+      const dataOwnersWithAccessInfo = await this.contactApi.getDataOwnersWithAccessTo(batchOfDataSample)
+      if (dataOwnersWithAccessInfo.hasUnknownAnonymousDataOwners) {
+        console.warn(
+          `Could not determine all data owners with access to sample with id ${dataSampleId}. Some users may be able to access the data sample but not the attachment.`
+        )
+      }
+
+      const documentToCreate = await this.documentApi.newInstance(
+        currentUser,
+        undefined,
+        new DocumentDto({
+          id: this.crypto.primitives.randomUuid(),
+          name: documentName,
+          version: documentVersion,
+          externalUuid: documentExternalUuid,
+          hash: ua2hex(await this.crypto.primitives.sha256(body)),
+          size: body.byteLength,
+          mainUti: UtiDetector.getUtiFor(documentName),
+        }),
+        {
+          additionalDelegates: dataOwnersWithAccessInfo.permissionsByDataOwnerId,
+        }
+      )
+
+      const createdDocument = await this.documentApi.createDocument(documentToCreate).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+
+      // Update data sample with documentId
+      const contentIso = documentLanguage ?? 'en'
+      const newDSContent = {
+        ...existingDataSample.content,
+        [contentIso]: new Content({
+          ...(existingDataSample.content[contentIso] ?? {}),
+          documentId: createdDocument.id,
+        }),
+      }
+      await this.createOrModifyDataSampleFor(
+        patientIdOfBatch!,
+        new DataSample({
+          ...existingDataSample,
+          content: newDSContent,
+        })
+      )
+      const existingDocumentId = existingDataSample.content[contentIso]?.documentId
+      if (!!existingDocumentId) {
+        await this.documentApi.deleteDocument(existingDocumentId)
+      }
+
+      // Add attachment to document
+      const docWithAttachment = await this.documentApi.encryptAndSetDocumentAttachment(createdDocument, body)
+
+      return DocumentMapper.toDocument(docWithAttachment)
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
+  }
+  async deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
+    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+
+    const existingContact = (await this._findContactsForDataSampleIds(currentUser, [dataSampleId]))[0]
+    if (existingContact == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
+    }
+
+    const existingService = existingContact!.services!.find((s) => s.id == dataSampleId)
+    if (existingService == undefined || existingService.content == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
+    }
+
+    const contactPatientId = (await this.contactApi.decryptPatientIdOf(existingContact!))[0]
+    if (contactPatientId == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Cannot set an attachment to a data sample not linked to a patient`)
+    }
+
+    const contentToDelete = Object.entries(existingService.content!).find(([_, content]) => content.documentId == documentId)?.[0]
+
+    if (contentToDelete == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find attachment ${documentId} in the data sample ${dataSampleId}`)
+    }
+
+    const updatedContent = toMap(Object.entries(existingService.content!).filter(([key, _]) => key != contentToDelete!))
+
+    await this.createOrModifyDataSampleFor(
+      contactPatientId,
+      DataSampleMapper.toDataSample({
+        ...existingService,
+        content: updatedContent,
+      })!
+    ).catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+    await this.documentApi.deleteDocument(documentId)
+
+    return documentId
+  }
+
+  async getDataSampleAttachmentContent(dataSampleId: string, documentId: string): Promise<ArrayBuffer> {
+    const documentOfAttachment = await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId)
+
+    return this.documentApi.getAndDecryptDocumentAttachment(documentOfAttachment)
+  }
+
+  async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
+    return DocumentMapper.toDocument(await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId))
+  }
+
+  private async _getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string): Promise<DocumentDto> {
+    const existingDataSample = await this.getDataSample(dataSampleId)
+    if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
+      throw this.errorHandler.createErrorWithMessage(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`)
+    }
+
+    return this.documentApi.getDocument(documentId)
   }
 }

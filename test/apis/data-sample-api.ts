@@ -13,6 +13,8 @@ import { deepEquality } from '../../src/utils/equality'
 import { DataSampleApiImpl } from '../../src/apis/impl/DataSampleApiImpl'
 import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 import { DataSampleFilter } from '../../src/filter/dsl/DataSampleFilterDsl'
+import { IccDocumentApi, ua2utf8, utf8_2ua } from '@icure/api'
+import { BasicAuthenticationProvider } from '@icure/api/icc-x-api/auth/AuthenticationProvider'
 
 setLocalStorage(fetch)
 
@@ -424,5 +426,104 @@ describe('Data Samples API', () => {
     expect(filteredSamples.rows.map((x) => x.id)).to.have.members(createdSamples.map((x) => x.id))
     const sortedIds = [...filteredSamples.rows].sort((a, b) => b.valueDate! - a.valueDate!).map((x) => x.id)
     expect(filteredSamples.rows.map((x) => x.id)).to.have.ordered.members(sortedIds)
+  })
+
+  it('Should be able to create encrypted attachments to data samples', async () => {
+    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'JohnJohn', lastName: 'John' }))
+    const valueEn = 'Hello'
+    const valueFr = 'Bonjour'
+    const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(
+      patient.id!,
+      new DataSample({
+        content: {
+          en: new Content({ stringValue: valueEn }),
+          fr: new Content({ stringValue: valueFr }),
+        },
+      })
+    )
+    const documentNameEn = 'something.png'
+    const documentVersionEn = '1.0'
+    const documentExternalUuidEn = h1api.cryptoApi.primitives.randomUuid()
+    const attachmentEn = 'World'
+    const attachmentFr = 'Monde'
+    const attachmentDocEn = await h1api.dataSampleApi.setDataSampleAttachment(
+      dataSample.id!,
+      utf8_2ua(attachmentEn),
+      documentNameEn,
+      documentVersionEn,
+      documentExternalUuidEn,
+      'en'
+    )
+    expect(attachmentDocEn.name).to.equal(documentNameEn)
+    expect(attachmentDocEn.version).to.equal(documentVersionEn)
+    expect(attachmentDocEn.externalUuid).to.equal(documentExternalUuidEn)
+    expect(attachmentDocEn.size).to.equal(attachmentEn.length)
+    expect(attachmentDocEn.mainUti).to.equal('public.png')
+    const attachmentDocFr = await h1api.dataSampleApi.setDataSampleAttachment(
+      dataSample.id!,
+      utf8_2ua(attachmentFr),
+      undefined,
+      undefined,
+      undefined,
+      'fr'
+    )
+    expect(attachmentDocFr.size).to.equal(attachmentFr.length)
+    const updatedDataSample = await h1api.dataSampleApi.getDataSample(dataSample.id!)
+    expect(updatedDataSample.content.en.stringValue).to.equal(valueEn)
+    expect(updatedDataSample.content.en.documentId).to.equal(attachmentDocEn.id)
+    expect(updatedDataSample.content.fr.stringValue).to.equal(valueFr)
+    expect(updatedDataSample.content.fr.documentId).to.equal(attachmentDocFr.id)
+    const attachmentEnContent = await h1api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocEn.id!)
+    expect(ua2utf8(attachmentEnContent)).to.equal(attachmentEn)
+    const attachmentFrContent = await h1api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocFr.id!)
+    expect(ua2utf8(attachmentFrContent)).to.equal(attachmentFr)
+    await expect(h1api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, 'non-existing-id')).to.be.rejected
+    const docApi = new IccDocumentApi(
+      env!.iCureUrl,
+      {},
+      new BasicAuthenticationProvider(hcp1Username, env!.dataOwnerDetails[hcp1Username].password),
+      fetch
+    )
+    expect(await docApi.getDocumentAttachment(attachmentDocEn.id!, 'ignored').then((x) => ua2utf8(x))).to.not.equal(
+      attachmentEn,
+      'Attachment should be encrypted'
+    )
+    expect(await docApi.getDocumentAttachment(attachmentDocFr.id!, 'ignored').then((x) => ua2utf8(x))).to.not.equal(
+      attachmentFr,
+      'Attachment should be encrypted'
+    )
+  })
+
+  it('Created attachments should be accessible to all data owners with access to the data sample', async () => {
+    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const { api: h2api, user: h2user } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
+    const patient = await h1api.patientApi.giveAccessTo(
+      await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'JohnJohn', lastName: 'John' })),
+      h2user.healthcarePartyId!
+    )
+    const dataSample = await h1api.dataSampleApi.giveAccessTo(
+      await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({})),
+      h2user.healthcarePartyId!
+    )
+    const value = 'Some attachment'
+    const attachmentDoc = await h2api.dataSampleApi.setDataSampleAttachment(dataSample.id!, utf8_2ua(value))
+    expect(ua2utf8(await h1api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDoc.id!))).to.equal(value)
+  })
+
+  it('Sharing a data sample should also share attachments of that data sample', async () => {
+    const { api: h1api } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])
+    const { api: h2api, user: h2user } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
+    const patient = await h1api.patientApi.createOrModifyPatient(new Patient({ firstName: 'JohnJohn', lastName: 'John' }))
+    const dataSample = await h1api.dataSampleApi.createOrModifyDataSampleFor(patient.id!, new DataSample({}))
+    const value1 = 'Some attachment 1'
+    const value2 = 'Some attachment 2'
+    const attachmentDocEn = await h1api.dataSampleApi.setDataSampleAttachment(dataSample.id!, utf8_2ua(value1), undefined, undefined, undefined, 'en')
+    const attachmentDocFr = await h1api.dataSampleApi.setDataSampleAttachment(dataSample.id!, utf8_2ua(value2), undefined, undefined, undefined, 'fr')
+    await expect(h2api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocEn.id!)).to.be.rejected
+    await expect(h2api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocFr.id!)).to.be.rejected
+    await h1api.dataSampleApi.giveAccessTo(dataSample, h2user.healthcarePartyId!)
+    expect(ua2utf8(await h2api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocEn.id!))).to.equal(value1)
+    expect(ua2utf8(await h2api.dataSampleApi.getDataSampleAttachmentContent(dataSample.id!, attachmentDocFr.id!))).to.equal(value2)
   })
 })
