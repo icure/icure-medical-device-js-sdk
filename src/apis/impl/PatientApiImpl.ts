@@ -206,7 +206,7 @@ export class PatientApiImpl implements PatientApi {
       )
     }
     return this.patientApi
-      .shareAllDataOfPatient(currentUser, patientId, this.dataOwnerApi.getDataOwnerIdOf(currentUser), [patientId], { [patientId]: ['all'] })
+      .share(currentUser, patientId, this.dataOwnerApi.getDataOwnerIdOf(currentUser), [patientId], { [patientId]: ['all'] })
       .then((res) => {
         return {
           patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,

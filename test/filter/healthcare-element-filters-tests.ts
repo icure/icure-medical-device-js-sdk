@@ -84,10 +84,7 @@ describe('Healthcare Element Filters Test', function () {
 
     expect(elements.rows.length).to.be.greaterThan(0)
     for (const e of elements.rows) {
-      const accessInfo = await hcp1Api.cryptoApi.xapi.getDataOwnersWithAccessTo({
-        entity: HealthcareElementMapper.toHealthElementDto(e)!,
-        type: 'HealthElement',
-      })
+      const accessInfo = await hcp1Api.cryptoApi.entities.getDataOwnersWithAccessTo(HealthcareElementMapper.toHealthElementDto(e)!)
       expect(Object.keys(accessInfo.permissionsByDataOwnerId)).to.contain(hcp1User.healthcarePartyId!)
     }
   })

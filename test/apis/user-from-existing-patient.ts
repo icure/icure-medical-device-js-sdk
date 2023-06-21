@@ -114,9 +114,10 @@ describe('A Healthcare Party', () => {
     // When HCP_1 creates user for patient PAT_1
     // And HCP_1 is sending an invitation email to patient PAT_1
     const messageFactory = new ICureTestEmail(newPatient)
+    console.log('xxA')
     await hcp1Api.userApi.createAndInviteUser(newPatient, messageFactory, 3600)
-
-    await sleep(10_000)
+    console.log('xxB')
+    await sleep(3_000)
 
     // And PAT_1 accepts this invitation and changes his credentials
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
@@ -259,9 +260,11 @@ describe('A patient user', () => {
     const heByHcp = await TestUtils.createHealthElementForPatient(hcp1Api, patient)
     // Create patient api
     const messageFactory = new ICureTestEmail(patient)
+    console.log('yyA')
     await hcp1Api.userApi.createAndInviteUser(patient, messageFactory, 3600)
+    console.log('yyB')
 
-    await sleep(10_000)
+    await sleep(3_000)
 
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)

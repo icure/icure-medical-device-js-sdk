@@ -1,5 +1,4 @@
 import {
-  Api,
   IccAccesslogXApi,
   IccAgendaApi,
   IccAuthApi,
@@ -22,6 +21,7 @@ import {
   IccReceiptXApi,
   IccTimeTableXApi,
   IccUserXApi,
+  IcureApi,
   KeyStorageFacade,
   KeyStorageImpl,
   LocalStorageImpl,
@@ -374,7 +374,7 @@ export class MedTechApiBuilder {
       throw new Error('cryptoStrategies is required')
     }
 
-    return Api(
+    return IcureApi.initialise(
       baseUrl,
       {
         username: userName,

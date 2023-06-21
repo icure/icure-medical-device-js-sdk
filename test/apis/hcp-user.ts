@@ -27,7 +27,7 @@ describe('Healthcare professional', () => {
   it('should be capable of creating a healthcare professional from scratch', async () => {
     const medtechApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])).api
 
-    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.primitives.RSA.generateKeyPair('sha-256')
+    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.primitives.RSA.generateKeyPair()
     const keyPair = await medtechApi.cryptoApi.primitives.RSA.exportKeys(rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey }, 'jwk', 'jwk')
 
     const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(

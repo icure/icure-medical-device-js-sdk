@@ -71,8 +71,4 @@ export class SimpleMedTechCryptoStrategies implements MedTechCryptoStrategies {
   verifyDelegatePublicKeys(delegateId: string, publicKeys: string[], cryptoPrimitives: CryptoPrimitives): Promise<string[]> {
     return Promise.resolve(publicKeys)
   }
-
-  dataOwnerRequiresAnonymousDelegation(dataOwnerId: string, dataOwnerType: DataOwnerTypeEnum): boolean {
-    return this.anonymousDataOwnerTypes.has(dataOwnerType)
-  }
 }

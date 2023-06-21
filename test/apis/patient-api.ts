@@ -168,18 +168,15 @@ describe('Patient API', () => {
     )
   })
 
-  it('Using an older version of the entity in give access to should not change the content or revoke existing accesses from newer versions', async () => {
-    const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp2Username])
-    const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[patUsername])
+  it('Give access to will fail if the patient version does not match the latest', async () => {
+    const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp2Username])
+    const { api: pApi, user: p } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[patUsername])
     const note = 'Winter is coming'
-    const patient = await hcp1Api.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow', note }))
-    await hcp1Api.patientApi.giveAccessTo(patient, pApi.dataOwnerApi.getDataOwnerIdOf(p))
-    await hcp1Api.patientApi.giveAccessTo(patient, h2api.dataOwnerApi.getDataOwnerIdOf(h2))
-    const retrieved1 = await hcp1Api.patientApi.getPatient(patient.id!)
-    const retrieved2 = await h2api.patientApi.getPatient(patient.id!)
-    const retrieved3 = await pApi.patientApi.getPatient(patient.id!)
-    expect(retrieved1.note).to.equal(note)
-    expect(retrieved2).to.deep.equal(retrieved1)
-    expect(retrieved3).to.deep.equal(retrieved1)
+    const patient = await hcp1Api!.patientApi.createOrModifyPatient(new Patient({ firstName: 'John', lastName: 'Snow', note }))
+    await hcp1Api!.patientApi.giveAccessTo(patient, pApi.dataOwnerApi.getDataOwnerIdOf(p))
+    await expect(hcp1Api!.patientApi.giveAccessTo(patient, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
+    expect((await hcp1Api!.patientApi.getPatient(patient.id!)).note).to.equal(note)
+    expect((await pApi.patientApi.getPatient(patient.id!)).note).to.equal(note)
+    await expect(h2api.patientApi.getPatient(patient.id!)).to.be.rejected
   }).timeout(60000)
 })

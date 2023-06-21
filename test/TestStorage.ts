@@ -2,7 +2,7 @@ import { hex2ua, KeyStorageFacade, pkcs8ToJwk, spkiToJwk, StorageFacade } from '
 import { DefaultStorageEntryKeysFactory } from '@icure/api/icc-x-api/storage/DefaultStorageEntryKeysFactory'
 import { IcureStorageFacade } from '@icure/api/icc-x-api/storage/IcureStorageFacade'
 import { StorageEntryKeysFactory } from '@icure/api/icc-x-api/storage/StorageEntryKeysFactory'
-import { KeyPair, ShaVersion } from '@icure/api/icc-x-api/crypto/RSA'
+import { KeyPair } from '@icure/api/icc-x-api/crypto/RSA'
 import { UserDetails } from '@icure/test-setup/types'
 
 export class TestStorage implements StorageFacade<string> {
@@ -55,7 +55,7 @@ export class TestKeyStorage implements KeyStorageFacade {
 
 export async function testStorageWithKeys(
   keyFactory: StorageEntryKeysFactory,
-  data: { dataOwnerId: string; pairs: { keyPair: KeyPair<string>; shaVersion: ShaVersion }[] }[]
+  data: { dataOwnerId: string; pairs: { keyPair: KeyPair<string> }[] }[]
 ): Promise<{ keyStorage: KeyStorageFacade; storage: StorageFacade<string> }> {
   const keyStorage = new TestKeyStorage()
   const storage = new TestStorage()
@@ -67,7 +67,7 @@ export async function testStorageWithKeys(
         pair.keyPair.publicKey.slice(-32),
         {
           privateKey: pkcs8ToJwk(hex2ua(pair.keyPair.privateKey)),
-          publicKey: spkiToJwk(hex2ua(pair.keyPair.publicKey), pair.shaVersion),
+          publicKey: spkiToJwk(hex2ua(pair.keyPair.publicKey)),
         },
         true
       )
@@ -80,7 +80,7 @@ export async function testStorageForUser(credentials: UserDetails): Promise<{ ke
   return await testStorageWithKeys(new DefaultStorageEntryKeysFactory(), [
     {
       dataOwnerId: credentials.dataOwnerId,
-      pairs: [{ keyPair: { publicKey: credentials.publicKey, privateKey: credentials.privateKey }, shaVersion: 'sha-1' }],
+      pairs: [{ keyPair: { publicKey: credentials.publicKey, privateKey: credentials.privateKey } }],
     },
   ])
 }

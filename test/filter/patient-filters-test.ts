@@ -77,7 +77,7 @@ describe('Patient Filters Test', function () {
     const patients = await api.patientApi.filterPatients(filter)
     expect(patients.rows.length).to.be.greaterThan(0)
     for (const p of patients.rows) {
-      const accessInfo = await api.cryptoApi.xapi.getDataOwnersWithAccessTo({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' })
+      const accessInfo = await api.cryptoApi.entities.getDataOwnersWithAccessTo(PatientMapper.toPatientDto(p)!)
       expect(Object.keys(accessInfo.permissionsByDataOwnerId)).to.contain(user.healthcarePartyId!)
     }
   })

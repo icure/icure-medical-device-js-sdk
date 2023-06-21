@@ -264,7 +264,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     const patientDto = PatientMapper.toPatientDto(patient)!
     const filter = {
       healthcarePartyId: dataOwnerId,
-      patientSecretForeignKeys: await this.cryptoApi.xapi.secretIdsOf({ entity: patientDto, type: 'Patient' }, undefined),
+      patientSecretForeignKeys: await this.cryptoApi.entities.secretIdsOf(patientDto, undefined),
       $type: 'HealthcareElementByHealthcarePartyPatientFilter',
     }
     return await this.concatenateFilterResults(filter)

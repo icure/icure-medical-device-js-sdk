@@ -80,15 +80,6 @@ export interface MedTechCryptoStrategies {
    * @return all verified public keys, in spki hex-encoded format.
    */
   verifyDelegatePublicKeys(delegateId: string, publicKeys: string[], cryptoPrimitives: CryptoPrimitives): Promise<string[]>
-
-  /**
-   * Specifies if a data owner requires anonymous delegations, i.e. his id should not appear unencrypted in entities
-   * which he can access or else it could leak information. This should be the case for example for patient data owners.
-   * @param dataOwnerId id of a data owner.
-   * @param dataOwnerType type of the data owner with id {@link dataOwnerId}.
-   * @return true if the delegations for the provided data owner should be anonymous.
-   */
-  dataOwnerRequiresAnonymousDelegation(dataOwnerId: string, dataOwnerType: DataOwnerTypeEnum): boolean
 }
 
 export namespace MedTechCryptoStrategies {

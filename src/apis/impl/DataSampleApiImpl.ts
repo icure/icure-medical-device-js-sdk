@@ -220,7 +220,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const patientDto = PatientMapper.toPatientDto(patient)!
     const filter = {
       healthcarePartyId: dataOwnerId,
-      patientSecretForeignKeys: await this.crypto.xapi.secretIdsOf({ entity: patientDto, type: 'Patient' }, undefined),
+      patientSecretForeignKeys: await this.crypto.entities.secretIdsOf(patientDto, undefined),
       $type: 'DataSampleByHealthcarePartyPatientFilter',
     }
     return await this.concatenateFilterResults(filter)
@@ -563,7 +563,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   async extractPatientId(dataSample: DataSample): Promise<string | undefined> {
-    return (await this.crypto.xapi.owningEntityIdsOf({ entity: DataSampleMapper.toServiceDto(dataSample)!, type: 'Contact' }, undefined))[0]
+    return (await this.crypto.entities.owningEntityIdsOf(DataSampleMapper.toServiceDto(dataSample)!, undefined))[0]
   }
 
   private async _getContactOfDataSample(currentUser: UserDto, dataSample: DataSample): Promise<[boolean, ContactDto?]> {
@@ -708,7 +708,6 @@ export class DataSampleApiImpl implements DataSampleApi {
       cryptedForeignKeys: contact.cryptedForeignKeys,
       delegations: contact.delegations,
       encryptionKeys: contact.encryptionKeys,
-      securityMetadata: contact.securityMetadata,
     }
   }
 }

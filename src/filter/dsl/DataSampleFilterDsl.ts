@@ -133,9 +133,7 @@ class DataSampleFilterWithDataOwner
 
   forPatients(patients: PotentiallyEncryptedPatient[]): DataSampleFilterWithDataOwner {
     const filter = this._dataOwnerId.then((id) => {
-      return Promise.all(
-        patients.map((p) => this.api.cryptoApi.xapi.secretIdsOf({ entity: PatientMapper.toPatientDto(p)!, type: 'Patient' }, undefined))
-      )
+      return Promise.all(patients.map((p) => this.api.cryptoApi.entities.secretIdsOf(PatientMapper.toPatientDto(p)!, undefined)))
         .then((sfksForPatients) => sfksForPatients.flat())
         .then((sfks) => {
           return {

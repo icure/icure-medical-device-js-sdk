@@ -140,10 +140,9 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           `Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`
         )
 
-      const delegatesInfo = await authenticationResult.medTechApi.cryptoApi.xapi.getDataOwnersWithAccessTo({
-        entity: PatientMapper.toPatientDto(patientDataOwner)!,
-        type: 'Patient',
-      })
+      const delegatesInfo = await authenticationResult.medTechApi.cryptoApi.entities.getDataOwnersWithAccessTo(
+        PatientMapper.toPatientDto(patientDataOwner)!
+      )
       const delegates = Object.keys(delegatesInfo.permissionsByDataOwnerId)
 
       for (const delegate of delegates) {

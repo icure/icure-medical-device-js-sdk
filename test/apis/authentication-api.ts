@@ -478,8 +478,10 @@ describe('Authentication API', () => {
     // User can create new data
     expect(await TestUtils.createDataSampleForPatient(loginAuthResult.medTechApi, currentPatient)).to.not.be.undefined
 
-    // But can't access previous ones
-    await expect(loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)).to.be.rejected
+    // But can't access (v8) / decrypt (v7) previous ones
+    const retrieved = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    expect(retrieved).to.not.be.undefined
+    expect(Object.keys(retrieved.content ?? {})).to.have.length(0, 'Content should not be decrypted (emtpy obj or undefined)')
 
     // When he gave access back with his previous key
     await patApiAndUser.api.forceReload()
@@ -538,8 +540,10 @@ describe('Authentication API', () => {
     // Then
     // User can create new data
     expect(await TestUtils.createDataSampleForPatient(loginAuthResult.medTechApi, currentPatient)).to.not.be.undefined
-    // But can't access previous ones
-    await expect(loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)).to.be.rejected
+    // But can't access (v8) / decrypt (v7) previous ones
+    const retrieved = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    expect(retrieved).to.not.be.undefined
+    expect(Object.keys(retrieved.content ?? {})).to.have.length(0, 'Content should not be decrypted (emtpy obj or undefined)')
 
     // When the delegate gave him access back
     // Hcp checks dedicated notification

@@ -224,22 +224,15 @@ describe('Healthcare Element API', () => {
     expect(newHE.id).not.to.eq(elementId)
   })
 
-  it('Using an older version of the entity in give access to should not change the content or revoke existing accesses from newer versions', async () => {
+  it('Give access to will fail if the healthcare version does not match the latest', async () => {
     const { api: h2api, user: h2 } = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
     const patient = await hcp1Api!.patientApi.createOrModifyPatient(new Patient({ firstName: 'Giovanni', lastName: 'Giorgio' }))
-    const description = 'Description 1'
+    const description = 'They call him "Giorgio"'
     const healthcareElement = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(new HealthcareElement({ description }), patient.id!)
-    const modifiedDescription = 'Description 2'
-    const modifiedHealthElement = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(
-      new HealthcareElement({ ...healthcareElement, description: modifiedDescription })
-    )
     await hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, patApi!.dataOwnerApi.getDataOwnerIdOf(patUser!))
-    await hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, patApi!.dataOwnerApi.getDataOwnerIdOf(h2!))
-    const retrievedByH1 = await hcp1Api!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)
-    const retrievedByH2 = await h2api.healthcareElementApi.getHealthcareElement(healthcareElement.id!)
-    const retrievedByPatient = await patApi!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)
-    expect(retrievedByH1.description).to.eq(modifiedDescription)
-    expect(retrievedByH2).to.deep.equal(retrievedByH1)
-    expect(retrievedByPatient).to.deep.equal(retrievedByH1)
+    await expect(hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
+    expect((await hcp1Api!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).description).to.equal(description)
+    expect((await patApi!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).description).to.equal(description)
+    await expect(h2api.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).to.be.rejected
   })
 })
