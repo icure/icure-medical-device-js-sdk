@@ -116,47 +116,46 @@ export interface DataSampleApi {
    */
   extractPatientId(dataSample: DataSample): Promise<string | undefined>
 
-  // /**
-  //  * Deletes an attachment, using its corresponding documentId
-  //  * Delete an attachment of a DataSample
-  //  * @param dataSampleId
-  //  * @param documentId
-  //  */
-  // deleteAttachment(dataSampleId: string, documentId: string): Promise<string>
-  //
-  // /**
-  //  * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the content of an attachment
-  //  * Get attachment content of a DataSample
-  //  * @param dataSampleId
-  //  * @param documentId
-  //  * @param attachmentId
-  //  */
-  // getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer>
-  //
-  // /**
-  //  * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the document metadata information of an attachment
-  //  * Get document metadata of a DataSample attachment
-  //  * @param dataSampleId
-  //  * @param documentId
-  //  */
-  // getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document>
-  //
-  // /**
-  //  * Link an attachment or update the attachment of a data sample
-  //  * Add or update the attachment of a DataSample
-  //  * @param dataSampleId
-  //  * @param body
-  //  * @param documentName
-  //  * @param documentVersion
-  //  * @param documentExternalUuid
-  //  * @param documentLanguage
-  //  */
-  // setDataSampleAttachment(
-  //   dataSampleId: string,
-  //   body: ArrayBuffer,
-  //   documentName?: string,
-  //   documentVersion?: string,
-  //   documentExternalUuid?: string,
-  //   documentLanguage?: string
-  // ): Promise<Document>
+  /**
+   * Link an attachment or update the attachment of a data sample
+   * Add or update the attachment of a DataSample
+   * @param dataSampleId
+   * @param body
+   * @param documentName
+   * @param documentVersion
+   * @param documentExternalUuid
+   * @param documentLanguage
+   */
+  setDataSampleAttachment(
+    dataSampleId: string,
+    body: ArrayBuffer,
+    documentName?: string,
+    documentVersion?: string,
+    documentExternalUuid?: string,
+    documentLanguage?: string
+  ): Promise<Document>
+
+  /**
+   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the content of an attachment
+   * Get attachment content of a DataSample
+   * @param dataSampleId
+   * @param documentId
+   */
+  getDataSampleAttachmentContent(dataSampleId: string, documentId: string): Promise<ArrayBuffer>
+
+  /**
+   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the document metadata information of an attachment
+   * Get document metadata of a DataSample attachment
+   * @param dataSampleId
+   * @param documentId
+   */
+  getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document>
+
+  /**
+   * Deletes an attachment, using its corresponding documentId
+   * Delete an attachment of a DataSample
+   * @param dataSampleId
+   * @param documentId
+   */
+  deleteAttachment(dataSampleId: string, documentId: string): Promise<string>
 }
