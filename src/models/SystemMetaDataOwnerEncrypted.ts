@@ -11,10 +11,12 @@
  */
 
 import { Delegation } from './Delegation'
+import { SecurityMetaData } from './SecurityMetaData'
 
 export class SystemMetaDataOwnerEncrypted {
   constructor(json: ISystemMetaDataOwnerEncrypted) {
-    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, ...simpleProperties } = json
+    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, securityMetadata, publicKeysForOaepWithSha256, ...simpleProperties } =
+      json
 
     Object.assign(this as SystemMetaDataOwnerEncrypted, simpleProperties as ISystemMetaDataOwnerEncrypted)
 
@@ -34,6 +36,10 @@ export class SystemMetaDataOwnerEncrypted {
           .map(([k, v]) => [k, new Set([...v].map((d) => new Delegation(d)))] as [string, Set<Delegation>])
           .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
       : {}
+    this.publicKeysForOaepWithSha256 = new Set(publicKeysForOaepWithSha256 ?? [])
+    if (securityMetadata) {
+      this.securityMetadata = new SecurityMetaData(securityMetadata)
+    }
   }
 
   'publicKey': string
@@ -46,6 +52,8 @@ export class SystemMetaDataOwnerEncrypted {
   'aesExchangeKeys': { [key: string]: { [key: string]: { [key: string]: string } } }
   'transferKeys': { [key: string]: { [key: string]: string } }
   'encryptedSelf'?: string
+  'publicKeysForOaepWithSha256': Set<string>
+  'securityMetadata'?: SecurityMetaData
 
   marshal(): ISystemMetaDataOwnerEncrypted {
     return {
@@ -53,6 +61,8 @@ export class SystemMetaDataOwnerEncrypted {
       cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
       delegations: Object.entries(this.delegations).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
       encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      publicKeysForOaepWithSha256: [...this.publicKeysForOaepWithSha256],
+      securityMetadata: this.securityMetadata?.marshal(),
     }
   }
 }
@@ -68,4 +78,6 @@ interface ISystemMetaDataOwnerEncrypted {
   aesExchangeKeys?: { [key: string]: { [key: string]: { [key: string]: string } } }
   transferKeys?: { [key: string]: { [key: string]: string } }
   encryptedSelf?: string
+  publicKeysForOaepWithSha256?: Set<string>
+  securityMetadata?: SecurityMetaData
 }

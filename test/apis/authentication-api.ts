@@ -1,19 +1,24 @@
-import { assert, expect } from 'chai'
+import { assert, expect, use as chaiUse } from 'chai'
 import 'mocha'
 import 'isomorphic-fetch'
 
-import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
-import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
+import { getEnvironmentInitializer, hcp1Username, hcp3Username, setLocalStorage, TestUtils } from '../test-utils'
 import { webcrypto } from 'crypto'
-import { medTechApi, MedTechApiBuilder } from '../../src/apis/MedTechApi'
-import { hex2ua, ua2hex } from '@icure/api'
+import { MedTechApiBuilder } from '../../src/apis/MedTechApi'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
+import { DataOwnerTypeEnum } from '../../src/models/DataOwner'
+import { TestKeyStorage, TestStorage, testStorageForUser } from '../TestStorage'
+import { DataOwnerMapper } from '../../src/mappers/dataOwner'
+import { AnonymousMedTechApiBuilder } from '../../src/apis/AnonymousMedTechApi'
 import { NotificationTypeEnum } from '../../src/models/Notification'
-import { MemoryStorage } from './utils/MemoryStorage'
+
+chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined
-let hcpId: string | undefined
+let env: TestVars
+let hcpId: string
 
 describe('Authentication API', () => {
   before(async function () {
@@ -24,76 +29,63 @@ describe('Authentication API', () => {
     if (env.backendType === 'oss') this.skip()
 
     const hcpApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
-    hcpId = hcpApiAndUser.user.healthcarePartyId
+    hcpId = hcpApiAndUser.user.healthcarePartyId!
   })
 
   it("AnonymousMedTechApi shouldn't be instantiated if authServerUrl, authProcessId and specId aren't passed", async () => {
-    try {
-      await new AnonymousMedTechApiBuilder()
+    await expect(
+      new AnonymousMedTechApiBuilder()
         .withICureBaseUrl(env!.iCureUrl)
         .withCrypto(webcrypto as any)
         .withMsgGwUrl(env!.msgGtwUrl)
         .withAuthProcessByEmailId(env!.hcpAuthProcessId)
         .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+        .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
         .build()
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq('msgGtwSpecId is required')
-    }
+    ).to.be.rejected
 
-    try {
-      const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
-        .withICureBaseUrl(env!.iCureUrl)
-        .withCrypto(webcrypto as any)
-        .withMsgGwUrl(env!.msgGtwUrl)
-        .withMsgGwSpecId(env!.specId)
-        .withAuthProcessByEmailId('fake-process-id')
-        .withAuthProcessBySmsId('fake-process-id')
-        .build()
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withCrypto(webcrypto as any)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withAuthProcessByEmailId('fake-process-id')
+      .withAuthProcessBySmsId('fake-process-id')
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
+      .build()
 
-      expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").not.null
-    } catch (e) {
-      expect(true, 'promise should not fail').eq(false)
-    }
+    expect(anonymousMedTechApi, "anonymousMedTechApi shouldn't be null").to.not.be.null
   })
 
   it("Impossible to use authenticationApi if msgGtwUrl, msgGtwSpecId and authProcessId haven't been provided", async () => {
+    const user = env.dataOwnerDetails[hcp1Username]
+    const storage = await testStorageForUser(user)
     // Given
     let api = await new MedTechApiBuilder()
-      .withUserName('fake-user-name')
-      .withPassword('fake-pwd')
+      .withUserName(user.user)
+      .withPassword(user.password)
+      .withStorage(storage.storage)
+      .withKeyStorage(storage.keyStorage)
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId('fake-process-id')
       .withAuthProcessBySmsId('fake-process-id')
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    try {
-      await api.authenticationApi.startAuthentication('recaptcha', 'email', undefined, 'firstname', 'lastname', 'fake-prof-id', false)
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq(
-        "authenticationApi couldn't be initialized. Make sure you provided the following arguments : msgGwUrl, msgGwSpecId, and at least one of authProcessByEmailId and authProcessBySMSId"
-      )
-    }
+    expect(() => api.authenticationApi).to.throw(Error)
   }).timeout(60000)
 
-  it("Cannot instantiate the API if no AuthProcessId is passed", async () => {
-    // Given
-    try {
-      let api = await new AnonymousMedTechApiBuilder()
+  it('Cannot instantiate the API if no AuthProcessId is passed', async () => {
+    await expect(
+      new AnonymousMedTechApiBuilder()
         .withICureBaseUrl(env!.iCureUrl)
         .withMsgGwUrl(env!.msgGtwUrl)
         .withMsgGwSpecId(env!.specId)
         .withCrypto(webcrypto as any)
         .build()
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq(
-        "At least one between authProcessIdBySms and authProcessByEmailId is required"
-      )
-    }
+    ).to.be.rejected
   }).timeout(60000)
 
   it("User should not be able to start authentication if he didn't provide any email and mobilePhone", async () => {
@@ -105,23 +97,12 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    // When
-    try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(
-        env!.recaptcha,
-        undefined,
-        undefined,
-        'Tom',
-        'Gideon',
-        env!.hcpAuthProcessId,
-        false
-      )
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its phone number')
-    }
+    await expect(
+      anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, undefined, undefined, 'Tom', 'Gideon', env!.hcpAuthProcessId, false)
+    ).to.be.rejected
   })
 
   it('User should not be able to start authentication if he provided an empty email and mobilePhone', async () => {
@@ -133,18 +114,14 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    // When
-    try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, '', '', 'Tom', 'Gideon', env!.patAuthProcessId, false)
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq('In order to start authentication of a user, you should at least provide its email OR its phone number')
-    }
+    await expect(anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, '', '', 'Tom', 'Gideon', env!.patAuthProcessId, false)).to
+      .be.rejected
   })
 
-  it("User should not be able to start authentication if he provided an email but no AuthProcessByEmailId", async () => {
+  it('User should not be able to start authentication if he provided an email but no AuthProcessByEmailId', async () => {
     // Given
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
@@ -152,11 +129,11 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    // When
-    try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(
+    await expect(
+      anonymousMedTechApi.authenticationApi.startAuthentication(
         env!.recaptcha,
         'a-fake-email',
         undefined,
@@ -165,13 +142,10 @@ describe('Authentication API', () => {
         env!.hcpAuthProcessId,
         false
       )
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq('In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId')
-    }
+    ).to.be.rejected
   })
 
-  it("User should not be able to start authentication if he provided an sms but no AuthProcessBySMSId", async () => {
+  it('User should not be able to start authentication if he provided an sms but no AuthProcessBySMSId', async () => {
     // Given
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
@@ -179,11 +153,11 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    // When
-    try {
-      await anonymousMedTechApi.authenticationApi.startAuthentication(
+    await expect(
+      anonymousMedTechApi.authenticationApi.startAuthentication(
         env!.recaptcha,
         undefined,
         'a-fake-phone-number',
@@ -192,13 +166,10 @@ describe('Authentication API', () => {
         env!.hcpAuthProcessId,
         false
       )
-      expect(true, 'promise should fail').eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq('In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId')
-    }
+    ).to.be.rejected
   })
 
-  it("A User should be able to start the authentication by sms", async () => {
+  it('A User should be able to start the authentication by sms', async () => {
     // Given
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
@@ -206,10 +177,11 @@ describe('Authentication API', () => {
       .withMsgGwSpecId(env!.specId)
       .withCrypto(webcrypto as any)
       .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
     // When
-    const phoneNumber = `+${Math.ceil(Math.random()*10000000 + 10000000)}`
+    const phoneNumber = `+${Math.ceil(Math.random() * 10000000 + 10000000)}`
     await anonymousMedTechApi.authenticationApi.startAuthentication(
       env!.recaptcha,
       undefined,
@@ -404,56 +376,30 @@ describe('Authentication API', () => {
       'recaptcha'
     )
 
-    // Then
-    const currentUser = user
-    assert(currentUser)
-    assert(currentUser.patientId != null)
+    const keysFromFirstInit = api.dataOwnerApi.getPublicKeysOf(await api.dataOwnerApi.getDataOwner(user.patientId!))
 
-    await api.initUserCrypto()
-    try {
-      await api.initUserCrypto()
-    } catch (e) {
-      expect(true, 'promise should not fail').eq(false)
-    }
-    expect(true, 'promise should not fail').eq(true)
+    const newApi = await new MedTechApiBuilder()
+      .withUserName(user.login!)
+      .withPassword(token)
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessByEmailId(env!.patAuthProcessId)
+      .withAuthProcessBySmsId(env!.patAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
+      .build()
 
-    const newMedTechApi = async () =>
-      await new MedTechApiBuilder()
-        .withUserName(currentUser.login!)
-        .withPassword(token)
-        .withICureBaseUrl(env!.iCureUrl)
-        .withMsgGwUrl(env!.msgGtwUrl)
-        .withMsgGwSpecId(env!.specId)
-        .withCrypto(webcrypto as any)
-        .withAuthProcessByEmailId(env!.patAuthProcessId)
-        .withAuthProcessBySmsId(env!.patAuthProcessId)
-        .build()
+    const keysFromNewApi = newApi.dataOwnerApi.getPublicKeysOf(await newApi.dataOwnerApi.getDataOwner(user.patientId!))
 
-    const newApi = await newMedTechApi()
-
-    const { publicKey, privateKey } = await newApi.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(publicKey!, 'spki'))
-    const privKeyHex = ua2hex(await newApi.cryptoApi.RSA.exportKey(privateKey!, 'pkcs8'))
-
-    try {
-      await newApi.initUserCrypto({ privateKey: privKeyHex, publicKey: publicKeyHex })
-      expect(true, 'promise should fail').to.eq(false)
-    } catch (e) {
-      expect((e as Error).message).to.eq(`The provided key pair is not present on the device and other key pairs are already present.`)
-    }
-
-    try {
-      await (await newMedTechApi()).initUserCrypto()
-    } catch (e) {
-      expect(true, 'promise should not fail').eq(false)
-    }
-
-    expect(true, 'promise should not fail').eq(true)
+    expect(keysFromNewApi.length).to.be.greaterThan(0)
+    expect(keysFromNewApi).to.have.members(keysFromFirstInit)
   }).timeout(60000)
 
   it('Patient should be able to signing up through email using a different Storage implementation', async () => {
     // Given
-    const memoryStorage = new MemoryStorage()
+    const storage = new TestStorage()
+    const keyStorage = new TestKeyStorage()
 
     // When
     const patApiAndUser = await TestUtils.signUpUserUsingEmail(
@@ -464,7 +410,8 @@ describe('Authentication API', () => {
       hcpId!,
       env!.recaptcha,
       'recaptcha',
-      memoryStorage
+      storage,
+      keyStorage
     )
 
     // Then
@@ -476,7 +423,7 @@ describe('Authentication API', () => {
     assert(currentPatient)
     assert(currentPatient.firstName == 'Antoine')
     assert(currentPatient.lastName == 'Duchâteau')
-    assert(Object.entries(memoryStorage.storage).length > 0)
+    assert(Object.entries(keyStorage).length == 1)
   }).timeout(60000)
 
   it('A patient may login with a new RSA keypair and access his previous data if he gave access to its new key with his previous private key', async () => {
@@ -493,8 +440,12 @@ describe('Authentication API', () => {
 
     const currentPatient = await patApiAndUser.api.patientApi.getPatient(patApiAndUser.user.patientId!)
     const createdDataSample = await TestUtils.createDataSampleForPatient(patApiAndUser.api, currentPatient)
+    const keysFromFirstInit = patApiAndUser.api.dataOwnerApi.getPublicKeysOf(
+      await patApiAndUser.api.dataOwnerApi.getDataOwner(patApiAndUser.user.patientId!)
+    )
 
     // User logs on another device
+    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([])
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
@@ -502,7 +453,9 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
-      .withStorage(new MemoryStorage())
+      .withStorage(new TestStorage())
+      .withKeyStorage(new TestKeyStorage())
+      .withCryptoStrategies(newCryptoStrategies)
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, patApiAndUser.user.email)
@@ -515,37 +468,28 @@ describe('Authentication API', () => {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} on the new terminal`)
     }
 
-    const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
-    await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPairs[0].privateKey)
+    const keysAfterLoss = loginAuthResult.medTechApi.dataOwnerApi.getPublicKeysOf(
+      await loginAuthResult.medTechApi.dataOwnerApi.getDataOwner(patApiAndUser.user.patientId!)
     )
+    expect(keysAfterLoss.length).to.be.greaterThan(keysFromFirstInit.length)
+    expect(!!newCryptoStrategies.generatedKeyPair).to.be.true
 
     // Then
     // User can create new data
     expect(await TestUtils.createDataSampleForPatient(loginAuthResult.medTechApi, currentPatient)).to.not.be.undefined
 
-    // But can't access previous ones
-    try {
-      await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
-      expect(true).to.be.equal(
-        false,
-        "Patient should not be able to get access to his previous data, as his new key can't decrypt corresponding AES Exchange keys"
-      )
-    } catch (e: any) {
-      expect(e.message).to.not.be.empty
-    }
+    // But can't access (v8) / decrypt (v7) previous ones
+    const retrieved = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    expect(retrieved).to.not.be.undefined
+    expect(Object.keys(retrieved.content ?? {})).to.have.length(0, 'Content should not be decrypted (emtpy obj or undefined)')
 
     // When he gave access back with his previous key
-    patApiAndUser.api.cryptoApi.emptyHcpCache(currentPatient.id!)
-    const accessBack = await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
-    expect(accessBack).to.be.true
+    await patApiAndUser.api.forceReload()
+    await patApiAndUser.api.dataOwnerApi.giveAccessBackTo(currentPatient.id!, loginAuthResult.keyPairs[0].publicKey)
 
     // Then
-    const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
-
-    const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    await loginAuthResult.medTechApi.forceReload()
+    const previousDataSample = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
   }).timeout(60000)
 
@@ -569,6 +513,7 @@ describe('Authentication API', () => {
     await patApiAndUser.api.dataSampleApi.giveAccessTo(createdDataSample, hcpApiAndUser.user.healthcarePartyId!)
 
     // User lost his key and logs back
+    const newCryptoStrategies = new SimpleMedTechCryptoStrategies([])
     const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
       .withICureBaseUrl(env!.iCureUrl)
       .withMsgGwUrl(env!.msgGtwUrl)
@@ -576,7 +521,9 @@ describe('Authentication API', () => {
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(env!.patAuthProcessId)
       .withAuthProcessBySmsId(env!.patAuthProcessId)
-      .withStorage(new MemoryStorage())
+      .withStorage(new TestStorage())
+      .withKeyStorage(new TestKeyStorage())
+      .withCryptoStrategies(newCryptoStrategies)
       .build()
 
     const loginProcess = await anonymousMedTechApi.authenticationApi.startAuthentication(env!.recaptcha, patApiAndUser.user.email)
@@ -584,31 +531,19 @@ describe('Authentication API', () => {
     // When
     const subjectCode = (await TestUtils.getEmail(patApiAndUser.user.email!)).subject!
     const loginAuthResult = await anonymousMedTechApi.authenticationApi.completeAuthentication(loginProcess!, subjectCode)
+    expect(newCryptoStrategies.generatedKeyPair).to.not.be.undefined
 
     if (loginAuthResult?.medTechApi == undefined) {
       throw Error(`Couldn't login user ${patApiAndUser.user.email} after he lost his RSA keypair`)
     }
 
-    const foundUser = await loginAuthResult.medTechApi.userApi.getLoggedUser()
-    await loginAuthResult.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(loginAuthResult.keyPairs[0].privateKey)
-    )
-
     // Then
     // User can create new data
     expect(await TestUtils.createDataSampleForPatient(loginAuthResult.medTechApi, currentPatient)).to.not.be.undefined
-
-    // But can't access previous ones
-    try {
-      await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
-      expect(true).to.be.equal(
-        false,
-        "Patient should not be able to get access to his previous data, as his new key can't decrypt corresponding AES Exchange keys"
-      )
-    } catch (e: any) {
-      expect(e.message).to.not.be.empty
-    }
+    // But can't access (v8) / decrypt (v7) previous ones
+    const retrieved = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    expect(retrieved).to.not.be.undefined
+    expect(Object.keys(retrieved.content ?? {})).to.have.length(0, 'Content should not be decrypted (emtpy obj or undefined)')
 
     // When the delegate gave him access back
     // Hcp checks dedicated notification
@@ -626,17 +561,11 @@ describe('Authentication API', () => {
     const patientPubKey = hcpNotification!.properties?.find((prop) => prop.id == 'dataOwnerConcernedPubKey')
     expect(patientPubKey).to.not.be.undefined
 
-    const accessBack = await hcpApiAndUser.api.dataOwnerApi.giveAccessBackTo(
-      patientId!.typedValue!.stringValue!,
-      patientPubKey!.typedValue!.stringValue!
-    )
-    expect(accessBack).to.be.true
+    await hcpApiAndUser.api.dataOwnerApi.giveAccessBackTo(patientId!.typedValue!.stringValue!, patientPubKey!.typedValue!.stringValue!)
 
     // Then
-    const updatedApi = await medTechApi(loginAuthResult.medTechApi).build()
-    await updatedApi.initUserCrypto(loginAuthResult.keyPairs[0])
-
-    const previousDataSample = await updatedApi.dataSampleApi.getDataSample(createdDataSample.id!)
+    await loginAuthResult.medTechApi.forceReload()
+    const previousDataSample = await loginAuthResult.medTechApi.dataSampleApi.getDataSample(createdDataSample.id!)
     expect(previousDataSample).to.not.be.undefined
   }).timeout(120000)
 })

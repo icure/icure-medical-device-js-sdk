@@ -26,11 +26,12 @@ import { FilterMapper } from '../../mappers/filter'
 import { HealthcareElementMapper } from '../../mappers/healthcareElement'
 import { firstOrNull } from '../../utils/functionalUtils'
 import { Patient } from '../../models/Patient'
-import { HealthcareElementFilter } from '../../filter'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { Delegation } from '../../models/Delegation'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
+import { PatientMapper } from '../../mappers/patient'
 
 export class HealthcareElementApiImpl implements HealthcareElementApi {
   private readonly userApi: IccUserXApi
@@ -94,11 +95,11 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     } else if (patient) {
       createdOrUpdateHealthElement = await this.heApi.createHealthElementWithUser(
         currentUser,
-        (await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement), true).catch((e) => {
+        (await this.heApi.newInstance(currentUser, patient, HealthcareElementMapper.toHealthElementDto(healthcareElement)).catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
         })) as HealthElement
       )
-    }
+    } else throw this.errorHandler.createErrorWithMessage('In order to create a new healthcare element, you must provide the patientId')
 
     if (createdOrUpdateHealthElement) {
       return HealthcareElementMapper.toHealthcareElement(createdOrUpdateHealthElement)!
@@ -128,7 +129,7 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     }
 
     const hesCreated = await Promise.all(
-      heToCreate.map((he) => HealthcareElementMapper.toHealthElementDto(he)).map((he) => this.heApi.newInstance(currentUser, patient, he, true))
+      heToCreate.map((he) => HealthcareElementMapper.toHealthElementDto(he)).map((he) => this.heApi.newInstance(currentUser, patient, he))
     )
       .then((healthElementsToCreate) => this.heApi.createHealthElementsWithUser(currentUser, healthElementsToCreate))
       .catch((e) => {
@@ -163,6 +164,10 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
     nextHealthElementId?: string,
     limit?: number
   ): Promise<PaginatedListHealthcareElement> {
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListHealthcareElement({ totalSize: 0, pageSize: 0, rows: [] })
+    }
+
     const currentUser = (await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })) as User
@@ -195,9 +200,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async matchHealthcareElement(filter: Filter<HealthcareElement>): Promise<Array<string>> {
-    return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.heApi.matchHealthElementsBy(FilterMapper.toAbstractFilterDto<HealthcareElement>(filter, 'HealthcareElement')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async _getPatientOfHealthElement(currentUser: UserDto, healthElementDto: HealthElement): Promise<PatientDto | undefined> {
@@ -212,82 +221,12 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
   }
 
   async _getPatientIdOfHealthElement(currentUser: UserDto, healthElement: HealthElement): Promise<string | undefined> {
-    const keysFromDeleg = await this.cryptoApi.extractKeysHierarchyFromDelegationLikes(
-      this.dataOwnerApi.getDataOwnerOf(currentUser),
-      healthElement.id!,
-      healthElement.cryptedForeignKeys!
-    )
-    return keysFromDeleg.map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)).find((key) => key != undefined)
+    return (await this.heApi.decryptPatientIdOf(healthElement))[0]
   }
 
   async giveAccessTo(healthcareElement: HealthcareElement, delegatedTo: string): Promise<HealthcareElement> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(<User>currentUser)
-    const healthElementToModify = HealthcareElementMapper.toHealthElementDto(healthcareElement)!
-
-    if (!(healthElementToModify.delegations?.[dataOwnerId]?.length ?? 0)) {
-      throw this.errorHandler.createErrorWithMessage(
-        `User ${currentUser.id} may not access healthcare element. Check that the healthcare element is owned by/shared to the actual user.`
-      )
-    }
-
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.cryptoApi,
-      healthcareElement.id!,
-      dataOwnerId,
-      delegatedTo,
-      healthElementToModify.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.cryptoApi,
-        healthcareElement.id!,
-        dataOwnerId,
-        delegatedTo,
-        healthElementToModify.encryptionKeys ?? {}
-      )
-    )[0]
-    const newCfk = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.cryptoApi,
-        healthcareElement.id!,
-        dataOwnerId,
-        delegatedTo,
-        healthElementToModify.cryptedForeignKeys ?? {}
-      )
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
-      return healthcareElement
-    }
-
-    const healthcareElementPatient = await this._getPatientOfHealthElement(<User>currentUser, healthElementToModify)
-    if (healthcareElementPatient == undefined) {
-      throw this.errorHandler.createErrorWithMessage(
-        `User ${currentUser.id} may not access healthcare element ${healthElementToModify.id}. Check that the healthcare element is owned by/shared to the actual user.`
-      )
-    }
-
-    const heWithDelegations = await addManyDelegationKeys(
-      this.cryptoApi,
-      dataOwnerId,
-      delegatedTo,
-      healthElementToModify,
-      healthcareElementPatient,
-      newSecretIds,
-      newEncryptionKey
-    )
-    const updatedHe = await this.heApi.modifyHealthElementWithUser(<User>currentUser, heWithDelegations)
-
-    if (!updatedHe) {
-      throw this.errorHandler.createErrorWithMessage(
-        `Impossible to give access to ${delegatedTo} to healthcare element ${healthElementToModify.id} information`
-      )
-    }
-
-    return HealthcareElementMapper.toHealthcareElement(updatedHe)!
+    const shared = await this.heApi.shareWith(delegatedTo, HealthcareElementMapper.toHealthElementDto(healthcareElement))
+    return HealthcareElementMapper.toHealthcareElement(shared)
   }
 
   async concatenateFilterResults(
@@ -316,13 +255,18 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi.'
       )
     }
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(user)
     if (!dataOwnerId) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new HealthcareElementFilter().forDataOwner(dataOwnerId).forPatients(this.cryptoApi, [patient]).build()
+    const patientDto = PatientMapper.toPatientDto(patient)!
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: await this.cryptoApi.entities.secretIdsOf(patientDto, undefined),
+      $type: 'HealthcareElementByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 
@@ -336,13 +280,13 @@ export class HealthcareElementApiImpl implements HealthcareElementApi {
 
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'HealthcareElement',
       eventTypes,
       filter,
       eventFired,
       options,
-      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerOf(currentUser), [encrypted]))[0]
+      async (encrypted) => (await this.heApi.decrypt(this.dataOwnerApi.getDataOwnerIdOf(currentUser), [encrypted]))[0]
     ).then((rs) => new ConnectionImpl(rs))
   }
 }

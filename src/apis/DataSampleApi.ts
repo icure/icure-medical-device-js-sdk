@@ -26,14 +26,6 @@ export interface DataSampleApi {
   createOrModifyDataSamplesFor(patientId: string, dataSample: Array<DataSample>): Promise<Array<DataSample>>
 
   /**
-   * Deletes an attachment, using its corresponding documentId
-   * Delete an attachment of a DataSample
-   * @param dataSampleId
-   * @param documentId
-   */
-  deleteAttachment(dataSampleId: string, documentId: string): Promise<string>
-
-  /**
    * Deletes the data sample identified by the provided unique [dataSampleId].
    * Delete a [DataSample] by its id
    * @param dataSampleId
@@ -72,47 +64,11 @@ export interface DataSampleApi {
   getDataSample(dataSampleId: string): Promise<DataSample>
 
   /**
-   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the content of an attachment
-   * Get attachment content of a DataSample
-   * @param dataSampleId
-   * @param documentId
-   * @param attachmentId
-   */
-  getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer>
-
-  /**
-   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the document metadata information of an attachment
-   * Get document metadata of a DataSample attachment
-   * @param dataSampleId
-   * @param documentId
-   */
-  getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document>
-
-  /**
    * Filters are complex selectors that are built by combining basic building blocks. Examples of filters available for [DataSample] are AllDataSamplesFilter and DataSamplesByIdsFilter. This method returns a paginated list of data samples (with a cursor that lets you query the following items).
    * Find data samples ids using the provided Filter.
    * @param filter The Filter object that describes which condition(s) the elements whose the ids should be returned must fulfill
    */
   matchDataSample(filter: Filter<DataSample>): Promise<Array<string>>
-
-  /**
-   * Link an attachment or update the attachment of a data sample
-   * Add or update the attachment of a DataSample
-   * @param dataSampleId
-   * @param body
-   * @param documentName
-   * @param documentVersion
-   * @param documentExternalUuid
-   * @param documentLanguage
-   */
-  setDataSampleAttachment(
-    dataSampleId: string,
-    body: ArrayBuffer,
-    documentName?: string,
-    documentVersion?: string,
-    documentExternalUuid?: string,
-    documentLanguage?: string
-  ): Promise<Document>
 
   /**
    * Service where current user gives access to the data sample information to another dataOwner (HCP, patient or device).
@@ -151,5 +107,55 @@ export interface DataSampleApi {
     options?: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number }
   ): Promise<Connection>
 
+  /**
+   * Get the id of the patient corresponding to a data sample. Note that this id is encrypted and the current user may
+   * not have access to it.
+   * @param dataSample A data sample
+   * @return the id of the patient corresponding to the data sample if the current user has access to it, undefined
+   * otherwise
+   */
   extractPatientId(dataSample: DataSample): Promise<string | undefined>
+
+  /**
+   * Link an attachment or update the attachment of a data sample
+   * Add or update the attachment of a DataSample
+   * @param dataSampleId
+   * @param body
+   * @param documentName
+   * @param documentVersion
+   * @param documentExternalUuid
+   * @param documentLanguage
+   */
+  setDataSampleAttachment(
+    dataSampleId: string,
+    body: ArrayBuffer,
+    documentName?: string,
+    documentVersion?: string,
+    documentExternalUuid?: string,
+    documentLanguage?: string
+  ): Promise<Document>
+
+  /**
+   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the content of an attachment
+   * Get attachment content of a DataSample
+   * @param dataSampleId
+   * @param documentId
+   */
+  getDataSampleAttachmentContent(dataSampleId: string, documentId: string): Promise<ArrayBuffer>
+
+  /**
+   * Data Samples may contain attachments such as prescriptions, reports, ... Use this method to get the document metadata information of an attachment
+   * Get document metadata of a DataSample attachment
+   * @param dataSampleId
+   * @param documentId
+   */
+  getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document>
+
+  /**
+   * Deletes an attachment, using its corresponding documentId
+   * Delete an attachment of a DataSample
+   * @param dataSampleId
+   * @param documentId
+   */
+  deleteAttachment(dataSampleId: string, documentId: string): Promise<string>
 }

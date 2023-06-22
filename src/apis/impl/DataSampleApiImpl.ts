@@ -5,8 +5,10 @@ import { PaginatedListDataSample } from '../../models/PaginatedListDataSample'
 import { Document } from '../../models/Document'
 import { DataSampleApi } from '../DataSampleApi'
 import {
+  Contact,
   Contact as ContactDto,
   ContactByServiceIdsFilter,
+  Delegation,
   Document as DocumentDto,
   FilterChainContact,
   FilterChainService,
@@ -20,9 +22,11 @@ import {
   ListOfIds,
   PaginatedListContact,
   Patient as PatientDto,
+  Service,
   Service as ServiceDto,
   ServiceLink,
   SubContact,
+  ua2hex,
   User as UserDto,
 } from '@icure/api'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
@@ -36,12 +40,13 @@ import { UtiDetector } from '../../utils/utiDetector'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { toMap, toMapArrayTransform } from '../../mappers/utils'
 import { DelegationMapper } from '../../mappers/delegation'
-import { DataSampleFilter } from '../../filter'
 import { Patient } from '../../models/Patient'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import toDelegationDto = DelegationMapper.toDelegationDto
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
+import { DataSampleFilter } from '../../filter/dsl/DataSampleFilterDsl'
+import { PatientMapper } from '../../mappers/patient'
 
 export class DataSampleApiImpl implements DataSampleApi {
   private readonly crypto: IccCryptoXApi
@@ -120,7 +125,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser()
     const [contactCached, existingContact] = await this._getContactOfDataSample(currentUser, dataSamples[0])
 
-    const contactPatientId = existingContact ? await this._getPatientIdOfContact(currentUser, existingContact) : undefined
+    const contactPatientId = existingContact ? (await this.contactApi.decryptPatientIdOf(existingContact))[0] : undefined
 
     if (existingContact != null && contactPatientId == null) {
       throw this.errorHandler.createErrorWithMessage("Can't update a batch of data samples that is not linked to any patient yet.")
@@ -162,9 +167,15 @@ export class DataSampleApiImpl implements DataSampleApi {
       })
     } else {
       const contactToCreate = await this.createContactDtoUsing(currentUser, existingPatient, dataSamples, existingContact)
-      createdOrModifiedContact = await this.contactApi.createContactWithUser(currentUser, contactToCreate).catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
+      createdOrModifiedContact = await this.contactApi
+        .createContactWithUser(currentUser, contactToCreate)
+        .catch((e) => {
+          throw this.errorHandler.createErrorFromAny(e)
+        })
+        .then((x) => {
+          if (!x) throw this.errorHandler.createErrorWithMessage(`Unexpected response for created contact: ${x}`)
+          return x
+        })
     }
 
     createdOrModifiedContact.services!.forEach((service) => this.contactsCache.put(service.id!, createdOrModifiedContact))
@@ -172,13 +183,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       createdOrModifiedContact.services!.map(
         (service) =>
           DataSampleMapper.toDataSample(
-            {
-              ...service,
-              secretForeignKeys: createdOrModifiedContact.secretForeignKeys,
-              cryptedForeignKeys: createdOrModifiedContact.cryptedForeignKeys,
-              delegations: createdOrModifiedContact.delegations,
-              encryptionKeys: createdOrModifiedContact.encryptionKeys,
-            },
+            this.enrichWithContactMetadata(service, createdOrModifiedContact),
             createdOrModifiedContact.id,
             createdOrModifiedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == service.id))
           )!
@@ -207,13 +212,18 @@ export class DataSampleApiImpl implements DataSampleApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(user)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(user)
     if (!dataOwnerId) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must be either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new DataSampleFilter().forDataOwner(dataOwnerId).forPatients(this.crypto, [patient]).build()
+    const patientDto = PatientMapper.toPatientDto(patient)!
+    const filter = {
+      healthcarePartyId: dataOwnerId,
+      patientSecretForeignKeys: await this.crypto.entities.secretIdsOf(patientDto, undefined),
+      $type: 'DataSampleByHealthcarePartyPatientFilter',
+    }
     return await this.concatenateFilterResults(filter)
   }
 
@@ -236,13 +246,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     if (existingContact != null) {
       baseContact = {
         ...existingContact,
-        id: this.crypto.randomUuid(),
+        id: this.crypto.primitives.randomUuid(),
         rev: undefined,
         modified: Date.now(),
       }
     } else {
       baseContact = await this.contactApi
-        .newInstance(currentUser, contactPatient, new ContactDto({ id: this.crypto.randomUuid() }), true)
+        .newInstance(currentUser, contactPatient, new ContactDto({ id: this.crypto.primitives.randomUuid() }))
         .catch((e) => {
           throw this.errorHandler.createErrorFromAny(e)
         })
@@ -261,47 +271,6 @@ export class DataSampleApiImpl implements DataSampleApi {
         ...servicesToCreate.filter((element) => element.closingDate != null || element.valueDate != null).map((e) => e.closingDate ?? e.valueDate!)
       ),
     }
-  }
-
-  async deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-
-    const existingContact = (await this._findContactsForDataSampleIds(currentUser, [dataSampleId]))[0]
-    if (existingContact == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
-    }
-
-    const existingService = existingContact!.services!.find((s) => s.id == dataSampleId)
-    if (existingService == undefined || existingService.content == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
-    }
-
-    const contactPatientId = await this._getPatientIdOfContact(currentUser, existingContact!)
-    if (contactPatientId == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Cannot set an attachment to a data sample not linked to a patient`)
-    }
-
-    const contentToDelete = Object.entries(existingService.content!).find(([_, content]) => content.documentId == documentId)?.[0]
-
-    if (contentToDelete == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Could not find attachment ${documentId} in the data sample ${dataSampleId}`)
-    }
-
-    const updatedContent = toMap(Object.entries(existingService.content!).filter(([key, _]) => key != contentToDelete!))
-
-    await this.createOrModifyDataSampleFor(
-      contactPatientId,
-      DataSampleMapper.toDataSample({
-        ...existingService,
-        content: updatedContent,
-      })!
-    ).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-
-    return documentId
   }
 
   async deleteDataSample(dataSampleId: string): Promise<string> {
@@ -353,7 +322,7 @@ export class DataSampleApiImpl implements DataSampleApi {
         user,
         patient,
         new ContactDto({
-          id: this.crypto.randomUuid(),
+          id: this.crypto.primitives.randomUuid(),
           services: services.map(
             (service) =>
               new ServiceDto({
@@ -369,10 +338,16 @@ export class DataSampleApiImpl implements DataSampleApi {
         throw this.errorHandler.createErrorFromAny(e)
       })
 
-    return this.contactApi.createContactWithUser(user, contactToDeleteServices)
+    return this.contactApi.createContactWithUser(user, contactToDeleteServices).then((x) => {
+      if (!x) throw this.errorHandler.createErrorWithMessage(`Unexpected response for created contact: ${x}`)
+      return x
+    })
   }
 
   async filterDataSample(filter: Filter<DataSample>, nextDataSampleId?: string, limit?: number): Promise<PaginatedListDataSample> {
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListDataSample({ pageSize: 0, totalSize: 0, rows: [] })
+    }
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
@@ -401,89 +376,13 @@ export class DataSampleApiImpl implements DataSampleApi {
     return Promise.resolve(DataSampleMapper.toDataSample(await this._getServiceFromICure(dataSampleId))!)
   }
 
-  async getDataSampleAttachmentContent(dataSampleId: string, documentId: string, attachmentId: string): Promise<ArrayBuffer> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    const documentOfAttachment = await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId)
-    const docEncKeys = await this._getDocumentEncryptionKeys(currentUser, documentOfAttachment).then((keys) => keys.join(','))
-
-    return this.documentApi.getDocumentAttachment(documentId, attachmentId, docEncKeys).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-  }
-
-  async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
-    return DocumentMapper.toDocument(await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId))
-  }
-
   matchDataSample(filter: Filter<DataSample>): Promise<Array<string>> {
-    return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-  }
-
-  async setDataSampleAttachment(
-    dataSampleId: string,
-    body: ArrayBuffer,
-    documentName?: string,
-    documentVersion?: string,
-    documentExternalUuid?: string,
-    documentLanguage?: string
-  ): Promise<Document> {
-    try {
-      const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+    if (NoOpFilter.isNoOp(filter)) {
+      return Promise.resolve([])
+    } else {
+      return this.contactApi.matchServicesBy(FilterMapper.toAbstractFilterDto(filter, 'DataSample')).catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)
       })
-      const existingDataSample = await this.getDataSample(dataSampleId)
-
-      const [, batchOfDataSample] = await this._getContactOfDataSample(currentUser, existingDataSample)
-      if (batchOfDataSample == undefined) {
-        throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSampleId}`)
-      }
-
-      const patientIdOfBatch = await this._getPatientIdOfContact(currentUser, batchOfDataSample)
-      if (patientIdOfBatch == undefined) {
-        throw this.errorHandler.createErrorWithMessage(`Can not set an attachment to a data sample not linked to a patient`)
-      }
-
-      const documentToCreate = new DocumentDto({
-        id: this.crypto.randomUuid(),
-        name: documentName,
-        version: documentVersion,
-        externalUuid: documentExternalUuid,
-        hash: this.crypto.sha256(body),
-        mainUti: UtiDetector.getUtiFor(documentName),
-      })
-
-      const createdDocument = await this.documentApi.createDocument(documentToCreate).catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
-
-      // Update data sample with documentId
-      const contentIso = documentLanguage ?? 'en'
-      const newDSContent = {
-        ...existingDataSample.content,
-        [contentIso]: new Content({ documentId: createdDocument.id }),
-      }
-      await this.createOrModifyDataSampleFor(
-        patientIdOfBatch!,
-        new DataSample({
-          ...existingDataSample,
-          content: newDSContent,
-        })
-      )
-
-      // Add attachment to document
-      const docEncKey = firstOrNull(await this._getDocumentEncryptionKeys(currentUser, createdDocument))
-      const docWithAttachment = await this.documentApi.setDocumentAttachment(createdDocument.id!, docEncKey, body)
-
-      return Promise.resolve(DocumentMapper.toDocument(docWithAttachment))
-    } catch (e) {
-      if (e instanceof Error) {
-        throw this.errorHandler.createError(e)
-      }
-      throw e
     }
   }
 
@@ -491,7 +390,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser().catch((e) => {
       throw this.errorHandler.createErrorFromAny(e)
     })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
+    const dataOwnerId = this.dataOwnerApi.getDataOwnerIdOf(currentUser)
     const contactOfDataSample = (await this._getContactOfDataSample(currentUser, dataSample))[1]
 
     if (contactOfDataSample == undefined)
@@ -499,62 +398,27 @@ export class DataSampleApiImpl implements DataSampleApi {
         `Could not find the batch of the data sample ${dataSample.id}. User ${currentUser.id} may not have access to it.`
       )
 
-    if (!(contactOfDataSample.delegations?.[dataOwnerId]?.length ?? 0)) {
-      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} can't access data sample ${dataSample.id}`)
-    }
-
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.crypto,
-      contactOfDataSample.id!,
-      dataOwnerId,
-      delegatedTo,
-      contactOfDataSample.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.crypto,
-        contactOfDataSample.id!,
-        dataOwnerId,
-        delegatedTo,
-        contactOfDataSample.encryptionKeys ?? {}
-      )
-    )[0]
-    const newCfk = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(
-        this.crypto,
-        contactOfDataSample.id!,
-        dataOwnerId,
-        delegatedTo,
-        contactOfDataSample.cryptedForeignKeys ?? {}
-      )
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey && !newCfk) {
-      return dataSample
-    }
-
-    const contactPatient = await this._getPatientOfContact(currentUser, contactOfDataSample)
-    if (contactPatient == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`User ${currentUser.id} may not access patient identifier of data sample ${dataSample.id}`)
-    }
-
-    const contactWithDelegations = await addManyDelegationKeys(
-      this.crypto,
-      dataOwnerId,
-      delegatedTo,
-      contactOfDataSample,
-      contactPatient,
-      newSecretIds,
-      newEncryptionKey
-    )
-    const updatedContact: ContactDto = await this.contactApi.modifyContactWithUser(currentUser, contactWithDelegations)
+    const updatedContact = await this.contactApi.shareWith(delegatedTo, contactOfDataSample)
 
     if (updatedContact == undefined || updatedContact.services == undefined) {
       throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to data sample ${dataSample.id} information`)
     }
 
+    const updatedService = updatedContact.services.find((service) => service.id == dataSample.id)!
+    const documentIds = Object.entries(updatedService.content ?? {}).flatMap(([_, value]) => (value.documentId ? [value.documentId!] : []))
+    if (documentIds.length) {
+      const documents = Object.fromEntries((await this.documentApi.getDocuments({ ids: documentIds })).map((x) => [x.id!, x]))
+      for (const docId of documentIds) {
+        try {
+          await this.documentApi.shareWith(delegatedTo, documents[docId])
+        } catch (e) {
+          console.error(`Failed to give access to attachment with document id ${docId}`, e)
+        }
+      }
+    }
+
     return DataSampleMapper.toDataSample(
-      updatedContact.services.find((service) => service.id == dataSample.id),
+      this.enrichWithContactMetadata(updatedService, updatedContact),
       updatedContact.id,
       updatedContact.subContacts?.filter((subContact) => subContact.services?.find((s) => s.serviceId == dataSample.id) != undefined)
     )!
@@ -581,7 +445,7 @@ export class DataSampleApiImpl implements DataSampleApi {
     const currentUser = await this.userApi.getCurrentUser()
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'DataSample',
       eventTypes,
       filter,
@@ -592,27 +456,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   async extractPatientId(dataSample: DataSample): Promise<string | undefined> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
-
-    if (!dataSample?.systemMetaData?.cryptedForeignKeys) {
-      return undefined
-    }
-    const cfksForAllDelegates = dataSample.systemMetaData.cryptedForeignKeys
-
-    if (!cfksForAllDelegates || !Object.keys(cfksForAllDelegates).length) {
-      console.log(`There is no cryptedForeignKeys in dataSample (${dataSample.id})`)
-      return undefined
-    }
-    return (
-      await this.crypto.extractKeysFromDelegationsForHcpHierarchy(
-        dataOwnerId,
-        dataSample.id!,
-        toMapArrayTransform(cfksForAllDelegates, toDelegationDto)!
-      )
-    ).extractedKeys[0]
+    return (await this.crypto.entities.owningEntityIdsOf(DataSampleMapper.toServiceDto(dataSample)!, undefined))[0]
   }
 
   private async _getContactOfDataSample(currentUser: UserDto, dataSample: DataSample): Promise<[boolean, ContactDto?]> {
@@ -620,18 +464,9 @@ export class DataSampleApiImpl implements DataSampleApi {
     if (cachedContact) {
       return [true, cachedContact]
     } else {
-      let contact: ContactDto = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined
+      let contact: ContactDto | undefined = dataSample.batchId ? await this.contactApi.getContactWithUser(currentUser, dataSample.batchId) : undefined
       return [false, contact]
     }
-  }
-
-  private async _getPatientIdOfContact(currentUser: UserDto, contactDto: ContactDto): Promise<string | undefined> {
-    const keysFromDeleg = await this.crypto
-      .extractKeysHierarchyFromDelegationLikes(this.dataOwnerApi.getDataOwnerOf(currentUser), contactDto.id!, contactDto.cryptedForeignKeys!)
-      .catch((e) => {
-        throw this.errorHandler.createErrorFromAny(e)
-      })
-    return keysFromDeleg.map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined)).find((key) => key != undefined)
   }
 
   private async _findContactsForDataSampleIds(currentUser: UserDto, dataSampleIds: Array<string>): Promise<Array<ContactDto>> {
@@ -672,7 +507,7 @@ export class DataSampleApiImpl implements DataSampleApi {
   }
 
   private async _getPatientOfContact(currentUser: UserDto, contactDto: ContactDto): Promise<PatientDto | undefined> {
-    const patientId = await this._getPatientIdOfContact(currentUser, contactDto)
+    const patientId = (await this.contactApi.decryptPatientIdOf(contactDto))[0]
     if (patientId) {
       return this.patientApi.getPatientWithUser(currentUser, patientId)
     } else {
@@ -685,34 +520,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       throw this.errorHandler.createErrorFromAny(e)
     })
 
-    const serviceToFind = await this.contactApi.listServicesWithUser(currentUser, new ListOfIds({ ids: [dataSampleId] })).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    if (serviceToFind == undefined) {
-      throw this.errorHandler.createErrorWithMessage(`Couldn't find data sample ${dataSampleId}`)
-    }
-    return Promise.resolve(firstOrNull(serviceToFind)!)
-  }
-
-  private async _getDocumentEncryptionKeys(currentUser: UserDto, documentDto: DocumentDto): Promise<Array<string>> {
-    const keysFromDeleg = await this.crypto.extractKeysHierarchyFromDelegationLikes(
-      currentUser.healthcarePartyId!,
-      documentDto.id!,
-      documentDto.encryptionKeys!
-    )
-    return keysFromDeleg
-      .map((key) => (key.extractedKeys.length > 0 ? key.extractedKeys[0] : undefined))
-      .filter((key) => key != undefined)
-      .map((key) => key!)
-  }
-
-  private async _getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string): Promise<DocumentDto> {
-    const existingDataSample = await this.getDataSample(dataSampleId)
-    if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
-      throw this.errorHandler.createErrorWithMessage(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`)
-    }
-
-    return this.documentApi.getDocument(documentId)
+    return this.contactApi.getServiceWithUser(currentUser, dataSampleId)
   }
 
   private _createPotentialSubContactsForHealthElements(services: Array<ServiceDto>, currentUser: UserDto): Promise<SubContact[]> {
@@ -763,5 +571,157 @@ export class DataSampleApiImpl implements DataSampleApi {
 
       return foundIds
     })
+  }
+
+  private enrichWithContactMetadata(service: Service, contact: Contact) {
+    return {
+      ...service,
+      secretForeignKeys: contact.secretForeignKeys,
+      cryptedForeignKeys: contact.cryptedForeignKeys,
+      delegations: contact.delegations,
+      encryptionKeys: contact.encryptionKeys,
+    }
+  }
+
+  async setDataSampleAttachment(
+    dataSampleId: string,
+    body: ArrayBuffer,
+    documentName?: string,
+    documentVersion?: string,
+    documentExternalUuid?: string,
+    documentLanguage?: string
+  ): Promise<Document> {
+    try {
+      const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+      const existingDataSample = await this.getDataSample(dataSampleId)
+
+      const [, batchOfDataSample] = await this._getContactOfDataSample(currentUser, existingDataSample)
+      if (batchOfDataSample == undefined) {
+        throw this.errorHandler.createErrorWithMessage(`Could not find the batch of the data sample ${dataSampleId}`)
+      }
+
+      const patientIdOfBatch = (await this.contactApi.decryptPatientIdOf(batchOfDataSample))[0]
+      if (patientIdOfBatch == undefined) {
+        throw this.errorHandler.createErrorWithMessage(`Can not set an attachment to a data sample not linked to a patient`)
+      }
+
+      const dataOwnersWithAccessInfo = await this.contactApi.getDataOwnersWithAccessTo(batchOfDataSample)
+      if (dataOwnersWithAccessInfo.hasUnknownAnonymousDataOwners) {
+        console.warn(
+          `Could not determine all data owners with access to sample with id ${dataSampleId}. Some users may be able to access the data sample but not the attachment.`
+        )
+      }
+
+      const documentToCreate = await this.documentApi.newInstance(
+        currentUser,
+        undefined,
+        new DocumentDto({
+          id: this.crypto.primitives.randomUuid(),
+          name: documentName,
+          version: documentVersion,
+          externalUuid: documentExternalUuid,
+          hash: ua2hex(await this.crypto.primitives.sha256(body)),
+          size: body.byteLength,
+          mainUti: UtiDetector.getUtiFor(documentName),
+        }),
+        {
+          additionalDelegates: dataOwnersWithAccessInfo.permissionsByDataOwnerId,
+        }
+      )
+
+      const createdDocument = await this.documentApi.createDocument(documentToCreate).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+
+      // Update data sample with documentId
+      const contentIso = documentLanguage ?? 'en'
+      const newDSContent = {
+        ...existingDataSample.content,
+        [contentIso]: new Content({
+          ...(existingDataSample.content[contentIso] ?? {}),
+          documentId: createdDocument.id,
+        }),
+      }
+      await this.createOrModifyDataSampleFor(
+        patientIdOfBatch!,
+        new DataSample({
+          ...existingDataSample,
+          content: newDSContent,
+        })
+      )
+      // Do not delete existing `Document` entity, even if existing: services are versioned
+
+      // Add attachment to document
+      const docWithAttachment = await this.documentApi.encryptAndSetDocumentAttachment(createdDocument, body)
+
+      return DocumentMapper.toDocument(docWithAttachment)
+    } catch (e) {
+      if (e instanceof Error) {
+        throw this.errorHandler.createError(e)
+      }
+      throw e
+    }
+  }
+  async deleteAttachment(dataSampleId: string, documentId: string): Promise<string> {
+    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+
+    const existingContact = (await this._findContactsForDataSampleIds(currentUser, [dataSampleId]))[0]
+    if (existingContact == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
+    }
+
+    const existingService = existingContact!.services!.find((s) => s.id == dataSampleId)
+    if (existingService == undefined || existingService.content == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find batch information of the data sample ${dataSampleId}`)
+    }
+
+    const contactPatientId = (await this.contactApi.decryptPatientIdOf(existingContact!))[0]
+    if (contactPatientId == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Cannot set an attachment to a data sample not linked to a patient`)
+    }
+
+    const contentToDelete = Object.entries(existingService.content!).find(([_, content]) => content.documentId == documentId)?.[0]
+
+    if (contentToDelete == undefined) {
+      throw this.errorHandler.createErrorWithMessage(`Could not find attachment ${documentId} in the data sample ${dataSampleId}`)
+    }
+
+    const updatedContent = toMap(Object.entries(existingService.content!).filter(([key, _]) => key != contentToDelete!))
+
+    await this.createOrModifyDataSampleFor(
+      contactPatientId,
+      DataSampleMapper.toDataSample({
+        ...existingService,
+        content: updatedContent,
+      })!
+    ).catch((e) => {
+      throw this.errorHandler.createErrorFromAny(e)
+    })
+    // Do not actually delete existing `Document` entity: services are versioned
+
+    return documentId
+  }
+
+  async getDataSampleAttachmentContent(dataSampleId: string, documentId: string): Promise<ArrayBuffer> {
+    const documentOfAttachment = await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId)
+
+    return this.documentApi.getAndDecryptDocumentAttachment(documentOfAttachment)
+  }
+
+  async getDataSampleAttachmentDocument(dataSampleId: string, documentId: string): Promise<Document> {
+    return DocumentMapper.toDocument(await this._getDataSampleAttachmentDocumentFromICure(dataSampleId, documentId))
+  }
+
+  private async _getDataSampleAttachmentDocumentFromICure(dataSampleId: string, documentId: string): Promise<DocumentDto> {
+    const existingDataSample = await this.getDataSample(dataSampleId)
+    if (Object.entries(existingDataSample!.content).find(([, content]) => content.documentId == documentId) == null) {
+      throw this.errorHandler.createErrorWithMessage(`Id ${documentId} does not reference any document in the data sample ${dataSampleId}`)
+    }
+
+    return this.documentApi.getDocument(documentId)
   }
 }

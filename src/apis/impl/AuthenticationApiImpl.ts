@@ -7,33 +7,38 @@ import { MessageGatewayApi } from '../MessageGatewayApi'
 import { Notification, NotificationTypeEnum } from '../../models/Notification'
 import { Sanitizer } from '../../services/Sanitizer'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { KeyStorageFacade, retry, StorageFacade } from '@icure/api'
+import { KeyStorageFacade, retry, StorageFacade, ua2hex } from '@icure/api'
 import { User } from '../../models/User'
 import { RecaptchaType } from '../../models/RecaptchaType'
 import * as Crypto from 'crypto'
+import { KeyPair } from '@icure/api/icc-x-api/crypto/RSA'
+import { MedTechCryptoStrategies } from '../../services/MedTechCryptoStrategies'
+import { PatientMapper } from '../../mappers/patient'
 
 export class AuthenticationApiImpl implements AuthenticationApi {
   private readonly fetchImpl?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   private readonly iCureBasePath: string
-  private readonly authProcessByEmailId: string
-  private readonly authProcessBySmsId: string
+  private readonly authProcessByEmailId: string | undefined
+  private readonly authProcessBySmsId: string | undefined
   private readonly messageGatewayApi: MessageGatewayApi
   private readonly errorHandler: ErrorHandler
   private readonly sanitizer: Sanitizer
   private readonly crypto: Crypto
   private readonly storage: StorageFacade<string>
   private readonly keyStorage: KeyStorageFacade
+  private readonly cryptoStrategies: MedTechCryptoStrategies
 
   constructor(
     messageGatewayApi: MessageGatewayApi,
     iCureBasePath: string,
-    authProcessByEmailId: string,
-    authProcessBySmsId: string,
+    authProcessByEmailId: string | undefined,
+    authProcessBySmsId: string | undefined,
     errorHandler: ErrorHandler,
     sanitizer: Sanitizer,
     crypto: Crypto,
     storage: StorageFacade<string>,
     keyStorage: KeyStorageFacade,
+    cryptoStrategies: MedTechCryptoStrategies,
     fetchImpl: (input: RequestInfo, init?: RequestInit) => Promise<Response> = typeof window !== 'undefined'
       ? window.fetch
       : typeof self !== 'undefined'
@@ -51,6 +56,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
     this.sanitizer = sanitizer
     this.storage = storage
     this.keyStorage = keyStorage
+    this.cryptoStrategies = cryptoStrategies
   }
 
   async startAuthentication(
@@ -70,16 +76,16 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       )
     }
 
-    if((!!email && !this.authProcessByEmailId) || (!!phoneNumber && !this.authProcessBySmsId)) {
+    if ((!!email && !this.authProcessByEmailId) || (!!phoneNumber && !this.authProcessBySmsId)) {
       throw this.errorHandler.createErrorWithMessage(
         `In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId`
       )
     }
 
-    const processId = (!!email && !!this.authProcessByEmailId) ? this.authProcessByEmailId : this.authProcessBySmsId
+    const processId = !!email && !!this.authProcessByEmailId ? this.authProcessByEmailId : this.authProcessBySmsId
 
     const requestId = await this.messageGatewayApi.startProcess(
-      processId,
+      processId!,
       {
         'g-recaptcha-response': recaptchaType === 'recaptcha' ? recaptcha : undefined,
         'friendly-captcha-response': recaptchaType === 'friendly-captcha' ? recaptcha : undefined,
@@ -134,12 +140,10 @@ export class AuthenticationApiImpl implements AuthenticationApi {
           `Impossible to find the patient ${loggedUser.patientId} apparently linked to the user ${loggedUser.id}. Are you sure this patientId is correct ?`
         )
 
-      const delegates = Object.entries(patientDataOwner.systemMetaData?.delegations ?? {})
-        .map((keyValue) => Array.from(keyValue[1]))
-        .flat()
-        .filter((delegation) => !!delegation.delegatedTo)
-        .filter((delegation) => delegation.delegatedTo != patientDataOwner.id!)
-        .map((delegation) => delegation.delegatedTo!)
+      const delegatesInfo = await authenticationResult.medTechApi.cryptoApi.entities.getDataOwnersWithAccessTo(
+        PatientMapper.toPatientDto(patientDataOwner)!
+      )
+      const delegates = Object.keys(delegatesInfo.permissionsByDataOwnerId)
 
       for (const delegate of delegates) {
         const accessNotification = await authenticationResult.medTechApi.notificationApi.createOrModifyNotification(
@@ -186,9 +190,15 @@ export class AuthenticationApiImpl implements AuthenticationApi {
   }
 
   private async _initUserAuthTokenAndCrypto(login: string, token: string): Promise<AuthenticationResult> {
-    const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token))
+    const { authenticatedApi, user } = await retry(() => this._generateAndAssignAuthenticationToken(login, token), 5, 3000)
 
-    const userKeyPairs = await authenticatedApi.initUserCrypto()
+    const userKeyPairs: KeyPair<string>[] = []
+    for (const keyPair of Object.values(authenticatedApi.cryptoApi.userKeysManager.getDecryptionKeys())) {
+      userKeyPairs.push({
+        publicKey: ua2hex(await authenticatedApi.cryptoApi.primitives.RSA.exportKey(keyPair.publicKey, 'spki')),
+        privateKey: ua2hex(await authenticatedApi.cryptoApi.primitives.RSA.exportKey(keyPair.privateKey, 'pkcs8')),
+      })
+    }
 
     return new AuthenticationResult({
       medTechApi: authenticatedApi,
@@ -207,6 +217,7 @@ export class AuthenticationApiImpl implements AuthenticationApi {
       .withCrypto(this.crypto)
       .withStorage(this.storage)
       .withKeyStorage(this.keyStorage)
+      .withCryptoStrategies(this.cryptoStrategies)
       .build()
 
     const user = await api.userApi.getLoggedUser()

@@ -40,15 +40,11 @@ export function formatICureApiUrl(iCureUrl: string): string {
   let formattedEndUrl = removeSlashEndOfApiUrl(iCureUrl)
 
   if (formattedEndUrl.match('^https?://[a-zA-Z0-9.-]+(:[0-9]+)?$') != null) {
-    return formattedEndUrl + '/rest/v1'
-  }
-
-  if (formattedEndUrl.match('^https?://[a-zA-Z0-9.-]+(:[0-9]+)?/rest/v[1-2]$') != null) {
     return formattedEndUrl
   }
 
   throw Error(
-    `Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?/rest/v[1-2]$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team`
+    `Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team`
   )
 }
 

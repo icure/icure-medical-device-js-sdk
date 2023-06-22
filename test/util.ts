@@ -24,24 +24,21 @@ describe('Util', () => {
 
     expect(formatICureApiUrl(ICURE_FREE_URL)).to.eq(ICURE_FREE_URL)
     expect(formatICureApiUrl('http://localhost:16043')).to.eq(ICURE_FREE_URL)
-    expect(formatICureApiUrl('http://localhost:16044/rest/v1')).to.eq('http://localhost:16044/rest/v1')
-    expect(formatICureApiUrl('http://localhost:16044/rest/v1/')).to.eq('http://localhost:16044/rest/v1')
 
-    expect(formatICureApiUrl('https://kraken.icure.dev')).to.eq('https://kraken.icure.dev/rest/v1')
-    expect(formatICureApiUrl('https://kraken.icure.dev/rest/v1')).to.eq('https://kraken.icure.dev/rest/v1')
+    expect(formatICureApiUrl('https://kraken.icure.dev/')).to.eq('https://kraken.icure.dev')
 
-    expect(formatICureApiUrl('http://kraken-1/rest/v2')).to.eq('http://kraken-1/rest/v2')
+    expect(formatICureApiUrl('http://kraken-1/')).to.eq('http://kraken-1')
   })
 
   it('Invalid iCure API URLs', async () => {
     // A few invalid API URLs
     expect(() => formatICureApiUrl('https://kraken.icure.cloud/rest')).to.throw(
-      'Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?/rest/v[1-2]$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team',
-      'Incomplete Path should not be accepted'
+      'Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team',
+      'Only the host url should be included (no path segments)'
     )
-    expect(() => formatICureApiUrl('https://kraken.icure.cloud/rest/v3')).to.throw(
-      'Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?/rest/v[1-2]$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team',
-      'Wrong versions should not be accepted'
+    expect(() => formatICureApiUrl('https://kraken.icure.cloud/rest/v1')).to.throw(
+      'Invalid API URL: Should respect the format ^https?://[a-zA-Z0-9.-]+{2,}(:d+)?$. Consider using only the constants of index.ts, except if you received any other information from the iCure Team',
+      'Only the host url should be included (no /rest/vX)'
     )
   })
 })

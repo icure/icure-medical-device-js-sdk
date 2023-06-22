@@ -1,6 +1,6 @@
 import { AuthenticationApi } from './AuthenticationApi'
 import { AuthenticationApiImpl } from './impl/AuthenticationApiImpl'
-import { Api, IccCryptoXApi, KeyStorageFacade, KeyStorageImpl, LocalStorageImpl, StorageFacade, ua2hex } from '@icure/api'
+import { KeyStorageFacade, KeyStorageImpl, LocalStorageImpl, StorageFacade } from '@icure/api'
 import { MessageGatewayApiImpl } from './impl/MessageGatewayApiImpl'
 import { ErrorHandlerImpl } from '../services/impl/ErrorHandlerImpl'
 import { ErrorHandler } from '../services/ErrorHandler'
@@ -8,13 +8,14 @@ import { Sanitizer } from '../services/Sanitizer'
 import { SanitizerImpl } from '../services/impl/SanitizerImpl'
 import { ICURE_CLOUD_URL, MSG_GW_CLOUD_URL } from '../../index'
 import { formatICureApiUrl } from '../util'
+import { CryptoPrimitives } from '@icure/api/icc-x-api/crypto/CryptoPrimitives'
+import { MedTechCryptoStrategies } from '../services/MedTechCryptoStrategies'
 
 export class AnonymousMedTechApi {
   private readonly _iCureUrlPath: string
   private readonly _msgGwUrl: string
   private readonly _msgGwSpecId: string
   private readonly _authenticationApi: AuthenticationApi
-  private readonly _cryptoApi: IccCryptoXApi
   private readonly _errorHandler: ErrorHandler
   private readonly _sanitizer: Sanitizer
 
@@ -22,11 +23,12 @@ export class AnonymousMedTechApi {
     iCureUrlPath: string,
     msgGwUrl: string,
     msgGwSpecId: string,
-    authProcessByEmailId: string,
-    authProcessBySmsId: string,
-    api: { cryptoApi: IccCryptoXApi },
+    authProcessByEmailId: string | undefined,
+    authProcessBySmsId: string | undefined,
     storage: StorageFacade<string>,
-    keyStorage: KeyStorageFacade
+    keyStorage: KeyStorageFacade,
+    private readonly cryptoPrimitives: CryptoPrimitives,
+    private readonly cryptoStrategies: MedTechCryptoStrategies
   ) {
     this._iCureUrlPath = iCureUrlPath
     this._msgGwUrl = msgGwUrl
@@ -42,27 +44,15 @@ export class AnonymousMedTechApi {
       authProcessBySmsId,
       this._errorHandler,
       this._sanitizer,
-      api.cryptoApi.crypto,
+      cryptoPrimitives.crypto,
       storage,
-      keyStorage
+      keyStorage,
+      this.cryptoStrategies
     )
-    this._cryptoApi = api.cryptoApi
-  }
-
-  get cryptoApi(): IccCryptoXApi {
-    return this._cryptoApi
   }
 
   get authenticationApi(): AuthenticationApi {
     return this._authenticationApi
-  }
-
-  async generateRSAKeypair(): Promise<{ privateKey: string; publicKey: string }> {
-    const { publicKey, privateKey } = await this.cryptoApi.RSA.generateKeyPair()
-    const publicKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(publicKey, 'spki'))
-    const privateKeyHex = ua2hex(await this.cryptoApi.RSA.exportKey(privateKey, 'pkcs8'))
-
-    return { privateKey: privateKeyHex, publicKey: publicKeyHex }
   }
 }
 
@@ -72,10 +62,10 @@ export class AnonymousMedTechApiBuilder {
   private msgGwSpecId?: string
   private authProcessByEmailId?: string
   private authProcessBySmsId?: string
-  private _preventCookieUsage: boolean = false
   private crypto?: Crypto
   private storage?: StorageFacade<string>
   private keyStorage?: KeyStorageFacade
+  private cryptoStrategies?: MedTechCryptoStrategies
 
   withICureBaseUrl(newICureBaseUrl: string): AnonymousMedTechApiBuilder {
     this.iCureBaseUrl = formatICureApiUrl(newICureBaseUrl)
@@ -117,34 +107,41 @@ export class AnonymousMedTechApiBuilder {
     return this
   }
 
-  preventCookieUsage(): AnonymousMedTechApiBuilder {
-    this._preventCookieUsage = true
+  withCryptoStrategies(strategies: MedTechCryptoStrategies): AnonymousMedTechApiBuilder {
+    this.cryptoStrategies = strategies
     return this
   }
 
   async build(): Promise<AnonymousMedTechApi> {
-    if (!this.authProcessByEmailId && !this.authProcessBySmsId) {
+    const iCureBaseUrl = this.iCureBaseUrl
+    const msgGwUrl = this.msgGwUrl
+    const msgGwSpecId = this.msgGwSpecId
+    const authProcessByEmailId = this.authProcessByEmailId
+    const authProcessBySmsId = this.authProcessBySmsId
+    const cryptoStrategies = this.cryptoStrategies
+    if (!authProcessByEmailId && !authProcessBySmsId) {
       throw new Error('At least one between authProcessIdBySms and authProcessByEmailId is required')
     }
-    if (!this.msgGwSpecId) {
+    if (!msgGwSpecId) {
       throw new Error('msgGtwSpecId is required')
     }
+    if (!cryptoStrategies) {
+      throw new Error('cryptoStrategies is required')
+    }
 
-    const _storage = this.storage ?? new LocalStorageImpl()
-    const _keyStorage = this.keyStorage ?? new KeyStorageImpl(_storage)
+    const storage = this.storage ?? new LocalStorageImpl()
+    const keyStorage = this.keyStorage ?? new KeyStorageImpl(storage)
 
-    return Api(this.iCureBaseUrl, null!, null!, this.crypto, fetch, this._preventCookieUsage, undefined, _storage, _keyStorage).then(
-      (api) =>
-        new AnonymousMedTechApi(
-          this.iCureBaseUrl,
-          this.msgGwUrl!,
-          this.msgGwSpecId!,
-          this.authProcessByEmailId!,
-          this.authProcessBySmsId!,
-          api,
-          _storage,
-          _keyStorage
-        )
+    return new AnonymousMedTechApi(
+      iCureBaseUrl,
+      msgGwUrl,
+      msgGwSpecId,
+      authProcessByEmailId,
+      authProcessBySmsId,
+      storage,
+      keyStorage,
+      new CryptoPrimitives(this.crypto),
+      cryptoStrategies
     )
   }
 }

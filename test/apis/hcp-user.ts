@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 import { v4 as uuid } from 'uuid'
 import 'mocha'
 import { medTechApi } from '../../src/apis/MedTechApi'
@@ -7,13 +7,16 @@ import { webcrypto } from 'crypto'
 import { User } from '../../src/models/User'
 import { HealthcareProfessional } from '../../src/models/HealthcareProfessional'
 import { SystemMetaDataOwner } from '../../src/models/SystemMetaDataOwner'
-import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestVars } from '../test-utils'
+import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
 import { Patient } from '../../src/models/Patient'
 import { jwk2spki } from '@icure/api'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { SimpleMedTechCryptoStrategies } from '../../src/services/impl/SimpleMedTechCryptoStrategies'
+import { DataOwnerTypeEnum } from '../../src/models/DataOwner'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined
+let env: TestVars
 
 describe('Healthcare professional', () => {
   before(async () => {
@@ -22,15 +25,10 @@ describe('Healthcare professional', () => {
   })
 
   it('should be capable of creating a healthcare professional from scratch', async () => {
-    const medtechApi = await medTechApi()
-      .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
-      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
-      .withCrypto(webcrypto as any)
-      .build()
+    const medtechApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])).api
 
-    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.RSA.generateKeyPair()
-    const keyPair = await medtechApi.cryptoApi.RSA.exportKeys(rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey }, 'jwk', 'jwk')
+    const rawKeyPair: CryptoKeyPair = await medtechApi.cryptoApi.primitives.RSA.generateKeyPair()
+    const keyPair = await medtechApi.cryptoApi.primitives.RSA.exportKeys(rawKeyPair as { publicKey: CryptoKey; privateKey: CryptoKey }, 'jwk', 'jwk')
 
     const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(
       new HealthcareProfessional({
@@ -43,7 +41,7 @@ describe('Healthcare professional', () => {
       })
     )
 
-    assert(hcp)
+    expect(!!hcp).to.be.true
 
     let userEmail = `${uuid()}@med-ts-ic-test.com`
     let userPwd = `${uuid()}`
@@ -56,32 +54,24 @@ describe('Healthcare professional', () => {
       })
     )
 
-    assert(user.id != null)
-    assert(user.login == userEmail)
-    assert(user.email == userEmail)
-    assert(user.healthcarePartyId == hcp.id)
-    assert(user.passwordHash != userPwd)
+    expect(user.id).to.not.be.null
+    expect(user.login).to.equal(userEmail)
+    expect(user.email).to.equal(userEmail)
+    expect(user.healthcarePartyId).to.equal(hcp.id)
+    expect(user.passwordHash).to.not.equal(userPwd)
   })
 
   it('should be capable of initializing crypto of a healthcare professional from scratch', async () => {
-    const medtechApi = await medTechApi()
-      .withICureBaseUrl(env!.iCureUrl)
-      .withUserName(env!.dataOwnerDetails[hcp1Username].user)
-      .withPassword(env!.dataOwnerDetails[hcp1Username].password)
-      .withCrypto(webcrypto as any)
-      .build()
+    const medtechApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp1Username])).api
 
     const hcp = await medtechApi.healthcareProfessionalApi.createOrModifyHealthcareProfessional(
       new HealthcareProfessional({
         name: `Med-ts-ic-test-${uuid()}`,
-        systemMetaData: new SystemMetaDataOwner({
-          hcPartyKeys: {},
-          privateKeyShamirPartitions: {},
-        }),
+        systemMetaData: new SystemMetaDataOwner({}),
       })
     )
 
-    assert(hcp)
+    expect(!!hcp).to.be.true
 
     let userEmail = `${uuid()}@med-ts-ic-test.com`
     let userPwd = `${uuid()}`
@@ -94,11 +84,11 @@ describe('Healthcare professional', () => {
       })
     )
 
-    assert(user.id != null)
-    assert(user.login == userEmail)
-    assert(user.email == userEmail)
-    assert(user.healthcarePartyId == hcp.id)
-    assert(user.passwordHash != userPwd)
+    expect(user.id).to.not.be.null
+    expect(user.login).to.equal(userEmail)
+    expect(user.email).to.equal(userEmail)
+    expect(user.healthcarePartyId).to.equal(hcp.id)
+    expect(user.passwordHash).to.not.equal(userPwd)
 
     // When HCP wants to init a RSA KeyPair
     const hcpApi = await medTechApi()
@@ -106,9 +96,11 @@ describe('Healthcare professional', () => {
       .withUserName(userEmail)
       .withPassword(userPwd)
       .withCrypto(webcrypto as any)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
       .build()
 
-    await hcpApi.initUserCrypto()
+    const initialisedHcp = await hcpApi.dataOwnerApi.getDataOwner(user.healthcarePartyId!)
+    expect(hcpApi.dataOwnerApi.getPublicKeysOf(initialisedHcp)).to.have.length(1)
 
     // Then, HCP can create data
     const createdPatient = await hcpApi.patientApi.createOrModifyPatient(
@@ -122,5 +114,8 @@ describe('Healthcare professional', () => {
     expect(createdPatient.firstName).to.be.equal('John')
     expect(createdPatient.lastName).to.be.equal('Snow')
     expect(createdPatient.note).to.be.equal('Winter is coming')
+
+    const retrievedPatient = await hcpApi.patientApi.getPatient(createdPatient.id!)
+    expect(retrievedPatient).to.deep.equal(createdPatient)
   })
 })

@@ -26,8 +26,11 @@ import toPartnershipDto = PartnershipDtoMapper.toPartnershipDto
 import toDelegationDto = DelegationMapper.toDelegationDto
 import toPartnership = PartnershipDtoMapper.toPartnership
 import toAddress = AddressMapper.toAddress
+import { SystemMetaDataMapper } from './metadata'
 
 export namespace PatientMapper {
+  import toSystemMetaDataOwnerEncrypted = SystemMetaDataMapper.toSystemMetaDataOwnerEncrypted
+  import toSystemMetaDataOwnerEncryptedDto = SystemMetaDataMapper.toSystemMetaDataOwnerEncryptedDto
   export const toPatient = (obj?: PatientDto) =>
     obj
       ? new Patient({
@@ -80,18 +83,7 @@ export namespace PatientMapper {
           ethnicity: obj.ethnicity,
           picture: obj.picture,
           externalId: obj.externalId,
-          systemMetaData: new SystemMetaDataOwnerEncrypted({
-            publicKey: obj.publicKey,
-            hcPartyKeys: obj.hcPartyKeys,
-            privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
-            secretForeignKeys: obj.secretForeignKeys,
-            cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
-            delegations: toMapSetTransform(obj.delegations, toDelegation),
-            encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
-            aesExchangeKeys: obj.aesExchangeKeys,
-            transferKeys: obj.transferKeys,
-            encryptedSelf: obj.encryptedSelf,
-          }),
+          systemMetaData: toSystemMetaDataOwnerEncrypted(obj),
         })
       : undefined
 
@@ -147,18 +139,7 @@ export namespace PatientMapper {
           ethnicity: obj.ethnicity,
           picture: obj.picture,
           externalId: obj.externalId,
-          systemMetaData: new SystemMetaDataOwnerEncrypted({
-            publicKey: obj.publicKey,
-            hcPartyKeys: obj.hcPartyKeys,
-            privateKeyShamirPartitions: obj.privateKeyShamirPartitions,
-            secretForeignKeys: obj.secretForeignKeys,
-            cryptedForeignKeys: toMapSetTransform(obj.cryptedForeignKeys, toDelegation),
-            delegations: toMapSetTransform(obj.delegations, toDelegation),
-            encryptionKeys: toMapSetTransform(obj.encryptionKeys, toDelegation),
-            aesExchangeKeys: obj.aesExchangeKeys,
-            transferKeys: obj.transferKeys,
-            encryptedSelf: obj.encryptedSelf,
-          }),
+          systemMetaData: toSystemMetaDataOwnerEncrypted(obj),
         })
       : undefined
 
@@ -214,16 +195,7 @@ export namespace PatientMapper {
           ethnicity: obj.ethnicity,
           picture: obj.picture,
           externalId: obj.externalId,
-          publicKey: obj.systemMetaData?.publicKey,
-          hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
-          privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
-          secretForeignKeys: obj.systemMetaData?.secretForeignKeys,
-          cryptedForeignKeys: toMapArrayTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
-          delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
-          encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
-          aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
-          transferKeys: obj.systemMetaData?.transferKeys,
-          encryptedSelf: obj.systemMetaData?.encryptedSelf,
+          ...(obj.systemMetaData ? toSystemMetaDataOwnerEncryptedDto(obj.systemMetaData) : {}),
         })
       : undefined
 }
