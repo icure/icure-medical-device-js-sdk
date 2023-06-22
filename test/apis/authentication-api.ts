@@ -218,6 +218,115 @@ describe('Authentication API', () => {
     assert(currentHcp.lastName == 'Duchâteau')
   }).timeout(60000)
 
+  it('User should not be able to start authentication if he provided an email but no AuthProcessByEmailId', async () => {
+    // Given
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
+      .build()
+
+    // When
+    try {
+      await anonymousMedTechApi.authenticationApi.startAuthentication(
+        env!.recaptcha,
+        'a-fake-email',
+        undefined,
+        'Tom',
+        'Gideon',
+        env!.hcpAuthProcessId,
+        false
+      )
+      expect(true, 'promise should fail').eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq(
+        'In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId'
+      )
+    }
+  })
+
+  it('User should not be able to start authentication if he provided an sms but no AuthProcessBySMSId', async () => {
+    // Given
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessByEmailId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
+      .build()
+
+    // When
+    try {
+      await anonymousMedTechApi.authenticationApi.startAuthentication(
+        env!.recaptcha,
+        undefined,
+        'a-fake-phone-number',
+        'Tom',
+        'Gideon',
+        env!.hcpAuthProcessId,
+        false
+      )
+      expect(true, 'promise should fail').eq(false)
+    } catch (e) {
+      expect((e as Error).message).to.eq(
+        'In order to start a user authentication with an email, you need to instantiate the API with a authProcessByEmailId. If you want to start the authentication with a phone number, then you need to instantiate the API with a authProcessBySmsId'
+      )
+    }
+  })
+
+  it('A User should be able to start the authentication by sms', async () => {
+    // Given
+    const anonymousMedTechApi = await new AnonymousMedTechApiBuilder()
+      .withICureBaseUrl(env!.iCureUrl)
+      .withMsgGwUrl(env!.msgGtwUrl)
+      .withMsgGwSpecId(env!.specId)
+      .withCrypto(webcrypto as any)
+      .withAuthProcessBySmsId(env!.hcpAuthProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
+      .build()
+
+    // When
+    const phoneNumber = `+${Math.ceil(Math.random() * 10000000 + 10000000)}`
+    await anonymousMedTechApi.authenticationApi.startAuthentication(
+      env!.recaptcha,
+      undefined,
+      phoneNumber,
+      'Tom',
+      'Gideon',
+      env!.hcpAuthProcessId,
+      false
+    )
+    const messages = await TestUtils.getSMS(phoneNumber)
+    expect(messages?.message).not.to.be.undefined
+  })
+
+  it('HCP should be capable of signing up using email', async () => {
+    // When
+    const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(
+      env!.iCureUrl,
+      env!.msgGtwUrl,
+      env!.specId,
+      env!.hcpAuthProcessId,
+      hcpId!,
+      env!.recaptcha,
+      'recaptcha'
+    )
+    const currentUser = hcpApiAndUser.user
+
+    // Then
+    assert(currentUser)
+    assert(currentUser.healthcarePartyId != null)
+
+    const currentHcp = await hcpApiAndUser.api.healthcareProfessionalApi.getHealthcareProfessional(currentUser.healthcarePartyId!)
+    assert(currentHcp)
+    assert(currentHcp.firstName == 'Antoine')
+    assert(currentHcp.lastName == 'Duchâteau')
+  }).timeout(60000)
+
   it('HCP should be capable of signing up using email', async () => {
     // When
     const hcpApiAndUser = await TestUtils.signUpUserUsingEmail(
