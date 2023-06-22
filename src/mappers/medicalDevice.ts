@@ -4,10 +4,13 @@ import { SystemMetaDataOwner } from '../models/SystemMetaDataOwner'
 import { forceUuid, map, mapSetToArray } from './utils'
 import { CodeStubDtoMapper } from './codeStubCodingReference'
 import { PropertyStubMapper } from './property'
+import { SystemMetaDataMapper } from './metadata'
 
 export namespace MedicalDeviceMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference
   import toProperty = PropertyStubMapper.toProperty
+  import toSystemMetaDataOwner = SystemMetaDataMapper.toSystemMetaDataOwner
+  import toSystemMetaDataOwnerDto = SystemMetaDataMapper.toSystemMetaDataOwnerDto
 
   export const toMedicalDevice = (dto: Device) =>
     new MedicalDevice({
@@ -27,13 +30,7 @@ export namespace MedicalDeviceMapper {
       serialNumber: dto.serialNumber,
       created: dto.created,
       modified: dto.modified,
-      systemMetaData: new SystemMetaDataOwner({
-        publicKey: dto.publicKey,
-        hcPartyKeys: dto.hcPartyKeys,
-        privateKeyShamirPartitions: dto.privateKeyShamirPartitions,
-        aesExchangeKeys: dto.aesExchangeKeys,
-        transferKeys: dto.transferKeys,
-      }),
+      systemMetaData: toSystemMetaDataOwner(dto),
     })
 
   export const toDeviceDto = (obj: MedicalDevice) =>
@@ -54,10 +51,6 @@ export namespace MedicalDeviceMapper {
       serialNumber: obj.serialNumber,
       created: obj.created,
       modified: obj.modified,
-      publicKey: obj.systemMetaData?.publicKey,
-      hcPartyKeys: obj.systemMetaData?.hcPartyKeys,
-      privateKeyShamirPartitions: obj.systemMetaData?.privateKeyShamirPartitions,
-      aesExchangeKeys: obj.systemMetaData?.aesExchangeKeys,
-      transferKeys: obj.systemMetaData?.transferKeys,
+      ...(obj.systemMetaData ? toSystemMetaDataOwnerDto(obj.systemMetaData) : {}),
     })
 }

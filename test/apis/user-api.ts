@@ -1,7 +1,8 @@
-import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
+import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
 import { v4 as uuid } from 'uuid'
 import { assert } from 'chai'
 import 'isomorphic-fetch'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 
 setLocalStorage(fetch)
 

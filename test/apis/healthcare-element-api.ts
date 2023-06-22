@@ -6,31 +6,22 @@ import { assert, expect, use as chaiUse } from 'chai'
 import { Patient } from '../../src/models/Patient'
 import { User } from '../../src/models/User'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
-import {
-  getEnvironmentInitializer,
-  getEnvVariables,
-  hcp1Username,
-  hcp2Username,
-  hcp3Username,
-  patUsername,
-  setLocalStorage,
-  TestUtils,
-  TestVars,
-} from '../test-utils'
-import { HealthcareElementFilter } from '../../src/filter'
+import { getEnvironmentInitializer, hcp1Username, hcp2Username, hcp3Username, patUsername, setLocalStorage, TestUtils } from '../test-utils'
 import { it } from 'mocha'
 import { deepEquality } from '../../src/utils/equality'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { HealthcareElementFilter } from '../../src/filter/dsl/HealthcareElementFilterDsl'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined
-let patApi: MedTechApi | undefined
-let patUser: User | undefined
-let hcp2Api: MedTechApi | undefined
-let hcp2User: User | undefined
-let hcp1Api: MedTechApi | undefined
-let hcp1User: User | undefined
+let env: TestVars
+let patApi: MedTechApi
+let patUser: User
+let hcp2Api: MedTechApi
+let hcp2User: User
+let hcp1Api: MedTechApi
+let hcp1User: User
 
 function createHealthcareElementForPatient(medtechApi: MedTechApi, patient: Patient): Promise<HealthcareElement> {
   return medtechApi.healthcareElementApi.createOrModifyHealthcareElement(
@@ -51,6 +42,10 @@ describe('Healthcare Element API', () => {
     patApi = patApiAndUser.api
     patUser = patApiAndUser.user
 
+    const patientDataOwner = await patApi.patientApi.getPatient(patUser!.patientId!)
+    const sharedWithHcp1 = await patApi.patientApi.giveAccessTo(patientDataOwner, env.dataOwnerDetails[hcp1Username].dataOwnerId)
+    await patApi.patientApi.giveAccessTo(sharedWithHcp1, env.dataOwnerDetails[hcp2Username].dataOwnerId)
+
     const hcp1ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcp1ApiAndUser.api
     hcp1User = hcp1ApiAndUser.user
@@ -61,52 +56,52 @@ describe('Healthcare Element API', () => {
   })
 
   it('Patient sharing healthcare element with HCP', async () => {
-    const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!)
+    const currentPatient = await patApi.patientApi.getPatient(patUser!.patientId!)
 
-    const currentHcp = await hcp2Api!.healthcareProfessionalApi.getHealthcareProfessional(hcp2User!.healthcarePartyId!)
+    const currentHcp = await hcp2Api.healthcareProfessionalApi.getHealthcareProfessional(hcp2User!.healthcarePartyId!)
 
     const createdHealthcareElement = await createHealthcareElementForPatient(patApi!, currentPatient)
+    // Initially hcp2 can't get HE
+    await expect(hcp2Api!.healthcareElementApi.getHealthcareElement(createdHealthcareElement.id!)).to.be.rejected
+    // Patient shares HE and gets it updated and decrypted
     const sharedHealthcareElement = await patApi!.healthcareElementApi.giveAccessTo(createdHealthcareElement, currentHcp.id!)
-
-    assert(sharedHealthcareElement.systemMetaData!.delegations[currentHcp.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentHcp.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentHcp.id!] != undefined)
-
+    expect(sharedHealthcareElement.note).to.not.be.undefined
+    // HCP2 can now get HE and decrypt it
     const hcpHealthcareElement = await hcp2Api!.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!)
-    assert(hcpHealthcareElement != null)
-    assert(hcpHealthcareElement.id == sharedHealthcareElement.id)
+    expect(hcpHealthcareElement).to.not.be.null
+    expect(hcpHealthcareElement).to.deep.equal(sharedHealthcareElement)
   })
 
   it('HCP sharing healthcare element with patient', async () => {
     const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!)
 
     const createdHealthcareElement = await createHealthcareElementForPatient(hcp1Api!, currentPatient)
+    // Initially patient can't get HE
+    await expect(patApi!.healthcareElementApi.getHealthcareElement(createdHealthcareElement.id!)).to.be.rejected
+    // HCP shares HE and gets it updated and decrypted
     const sharedHealthcareElement = await hcp1Api!.healthcareElementApi.giveAccessTo(createdHealthcareElement, currentPatient.id!)
-
-    assert(sharedHealthcareElement.systemMetaData!.delegations[currentPatient.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentPatient.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentPatient.id!] != undefined)
-
+    expect(sharedHealthcareElement.note).to.not.be.undefined
+    // Patient can now get HE and decrypt it (after refreshing the api to get the new keys for Access Control)
+    await patApi!.cryptoApi.forceReload()
     const patHealthcareElement = await patApi!.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!)
-    assert(patHealthcareElement != null)
-    assert(patHealthcareElement.id == sharedHealthcareElement.id)
+    expect(patHealthcareElement).to.not.be.null
+    expect(patHealthcareElement).to.deep.equal(sharedHealthcareElement)
   })
 
   it('HCP sharing healthcare element with another HCP', async () => {
+    const patient = await TestUtils.createDefaultPatient(hcp1Api!)
     const currentHcp2 = await hcp2Api!.healthcareProfessionalApi.getHealthcareProfessional(hcp2User!.healthcarePartyId!)
 
-    const patient = await TestUtils.createDefaultPatient(hcp1Api!)
-
     const createdHealthcareElement = await createHealthcareElementForPatient(hcp1Api!, patient)
+    // Initially hcp2 can't get HE
+    await expect(hcp2Api!.healthcareElementApi.getHealthcareElement(createdHealthcareElement.id!)).to.be.rejected
+    // HCP1 shares HE and gets it updated and decrypted
     const sharedHealthcareElement = await hcp1Api!.healthcareElementApi.giveAccessTo(createdHealthcareElement, currentHcp2.id!)
-
-    assert(sharedHealthcareElement.systemMetaData!.delegations[currentHcp2.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.encryptionKeys[currentHcp2.id!] != undefined)
-    assert(sharedHealthcareElement.systemMetaData!.cryptedForeignKeys[currentHcp2.id!] != undefined)
-
+    expect(sharedHealthcareElement.note).to.not.be.undefined
+    // HCP2 can now get HE and decrypt it
     const hcp2HealthcareElement = await hcp2Api!.healthcareElementApi.getHealthcareElement(sharedHealthcareElement.id!)
-    assert(hcp2HealthcareElement != null)
-    assert(hcp2HealthcareElement.id == sharedHealthcareElement.id)
+    expect(hcp2HealthcareElement).to.not.be.null
+    expect(hcp2HealthcareElement).to.deep.equal(sharedHealthcareElement)
   })
 
   it('Optimization - No delegation sharing if delegated already has access to HE', async () => {
@@ -120,7 +115,7 @@ describe('Healthcare Element API', () => {
     assert(deepEquality(createdHealthcareElement, sharedHealthcareElement))
   })
 
-  it('Delegator may not share info of Healthcare element', async () => {
+  it('Users without access to the Healthcare element can not share it', async () => {
     const patient = await TestUtils.createDefaultPatient(hcp1Api!)
     const createdHealthcareElement = await createHealthcareElementForPatient(hcp1Api!, patient)
 
@@ -143,9 +138,7 @@ describe('Healthcare Element API', () => {
     const filteredElements = await hcp1Api!.healthcareElementApi.getHealthcareElementsForPatient(newPatient)
     expect(!!filteredElements).to.eq(true)
     expect(filteredElements.length).to.eq(1)
-    expect(filteredElements[0].id).to.eq(newHealthElement.id)
-    expect(filteredElements[0].note).to.eq(newHealthElement.note)
-    expect(filteredElements[0].description).to.eq(newHealthElement.description)
+    expect(filteredElements[0]).to.deep.equal(newHealthElement)
   })
 
   it('Healthcare element content is equal when obtain by its id or through filter', async () => {
@@ -155,9 +148,9 @@ describe('Healthcare Element API', () => {
     const newHealthElement = await createHealthcareElementForPatient(hcp1Api!, newPatient)
     expect(!!newHealthElement).to.eq(true)
 
-    const filter = await new HealthcareElementFilter()
+    const filter = await new HealthcareElementFilter(hcp1Api!)
       .forDataOwner(hcp1User!.healthcarePartyId!)
-      .forPatients(hcp1Api!.cryptoApi!, [newPatient])
+      .forPatients([newPatient])
       .byIds([newHealthElement.id!])
       .build()
 
@@ -181,26 +174,22 @@ describe('Healthcare Element API', () => {
   })
 
   it('Data Owner can filter all his Health Elements', async () => {
-    const currentPatient = await patApi!.patientApi.getPatient(patUser!.patientId!)
+    const currentPatient = await patApi.patientApi.getPatient(patUser.patientId!)
 
-    await createHealthcareElementForPatient(hcp2Api!, currentPatient)
+    const createdHe = await createHealthcareElementForPatient(hcp2Api, currentPatient)
 
-    const filter = await new HealthcareElementFilter().forDataOwner(hcp2User!.healthcarePartyId!).build()
+    const filter = await new HealthcareElementFilter(hcp2Api).forDataOwner(hcp2User.healthcarePartyId!).build()
 
-    const filterResult = await hcp2Api!.healthcareElementApi.filterHealthcareElement(filter)
+    const filterResult = await hcp2Api.healthcareElementApi.filterHealthcareElement(filter)
     expect(filterResult.rows.length).to.gt(0)
-    filterResult.rows.forEach((he) => {
-      expect(Object.keys(he.systemMetaData?.delegations ?? {})).to.contain(hcp2User!.healthcarePartyId!)
-    })
+    expect(filterResult.rows.find((x) => x.id == createdHe.id)).to.deep.equal(createdHe)
   })
 
   it('Data Owner can match all his Health Elements', async () => {
-    const hcp3ApiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env!.dataOwnerDetails[hcp3Username])
+    const filter = await new HealthcareElementFilter(hcp2Api).forDataOwner(hcp2User.healthcarePartyId!).build()
 
-    const filter = await new HealthcareElementFilter().forDataOwner(hcp3ApiAndUser.user.healthcarePartyId!).build()
-
-    const filterResult = await hcp2Api!.healthcareElementApi.filterHealthcareElement(filter)
-    const matchResult = await hcp2Api!.healthcareElementApi.matchHealthcareElement(filter)
+    const filterResult = await hcp2Api.healthcareElementApi.filterHealthcareElement(filter)
+    const matchResult = await hcp2Api.healthcareElementApi.matchHealthcareElement(filter)
     expect(matchResult.length).to.eq(filterResult.rows.length)
     filterResult.rows.forEach((he) => {
       expect(matchResult).to.contain(he.id)
@@ -208,8 +197,8 @@ describe('Healthcare Element API', () => {
   })
 
   it('if no Healthcare Element healthcareElementId is specified, then it should be set to the Healthcare Element id', async () => {
-    const patient = await TestUtils.getOrCreatePatient(hcp1Api!)
-    const newHE = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(
+    const patient = await TestUtils.getOrCreatePatient(hcp1Api)
+    const newHE = await hcp1Api.healthcareElementApi.createOrModifyHealthcareElement(
       new HealthcareElement({
         description: 'DUMMY_DESCRIPTION',
       }),
@@ -241,9 +230,9 @@ describe('Healthcare Element API', () => {
     const description = 'They call him "Giorgio"'
     const healthcareElement = await hcp1Api!.healthcareElementApi.createOrModifyHealthcareElement(new HealthcareElement({ description }), patient.id!)
     await hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, patApi!.dataOwnerApi.getDataOwnerIdOf(patUser!))
-    expect(hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
+    await expect(hcp1Api!.healthcareElementApi.giveAccessTo(healthcareElement, h2api.dataOwnerApi.getDataOwnerIdOf(h2))).to.be.rejected
     expect((await hcp1Api!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).description).to.equal(description)
     expect((await patApi!.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).description).to.equal(description)
-    expect(h2api.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).to.be.rejected
+    await expect(h2api.healthcareElementApi.getHealthcareElement(healthcareElement.id!)).to.be.rejected
   })
 })

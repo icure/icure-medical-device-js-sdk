@@ -20,7 +20,7 @@ import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { SharingResult, SharingStatus } from '../../utils/interfaces'
 import { ErrorHandler } from '../../services/ErrorHandler'
-import { addManyDelegationKeys, findAndDecryptPotentiallyUnknownKeysForDelegate } from '../../utils/crypto'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class PatientApiImpl implements PatientApi {
   private readonly userApi: IccUserXApi
@@ -141,29 +141,37 @@ export class PatientApiImpl implements PatientApi {
   }
 
   async filterPatients(filter: Filter<Patient>, nextPatientId?: string, limit?: number): Promise<PaginatedListPatient> {
-    return PaginatedListMapper.toPaginatedListPatient(
-      await this.patientApi
-        .filterPatientsBy(
-          undefined,
-          nextPatientId,
-          limit,
-          undefined,
-          undefined,
-          undefined,
-          new FilterChainPatient({
-            filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListPatient({ totalSize: 0, pageSize: 0, rows: [] })
+    } else {
+      return PaginatedListMapper.toPaginatedListPatient(
+        await this.patientApi
+          .filterPatientsBy(
+            undefined,
+            nextPatientId,
+            limit,
+            undefined,
+            undefined,
+            undefined,
+            new FilterChainPatient({
+              filter: FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   matchPatients(filter: Filter<Patient>): Promise<Array<string>> {
-    return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return Promise.resolve([])
+    } else {
+      return this.patientApi.matchPatientsBy(FilterMapper.toAbstractFilterDto<Patient>(filter, 'Patient')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   async giveAccessTo(patient: Patient, delegatedTo: string): Promise<Patient> {
@@ -179,47 +187,8 @@ export class PatientApiImpl implements PatientApi {
   }
 
   private async _giveAccessTo(patient: PatientDto, delegatedTo: string): Promise<PatientDto> {
-    const currentUser = await this.userApi.getCurrentUser().catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
-    const dataOwnerId = this.dataOwnerApi.getDataOwnerOf(currentUser)
-
-    if (patient.id !== dataOwnerId && !(patient.delegations?.[dataOwnerId]?.length ?? 0)) {
-      throw this.errorHandler.createErrorWithMessage(
-        `User ${currentUser.id} may not access patient information. Check that the patient is owned by/shared to the actual user ${currentUser.id}.`
-      )
-    }
-
-    const newSecretIds = await findAndDecryptPotentiallyUnknownKeysForDelegate(
-      this.cryptoApi,
-      patient.id!,
-      dataOwnerId,
-      delegatedTo,
-      patient.delegations ?? {}
-    )
-    const newEncryptionKey = (
-      await findAndDecryptPotentiallyUnknownKeysForDelegate(this.cryptoApi, patient.id!, dataOwnerId, delegatedTo, patient.encryptionKeys ?? {})
-    )[0]
-
-    if (!newSecretIds.length && !newEncryptionKey) {
-      return patient
-    }
-
-    const patientWithUpdatedAccesses = await addManyDelegationKeys(
-      this.cryptoApi,
-      dataOwnerId,
-      delegatedTo,
-      patient,
-      null,
-      newSecretIds,
-      newEncryptionKey
-    )
-    const updatedPatient = await this.patientApi.modifyPatientWithUser(currentUser, patientWithUpdatedAccesses)
-    if (!updatedPatient) {
-      throw this.errorHandler.createErrorWithMessage(`Impossible to give access to ${delegatedTo} to patient ${patient.id} information`)
-    }
-
-    return updatedPatient
+    const secretIds = await this.patientApi.decryptSecretIdsOf(patient)
+    return this.patientApi.shareWith(delegatedTo, patient, secretIds)
   }
 
   async giveAccessToAllDataOf(patientId: string): Promise<SharingResult> {
@@ -231,13 +200,13 @@ export class PatientApiImpl implements PatientApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    if (!this.dataOwnerApi.getDataOwnerOf(currentUser)) {
+    if (!this.dataOwnerApi.getDataOwnerIdOf(currentUser)) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
     return this.patientApi
-      .share(currentUser, patientId, this.dataOwnerApi.getDataOwnerOf(currentUser), [patientId], { [patientId]: ['all'] })
+      .share(currentUser, patientId, this.dataOwnerApi.getDataOwnerIdOf(currentUser), [patientId], { [patientId]: ['all'] })
       .then((res) => {
         return {
           patient: !!res?.patient ? PatientMapper.toPatient(res.patient) : undefined,
@@ -264,7 +233,7 @@ export class PatientApiImpl implements PatientApi {
     })
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'Patient',
       eventTypes,
       filter,

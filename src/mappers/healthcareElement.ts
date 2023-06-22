@@ -5,6 +5,8 @@ import { SystemMetaDataEncrypted } from '../models/SystemMetaDataEncrypted'
 import { DelegationMapper } from './delegation'
 import { IdentifierDtoMapper } from './identifier'
 import { CodeStubDtoMapper } from './codeStubCodingReference'
+import { SecurityMetaData } from '../models/SecurityMetaData'
+import { SystemMetaDataMapper } from './metadata'
 
 export namespace HealthcareElementMapper {
   import toCodingReference = CodeStubDtoMapper.toCodingReference
@@ -13,6 +15,8 @@ export namespace HealthcareElementMapper {
   import toCodeStub = CodeStubDtoMapper.toCodeStub
   import toDelegationDto = DelegationMapper.toDelegationDto
   import toIdentifier = IdentifierDtoMapper.toIdentifier
+  import toSystemMetaDataEncrypted = SystemMetaDataMapper.toSystemMetaDataEncrypted
+  import toSystemMetaDataEncryptedDto = SystemMetaDataMapper.toSystemMetaDataEncryptedDto
 
   export const toHealthcareElement = (dto: HealthElement) =>
     new HealthcareElement({
@@ -34,13 +38,7 @@ export namespace HealthcareElementMapper {
       closingDate: dto.closingDate,
       description: dto.descr,
       note: dto.note,
-      systemMetaData: new SystemMetaDataEncrypted({
-        secretForeignKeys: dto.secretForeignKeys,
-        cryptedForeignKeys: toMapSetTransform(dto.cryptedForeignKeys, toDelegation),
-        delegations: toMapSetTransform(dto.delegations, toDelegation),
-        encryptionKeys: toMapSetTransform(dto.encryptionKeys, toDelegation),
-        encryptedSelf: dto.encryptedSelf,
-      }),
+      systemMetaData: toSystemMetaDataEncrypted(dto),
     })
 
   export const toHealthElementDto = (obj: HealthcareElement) => {
@@ -66,11 +64,7 @@ export namespace HealthcareElementMapper {
       note: obj.note,
       relevant: true,
       status: 0,
-      secretForeignKeys: obj.systemMetaData?.secretForeignKeys,
-      cryptedForeignKeys: toMapArrayTransform(obj.systemMetaData?.cryptedForeignKeys, toDelegationDto),
-      delegations: toMapArrayTransform(obj.systemMetaData?.delegations, toDelegationDto),
-      encryptionKeys: toMapArrayTransform(obj.systemMetaData?.encryptionKeys, toDelegationDto),
-      encryptedSelf: obj.systemMetaData?.encryptedSelf,
+      ...(obj.systemMetaData ? toSystemMetaDataEncryptedDto(obj.systemMetaData) : {}),
     })
   }
 }

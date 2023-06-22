@@ -1,16 +1,14 @@
-import 'isomorphic-fetch';
-import {
-  getEnvironmentInitializer,
-  getEnvVariables,
-  hcp1Username, setLocalStorage,
-  TestUtils,
-  TestVars
-} from "../test-utils";
-import {MedTechApi} from "../../src/apis/MedTechApi";
-import {User} from "../../src/models/User";
-import {Patient} from "../../src/models/Patient";
-import {expect} from "chai";
-import {PatientFilter} from "../../src/filter";
+import 'isomorphic-fetch'
+import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
+import { MedTechApi } from '../../src/apis/MedTechApi'
+import { User } from '../../src/models/User'
+import { Patient } from '../../src/models/Patient'
+import { expect } from 'chai'
+import { PatientFilter } from '../../src/filter/dsl/PatientFilterDsl'
+import { FilterComposition, NoOpFilter } from '../../src/filter/dsl/filterDsl'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
+import { PatientMapper } from '../../src/mappers/patient'
+import { v4 as uuid } from 'uuid'
 
 setLocalStorage(fetch)
 
@@ -25,16 +23,13 @@ function getYear(dateOfBirth?: number) {
   return Math.floor(dateOfBirth! / 10000)
 }
 
-describe("Patient Filters Test", function () {
-
+describe('Patient Filters Test', function () {
   before(async function () {
     this.timeout(600000)
-    const initializer = await getEnvironmentInitializer();
-    env = await initializer.execute(getEnvVariables());
+    const initializer = await getEnvironmentInitializer()
+    env = await initializer.execute(getEnvVariables())
 
-    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(
-      env!.iCureUrl,
-      env.dataOwnerDetails[hcp1Username])
+    const apiAndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env!.iCureUrl, env.dataOwnerDetails[hcp1Username])
     api = apiAndUser.api
     user = apiAndUser.user
 
@@ -42,8 +37,8 @@ describe("Patient Filters Test", function () {
       new Patient({
         firstName: 'Arthur',
         lastName: 'Dent',
-        gender: "male",
-        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`)
+        gender: 'male',
+        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`),
       })
     )
 
@@ -51,8 +46,8 @@ describe("Patient Filters Test", function () {
       new Patient({
         firstName: 'Trillian',
         lastName: 'Astra',
-        gender: "female",
-        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`)
+        gender: 'female',
+        dateOfBirth: parseInt(`${now.getFullYear() - 42}0101`),
       })
     )
 
@@ -60,104 +55,99 @@ describe("Patient Filters Test", function () {
       new Patient({
         firstName: 'Zaphod',
         lastName: 'Beeblebrox',
-        gender: "indeterminate"
+        gender: 'indeterminate',
+        dateOfBirth: parseInt(`${now.getFullYear() - 50}0101`),
       })
     )
-  });
+  })
 
-  it("Can filter Patients", async () => {
-    const filter = await new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .ofAge(42)
-      .build()
+  it('Can filter Patients', async () => {
+    const filter = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).ofAge(42).build()
     const patients = await api.patientApi.filterPatients(filter)
     expect(patients.rows.length).to.be.greaterThan(0)
-    patients.rows.forEach( (p) => {
+    patients.rows.forEach((p) => {
       expect(!!p.dateOfBirth).to.be.true
       const year = Math.floor(p.dateOfBirth! / 10000)
       expect(now.getFullYear() - year).to.be.eq(42)
     })
   })
 
-  it("Can filter Specifying only data owner", async () => {
-    const filter = await new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .build()
+  it('Can filter Specifying only data owner', async () => {
+    const filter = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).build()
     const patients = await api.patientApi.filterPatients(filter)
     expect(patients.rows.length).to.be.greaterThan(0)
-    patients.rows.forEach( (p) => {
-      expect(Object.keys(p.systemMetaData?.delegations ?? {})).to.contain(user.healthcarePartyId!)
-    })
+    for (const p of patients.rows) {
+      const accessInfo = await api.cryptoApi.entities.getDataOwnersWithAccessTo(PatientMapper.toPatientDto(p)!)
+      expect(Object.keys(accessInfo.permissionsByDataOwnerId)).to.contain(user.healthcarePartyId!)
+    }
   })
 
-  it("Can filter Patients with implicit intersection filter", async () => {
-    const intersectionFilter = await new PatientFilter()
+  it('Can filter Patients with implicit intersection filter', async () => {
+    const intersectionFilter = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
       .ofAge(42)
-      .byGenderEducationProfession("female")
+      .byGenderEducationProfession('female')
       .build()
 
     const patients = await api.patientApi.filterPatients(intersectionFilter)
     expect(patients.rows.length).to.be.greaterThan(0)
-    patients.rows.forEach( (p) => {
-      expect(p.gender).to.be.eq("female")
+    patients.rows.forEach((p) => {
+      expect(p.gender).to.be.eq('female')
       const year = getYear(p.dateOfBirth)
       expect(now.getFullYear() - year).to.be.eq(42)
     })
   })
 
+  it('Can filter Patients with explicit intersection filter', async () => {
+    const filterByAge = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).ofAge(42).build()
 
-  it("Can filter Patients with explicit intersection filter", async () => {
-    const filterByAge = new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .ofAge(42)
+    const filterByGender = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).byGenderEducationProfession('female').build()
 
-    const filterByGenderAndAge = await new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .byGenderEducationProfession("female")
-      .intersection([filterByAge])
-      .build()
+    const intersectionFilter = FilterComposition.intersection(filterByGender, filterByAge)
 
-    const patients = await api.patientApi.filterPatients(filterByGenderAndAge)
+    const patients = await api.patientApi.filterPatients(intersectionFilter)
     expect(patients.rows.length).to.be.greaterThan(0)
-    patients.rows.forEach( (p) => {
-      expect(p.gender).to.be.eq("female")
+    patients.rows.forEach((p) => {
+      expect(p.gender).to.be.eq('female')
       const year = getYear(p.dateOfBirth)
       expect(now.getFullYear() - year).to.be.eq(42)
     })
   })
 
-  it("If the set are disjoint, the intersection result is empty", async () => {
-    const filterByMale = new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .byGenderEducationProfession("male")
+  it('If the set are disjoint, the intersection result is empty', async () => {
+    const filterByMale = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).byGenderEducationProfession('male').build()
 
-    const filterByFemaleAndMale = await new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .byGenderEducationProfession("female")
-      .intersection([filterByMale])
-      .build()
+    const filterByFemale = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).byGenderEducationProfession('female').build()
 
-    const patients = await api.patientApi.filterPatients(filterByFemaleAndMale)
+    const intersectionFilter = FilterComposition.intersection(filterByFemale, filterByMale)
+
+    const patients = await api.patientApi.filterPatients(intersectionFilter)
     expect(patients.rows.length).to.be.equal(0)
   })
 
-  it("Can filter Patients with union filter", async () => {
-    const filterFemales = new PatientFilter()
-      .forDataOwner(user.healthcarePartyId!)
-      .byGenderEducationProfession("female")
+  it('Can filter Patients with union filter', async () => {
+    const filterFemales = await new PatientFilter(api).forDataOwner(user.healthcarePartyId!).byGenderEducationProfession('female').build()
 
-    const filterFemaleOrIndeterminate = await new PatientFilter()
+    const filterIndeterminate = await new PatientFilter(api)
       .forDataOwner(user.healthcarePartyId!)
-      .byGenderEducationProfession("indeterminate")
-      .union([filterFemales])
+      .byGenderEducationProfession('indeterminate')
       .build()
 
-    const patients = await api.patientApi.filterPatients(filterFemaleOrIndeterminate)
+    const unionFilter = FilterComposition.union(filterIndeterminate, filterFemales)
+
+    const patients = await api.patientApi.filterPatients(unionFilter)
     expect(patients.rows.length).to.be.greaterThan(0)
-    patients.rows.forEach( (p) => {
-      expect(p.gender).to.be.oneOf(["female", "indeterminate"])
+    patients.rows.forEach((p) => {
+      expect(p.gender).to.be.oneOf(['female', 'indeterminate'])
     })
   })
 
+  it('If a NoOpFilter is generated as result, an empty result is returned', async function () {
+    const noOpFilter = await new PatientFilter(api).forSelf().byIds([uuid()]).byIds([uuid()]).build()
+
+    expect(NoOpFilter.isNoOp(noOpFilter)).to.be.true
+
+    const patients = await api.patientApi.filterPatients(noOpFilter)
+    expect(patients.rows.length).to.be.equal(0)
+  })
 })

@@ -1,4 +1,5 @@
 import { User } from '../models/User'
+import { DataOwner, DataOwnerWithType } from '../models/DataOwner'
 
 export interface DataOwnerApi {
   /**
@@ -8,20 +9,18 @@ export interface DataOwnerApi {
   getDataOwnerIdOf(user: User): string
 
   /**
-   * Creates an RSA KeyPair for the provided user and updates its related DataOwner with the generated public key.
-   * In the case of a Patient DataOwner, this service also creates a Patient Delegation, giving the patient access to
-   * its own information.
-   *
-   * @param user The User for which we want to create a keyPair
-   * @param overrideExistingKeys When this flag is set to true, the service will create and assign a new RSA Key Pair
-   * to the user, even if he already has one. This should therefore be activated ONLY when the user lost his key or starts
-   * the solution on a new terminal. This flag is false by default.
-   * @param userKeyPair KeyPair to use to init the cryptography scheme of a user. If no keyPair is provided,
-   * the service will create one
-   *
-   * @return The response will contain the RSA keyPair generated for the provided user;
+   * Get a data owner by its id. Note that you need to be allowed to access the data owner in order for this method to
+   * succeed, but you don't need to have access to the data owner in order to share data with him.
+   * @param ownerId the id of a data owner
+   * @return information on the data owner
    */
-  initCryptoFor(user: User, userKeyPair?: { publicKey: string; privateKey: string }): Promise<{ publicKey: string; privateKey: string }[]>
+  getDataOwner(ownerId: string): Promise<DataOwnerWithType>
 
-  giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<boolean>
+  /**
+   * Get the public keys of a data owner.
+   * @param dataOwner
+   */
+  getPublicKeysOf(dataOwner: DataOwnerWithType): string[]
+
+  giveAccessBackTo(ownerId: string, ownerNewPublicKey: string): Promise<void>
 }

@@ -7,12 +7,13 @@ import { PaginatedListNotification } from '../../models/PaginatedListNotificatio
 import { Filter } from '../../filter/Filter'
 import { PaginatedListMapper } from '../../mappers/paginatedList'
 import { FilterMapper } from '../../mappers/filter'
-import { NotificationFilter } from '../../filter'
 import { IccDataOwnerXApi } from '@icure/api/icc-x-api/icc-data-owner-x-api'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { deepEquality } from '../../utils/equality'
+import { AccessLevelEnum } from '../../models/SecureDelegation'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class NotificationApiImpl implements NotificationApi {
   private readonly dataOwnerApi: IccDataOwnerXApi
@@ -87,27 +88,31 @@ export class NotificationApiImpl implements NotificationApi {
   }
 
   async filterNotifications(filter: Filter<Notification>, nextNotificationId?: string, limit?: number): Promise<PaginatedListNotification> {
-    return this.userApi.getCurrentUser().then((user) => {
-      if (!user)
-        throw this.errorHandler.createErrorWithMessage(
-          'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
-        )
-      return this.maintenanceTaskApi
-        .filterMaintenanceTasksByWithUser(
-          user,
-          nextNotificationId,
-          limit,
-          new FilterChainMaintenanceTask({
-            filter: FilterMapper.toAbstractFilterDto(filter, 'Notification'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListNotification({ totalSize: 0, pageSize: 0, rows: [] })
+    } else {
+      return this.userApi.getCurrentUser().then((user) => {
+        if (!user)
+          throw this.errorHandler.createErrorWithMessage(
+            'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
+          )
+        return this.maintenanceTaskApi
+          .filterMaintenanceTasksByWithUser(
+            user,
+            nextNotificationId,
+            limit,
+            new FilterChainMaintenanceTask({
+              filter: FilterMapper.toAbstractFilterDto(filter, 'Notification'),
+            })
+          )
+          .then((paginatedList) => {
+            return PaginatedListMapper.toPaginatedListNotification(paginatedList)!
           })
-        )
-        .then((paginatedList) => {
-          return PaginatedListMapper.toPaginatedListNotification(paginatedList)!
-        })
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    })
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
+          })
+      })
+    }
   }
 
   async getNotification(notificationId: string): Promise<Notification | undefined> {
@@ -136,15 +141,16 @@ export class NotificationApiImpl implements NotificationApi {
         'There is no user currently logged in. You must call this method from an authenticated MedTechApi'
       )
     }
-    if (!this.dataOwnerApi.getDataOwnerOf(user)) {
+    if (!this.dataOwnerApi.getDataOwnerIdOf(user)) {
       throw this.errorHandler.createErrorWithMessage(
         'The current user is not a data owner. You must been either a patient, a device or a healthcare professional to call this method.'
       )
     }
-    const filter = await new NotificationFilter()
-      .afterDate(this._findAfterDateFilterValue(fromDate))
-      .forDataOwner(this.dataOwnerApi.getDataOwnerOf(user))
-      .build()
+    const filter = {
+      healthcarePartyId: this.dataOwnerApi.getDataOwnerIdOf(user),
+      date: fromDate,
+      $type: 'NotificationsAfterDateFilter',
+    }
     return (await this.concatenateFilterResults(filter)).filter((it) => it.status === 'pending')
   }
 
@@ -188,7 +194,7 @@ export class NotificationApiImpl implements NotificationApi {
 
     return subscribeToEntityEvents(
       this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
+      this.authApi,
       'Notification',
       eventTypes,
       filter,
@@ -228,7 +234,7 @@ export class NotificationApiImpl implements NotificationApi {
       )
     const inputMaintenanceTask = NotificationMapper.toMaintenanceTaskDto(notification)
     return this.maintenanceTaskApi
-      .newInstance(user, inputMaintenanceTask, [delegate])
+      .newInstance(user, inputMaintenanceTask, { additionalDelegates: { [delegate]: AccessLevelEnum.WRITE } })
       .then((task) => {
         return this.maintenanceTaskApi.createMaintenanceTaskWithUser(user, task)
       })

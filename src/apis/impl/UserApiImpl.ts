@@ -11,6 +11,7 @@ import {
   IccPatientXApi,
   IccUserApi,
   IccUserXApi,
+  retry,
 } from '@icure/api'
 import { UserMapper } from '../../mappers/user'
 import { forceUuid } from '../../mappers/utils'
@@ -20,17 +21,17 @@ import { Filter } from '../../filter/Filter'
 import { Connection, ConnectionImpl } from '../../models/Connection'
 import { subscribeToEntityEvents } from '../../utils/websocket'
 import { Patient } from '../../models/Patient'
-import { UserFilter } from '../../filter'
 import { filteredContactsFromAddresses } from '../../utils/addressUtils'
 import { MessageGatewayApi } from '../MessageGatewayApi'
 import { EmailMessageFactory, SMSMessageFactory } from '../../utils/msgGtwMessageFactory'
 import { ErrorHandler } from '../../services/ErrorHandler'
 import { Sanitizer } from '../../services/Sanitizer'
+import { UsersByPatientIdFilter } from '../../filter/user/UsersByPatientIdFilter'
+import { NoOpFilter } from '../../filter/dsl/filterDsl'
 
 export class UserApiImpl implements UserApi {
   private readonly userApi: IccUserApi
   private readonly authApi: IccAuthApi
-  private readonly hcpApi: IccHcpartyXApi
   private readonly username: string | undefined
   private readonly basePath: string
   private readonly password: string | undefined
@@ -40,13 +41,8 @@ export class UserApiImpl implements UserApi {
 
   constructor(
     api: {
-      healthcarePartyApi: IccHcpartyXApi
-      cryptoApi: IccCryptoXApi
       authApi: IccAuthApi
-      userApi: IccUserXApi
-      patientApi: IccPatientXApi
-      contactApi: IccContactXApi
-      documentApi: IccDocumentXApi
+      userApi: IccUserApi
     },
     messageGatewayApi: MessageGatewayApi | undefined,
     errorHandler: ErrorHandler,
@@ -62,7 +58,6 @@ export class UserApiImpl implements UserApi {
     this.errorHandler = errorHandler
     this.sanitizer = sanitizer
     this.userApi = api.userApi
-    this.hcpApi = api.healthcarePartyApi
     this.messageGatewayApi = messageGatewayApi
   }
 
@@ -83,7 +78,10 @@ export class UserApiImpl implements UserApi {
     if (!patient.id) throw this.errorHandler.createErrorWithMessage('Patient does not have a valid id')
 
     // Checks that no Users already exist for the Patient
-    const existingUsers = await this.filterUsers(await new UserFilter().byPatientId(patient.id).build())
+    const existingUsers = await this.filterUsers({
+      patientId: patient.id,
+      $type: 'UsersByPatientIdFilter',
+    } as UsersByPatientIdFilter)
     if (!!existingUsers && existingUsers.rows.length > 0) throw this.errorHandler.createErrorWithMessage('A User already exists for this Patient')
 
     // Gets the preferred contact information
@@ -112,7 +110,9 @@ export class UserApiImpl implements UserApi {
       throw this.errorHandler.createErrorWithMessage('Something went wrong during User creation')
 
     // Gets a short-lived authentication token
-    const shortLivedToken = await this.createToken(createdUser.id, tokenDuration)
+    const shortLivedToken = await retry(() => this.createToken(createdUser.id!, tokenDuration), 5, 2_000).catch(() => {
+      throw this.errorHandler.createErrorWithMessage('Something went wrong while creating a token for the User')
+    })
     if (!shortLivedToken) throw this.errorHandler.createErrorWithMessage('Something went wrong while creating a token for the User')
 
     const messagePromise = !!createdUser.email
@@ -163,19 +163,23 @@ export class UserApiImpl implements UserApi {
   }
 
   async filterUsers(filter: Filter<User>, nextUserId?: string, limit?: number): Promise<PaginatedListUser> {
-    return PaginatedListMapper.toPaginatedListUser(
-      await this.userApi
-        .filterUsersBy(
-          nextUserId,
-          limit,
-          new FilterChainUser({
-            filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+    if (NoOpFilter.isNoOp(filter)) {
+      return new PaginatedListUser({ totalSize: 0, pageSize: 0, rows: [] })
+    } else {
+      return PaginatedListMapper.toPaginatedListUser(
+        await this.userApi
+          .filterUsersBy(
+            nextUserId,
+            limit,
+            new FilterChainUser({
+              filter: FilterMapper.toAbstractFilterDto<User>(filter, 'User'),
+            })
+          )
+          .catch((e) => {
+            throw this.errorHandler.createErrorFromAny(e)
           })
-        )
-        .catch((e) => {
-          throw this.errorHandler.createErrorFromAny(e)
-        })
-    )!
+      )!
+    }
   }
 
   async getLoggedUser(): Promise<User> {
@@ -203,9 +207,13 @@ export class UserApiImpl implements UserApi {
   }
 
   async matchUsers(filter: Filter<User>): Promise<Array<string>> {
-    return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
-      throw this.errorHandler.createErrorFromAny(e)
-    })
+    if (NoOpFilter.isNoOp(filter)) {
+      return []
+    } else {
+      return this.userApi.matchUsersBy(FilterMapper.toAbstractFilterDto<User>(filter, 'User')).catch((e) => {
+        throw this.errorHandler.createErrorFromAny(e)
+      })
+    }
   }
 
   subscribeToUserEvents(
@@ -214,15 +222,7 @@ export class UserApiImpl implements UserApi {
     eventFired: (user: User) => Promise<void>,
     options: { connectionMaxRetry?: number; connectionRetryIntervalMs?: number } = {}
   ): Promise<Connection> {
-    return subscribeToEntityEvents(
-      this.basePath,
-      async () => await this.authApi.token('GET', '/ws/v1/notification'),
-      'User',
-      eventTypes,
-      filter,
-      eventFired,
-      options
-    )
+    return subscribeToEntityEvents(this.basePath, this.authApi, 'User', eventTypes, filter, eventFired, options)
       .then((rs) => new ConnectionImpl(rs))
       .catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)

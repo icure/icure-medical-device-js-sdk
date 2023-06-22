@@ -209,10 +209,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@icure/api@^6.0.6", "@icure/test-setup-api@npm:@icure/api@6.0.6":
-  version "6.0.6"
-  resolved "https://registry.npmjs.org/@icure/api/-/api-6.0.6.tgz#61705e8cc4cb1843af6931962d38ea82698c0815"
-  integrity sha512-iJoqyrdklynEQ8/lmUNun2g38JHh9XAv9PwXffrVCWCBi0D0Ea6oaOconnpVIVhqaQbwzY0mHTdQfSuhK2UK2w==
+"@icure/api@7.0.0-beta.4":
+  version "7.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@icure/api/-/api-7.0.0-beta.4.tgz#12094a977b4f363d58ab0689b28ed02686729a6c"
+  integrity sha512-UhdMXksyDOtcdLBeSKwDY7z1eZaGZbItp/vX+ZavVNwYT57n+BL4qykuow48zgvrft+tun9ONTP2eFHnnzHT2A==
   dependencies:
     date-fns "^2.23.0"
     libphonenumber-js "^1.7.18"
@@ -222,25 +222,12 @@
     uuid "^8.3.2"
     uuid-encoder "^1.1.0"
 
-"@icure/api@^6.4.0":
-  version "6.4.0"
-  resolved "https://registry.npmjs.org/@icure/api/-/api-6.4.0.tgz#9462583669ebfeb177c494b79f137bca09e8d039"
-  integrity sha512-ZalZ9z2uRkFi1n23z/2QJn2TobvskM0PYefhybSSU09yK74YR9Xhc6F3NQ/UA/F2Uz96tBVWVdI+hZswCNnS/Q==
+"@icure/test-setup@^0.0.52":
+  version "0.0.52"
+  resolved "https://registry.npmjs.org/@icure/test-setup/-/test-setup-0.0.52.tgz#5247483b1647b6ee895a725aa98fa10c76a4e0fe"
+  integrity sha512-la39eKt4CRsNBGs/i2MNBnD5NUrxgqjMv9CY764ZHqJ5sw381s8SANqa7j4zrRiQ/rhbKzVpvzDYWz19MpYUaw==
   dependencies:
-    date-fns "^2.23.0"
-    libphonenumber-js "^1.7.18"
-    lodash "^4.17.21"
-    moment "^2.22.1"
-    text-encoding "^0.7.0"
-    uuid "^8.3.2"
-    uuid-encoder "^1.1.0"
-
-"@icure/test-setup@^0.0.37":
-  version "0.0.37"
-  resolved "https://registry.npmjs.org/@icure/test-setup/-/test-setup-0.0.37.tgz#9aed01bcfe91fdbe4feec83fede5d8fe574b27de"
-  integrity sha512-ZPJ2kr9Z2MwxgC40n+9qeOY4SD9UtrAWlMzcueZhI5PF36jndBxuZXJDUszqyiWe9T9rQQviyieFXEaObbz2ig==
-  dependencies:
-    "@icure/api" "^6.0.6"
+    "@icure/api" "7.0.0-beta.4"
     "@types/react-dom" "^18.0.6"
     date-fns "^2.3.0"
     isomorphic-fetch "^3.0.0"
@@ -618,6 +605,11 @@ braces@~3.0.2:
   integrity sha512-b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==
   dependencies:
     fill-range "^7.0.1"
+
+browser-or-node@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/browser-or-node/-/browser-or-node-2.1.1.tgz#738790b3a86a8fc020193fa581273fbe65eaea0f"
+  integrity sha512-8CVjaLJGuSKMVTxJ2DpBl5XnlNDiT4cQFeuCJJrvJmts9YrTZDizTX7PjC2s6W4x+MBGZeEY6dGMrF04/6Hgqg==
 
 browser-stdout@1.3.1:
   version "1.3.1"

@@ -1,7 +1,7 @@
 import { medTechApi, MedTechApi, MedTechApiBuilder } from '../src/apis/MedTechApi'
 import { User } from '../src/models/User'
 import { webcrypto } from 'crypto'
-import { hex2ua, KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
+import { KeyStorageFacade, sleep, StorageFacade } from '@icure/api'
 import { AnonymousMedTechApiBuilder } from '../src/apis/AnonymousMedTechApi'
 import axios, { Method } from 'axios'
 import { Patient, PotentiallyEncryptedPatient } from '../src/models/Patient'
@@ -15,22 +15,14 @@ import { TextDecoder, TextEncoder } from 'util'
 import { EmailMessage, EmailMessageFactory } from '../src/utils/msgGtwMessageFactory'
 import { HealthcareProfessional } from '../src/models/HealthcareProfessional'
 import { v4 as uuid } from 'uuid'
-import {
-  CreateHcpComponent,
-  CreatePatientComponent,
-  DescribeInitializer,
-  DockerComposeInitializer,
-  EnvInitializer,
-  GroupInitializer,
-  KrakenInitializer,
-  MasterUserInGroupInitializer,
-  MasterUserInitializer,
-  OssInitializer,
-  SafeguardInitializer,
-  UserInitializerComposite,
-} from './test-setup-decorators'
-import { checkIfDockerIsOnline } from '@icure/test-setup'
 import { RecaptchaType } from '../src/models/RecaptchaType'
+import { testStorageWithKeys } from './TestStorage'
+import { DefaultStorageEntryKeysFactory } from '@icure/api/icc-x-api/storage/DefaultStorageEntryKeysFactory'
+import { EnvInitializer } from '@icure/test-setup/decorators'
+import { getEnvVariables, UserDetails } from '@icure/test-setup/types'
+import { TestEnvironmentBuilder } from '@icure/test-setup/builder'
+import { SimpleMedTechCryptoStrategies } from '../src/services/impl/SimpleMedTechCryptoStrategies'
+import { DataOwnerTypeEnum } from '../src/models/DataOwner'
 
 let cachedHcpApi: MedTechApi | undefined
 let cachedHcpLoggedUser: User | undefined
@@ -49,68 +41,6 @@ export function setLocalStorage(fetch: (input: RequestInfo, init?: RequestInit) 
   ;(global as any).TextDecoder = TextDecoder
   ;(global as any).TextEncoder = TextEncoder
   ;(global as any).headers = Headers
-}
-
-export type UserDetails = {
-  user: string
-  password: string
-  publicKey: string
-  privateKey: string
-}
-
-export type TestVars = {
-  iCureUrl: string
-  msgGtwUrl: string
-  couchDbUrl: string
-  composeFileUrl: string
-  patAuthProcessId: string
-  hcpAuthProcessId: string
-  specId: string
-  testEnvironment: string
-  testGroupId: string
-  backendType: string
-  adminLogin: string
-  adminPassword: string
-  recaptcha: string
-  masterHcp: UserDetails | undefined
-  dataOwnerDetails: { [key: string]: UserDetails }
-  friendlyCaptchaKey: string
-}
-
-export function getEnvVariables(): TestVars {
-  const masterHcpDetails =
-    !!process.env.ICURE_TEST_MASTER_LOGIN &&
-    !!process.env.ICURE_TEST_MASTER_PWD &&
-    !!process.env.ICURE_TEST_MASTER_PRIV &&
-    !!process.env.ICURE_TEST_MASTER_PUB
-      ? {
-          user: process.env.ICURE_TEST_MASTER_LOGIN!,
-          password: process.env.ICURE_TEST_MASTER_PWD!,
-          privateKey: process.env.ICURE_TEST_MASTER_PRIV!,
-          publicKey: process.env.ICURE_TEST_MASTER_PUB!,
-        }
-      : undefined
-  const testGroupId = process.env.ICURE_TEST_GROUP_ID ?? 'test-group'
-  return {
-    iCureUrl: process.env.ICURE_TS_TEST_URL ?? 'http://127.0.0.1:16044/rest/v1',
-    msgGtwUrl: process.env.ICURE_TS_TEST_MSG_GTW_URL ?? 'http://127.0.0.1:8081/msggtw',
-    couchDbUrl: process.env.ICURE_COUCHDB_URL ?? 'http://127.0.0.1:15984',
-    composeFileUrl: process.env.COMPOSE_FILE_URL ?? 'https://raw.githubusercontent.com/icure/icure-e2e-test-setup/master/docker-compose-cloud.yaml',
-    patAuthProcessId: process.env.ICURE_TS_TEST_PAT_AUTH_PROCESS_ID ?? `patient${testGroupId}`,
-    hcpAuthProcessId: process.env.ICURE_TS_TEST_HCP_AUTH_PROCESS_ID ?? `hcp${testGroupId}`,
-    specId: process.env.ICURE_TS_TEST_MSG_GTW_SPEC_ID ?? 'ic',
-    testEnvironment: process.env.TEST_ENVIRONMENT ?? 'docker',
-    testGroupId: testGroupId,
-    backendType: process.env.BACKEND_TYPE ?? 'kraken',
-    adminLogin: process.env.ICURE_TEST_ADMIN_LOGIN ?? 'john',
-    adminPassword: process.env.ICURE_TEST_ADMIN_PWD ?? 'LetMeIn',
-    recaptcha: process.env.ICURE_RECAPTCHA ?? uuid(),
-    masterHcp: masterHcpDetails,
-    dataOwnerDetails: {},
-    friendlyCaptchaKey:
-      process.env.ICURE_FRIENDLY_CAPTCHA ??
-      'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy.YTcwNWExYWEtYzNlYS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAy',
-  }
 }
 
 export const hcp1Username = process.env.ICURE_TS_TEST_HCP_USER ?? getTempEmail()
@@ -143,22 +73,18 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
   if (!cachedInitializer) {
     const env = getEnvVariables()
     const scratchDir = 'test/scratch'
-    const isDockerOnline = await checkIfDockerIsOnline(scratchDir, env.composeFileUrl)
-    let bootstrapStep = null
-    if (env.testEnvironment === 'docker' && !isDockerOnline) {
-      const setupStep = new DockerComposeInitializer(scratchDir, ['mock'])
-      bootstrapStep = env.backendType === 'oss' ? new OssInitializer(setupStep) : new KrakenInitializer(setupStep)
-    }
-    const groupStep = env.backendType === 'oss' ? bootstrapStep : new GroupInitializer(bootstrapStep, fetch)
-    const masterInitializerClass = env.backendType === 'kraken' ? MasterUserInGroupInitializer : MasterUserInitializer
-    const masterStep = !!env.masterHcp ? groupStep : new masterInitializerClass(groupStep, fetch)
-    const creationStep = new UserInitializerComposite(masterStep, fetch)
-    creationStep.add(new CreateHcpComponent(hcp1Username))
-    creationStep.add(new CreateHcpComponent(hcp2Username))
-    creationStep.add(new CreateHcpComponent(hcp3Username))
-    creationStep.add(new CreatePatientComponent(patUsername))
-    const explanationStep = new DescribeInitializer(creationStep)
-    cachedInitializer = new SafeguardInitializer(explanationStep)
+    const baseEnvironment =
+      env.testEnvironment === 'docker' ? new TestEnvironmentBuilder().setUpDockerEnvironment(scratchDir, ['mock']) : new TestEnvironmentBuilder()
+    cachedInitializer = await baseEnvironment
+      .withGroup(fetch)
+      .withMasterUser(fetch)
+      .addHcp({ login: hcp1Username })
+      .addHcp({ login: hcp2Username })
+      .addHcp({ login: hcp3Username })
+      .addPatient({ login: patUsername })
+      .withSafeguard()
+      .withEnvironmentSummary()
+      .build()
   }
   return cachedInitializer
 }
@@ -190,23 +116,23 @@ export class TestUtils {
     credentials: UserDetails,
     additionalBuilderSteps: (b: MedTechApiBuilder) => MedTechApiBuilder = (b) => b
   ): Promise<{ api: MedTechApi; user: User }> {
+    const storage = await testStorageWithKeys(new DefaultStorageEntryKeysFactory(), [
+      {
+        dataOwnerId: credentials.dataOwnerId,
+        pairs: [{ keyPair: { publicKey: credentials.publicKey, privateKey: credentials.privateKey } }],
+      },
+    ])
     const builderApi = medTechApi()
       .withICureBaseUrl(iCureUrl)
       .withUserName(credentials.user)
       .withPassword(credentials.password)
       .withCrypto(webcrypto as any)
+      .withStorage(storage.storage)
+      .withKeyStorage(storage.keyStorage)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
     const medtechApi = await additionalBuilderSteps(builderApi).build()
 
     const foundUser = await medtechApi.userApi.getLoggedUser()
-    await medtechApi.cryptoApi
-      .loadKeyPairsAsTextInBrowserLocalStorage(
-        foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-        hex2ua(credentials.privateKey)
-      )
-      .catch((error: any) => {
-        console.error('Error: in loadKeyPairsAsTextInBrowserLocalStorage')
-        console.error(error)
-      })
 
     return { api: medtechApi, user: foundUser }
   }
@@ -259,6 +185,7 @@ export class TestUtils {
       .withMsgGwSpecId(msgGtwSpecId)
       .withCrypto(webcrypto as any)
       .withAuthProcessByEmailId(authProcessId)
+      .withCryptoStrategies(new SimpleMedTechCryptoStrategies([]))
 
     if (storage) {
       builder.withStorage(storage)
@@ -288,7 +215,6 @@ export class TestUtils {
     const subjectCode = emails.subject!
 
     //assert(subjectCode.length === 8, 'The subject code should be 8 characters long')
-
     const result = await anonymousMedTechApi.authenticationApi.completeAuthentication(process!, subjectCode)
 
     if (result?.medTechApi == undefined) {
@@ -296,10 +222,6 @@ export class TestUtils {
     }
 
     const foundUser = await result.medTechApi.userApi.getLoggedUser()
-    await result.medTechApi.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-      foundUser.healthcarePartyId ?? foundUser.patientId ?? foundUser.deviceId!,
-      hex2ua(result.keyPairs[0].privateKey)
-    )
     assert(result)
     assert(result!.token != null)
     assert(result!.userId != null)

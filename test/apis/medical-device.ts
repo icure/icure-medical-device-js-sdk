@@ -1,10 +1,11 @@
 import 'mocha'
 import 'isomorphic-fetch'
 
-import { assert, use as chaiUse } from 'chai'
-import { getEnvironmentInitializer, getEnvVariables, hcp1Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
+import { assert, expect, use as chaiUse } from 'chai'
+import { getEnvironmentInitializer, hcp1Username, setLocalStorage, TestUtils } from '../test-utils'
 import { MedicalDevice } from '../../src/models/MedicalDevice'
 import { v4 as uuid } from 'uuid'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 chaiUse(require('chai-as-promised'))
 
 setLocalStorage(fetch)
@@ -31,13 +32,13 @@ describe('MedicalDevice API', () => {
       })
     )
 
-    assert(createdMedicalDevice.id != undefined)
-    assert(createdMedicalDevice.serialNumber == '123456789')
-    assert(createdMedicalDevice.name == 'What-If Machine')
-    assert(createdMedicalDevice.brand == 'Farnsworth')
-    assert(createdMedicalDevice.model == '2ACV16')
-    assert(createdMedicalDevice.created != undefined)
-    assert(createdMedicalDevice.modified != undefined)
+    expect(createdMedicalDevice.id).to.not.be.undefined
+    expect(createdMedicalDevice.serialNumber).to.equal('123456789')
+    expect(createdMedicalDevice.name).to.equal('What-If Machine')
+    expect(createdMedicalDevice.brand).to.equal('Farnsworth')
+    expect(createdMedicalDevice.model).to.equal('2ACV16')
+    expect(createdMedicalDevice.created).to.not.be.undefined
+    expect(createdMedicalDevice.modified).to.not.be.undefined
   })
 
   it('Can create a medical device and update it', async () => {
@@ -60,20 +61,18 @@ describe('MedicalDevice API', () => {
         ...createdMedicalDevice,
         serialNumber: newSerialNumber,
         modified: undefined,
-        name: 'What-If Machine',
-        brand: 'Farnsworth',
         model: '2ACV16',
       })
     )
 
-    assert(updatedMedicalDevice.id != undefined)
-    assert(updatedMedicalDevice.serialNumber == newSerialNumber)
-    assert(updatedMedicalDevice.rev?.startsWith('2-') == true)
-    assert(updatedMedicalDevice.name == 'What-If Machine')
-    assert(updatedMedicalDevice.brand == 'Farnsworth')
-    assert(updatedMedicalDevice.model == '2ACV16')
-    assert(updatedMedicalDevice.created != undefined)
-    assert(updatedMedicalDevice.modified != undefined)
-    assert(updatedMedicalDevice.created < updatedMedicalDevice.modified)
+    expect(updatedMedicalDevice.id).to.not.be.undefined
+    expect(updatedMedicalDevice.serialNumber).to.equal(newSerialNumber)
+    expect(updatedMedicalDevice.rev?.startsWith('2-'), 'Rev should start with 2-').to.be.true
+    expect(updatedMedicalDevice.name).to.equal('What-If Machine')
+    expect(updatedMedicalDevice.brand).to.equal('Farnsworth')
+    expect(updatedMedicalDevice.model).to.equal('2ACV16')
+    expect(updatedMedicalDevice.created).to.not.be.undefined
+    expect(updatedMedicalDevice.modified).to.not.be.undefined
+    expect(updatedMedicalDevice.created).to.be.lessThan(updatedMedicalDevice.modified!)
   })
 })

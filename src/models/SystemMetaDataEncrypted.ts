@@ -12,10 +12,11 @@
 
 import { Delegation } from './Delegation'
 import { Content } from './Content'
+import { SecurityMetaData } from './SecurityMetaData'
 
 export class SystemMetaDataEncrypted {
   constructor(json: ISystemMetaDataEncrypted) {
-    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, encryptedSelf } = json
+    const { secretForeignKeys, cryptedForeignKeys, delegations, encryptionKeys, encryptedSelf, securityMetadata } = json
 
     this.secretForeignKeys = secretForeignKeys ? [...secretForeignKeys] : []
     this.cryptedForeignKeys = cryptedForeignKeys
@@ -36,6 +37,9 @@ export class SystemMetaDataEncrypted {
     if (encryptedSelf) {
       this.encryptedSelf = encryptedSelf
     }
+    if (securityMetadata) {
+      this.securityMetadata = new SecurityMetaData(securityMetadata)
+    }
   }
 
   'secretForeignKeys': Array<string>
@@ -43,6 +47,7 @@ export class SystemMetaDataEncrypted {
   'delegations': { [key: string]: Set<Delegation> }
   'encryptionKeys': { [key: string]: Set<Delegation> }
   'encryptedSelf'?: string
+  'securityMetadata'?: SecurityMetaData
 
   marshal(): ISystemMetaDataEncrypted {
     return {
@@ -50,6 +55,7 @@ export class SystemMetaDataEncrypted {
       cryptedForeignKeys: Object.entries(this.cryptedForeignKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
       delegations: Object.entries(this.delegations).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
       encryptionKeys: Object.entries(this.encryptionKeys).reduce((acc, [k, v]) => ({ ...acc, [k]: [...v].map((d) => d.marshal()) }), {}),
+      securityMetadata: this.securityMetadata?.marshal(),
     }
   }
 }
@@ -60,4 +66,5 @@ interface ISystemMetaDataEncrypted {
   delegations?: { [key: string]: Set<Delegation> }
   encryptionKeys?: { [key: string]: Set<Delegation> }
   encryptedSelf?: string
+  securityMetadata?: SecurityMetaData
 }

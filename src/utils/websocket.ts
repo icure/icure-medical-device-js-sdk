@@ -1,4 +1,4 @@
-import * as WebSocket from 'ws'
+import * as WebSocketNode from 'ws'
 import { Filter } from '../filter/Filter'
 import { Patient } from '../models/Patient'
 import { DataSample } from '../models/DataSample'
@@ -6,13 +6,15 @@ import { User } from '../models/User'
 import { Notification } from '../models/Notification'
 import { FilterMapper } from '../mappers/filter'
 import { UserMapper } from '../mappers/user'
-import { HealthElement, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
+import { HealthElement, IccAuthApi, MaintenanceTask, Patient as PatientDto, Service, User as UserDto } from '@icure/api'
 import { PatientMapper } from '../mappers/patient'
 import { DataSampleMapper } from '../mappers/serviceDataSample'
 import { HealthcareElement } from '../models/HealthcareElement'
 import { HealthcareElementMapper } from '../mappers/healthcareElement'
 import { NotificationMapper } from '../mappers/notification'
 import log, { LogLevelDesc } from 'loglevel'
+import { iccRestApiPath } from '@icure/api/icc-api/api/IccRestApiPath'
+import { isNode } from 'browser-or-node'
 export type EventTypes = 'CREATE' | 'UPDATE' | 'DELETE'
 type Subscribable = 'Patient' | 'DataSample' | 'User' | 'HealthcareElement' | 'Notification'
 
@@ -20,7 +22,7 @@ log.setLevel((process.env.WEBSOCKET_LOG_LEVEL as LogLevelDesc) ?? 'info')
 
 export function subscribeToEntityEvents(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: 'Patient',
   eventTypes: EventTypes[],
   filter: Filter<Patient> | undefined,
@@ -30,7 +32,7 @@ export function subscribeToEntityEvents(
 ): Promise<WebSocketWrapper>
 export function subscribeToEntityEvents(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: 'DataSample',
   eventTypes: EventTypes[],
   filter: Filter<DataSample> | undefined,
@@ -40,7 +42,7 @@ export function subscribeToEntityEvents(
 ): Promise<WebSocketWrapper>
 export function subscribeToEntityEvents(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: 'HealthcareElement',
   eventTypes: EventTypes[],
   filter: Filter<HealthcareElement> | undefined,
@@ -50,7 +52,7 @@ export function subscribeToEntityEvents(
 ): Promise<WebSocketWrapper>
 export function subscribeToEntityEvents(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: 'User',
   eventTypes: EventTypes[],
   filter: Filter<User> | undefined,
@@ -59,7 +61,7 @@ export function subscribeToEntityEvents(
 ): Promise<WebSocketWrapper>
 export function subscribeToEntityEvents(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: 'Notification',
   eventTypes: EventTypes[],
   filter: Filter<Notification> | undefined,
@@ -73,7 +75,7 @@ export function subscribeToEntityEvents<
   T extends PatientDto | Service | HealthElement | MaintenanceTask
 >(
   basePath: string,
-  tokenProvider: () => Promise<string>,
+  authApi: IccAuthApi,
   entityClass: Subscribable,
   eventTypes: EventTypes[],
   filter: Filter<O> | undefined,
@@ -112,8 +114,8 @@ export function subscribeToEntityEvents<
   }
 
   return WebSocketWrapper.create(
-    basePath.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
-    tokenProvider,
+    iccRestApiPath(basePath).replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
+    new WebSocketAuthProviderImpl(authApi),
     options.connectionMaxRetry ?? 5,
     options.connectionRetryIntervalMs ?? 1_000,
     {
@@ -156,36 +158,39 @@ export type WebSocketWrapperMessageCallback = (data: any) => void
 
 export class WebSocketWrapper {
   private readonly pingLifetime: number = 20_000
-  private socket: WebSocket | null = null
+  private socket: WebSocketNode | WebSocket | null = null
   private retries = 0
   private closed = false
   private lastPingReceived = Date.now()
   private intervalIds: (NodeJS.Timeout | number)[] = []
+  private readonly methodPath: string
 
   private constructor(
     private readonly url: string,
-    private readonly tokenProvider: () => Promise<string>,
+    private readonly authProvider: WebSocketAuthProvider,
     private readonly maxRetries = 3,
     private readonly retryDelay = 1000,
     private readonly statusCallbacks: ConnectionStatusFunctions = {},
     private readonly messageCallback: WebSocketWrapperMessageCallback = () => {}
-  ) {}
+  ) {
+    this.methodPath = new URL(url).pathname
+  }
 
   public static async create(
     url: string,
-    tokenProvider: () => Promise<string>,
+    authProvider: WebSocketAuthProvider,
     maxRetries?: number,
     retryDelay?: number,
     statusCallbacks?: ConnectionStatusFunctions,
     messageCallback?: WebSocketWrapperMessageCallback
   ): Promise<WebSocketWrapper> {
-    const ws = new WebSocketWrapper(url, tokenProvider, maxRetries, retryDelay, statusCallbacks, messageCallback)
+    const ws = new WebSocketWrapper(url, authProvider, maxRetries, retryDelay, statusCallbacks, messageCallback)
     await ws.connect()
     return ws
   }
 
   public send(data: Buffer | ArrayBuffer | string) {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    if (this.socket && this.socket.readyState === WebSocketNode.OPEN) {
       this.socket.send(data)
     }
   }
@@ -215,80 +220,185 @@ export class WebSocketWrapper {
       throw new Error('WebSocket connection failed after ' + this.maxRetries + ' retries')
     }
 
-    this.socket = new WebSocket(`${this.url};tokenid=${await this.tokenProvider()}`)
+    const bearerToken = await this.authProvider.getBearerToken()
 
-    this.socket.on('open', async () => {
-      log.debug('WebSocket connection opened')
+    if (isNode) {
+      const socket: WebSocketNode = !!bearerToken
+        ? new WebSocketNode(this.url, {
+            headers: {
+              Authorization: bearerToken,
+            },
+          })
+        : await this.authProvider.getIcureOtt(this.methodPath).then((icureOttToken) => new WebSocketNode(`${this.url};tokenid=${icureOttToken}`))
+      this.socket = socket
 
-      this.intervalIds.push(
-        setTimeout(() => {
-          this.retries = 0
-        }, (this.maxRetries + 1) * this.retryDelay)
-      )
-
-      this.callStatusCallbacks('CONNECTED')
-    })
-
-    this.socket.on('message', (event: Buffer) => {
-      log.debug('WebSocket message received', event)
-
-      const dataAsString = event.toString('utf8')
-
-      // Handle ping messages
-      if (dataAsString === 'ping') {
-        log.debug('Received ping, sending pong')
-
-        this.send('pong')
-        this.lastPingReceived = Date.now()
+      socket.on('open', async () => {
+        log.debug('WebSocket connection opened')
 
         this.intervalIds.push(
           setTimeout(() => {
-            if (Date.now() - this.lastPingReceived > this.pingLifetime) {
-              log.error(`No ping received in the last ${this.pingLifetime} ms`)
-              this.socket?.close()
-            }
-          }, this.pingLifetime)
+            this.retries = 0
+          }, (this.maxRetries + 1) * this.retryDelay)
         )
 
-        return
-      }
+        this.callStatusCallbacks('CONNECTED')
+      })
 
-      // Call the message callback for other messages
-      try {
-        const data = JSON.parse(dataAsString)
-        this.messageCallback(data)
-      } catch (error) {
-        log.error('Failed to parse WebSocket message', error)
-      }
-    })
+      socket.on('message', (event: Buffer) => {
+        log.debug('WebSocket message received', event)
 
-    this.socket.on('close', (code, reason) => {
-      log.debug('WebSocket connection closed', code, reason.toString('utf8'))
+        const dataAsString = event.toString('utf8')
 
-      this.callStatusCallbacks('CLOSED')
+        // Handle ping messages
+        if (dataAsString === 'ping') {
+          log.debug('Received ping, sending pong')
 
-      this.intervalIds.forEach((id) => clearTimeout(id as number))
-      this.intervalIds = []
+          this.send('pong')
+          this.lastPingReceived = Date.now()
 
-      if (this.closed) {
-        return
-      }
+          this.intervalIds.push(
+            setTimeout(() => {
+              if (Date.now() - this.lastPingReceived > this.pingLifetime) {
+                log.error(`No ping received in the last ${this.pingLifetime} ms`)
+                this.socket?.close()
+              }
+            }, this.pingLifetime)
+          )
 
-      setTimeout(async () => {
-        ++this.retries
-        return await this.connect()
-      }, this.retryDelay)
-    })
+          return
+        }
 
-    this.socket.on('error', async (err) => {
-      log.error('WebSocket error', err)
+        // Call the message callback for other messages
+        try {
+          const data = JSON.parse(dataAsString)
+          this.messageCallback(data)
+        } catch (error) {
+          log.error('Failed to parse WebSocket message', error)
+        }
+      })
 
-      this.callStatusCallbacks('ERROR', err)
+      socket.on('close', (code, reason) => {
+        log.debug('WebSocket connection closed', code, reason.toString('utf8'))
 
-      if (this.socket) {
-        this.socket.close()
-      }
-    })
+        this.callStatusCallbacks('CLOSED')
+
+        this.intervalIds.forEach((id) => clearTimeout(id as number))
+        this.intervalIds = []
+
+        if (this.closed) {
+          return
+        }
+
+        setTimeout(async () => {
+          ++this.retries
+          return await this.connect()
+        }, this.retryDelay)
+      })
+
+      socket.on('error', async (err) => {
+        log.error('WebSocket error', err)
+
+        this.callStatusCallbacks('ERROR', err)
+
+        if (this.socket) {
+          this.socket.close()
+        }
+      })
+    } else {
+      throw new Error('Subscription api is not yet supported in browser')
+      // TODO implement browser version
+      // const socket: WebSocket = await this.authProvider.getIcureOtt(this.methodPath).then((icureOttToken) => new WebSocket(`${this.url};tokenid=${icureOttToken}`))
+      // this.socket = socket
+      //
+      // socket.addEventListener('open', async () => {
+      //   log.debug('WebSocket connection opened')
+      //
+      //   this.intervalIds.push(
+      //     setTimeout(() => {
+      //       this.retries = 0
+      //     }, (this.maxRetries + 1) * this.retryDelay)
+      //   )
+      //
+      //   this.callStatusCallbacks('CONNECTED')
+      // })
+      //
+      // const decoder = new TextDecoder('utf-8')
+      // socket.addEventListener('message', async (event: MessageEvent) => {
+      //   log.debug('WebSocket message received', event)
+      //
+      //   let dataAsString: string | undefined
+      //   if (event.type === 'text') {
+      //     dataAsString = event.data
+      //   } else if (event.type === 'binary') {
+      //     const binaryType = socket.binaryType
+      //     if (binaryType === 'arraybuffer') {
+      //       dataAsString = decoder.decode(event.data as ArrayBuffer)
+      //     } else if (binaryType === 'blob') {
+      //       dataAsString = decoder.decode(await (event.data as Blob).arrayBuffer())
+      //     } else log.error("Unexpected binary type: " + binaryType)
+      //   } else log.error("Unexpected event type: " + event.type)
+      //
+      //   if (!dataAsString) {
+      //     log.error("Failed to parse WebSocket message")
+      //     return
+      //   }
+      //
+      //   // Handle ping messages
+      //   if (dataAsString === 'ping') {
+      //     log.debug('Received ping, sending pong')
+      //
+      //     this.send('pong')
+      //     this.lastPingReceived = Date.now()
+      //
+      //     this.intervalIds.push(
+      //       setTimeout(() => {
+      //         if (Date.now() - this.lastPingReceived > this.pingLifetime) {
+      //           log.error(`No ping received in the last ${this.pingLifetime} ms`)
+      //           this.socket?.close()
+      //         }
+      //       }, this.pingLifetime)
+      //     )
+      //
+      //     return
+      //   }
+      //
+      //   // Call the message callback for other messages
+      //   try {
+      //     const data = JSON.parse(dataAsString)
+      //     this.messageCallback(data)
+      //   } catch (error) {
+      //     log.error('Failed to parse WebSocket message', error)
+      //   }
+      // })
+      //
+      // socket.addEventListener('close', (event) => {
+      //   log.debug('WebSocket connection closed', event.code, event.reason)
+      //
+      //   this.callStatusCallbacks('CLOSED')
+      //
+      //   this.intervalIds.forEach((id) => clearTimeout(id as number))
+      //   this.intervalIds = []
+      //
+      //   if (this.closed) {
+      //     return
+      //   }
+      //
+      //   setTimeout(async () => {
+      //     ++this.retries
+      //     return await this.connect()
+      //   }, this.retryDelay)
+      // })
+      //
+      // socket.addEventListener('error', async (err) => {
+      //   log.error('WebSocket error', err)
+      //
+      //   this.callStatusCallbacks('ERROR', new Error("WebSocket error event received: " + JSON.stringify(err)))
+      //
+      //   if (this.socket) {
+      //     this.socket.close()
+      //   }
+      // })
+    }
   }
 
   private callStatusCallbacks(event: ConnectionStatus, error?: Error) {
@@ -301,5 +411,23 @@ export class WebSocketWrapper {
         this.statusCallbacks?.ERROR?.forEach((callback) => callback(this, error))
         break
     }
+  }
+}
+
+interface WebSocketAuthProvider {
+  getBearerToken(): Promise<string | undefined>
+  getIcureOtt(icureMethodPath: string): Promise<string>
+}
+
+class WebSocketAuthProviderImpl {
+  constructor(private readonly authApi: IccAuthApi) {}
+
+  async getBearerToken(): Promise<string | undefined> {
+    const headers = await this.authApi.authenticationProvider.getAuthService().getAuthHeaders()
+    return headers.find((header) => header.header === 'Authorization' && header.data.startsWith('Bearer '))?.data
+  }
+
+  async getIcureOtt(icureMethodPath: string): Promise<string> {
+    return await this.authApi.token('GET', icureMethodPath)
   }
 }

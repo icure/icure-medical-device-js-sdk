@@ -1,27 +1,31 @@
 import 'mocha'
-import { medTechApi, MedTechApi } from '../../src/apis/MedTechApi'
+import { MedTechApi } from '../../src/apis/MedTechApi'
 import 'isomorphic-fetch'
-import { webcrypto } from 'crypto'
 
-import { hex2ua, sleep } from '@icure/api'
-import { DataSampleFilter, HealthcareElementFilter, NotificationFilter, PatientFilter, UserFilter } from '../../src/filter'
+import { sleep } from '@icure/api'
 
 import { assert } from 'chai'
 import { DataSample } from '../../src/models/DataSample'
 import { Content } from '../../src/models/Content'
 import { CodingReference } from '../../src/models/CodingReference'
 import { Patient } from '../../src/models/Patient'
-import { getEnvironmentInitializer, getEnvVariables, hcp1Username, hcp3Username, setLocalStorage, TestUtils, TestVars } from '../test-utils'
+import { getEnvironmentInitializer, hcp1Username, hcp3Username, setLocalStorage, TestUtils } from '../test-utils'
 import { Notification, NotificationTypeEnum } from '../../src/models/Notification'
 import { User } from '../../src/models/User'
 import { v4 as uuid } from 'uuid'
 import { HealthcareElement } from '../../src/models/HealthcareElement'
 import { Connection } from '../../src/models/Connection'
 import { WebSocketWrapper } from '../../src/utils/websocket'
+import { DataSampleFilter } from '../../src/filter/dsl/DataSampleFilterDsl'
+import { UserFilter } from '../../src/filter/dsl/UserFilterDsl'
+import { NotificationFilter } from '../../src/filter/dsl/NotificationFilterDsl'
+import { HealthcareElementFilter } from '../../src/filter/dsl/HealthcareElementFilterDsl'
+import { PatientFilter } from '../../src/filter/dsl/PatientFilterDsl'
+import { getEnvVariables, TestVars } from '@icure/test-setup/types'
 
 setLocalStorage(fetch)
 
-let env: TestVars | undefined
+let env: TestVars
 let medtechApi: MedTechApi | undefined = undefined
 const testType = 'IC-TEST'
 const testCode = 'TEST'
@@ -30,20 +34,6 @@ let hcp1Api: MedTechApi | undefined = undefined
 let hcp1User: User | undefined = undefined
 
 describe('Subscription API', () => {
-  const initialiseMedTechApi = async (username: string) => {
-    const mApi = await medTechApi()
-      .withICureBaseUrl(env!!.iCureUrl)
-      .withUserName(env!!.dataOwnerDetails[username].user)
-      .withPassword(env!!.dataOwnerDetails[username].password)
-      .withCrypto(webcrypto as any)
-      .build()
-
-    const loggedUser = await mApi.userApi.getLoggedUser()
-    await mApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(loggedUser.healthcarePartyId!, hex2ua(env!.dataOwnerDetails[username].privateKey))
-
-    return mApi
-  }
-
   before(async function () {
     this.timeout(600000)
     const initializer = await getEnvironmentInitializer()
@@ -51,7 +41,7 @@ describe('Subscription API', () => {
 
     if (env.backendType === 'oss') this.skip()
 
-    medtechApi = await initialiseMedTechApi(hcp3Username)
+    medtechApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])).api
 
     const hcpApi1AndUser = await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp1Username])
     hcp1Api = hcpApi1AndUser.api
@@ -60,15 +50,13 @@ describe('Subscription API', () => {
 
   async function doXOnYAndSubscribe<Y>(
     api: MedTechApi,
-    privateKey: string,
     options: {},
     connectionPromise: Promise<Connection>,
     x: () => Promise<Y>,
-    statusListener: (status: string) => void
+    statusListener: (status: string) => void,
+    eventReceivedPromiseReject: (reason?: any) => void,
+    eventReceivedPromise: Promise<void>
   ) {
-    const loggedUser = await api.userApi.getLoggedUser()
-    await api!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(loggedUser.healthcarePartyId!, hex2ua(privateKey))
-
     const connection = (await connectionPromise)
       .onClosed(async () => {
         statusListener('CLOSED')
@@ -76,10 +64,12 @@ describe('Subscription API', () => {
       })
       .onConnected(async () => {
         statusListener('CONNECTED')
+        await sleep(2_000)
         await x()
       })
 
-    await sleep(20_000)
+    const timeout = setTimeout(eventReceivedPromiseReject, 20_000)
+    await eventReceivedPromise.then(() => clearTimeout(timeout)).catch(() => {})
 
     connection.close()
 
@@ -101,31 +91,35 @@ describe('Subscription API', () => {
       ) =>
         subscriptionApi!.dataSampleApi.subscribeToDataSampleEvents(
           eventTypes,
-          await new DataSampleFilter().forDataOwner(dataOwnerId).build(),
+          await new DataSampleFilter(subscriptionApi).forDataOwner(dataOwnerId).build(),
           eventListener,
           options
         )
 
       const loggedUser = await creationApi!!.userApi.getLoggedUser()
-      await creationApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
-
       const events: DataSample[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         creationApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (ds) => {
           events.push(ds)
+          eventReceivedPromiseResolve()
         }),
         supplier,
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -181,7 +175,7 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE DataSample without options with another instance of medtechApi', async () => {
-      const subscriptionApi = await initialiseMedTechApi(hcp3Username)
+      const subscriptionApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])).api
 
       await subscribeAndCreateDataSample({}, ['CREATE'], medtechApi!!, subscriptionApi!!, async () => {
         await createDataSample()
@@ -189,7 +183,7 @@ describe('Subscription API', () => {
     }).timeout(60000)
 
     it('CREATE DataSample with options with another instance of medtechApi', async () => {
-      const subscriptionApi = await initialiseMedTechApi(hcp3Username)
+      const subscriptionApi = (await TestUtils.createMedTechApiAndLoggedUserFor(env.iCureUrl, env.dataOwnerDetails[hcp3Username])).api
 
       await subscribeAndCreateDataSample(
         {
@@ -228,26 +222,28 @@ describe('Subscription API', () => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (notification: Notification) => Promise<void>) =>
         medtechApi!.notificationApi.subscribeToNotificationEvents(
           eventTypes,
-          await new NotificationFilter().forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
+          await new NotificationFilter(medtechApi!).forDataOwner(hcp1User!.healthcarePartyId!).withType(NotificationTypeEnum.KEY_PAIR_UPDATE).build(),
           eventListener,
           options
         )
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: Notification[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (notification) => {
           events.push(notification)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const notificationId = uuid()
@@ -262,7 +258,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -292,26 +290,28 @@ describe('Subscription API', () => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (healthcareElement: HealthcareElement) => Promise<void>) =>
         medtechApi!.healthcareElementApi.subscribeToHealthcareElementEvents(
           eventTypes,
-          await new HealthcareElementFilter().forDataOwner(dataOwnerId).byLabelCodeFilter(testType, testCode).build(),
+          await new HealthcareElementFilter(medtechApi!).forDataOwner(dataOwnerId).byLabelCodeFilter(testType, testCode).build(),
           eventListener,
           options
         )
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
-
       const events: HealthcareElement[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise({}, loggedUser.healthcarePartyId!, async (healthcareElement) => {
           events.push(healthcareElement)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const patient = await medtechApi!!.patientApi.createOrModifyPatient(
@@ -325,13 +325,16 @@ describe('Subscription API', () => {
           await medtechApi!!.healthcareElementApi.createOrModifyHealthcareElement(
             new HealthcareElement({
               note: 'Hero Syndrome',
+              labels: new Set([new CodingReference({ id: 'id', code: testCode, type: testType })]),
             }),
             patient.id
           )
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -362,27 +365,30 @@ describe('Subscription API', () => {
         await sleep(2000)
         return medtechApi!.patientApi.subscribeToPatientEvents(
           eventTypes,
-          await new PatientFilter().forDataOwner(loggedUser.healthcarePartyId!).containsFuzzy('John').build(),
+          await new PatientFilter(medtechApi!).forDataOwner(loggedUser.healthcarePartyId!).containsFuzzy('John').build(),
           eventListener,
           options
         )
       }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
-      await medtechApi!.cryptoApi.loadKeyPairsAsTextInBrowserLocalStorage(
-        loggedUser.healthcarePartyId!,
-        hex2ua(env!.dataOwnerDetails[hcp3Username].privateKey)
-      )
 
       const events: Patient[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (patient) => {
           events.push(patient)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           await medtechApi!!.patientApi.createOrModifyPatient(
@@ -395,7 +401,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -424,7 +432,7 @@ describe('Subscription API', () => {
     const subscribeAndCreateUser = async (options: {}, eventTypes: ('CREATE' | 'DELETE' | 'UPDATE')[]) => {
       const connectionPromise = async (options: {}, dataOwnerId: string, eventListener: (user: User) => Promise<void>) => {
         await sleep(2000)
-        return medtechApi!.userApi.subscribeToUserEvents(eventTypes, await new UserFilter().build(), eventListener, options)
+        return medtechApi!.userApi.subscribeToUserEvents(eventTypes, await new UserFilter(medtechApi!).build(), eventListener, options)
       }
 
       const loggedUser = await medtechApi!!.userApi.getLoggedUser()
@@ -434,12 +442,19 @@ describe('Subscription API', () => {
       const events: User[] = []
       const statuses: string[] = []
 
+      let eventReceivedPromiseResolve!: (value: void | PromiseLike<void>) => void
+      let eventReceivedPromiseReject!: (reason?: any) => void
+      const eventReceivedPromise = new Promise<void>((res, rej) => {
+        eventReceivedPromiseResolve = res
+        eventReceivedPromiseReject = rej
+      })
+
       await doXOnYAndSubscribe(
         medtechApi!!,
-        env!.dataOwnerDetails[hcp3Username].privateKey,
         options,
         connectionPromise(options, loggedUser.healthcarePartyId!, async (user) => {
           events.push(user)
+          eventReceivedPromiseResolve()
         }),
         async () => {
           const patApiAndUser = await TestUtils.signUpUserUsingEmail(
@@ -457,7 +472,9 @@ describe('Subscription API', () => {
         },
         (status) => {
           statuses.push(status)
-        }
+        },
+        eventReceivedPromiseReject,
+        eventReceivedPromise
       )
 
       events?.forEach((event) => console.log(`Event : ${event}`))
@@ -488,7 +505,10 @@ describe('Subscription API', () => {
 
       const ws = await WebSocketWrapper.create(
         env!.iCureUrl.replace('http', 'ws').replace('rest', 'ws') + '/notification/subscribe',
-        async () => 'fake-token',
+        {
+          getBearerToken: () => Promise.resolve(undefined),
+          getIcureOtt: () => Promise.resolve('fake-token'),
+        },
         10,
         500,
         {
