@@ -625,12 +625,12 @@ export class DataSampleApiImpl implements DataSampleApi {
           externalUuid: documentExternalUuid,
           hash: ua2hex(await this.crypto.primitives.sha256(body)),
           size: body.byteLength,
-          mainUti: UtiDetector.getUtiFor(documentName),
         }),
         {
           additionalDelegates: dataOwnersWithAccessInfo.permissionsByDataOwnerId,
         }
       )
+      const uti = UtiDetector.getUtiFor(documentName)
 
       const createdDocument = await this.documentApi.createDocument(documentToCreate).catch((e) => {
         throw this.errorHandler.createErrorFromAny(e)
@@ -655,7 +655,7 @@ export class DataSampleApiImpl implements DataSampleApi {
       // Do not delete existing `Document` entity, even if existing: services are versioned
 
       // Add attachment to document
-      const docWithAttachment = await this.documentApi.encryptAndSetDocumentAttachment(createdDocument, body)
+      const docWithAttachment = await this.documentApi.encryptAndSetDocumentAttachment(createdDocument, body, uti ? [uti] : undefined)
 
       return DocumentMapper.toDocument(docWithAttachment)
     } catch (e) {
