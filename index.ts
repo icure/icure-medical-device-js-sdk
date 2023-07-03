@@ -12,6 +12,8 @@ export * from './src/apis/UserApi'
 export * from './src/apis/DataOwnerApi'
 export * from './src/apis/MedTechApi'
 export * from './src/filter'
+export * from './src/services/MedTechCryptoStrategies'
+export * from './src/services/impl/SimpleMedTechCryptoStrategies'
 
 export * from '@icure/api/icc-x-api/utils/binary-utils'
 export * from '@icure/api/icc-x-api/utils/formatting-util'
