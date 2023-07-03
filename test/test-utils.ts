@@ -84,6 +84,7 @@ export async function getEnvironmentInitializer(): Promise<EnvInitializer> {
       .addPatient({ login: patUsername })
       .withSafeguard()
       .withEnvironmentSummary()
+      .withUsersSummary()
       .build()
   }
   return cachedInitializer
