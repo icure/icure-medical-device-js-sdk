@@ -10,6 +10,7 @@ npm install
 npm run build
 ```
 
+
 ### Running tests
 To run all the tests use:
 ```
